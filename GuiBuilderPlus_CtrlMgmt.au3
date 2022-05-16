@@ -370,16 +370,18 @@ Func _delete_tab()
 		EndIf
 	Next
 
-	Local $iTabFocus = _GUICtrlTab_GetCurFocus($mcl_ctrl.Hwnd)
+	Local $iTabFocus = _GUICtrlTab_GetCurSel($mcl_ctrl.Hwnd)
 
 	If $iTabFocus >= 0 Then
 		_GUICtrlTab_DeleteItem($mcl_ctrl.Hwnd, $iTabFocus)
 		$mcl_ctrl.TabCount -= 1
 		Local $tabs = $mcl_ctrl.Tabs
 		MapRemove($tabs, $iTabFocus + 1)
-		$mcl_ctrl.Tabs = $tabs
+;~ 		$mcl_ctrl.Tabs = $tabs
 
 		_GUICtrlTab_SetCurSel($mcl_ctrl.Hwnd, 0)
+
+		$mcl_ctrl.Tabs = _consolidate_tabs($tabs)
 
 		_update_control($mcl_ctrl)
 	Else
@@ -576,7 +578,8 @@ EndFunc   ;==>_update_control
 ;------------------------------------------------------------------------------
 ; Title...........: _consolidate_controls
 ; Description.....: Shift (if necessary) and remove control object
-;					**why is this needed and how does it even work successfully?
+;					because controls are named by numbers (1, 2, 3...), we
+;					need to shift the maps or we cannot loop through the map
 ;------------------------------------------------------------------------------
 Func _consolidate_controls(Const $startIndex)
 	Local Const $count = $mControls.ControlCount
@@ -593,6 +596,34 @@ Func _consolidate_controls(Const $startIndex)
 	Next
 
 	Return $count
+EndFunc   ;==>_consolidate_controls
+
+
+;------------------------------------------------------------------------------
+; Title...........: _consolidate_tabs
+; Description.....: Shift (if necessary) and remove control object
+;					because controls are named by numbers (1, 2, 3...), we
+;					need to shift the maps or we cannot loop through the map
+;------------------------------------------------------------------------------
+Func _consolidate_tabs($tabCtrl)
+	Local Const $count = $tabCtrl.TabCount+1
+	ConsoleWrite($count & @CRLF)
+	Local $mCtrl, $mTabs
+	$mTabs = $tabCtrl.Tabs
+	_ArrayDisplay(MapKeys($mTabs))
+	For $j = 1 To $count - 1
+		If Not IsMap($mTabs[$j]) Then
+			$mCtrl = $mTabs[($j + 1)]
+
+			$mTabs[$j] = $mCtrl
+
+			MapRemove($mTabs, ($j + 1))
+		EndIf
+	Next
+	$tabCtrl.Tabs = $mTabs
+	_ArrayDisplay(MapKeys($tabCtrl.Tabs))
+
+	Return $tabCtrl
 EndFunc   ;==>_consolidate_controls
 
 

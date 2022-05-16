@@ -193,7 +193,6 @@ Func _formObjectExplorer_updateList()
 		GUICtrlSetOnEvent($lvMenuDelete, "_onLvObjectsDeleteMenu")
 
 		If $mcl_ctrl.Type = "Tab" Then
-			ConsoleWrite("tabs" & @CRLF)
 			Local $tabCount = $mcl_ctrl.TabCount
 			Local $tabs = $mcl_ctrl.Tabs
 			Local $tab

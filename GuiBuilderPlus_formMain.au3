@@ -716,20 +716,20 @@ Func _onMousePrimaryDown()
 
 	Local $aDrawStartPos = GUIGetCursorInfo($hGUI)
 	Local Const $ctrl_hwnd = $aDrawStartPos[4]
-	Local $mCtrl = _control_map_from_hwnd($ctrl_hwnd)
+;~ 	Local $mCtrl = _control_map_from_hwnd($ctrl_hwnd)
 
 	Local $pos
 
 	;if tool is selected and clicking on an existing control (but not resizing), switch to selection
 	If Not $initResize And Not $mode = $init_move Then
-		If _is_control($mCtrl) And $ctrl_hwnd <> $background Then
+		If $oCtrls.exists($ctrl_hwnd) And $ctrl_hwnd <> $background Then
 			GUICtrlSetState($default_cursor, $GUI_CHECKED)
 			$mode = $default
 		EndIf
 	EndIf
 
 	;if hold shift, copy the control
-	If _IsPressed("10") And _is_control($mCtrl) Then
+	If _IsPressed("10") And $oCtrls.exists($ctrl_hwnd) Then
 		_copy_selected()
 
 		Local Const $smallest = _left_top_union_rect()
@@ -748,12 +748,12 @@ Func _onMousePrimaryDown()
 ;~ 			GUICtrlSetState($default_cursor, $GUI_CHECKED)
 			$initDraw = True
 
-			$mCtrl = _create_ctrl()
+			Local $oCtrl = _create_ctrl()
 
-			If $mCtrl <> 0 Then
-				_add_to_selected($mCtrl)
+			If IsObj($oCtrl) Then
+				_add_to_selected($oCtrl)
 
-				Switch $mCtrl.Type
+				Switch $oCtrl.Type
 					Case "Combo", "Checkbox", "Radio"
 						$pos = ControlGetPos($hGUI, '', $East_Grippy)
 
@@ -783,7 +783,7 @@ Func _onMousePrimaryDown()
 					_set_default_mode()
 
 				Case Else
-					If _is_control($mCtrl) Then
+					If $oCtrls.exists($ctrl_hwnd) Then
 						;_hide_selected_controls()
 
 						_display_selected_tooltip()
@@ -792,7 +792,7 @@ Func _onMousePrimaryDown()
 
 						_hide_grippies()
 
-						$mControls.Selected1 = $mCtrl
+						$mControls.Selected1 = $oCtrls.get($ctrl_hwnd)
 
 						$mode = $init_move
 
@@ -813,18 +813,19 @@ Func _onMousePrimaryDown()
 					;ConsoleWrite("$init_selection" & @CRLF)
 
 				Case Else
-					If _is_control($mCtrl) Then
+					If $oCtrls.exists($ctrl_hwnd) Then
+						Local $oCtrl = $oCtrls.get($ctrl_hwnd)
 						If $mSelected.SelectedCount > 1 Then
-							_add_to_selected($mCtrl, False)
+							_add_to_selected($oCtrl, False)
 						Else
-							_add_to_selected($mCtrl)
+							_add_to_selected($oCtrl)
 						EndIf
 
-						_show_grippies($mCtrl)
+						_show_grippies($oCtrl)
 
-						$mControls.Selected1 = $mCtrl
+						$mControls.Selected1 = $oCtrl
 
-						_populate_control_properties_gui($mCtrl)
+						_populate_control_properties_gui($oCtrl)
 
 						$mode = $default
 
@@ -848,25 +849,26 @@ Func _onMousePrimaryDown()
 ;~ 					ConsoleWrite("$init_selection" & @CRLF)
 
 				Case Else
-					If Not _is_control($mCtrl) Then Return
+					If Not $oCtrls.exists($ctrl_hwnd) Then Return
 
-					ConsoleWrite("  " & $mCtrl.Type & @CRLF)
+					Local $oCtrl = $oCtrls.get($ctrl_hwnd)
+					ConsoleWrite("  " & $oCtrl.Type & @CRLF)
 
 					Switch _IsPressed("11") ; ctrl
 						Case False ; single select
-							_add_to_selected($mCtrl)
+							_add_to_selected($oCtrl)
 
 							_set_current_mouse_pos()
 
 						Case True ; multiple select
-							Switch _group_select($mCtrl)
+							Switch _group_select($oCtrl)
 								Case True
 									_set_current_mouse_pos()
 
-									GUICtrlSetCursor($mCtrl.Hwnd, $SIZE_ALL)
+									GUICtrlSetCursor($oCtrl.Hwnd, $SIZE_ALL)
 
 								Case False
-									_add_to_selected($mCtrl, False)
+									_add_to_selected($oCtrl, False)
 
 									_set_current_mouse_pos()
 							EndSwitch
@@ -878,7 +880,7 @@ EndFunc   ;==>_onMousePrimaryDown
 
 Func _onMousePrimaryUp()
 	$left_click = False
-	Local $ctrl_hwnd, $mCtrl
+	Local $ctrl_hwnd, $oCtrl
 
 	Switch $mode
 		Case $move
@@ -886,10 +888,11 @@ Func _onMousePrimaryUp()
 			ToolTip('')
 
 			$ctrl_hwnd = GUIGetCursorInfo($hGUI)[4]
-			$mCtrl = _control_map_from_hwnd($ctrl_hwnd)
-			$mControls.Selected1 = $mCtrl
+;~ 			$mCtrl = _control_map_from_hwnd($ctrl_hwnd)
+			$oCtrl = $oCtrls.get($ctrl_hwnd)
+			$mControls.Selected1 = $oCtrl
 
-			_populate_control_properties_gui($mCtrl)
+			_populate_control_properties_gui($oCtrl)
 
 			_refreshGenerateCode()
 
@@ -961,10 +964,11 @@ Func _onMousePrimaryUp()
 		Case Else    ;select single control
 			ConsoleWrite("** PrimaryUp: Else **" & @CRLF)
 			$ctrl_hwnd = GUIGetCursorInfo($hGUI)[4]
-			$mCtrl = _control_map_from_hwnd($ctrl_hwnd)
-			$mControls.Selected1 = $mCtrl
+;~ 			$mCtrl = _control_map_from_hwnd($ctrl_hwnd)
+			$oCtrl = $oCtrls.get($ctrl_hwnd)
+			$mControls.Selected1 = $oCtrl
 
-			_populate_control_properties_gui($mCtrl)
+			_populate_control_properties_gui($oCtrl)
 
 	EndSwitch
 EndFunc   ;==>_onMousePrimaryUp
@@ -978,12 +982,13 @@ Func _onMouseSecondaryDown()
 			_set_current_mouse_pos()
 
 		Case Else
-			Local Const $mCtrl = _control_map_from_hwnd($ctrl_hwnd)
+;~ 			Local Const $mCtrl = _control_map_from_hwnd($ctrl_hwnd)
+			Local $oCtrl = $oCtrls.get($ctrl_hwnd)
 
-			If _is_control($mCtrl) Then
-				$mControls.Selected1 = $mCtrl
+			If $oCtrls.exists($ctrl_hwnd) Then
+				$mControls.Selected1 = $oCtrl
 
-				_add_to_selected($mCtrl)
+				_add_to_selected($oCtrl)
 
 				_show_grippies($mControls.Selected1)
 			EndIf
@@ -1001,11 +1006,12 @@ Func _onMouseSecondaryUp()
 			ShowMenu($background_contextmenu, $mMouse.X, $mMouse.Y)
 
 		Case Else
-			Local Const $mCtrl = _control_map_from_hwnd($ctrl_hwnd)
+;~ 			Local Const $mCtrl = _control_map_from_hwnd($ctrl_hwnd)
+			Local $oCtrl = $oCtrls.get($ctrl_hwnd)
 
-			If _is_control($mCtrl) Then
+			If $oCtrls.exists($ctrl_hwnd) Then
 
-				If $mCtrl.Type = "Tab" Then
+				If $oCtrl.Type = "Tab" Then
 					ShowMenu($overlay_contextmenutab, $mMouse.X, $mMouse.Y)
 				Else
 					ShowMenu($overlay_contextmenu, $mMouse.X, $mMouse.Y)
@@ -1476,23 +1482,19 @@ Func _ctrl_change_name()
 		If $mCtrl.Type = "Tab" Then
 			If $childSelected Then
 				Local $iTabFocus = _GUICtrlTab_GetCurFocus($mCtrl.Hwnd)
-				ConsoleWrite("item " & $iTabFocus & @CRLF)
 
 				If $iTabFocus >= 0 Then
-					ConsoleWrite("change tab item name" & @CRLF)
 					Local $tabs = $mCtrl.Tabs
 
 					$tabs[$iTabFocus + 1].Name = $new_name
 					$mCtrl.Tabs = $tabs
 				Else
-					ConsoleWrite("change tab name" & @CRLF)
 					$mCtrl.Name = $new_name
 				EndIf
 			Else
 				$mCtrl.Name = $new_name
 			EndIf
 		Else
-			ConsoleWrite("change other name" & @CRLF)
 			$mCtrl.Name = $new_name
 		EndIf
 

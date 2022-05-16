@@ -180,6 +180,7 @@ Global $au3InstallPath = @ProgramFilesDir & "\AutoIt3\AutoIt3.exe"
 Global $initDraw, $initResize
 
 ;mControls
+Global $oCtrls, $oSelected, $oClipboard
 Global $mControls[]
 Global $mSelected[]
 Global $mClipboard[]
@@ -195,6 +196,10 @@ Global $sIniPath = @ScriptDir & "\storage\GUIBuilderPlus.ini"
 #EndRegion ; globals
 
 #Region ; includes
+#include "UDFs\AutoItObject.au3"
+#include "UDFs\oLinkedList.au3"
+_AutoItObject_StartUp()
+
 #include <Array.au3>
 #include <AVIConstants.au3>
 #include <ButtonConstants.au3>
@@ -219,6 +224,7 @@ Global $sIniPath = @ScriptDir & "\storage\GUIBuilderPlus.ini"
 #include <GuiEdit.au3>
 #include <GuiTreeView.au3>
 #include "UDFs\StringSize.au3"
+#include "GuiBuilderPlus_objCtrl.au3"
 #include "GuiBuilderPlus_CtrlMgmt.au3"
 #include "GuiBuilderPlus_definitionMgmt.au3"
 #include "GuiBuilderPlus_codeGeneration.au3"
@@ -238,6 +244,11 @@ _main()
 ; Description.....: Create the main GUI and run the main program loop.
 ;------------------------------------------------------------------------------
 Func _main()
+	;create the controls container objects
+	$oCtrls 	= _objCtrls()
+	$oSelected 	= _objCtrls()
+	$oClipboard	= _objCtrls()
+
 	;make the main program GUI
 	_formMain()
 
