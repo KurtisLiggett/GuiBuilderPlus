@@ -92,6 +92,8 @@ Func _objCtrls()
 	_AutoItObject_AddMethod($oObject, "remove", "_objCtrls_remove")
 	_AutoItObject_AddMethod($oObject, "removeAll", "_objCtrls_removeAll")
 	_AutoItObject_AddMethod($oObject, "get", "_objCtrls_get")
+	_AutoItObject_AddMethod($oObject, "getFirst", "_objCtrls_getFist")
+	_AutoItObject_AddMethod($oObject, "getLast", "_objCtrls_getLast")
 	_AutoItObject_AddMethod($oObject, "getCopy", "_objCtrls_getCopy")
 ;~ 	_AutoItObject_AddMethod($oObject, "set", "_objCtrls_set")
 	_AutoItObject_AddMethod($oObject, "getKeys", "_objCtrls_getKeys")
@@ -170,6 +172,26 @@ Func _objCtrls_get($oSelf, $Hwnd)
 	Next
 
 	Return -1
+EndFunc
+
+Func _objCtrls_getFist($oSelf)
+	#forceref $oSelf
+
+	If $oSelf.count > 0 Then
+		Return $oSelf.ctrls.at(0)
+	Else
+		Return -1
+	EndIf
+EndFunc
+
+Func _objCtrls_getLast($oSelf)
+	#forceref $oSelf
+
+	If $oSelf.count > 0 Then
+		Return $oSelf.ctrls.at($oSelf.count)
+	Else
+		Return -1
+	EndIf
 EndFunc
 
 Func _objCtrls_getCopy($oSelf, $Hwnd)

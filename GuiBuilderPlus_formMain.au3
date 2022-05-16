@@ -417,7 +417,7 @@ EndFunc   ;==>_display_grid
 ; Event...........: close button [X]
 ;------------------------------------------------------------------------------
 Func _onExit()
-	If $mControls.ControlCount > 0 Then
+	If $oCtrls.count > 0 Then
 		; mod by: TheSaint
 		Switch MsgBox($MB_SYSTEMMODAL + $MB_YESNOCANCEL, "Quit?", "Do you want to save the GUI?")
 			Case $IDYES
@@ -533,8 +533,7 @@ Func _onResize()
 
 	WinSetTitle($hGUI, "", $progName & " - Form (" & $win_client_size[0] & ", " & $win_client_size[1] & ")")
 
-	Local $count = $mSelected.SelectedCount
-	_show_grippies($mSelected[$count])
+	_show_grippies($oSelected.getFirst())
 EndFunc   ;==>_onResize
 
 
@@ -652,11 +651,10 @@ Func _nudgeSelected($x = 0, $y = 0)
 ;~ 	Local $nudgeAmount = ($setting_snap_grid) ? $grid_ticks : 1
 	Local $nudgeAmount = 1
 	Local $adjustmentX = 0, $adjustmentX = 0
-	Local $count = $mSelected.SelectedCount
-	For $i = 1 To $count
-		$selected_ctrl = $mSelected[$i]
+	Local $count = $oSelected.count
+	For $oCtrl in $oSelected.ctrls
 
-		$adjustmentX = Mod($selected_ctrl.Left, $nudgeAmount)
+		$adjustmentX = Mod($oCtrl.Left, $nudgeAmount)
 		If $adjustmentX > 0 Then
 			If $x = 1 Then
 				$adjustmentX = -1 * $adjustmentX
@@ -664,7 +662,7 @@ Func _nudgeSelected($x = 0, $y = 0)
 				$adjustmentX = -1 * ($nudgeAmount - $adjustmentX)
 			EndIf
 		EndIf
-		$adjustmentY = Mod($selected_ctrl.Top, $nudgeAmount)
+		$adjustmentY = Mod($oCtrl.Top, $nudgeAmount)
 		If $adjustmentY > 0 Then
 			If $y = 1 Then
 				$adjustmentY = -1 * $adjustmentY
@@ -672,13 +670,17 @@ Func _nudgeSelected($x = 0, $y = 0)
 				$adjustmentY = -1 * ($nudgeAmount - $adjustmentY)
 			EndIf
 		EndIf
-		_change_ctrl_size_pos($selected_ctrl, $selected_ctrl.Left + $x * ($nudgeAmount + $adjustmentX), $selected_ctrl.Top + $y * ($nudgeAmount + $adjustmentY), $selected_ctrl.Width, $selected_ctrl.Height)
+		_change_ctrl_size_pos($oCtrl, $oCtrl.Left + $x * ($nudgeAmount + $adjustmentX), $oCtrl.Top + $y * ($nudgeAmount + $adjustmentY), $oCtrl.Width, $oCtrl.Height)
 
-		_update_control($selected_ctrl)
+;~ 		_update_control($oCtrl)
+
 	Next
-	_show_grippies($mSelected[$count])
 
-	_populate_control_properties_gui($mSelected[1])
+	;get last control
+	Local $oCtrlLast = $oSelected.getLast()
+	_show_grippies($oCtrlLast)
+
+	_populate_control_properties_gui($oCtrlLast)
 
 	_refreshGenerateCode()
 EndFunc   ;==>_nudgeSelected
@@ -792,7 +794,8 @@ Func _onMousePrimaryDown()
 
 						_hide_grippies()
 
-						$mControls.Selected1 = $oCtrls.get($ctrl_hwnd)
+						;consider if this should be removed?
+						_add_to_selected($oCtrls.get($ctrl_hwnd))
 
 						$mode = $init_move
 
@@ -815,7 +818,7 @@ Func _onMousePrimaryDown()
 				Case Else
 					If $oCtrls.exists($ctrl_hwnd) Then
 						Local $oCtrl = $oCtrls.get($ctrl_hwnd)
-						If $mSelected.SelectedCount > 1 Then
+						If $oSelected.count > 1 Then
 							_add_to_selected($oCtrl, False)
 						Else
 							_add_to_selected($oCtrl)
@@ -823,7 +826,7 @@ Func _onMousePrimaryDown()
 
 						_show_grippies($oCtrl)
 
-						$mControls.Selected1 = $oCtrl
+;~ 						$mControls.Selected1 = $oCtrl
 
 						_populate_control_properties_gui($oCtrl)
 
@@ -906,7 +909,7 @@ Func _onMousePrimaryUp()
 
 			_recall_overlay()
 
-			If $mSelected.SelectedCount > 0 Then
+			If $oSelected.count > 0 Then
 				$mode = $selection
 
 				;ConsoleWrite("$selection" & @CRLF)
@@ -1037,23 +1040,22 @@ Func _onMouseMove()
 
 			If Not $left_click Then Return
 
-			Local $tooltip, $selected_ctrl
+			Local $tooltip
 
-			Local $count = $mSelected.SelectedCount
+			Local $count = $oSelected.count
 
-			For $i = 1 To $count
-				$selected_ctrl = $mSelected[$i]
+			For $oCtrl in $oSelected.ctrls
 
-				_change_ctrl_size_pos($selected_ctrl, $selected_ctrl.Left - $delta_x, $selected_ctrl.Top - $delta_y, $selected_ctrl.Width, $selected_ctrl.Height)
+				_change_ctrl_size_pos($oCtrl, $oCtrl.Left - $delta_x, $oCtrl.Top - $delta_y, $oCtrl.Width, $oCtrl.Height)
 
-				_update_control($selected_ctrl)
+;~ 				_update_control($oCtrl)
 
-				$tooltip &= $selected_ctrl.Name & ": X:" & $selected_ctrl.Left & ", Y:" & $selected_ctrl.Top & ", W:" & $selected_ctrl.Width & ", H:" & $selected_ctrl.Height & @CRLF
+				$tooltip &= $oCtrl.Name & ": X:" & $oCtrl.Left & ", Y:" & $oCtrl.Top & ", W:" & $oCtrl.Width & ", H:" & $oCtrl.Height & @CRLF
 			Next
 
 			ToolTip(StringTrimRight($tooltip, 2))
 
-			_show_grippies($mSelected[$count])
+			_show_grippies($oSelected.getLast())
 
 			$mode = $move
 
@@ -1064,35 +1066,35 @@ Func _onMouseMove()
 
 			_display_selection_rect($mRect)
 
-			$count = $mControls.ControlCount
+			$count = $oCtrls.count
 
 			For $i = 1 To $count
 				_add_remove_selected_control($i, $mRect)
 			Next
 
 		Case $resize_nw
-			_handle_nw_grippy($mSelected[$mSelected.SelectedCount])
+			_handle_nw_grippy($oSelected.getLast())
 
 		Case $resize_n
-			_handle_n_grippy($mSelected[$mSelected.SelectedCount])
+			_handle_n_grippy($oSelected.getLast())
 
 		Case $resize_ne
-			_handle_ne_grippy($mSelected[$mSelected.SelectedCount])
+			_handle_ne_grippy($oSelected.getLast())
 
 		Case $resize_w
-			_handle_w_grippy($mSelected[$mSelected.SelectedCount])
+			_handle_w_grippy($oSelected.getLast())
 
 		Case $resize_e
-			_handle_e_grippy($mSelected[$mSelected.SelectedCount])
+			_handle_e_grippy($oSelected.getLast())
 
 		Case $resize_sw
-			_handle_sw_grippy($mSelected[$mSelected.SelectedCount])
+			_handle_sw_grippy($oSelected.getLast())
 
 		Case $resize_s
-			_handle_s_grippy($mSelected[$mSelected.SelectedCount])
+			_handle_s_grippy($oSelected.getLast())
 
 		Case $resize_se
-			_handle_se_grippy($mSelected[$mSelected.SelectedCount])
+			_handle_se_grippy($oSelected.getLast())
 	EndSwitch
 EndFunc   ;==>_onMouseMove
 #EndRegion mouse events
@@ -1227,48 +1229,48 @@ EndFunc   ;==>_onExitChild
 
 
 #Region ; control properties window
-Func _populate_control_properties_gui(Const $mCtrl, $childHwnd = -1)
-	If Not _is_control($mCtrl) Then
+Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
+	If Not $oCtrls.exists($oCtrl.Hwnd) Then
 		Return
 	EndIf
 
 	;TEXT
-	Local $text = $mCtrl.Text
-	If $mCtrl.Type = "Tab" Then
+	Local $text = $oCtrl.Text
+	If $oCtrl.Type = "Tab" Then
 		If $childHwnd <> -1 Then ;this is a child tab
-			Local $iTabFocus = _GUICtrlTab_GetCurSel($mCtrl.Hwnd)
+			Local $iTabFocus = _GUICtrlTab_GetCurSel($oCtrl.Hwnd)
 
 			If $iTabFocus >= 0 Then
-				$text = $mCtrl.Tabs[$iTabFocus + 1].Text
+				$text = $oCtrl.Tabs[$iTabFocus + 1].Text
 			EndIf
 		EndIf
 	EndIf
 	GUICtrlSetData($h_form_text, $text)
 
 	;NAME
-	Local $name = $mCtrl.Name
-	If $mCtrl.Type = "Tab" Then
+	Local $name = $oCtrl.Name
+	If $oCtrl.Type = "Tab" Then
 		If $childHwnd <> -1 Then ;this is a child tab
-			Local $iTabFocus = _GUICtrlTab_GetCurSel($mCtrl.Hwnd)
+			Local $iTabFocus = _GUICtrlTab_GetCurSel($oCtrl.Hwnd)
 
 			If $iTabFocus >= 0 Then
-				$name = $mCtrl.Tabs[$iTabFocus + 1].Name
+				$name = $oCtrl.Tabs[$iTabFocus + 1].Name
 			EndIf
 		EndIf
 	EndIf
 	GUICtrlSetData($h_form_name, $name)
 
-	GUICtrlSetData($h_form_left, $mCtrl.Left)
-	GUICtrlSetData($h_form_top, $mCtrl.Top)
-	GUICtrlSetData($h_form_width, $mCtrl.Width)
-	GUICtrlSetData($h_form_height, $mCtrl.Height)
-	If $mCtrl.Background <> -1 Then
-		GUICtrlSetData($h_form_bkColor, "0x" & Hex($mCtrl.Background, 6))
+	GUICtrlSetData($h_form_left, $oCtrl.Left)
+	GUICtrlSetData($h_form_top, $oCtrl.Top)
+	GUICtrlSetData($h_form_width, $oCtrl.Width)
+	GUICtrlSetData($h_form_height, $oCtrl.Height)
+	If $oCtrl.Background <> -1 Then
+		GUICtrlSetData($h_form_bkColor, "0x" & Hex($oCtrl.Background, 6))
 	Else
 		GUICtrlSetData($h_form_bkColor, "")
 	EndIf
-	If $mCtrl.Color <> -1 Then
-		GUICtrlSetData($h_form_Color, "0x" & Hex($mCtrl.Color, 6))
+	If $oCtrl.Color <> -1 Then
+		GUICtrlSetData($h_form_Color, "0x" & Hex($oCtrl.Color, 6))
 	Else
 		GUICtrlSetData($h_form_Color, "")
 	EndIf
@@ -1281,7 +1283,7 @@ Func _populate_control_properties_gui(Const $mCtrl, $childHwnd = -1)
 			GUICtrlSetState($h_form_fittowidth, $GUI_ENABLE + $GUI_SHOW)
 	EndSwitch
 
-	Switch $mCtrl.Visible
+	Switch $oCtrl.Visible
 		Case True
 			GUICtrlSetState($h_form_visible, $GUI_CHECKED)
 
@@ -1289,7 +1291,7 @@ Func _populate_control_properties_gui(Const $mCtrl, $childHwnd = -1)
 			GUICtrlSetState($h_form_visible, $GUI_UNCHECKED)
 	EndSwitch
 
-	Switch $mCtrl.Enabled
+	Switch $oCtrl.Enabled
 		Case True
 			GUICtrlSetState($h_form_enabled, $GUI_CHECKED)
 
@@ -1297,7 +1299,7 @@ Func _populate_control_properties_gui(Const $mCtrl, $childHwnd = -1)
 			GUICtrlSetState($h_form_enabled, $GUI_UNCHECKED)
 	EndSwitch
 
-	Switch $mCtrl.OnTop
+	Switch $oCtrl.OnTop
 		Case True
 			GUICtrlSetState($h_form_ontop, $GUI_CHECKED)
 
@@ -1305,7 +1307,7 @@ Func _populate_control_properties_gui(Const $mCtrl, $childHwnd = -1)
 			GUICtrlSetState($h_form_ontop, $GUI_UNCHECKED)
 	EndSwitch
 
-	Switch $mCtrl.StyleTop
+	Switch $oCtrl.StyleTop
 		Case True
 			GUICtrlSetState($h_form_style_top, $GUI_CHECKED)
 
@@ -1367,8 +1369,8 @@ Func _enable_control_properties_gui()
 	GUICtrlSetState($h_form_top, $GUI_ENABLE)
 	GUICtrlSetState($h_form_width, $GUI_ENABLE)
 	GUICtrlSetState($h_form_height, $GUI_ENABLE)
-	If IsMap($mSelected) And IsMap($mSelected[1]) Then
-		If $mSelected[1].Type = "Label" Then
+	If IsObj($oSelected) And IsObj($oSelected.getFirst()) Then
+		If $oSelected.getFirst().Type = "Label" Then
 			GUICtrlSetState($h_form_Color, $GUI_ENABLE)
 			GUICtrlSetState($h_form_bkColor, $GUI_ENABLE)
 		EndIf
@@ -1431,36 +1433,34 @@ EndFunc   ;==>_ctrl_fit_to_width
 Func _ctrl_change_text()
 	Local Const $new_text = GUICtrlRead(@GUI_CtrlId)
 
-	Local Const $sel_count = $mSelected.SelectedCount
+	Local Const $sel_count = $oSelected.count
 
 	Switch $sel_count >= 1
 		Case True
-			Local $mCtrl
-			For $i = 1 To $sel_count
-				$mCtrl = $mSelected[$i]
+			For $oCtrl in $oSelected.ctrls
 
-				If $mCtrl.Type = "Combo" Then
-					GUICtrlSetData($mCtrl.Hwnd, $new_text, $new_text)
-					$mCtrl.Text = $new_text
-				ElseIf $mCtrl.Type = "Tab" Then
+				If $oCtrl.Type = "Combo" Then
+					GUICtrlSetData($oCtrl.Hwnd, $new_text, $new_text)
+					$oCtrl.Text = $new_text
+				ElseIf $oCtrl.Type = "Tab" Then
 					If $childSelected Then
-						Local $iTabFocus = _GUICtrlTab_GetCurFocus($mCtrl.Hwnd)
+						Local $iTabFocus = _GUICtrlTab_GetCurFocus($oCtrl.Hwnd)
 
 						If $iTabFocus >= 0 Then
-							_GUICtrlTab_SetItemText($mCtrl.Hwnd, $iTabFocus, $new_text)
-							Local $tabs = $mCtrl.Tabs
+							_GUICtrlTab_SetItemText($oCtrl.Hwnd, $iTabFocus, $new_text)
+							Local $tabs = $oCtrl.Tabs
 							$tabs[$iTabFocus + 1].Text = $new_text
-							$mCtrl.Tabs = $tabs
+							$oCtrl.Tabs = $tabs
 						EndIf
 					Else
-						$mCtrl.Text = $new_text
+						$oCtrl.Text = $new_text
 					EndIf
 				Else
-					GUICtrlSetData($mCtrl.Hwnd, $new_text)
-					$mCtrl.Text = $new_text
+					GUICtrlSetData($oCtrl.Hwnd, $new_text)
+					$oCtrl.Text = $new_text
 				EndIf
 
-				_update_control($mCtrl)
+;~ 				_update_control($mCtrl)
 			Next
 	EndSwitch
 
@@ -1469,36 +1469,35 @@ EndFunc   ;==>_ctrl_change_text
 
 
 Func _ctrl_change_name()
-	If $mSelected.SelectedCount > 1 Then Return 0
-
 	Local $new_name = GUICtrlRead(@GUI_CtrlId)
 	$new_name = StringReplace($new_name, " ", "_")
 	GUICtrlSetData(@GUI_CtrlId, $new_name)
 
-	If $mSelected.SelectedCount = 1 Then
-		Local $mCtrl
-		$mCtrl = $mSelected[1]
+	Local Const $sel_count = $oSelected.count
 
-		If $mCtrl.Type = "Tab" Then
+	If $sel_count = 1 Then
+		Local $oCtrl = $oSelected.getFirst()
+
+		If $oCtrl.Type = "Tab" Then
 			If $childSelected Then
-				Local $iTabFocus = _GUICtrlTab_GetCurFocus($mCtrl.Hwnd)
+				Local $iTabFocus = _GUICtrlTab_GetCurFocus($oCtrl.Hwnd)
 
 				If $iTabFocus >= 0 Then
-					Local $tabs = $mCtrl.Tabs
+					Local $tabs = $oCtrl.Tabs
 
 					$tabs[$iTabFocus + 1].Name = $new_name
-					$mCtrl.Tabs = $tabs
+					$oCtrl.Tabs = $tabs
 				Else
-					$mCtrl.Name = $new_name
+					$oCtrl.Name = $new_name
 				EndIf
 			Else
-				$mCtrl.Name = $new_name
+				$oCtrl.Name = $new_name
 			EndIf
 		Else
-			$mCtrl.Name = $new_name
+			$oCtrl.Name = $new_name
 		EndIf
 
-		_update_control($mCtrl)
+;~ 		_update_control($mCtrl)
 	EndIf
 
 	_refreshGenerateCode()
@@ -1509,23 +1508,22 @@ EndFunc   ;==>_ctrl_change_name
 Func _ctrl_change_left()
 	Local Const $new_data = GUICtrlRead(@GUI_CtrlId)
 
-	Local Const $sel_count = $mSelected.SelectedCount
+	Local Const $sel_count = $oSelected.count
 
 	Switch $sel_count >= 1
 		Case True
-			Local $mCtrl
-			For $i = 1 To $sel_count
-				$mCtrl = $mSelected[$i]
+			For $oCtrl in $oSelected.ctrls
 
 				;move the selected control
-				GUICtrlSetPos($mCtrl.Hwnd, $new_data, $mCtrl.Top, $mCtrl.Width, $mCtrl.Height)
+				GUICtrlSetPos($oCtrl.Hwnd, $new_data, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
 				;update the selected property
-				$mCtrl.Left = $new_data
+				$oCtrl.Left = $new_data
 
 				;update the mControls map
-				_update_control($mCtrl)
+;~ 				_update_control($mCtrl)
 
-				_show_grippies($mCtrl)
+				_show_grippies($oCtrl)
+
 			Next
 	EndSwitch
 
@@ -1536,23 +1534,21 @@ EndFunc   ;==>_ctrl_change_left
 Func _ctrl_change_top()
 	Local Const $new_data = GUICtrlRead(@GUI_CtrlId)
 
-	Local Const $sel_count = $mSelected.SelectedCount
+	Local Const $sel_count = $oSelected.count
 
 	Switch $sel_count >= 1
 		Case True
-			Local $mCtrl
-			For $i = 1 To $sel_count
-				$mCtrl = $mSelected[$i]
+			For $oCtrl in $oSelected.ctrls
 
 				;move the selected control
-				GUICtrlSetPos($mCtrl.Hwnd, $mCtrl.Left, $new_data, $mCtrl.Width, $mCtrl.Height)
+				GUICtrlSetPos($oCtrl.Hwnd, $oCtrl.Left, $new_data, $oCtrl.Width, $oCtrl.Height)
 				;update the selected property
-				$mCtrl.Top = $new_data
+				$oCtrl.Top = $new_data
 
 				;update the mControls map
-				_update_control($mCtrl)
+;~ 				_update_control($oCtrl)
 
-				_show_grippies($mCtrl)
+				_show_grippies($oCtrl)
 			Next
 	EndSwitch
 
@@ -1563,23 +1559,21 @@ EndFunc   ;==>_ctrl_change_top
 Func _ctrl_change_width()
 	Local Const $new_data = GUICtrlRead(@GUI_CtrlId)
 
-	Local Const $sel_count = $mSelected.SelectedCount
+	Local Const $sel_count = $oSelected.count
 
 	Switch $sel_count >= 1
 		Case True
-			Local $mCtrl
-			For $i = 1 To $sel_count
-				$mCtrl = $mSelected[$i]
+			For $oCtrl in $oSelected.ctrls
 
 				;move the selected control
-				GUICtrlSetPos($mCtrl.Hwnd, $mCtrl.Left, $mCtrl.Top, $new_data, $mCtrl.Height)
+				GUICtrlSetPos($oCtrl.Hwnd, $oCtrl.Left, $oCtrl.Top, $new_data, $oCtrl.Height)
 				;update the selected property
-				$mCtrl.Width = $new_data
+				$oCtrl.Width = $new_data
 
 				;update the mControls map
-				_update_control($mCtrl)
+;~ 				_update_control($oCtrl)
 
-				_show_grippies($mCtrl)
+				_show_grippies($oCtrl)
 			Next
 	EndSwitch
 
@@ -1590,23 +1584,21 @@ EndFunc   ;==>_ctrl_change_width
 Func _ctrl_change_height()
 	Local Const $new_data = GUICtrlRead(@GUI_CtrlId)
 
-	Local Const $sel_count = $mSelected.SelectedCount
+	Local Const $sel_count = $oSelected.count
 
 	Switch $sel_count >= 1
 		Case True
-			Local $mCtrl
-			For $i = 1 To $sel_count
-				$mCtrl = $mSelected[$i]
+			For $oCtrl in $oSelected.ctrls
 
 				;move the selected control
-				GUICtrlSetPos($mCtrl.Hwnd, $mCtrl.Left, $mCtrl.Top, $mCtrl.Width, $new_data)
+				GUICtrlSetPos($oCtrl.Hwnd, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $new_data)
 				;update the selected property
-				$mCtrl.Height = $new_data
+				$oCtrl.Height = $new_data
 
 				;update the mControls map
-				_update_control($mCtrl)
+;~ 				_update_control($oCtrl)
 
-				_show_grippies($mCtrl)
+				_show_grippies($oCtrl)
 			Next
 	EndSwitch
 
@@ -1632,32 +1624,30 @@ Func _ctrl_change_bkColor()
 		$colorInput = Dec(StringReplace($colorInput, "0x", ""))
 	EndIf
 
-	Local Const $sel_count = $mSelected.SelectedCount
+	Local Const $sel_count = $oSelected.count
 
 	Switch $sel_count >= 1
 		Case True
-			Local $mCtrl
-			For $i = 1 To $sel_count
-				$mCtrl = $mSelected[$i]
+			For $oCtrl in $oSelected.ctrls
 
 				;convert string to color then apply
-				If $mCtrl.Type <> "Label" Then Return 0
+				If $oCtrl.Type <> "Label" Then Return 0
 
 				If $colorInput <> -1 Then
-					GUICtrlSetBkColor($mCtrl.Hwnd, $colorInput)
+					GUICtrlSetBkColor($oCtrl.Hwnd, $colorInput)
 				Else
-					GUICtrlDelete($mCtrl.Hwnd)
-					$mCtrl.Hwnd = GUICtrlCreateLabel($mCtrl.Text, $mCtrl.Left, $mCtrl.Top, $mCtrl.Width, $mCtrl.Height)
-					$mCtrl.Background = -1
-					If $mCtrl.Color <> -1 Then
-						GUICtrlSetColor($mCtrl.Hwnd, $mCtrl.Color)
+					GUICtrlDelete($oCtrl.Hwnd)
+					$oCtrl.Hwnd = GUICtrlCreateLabel($oCtrl.Text, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
+					$oCtrl.Background = -1
+					If $oCtrl.Color <> -1 Then
+						GUICtrlSetColor($oCtrl.Hwnd, $oCtrl.Color)
 					EndIf
 				EndIf
 
-				$mCtrl.Background = $colorInput
+				$oCtrl.Background = $colorInput
 
 				;update the mControls map
-				_update_control($mCtrl)
+;~ 				_update_control($oCtrl)
 			Next
 	EndSwitch
 
@@ -1683,32 +1673,29 @@ Func _ctrl_change_Color()
 		$colorInput = Dec(StringReplace($colorInput, "0x", ""))
 	EndIf
 
-	Local Const $sel_count = $mSelected.SelectedCount
+	Local Const $sel_count = $oSelected.count
 
 	Switch $sel_count >= 1
 		Case True
-			Local $mCtrl
-			For $i = 1 To $sel_count
-				$mCtrl = $mSelected[$i]
-
+			For $oCtrl in $oSelected.ctrls
 				;convert string to color then apply
-				If $mCtrl.Type <> "Label" Then Return 0
+				If $oCtrl.Type <> "Label" Then Return 0
 
 				If $colorInput <> -1 Then
-					GUICtrlSetColor($mCtrl.Hwnd, $colorInput)
+					GUICtrlSetColor($oCtrl.Hwnd, $colorInput)
 				Else
-					GUICtrlDelete($mCtrl.Hwnd)
-					$mCtrl.Hwnd = GUICtrlCreateLabel($mCtrl.Text, $mCtrl.Left, $mCtrl.Top, $mCtrl.Width, $mCtrl.Height)
-					$mCtrl.Color = -1
-					If $mCtrl.Background <> -1 Then
-						GUICtrlSetBkColor($mCtrl.Hwnd, $mCtrl.Background)
+					GUICtrlDelete($oCtrl.Hwnd)
+					$oCtrl.Hwnd = GUICtrlCreateLabel($oCtrl.Text, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
+					$oCtrl.Color = -1
+					If $oCtrl.Background <> -1 Then
+						GUICtrlSetBkColor($oCtrl.Hwnd, $oCtrl.Background)
 					EndIf
 				EndIf
 
-				$mCtrl.Color = $colorInput
+				$oCtrl.Color = $colorInput
 
 				;update the mControls map
-				_update_control($mCtrl)
+;~ 				_update_control($oCtrl)
 			Next
 	EndSwitch
 
@@ -1718,152 +1705,38 @@ EndFunc   ;==>_ctrl_change_Color
 
 #Region ; states
 Func _ctrl_change_visible()
-	Local Const $ctrl_state = GUICtrlRead(@GUI_CtrlId)
 
-	Select
-		Case BitAND($ctrl_state, $GUI_CHECKED) = $GUI_CHECKED
-			If Not $setting_show_hidden Then
-				GUICtrlSetState($mControls.Selected1.Hwnd, $GUI_SHOW)
-
-				_show_grippies($mControls.Selected1)
-			EndIf
-
-			$mControls.Selected1.Visible = True
-
-		Case BitAND($ctrl_state, $GUI_UNCHECKED) = $GUI_UNCHECKED
-			If Not $setting_show_hidden Then
-				GUICtrlSetState($mControls.Selected1.Hwnd, $GUI_HIDE)
-
-				_hide_grippies()
-			EndIf
-
-			$mControls.Selected1.Visible = False
-	EndSelect
-
-	_update_control($mControls.Selected1)
-
-	_refreshGenerateCode()
 EndFunc   ;==>_ctrl_change_visible
 
 
 Func _ctrl_change_enabled()
-	Local Const $ctrl_state = GUICtrlRead(@GUI_CtrlId)
 
-	Select
-		Case BitAND($ctrl_state, $GUI_CHECKED) = $GUI_CHECKED
-			GUICtrlSetState($mControls.Selected1.Hwnd, $GUI_ENABLE)
-
-			$mControls.Selected1.Enabled = True
-
-			_show_grippies($mControls.Selected1)
-
-		Case BitAND($ctrl_state, $GUI_UNCHECKED) = $GUI_UNCHECKED
-			GUICtrlSetState($mControls.Selected1.Hwnd, $GUI_DISABLE)
-
-			$mControls.Selected1.Enabled = False
-
-			_hide_grippies()
-	EndSelect
-
-	_update_control($mControls.Selected1)
-
-	_refreshGenerateCode()
 EndFunc   ;==>_ctrl_change_enabled
 
 
 Func _ctrl_change_focus()
-	Local Const $ctrl_state = GUICtrlRead(@GUI_CtrlId)
 
-	Select
-		Case BitAND($ctrl_state, $GUI_CHECKED) = $GUI_CHECKED
-			GUICtrlSetState($mControls.Selected1.Hwnd, $GUI_FOCUS)
-
-			$mControls.Selected1.Focus = True
-
-			_show_grippies($mControls.Selected1)
-
-		Case BitAND($ctrl_state, $GUI_UNCHECKED) = $GUI_UNCHECKED
-			$mControls.Selected1.Focus = False
-
-			_hide_grippies()
-	EndSelect
-
-	_update_control($mControls.Selected1)
-
-	_refreshGenerateCode()
 EndFunc   ;==>_ctrl_change_focus
 
 
 Func _ctrl_change_ontop()
-	Switch $mControls.Selected1.OnTop
-		Case True
-			$mControls.Selected1.OnTop = False
 
-		Case False
-			$mControls.Selected1.OnTop = True
-	EndSwitch
-
-	_update_control($mControls.Selected1)
-
-	_refreshGenerateCode()
 EndFunc   ;==>_ctrl_change_ontop
 
 Func _ctrl_change_dropaccepted()
-	Switch $mControls.Selected1.OnTop
-		Case True
-			$mControls.Selected1.DropAccepted = False
 
-		Case False
-			$mControls.Selected1.DropAccepted = True
-	EndSwitch
-
-	_update_control($mControls.Selected1)
-
-	_refreshGenerateCode()
 EndFunc   ;==>_ctrl_change_dropaccepted
 #EndRegion ; states
 
 
 #Region ; styles
 Func _ctrl_change_style_autocheckbox()
-	Local Const $mPrevious = $mControls.Selected1
 
-	_delete_ctrl($mPrevious)
-
-	Switch $mPrevious
-		Case True
-			$mControls.Selected1.StyleAutoCheckbox = False
-
-		Case False
-			$mControls.Selected1.StyleAutoCheckbox = True
-	EndSwitch
-
-	$mControls.Selected1 = _create_ctrl($mControls.Selected1)
-
-	_update_control($mControls.Selected1)
-
-	_refreshGenerateCode()
 EndFunc   ;==>_ctrl_change_style_autocheckbox
 
 
 Func _ctrl_change_style_top()
-	Local $mPrevious = $mControls.Selected1
 
-	Switch $mPrevious.StyleTop
-		Case True
-			$mPrevious.StyleTop = False
-
-		Case False
-			$mPrevious.StyleTop = True
-	EndSwitch
-
-	$mControls.Selected1 = _create_ctrl($mPrevious)
-
-	GUICtrlDelete($mPrevious.Hwnd)
-
-	_update_control($mControls.Selected1)
-
-	_refreshGenerateCode()
 EndFunc   ;==>_ctrl_change_style_top
 #EndRegion ; styles
 #EndRegion ; control properties window
@@ -2256,18 +2129,15 @@ Func _menu_about()
 EndFunc   ;==>_menu_about
 
 Func _menu_vals()
-	Local Const $ctrl_count = $mControls.ControlCount
+	Local Const $ctrl_count = $oCtrls.count
 
 	Local $values = "Total Of Controls = " & $ctrl_count & @CRLF & @CRLF
 
-	Local $mCtrl
+	For $oCtrl in $oCtrls.ctrls
 
-	For $i = 1 To $ctrl_count
-		$mCtrl = $mControls[$i]
-
-		$values &= "Handle = " & Hex($mCtrl.Hwnd) & @CRLF & _
-				"Type   = " & $mCtrl.Type & @CRLF & _
-				"Name   = " & $mCtrl.Name & @CRLF & @CRLF
+		$values &= "Handle = " & Hex($oCtrl.Hwnd) & @CRLF & _
+				"Type   = " & $oCtrl.Type & @CRLF & _
+				"Name   = " & $oCtrl.Name & @CRLF & @CRLF
 	Next
 
 	MsgBox($MB_ICONINFORMATION, "Current Code Values", $values)
