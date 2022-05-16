@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="256"
+   height="256"
+   viewBox="0 0 67.733331 67.733331"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   sodipodi:docname="icon.svg"
+   inkscape:export-filename="C:\Users\liggett\Documents\AutoIt Apps\GUIBuilderPlus\resources\icons\icon.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
+  <defs
+     id="defs2">
+    <linearGradient
+       id="linearGradient855"
+       inkscape:collect="always">
+      <stop
+         id="stop851"
+         offset="0"
+         style="stop-color:#0000ff;stop-opacity:1;" />
+      <stop
+         id="stop853"
+         offset="1"
+         style="stop-color:#007fff;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient843">
+      <stop
+         style="stop-color:#0000ff;stop-opacity:1;"
+         offset="0"
+         id="stop839" />
+      <stop
+         style="stop-color:#0000ff;stop-opacity:0;"
+         offset="1"
+         id="stop841" />
+    </linearGradient>
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient843"
+       id="radialGradient845"
+       cx="33.92336"
+       cy="263.26563"
+       fx="33.92336"
+       fy="263.26563"
+       r="33.207757"
+       gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient843"
+       id="radialGradient849"
+       gradientUnits="userSpaceOnUse"
+       cx="31.127981"
+       cy="261.75186"
+       fx="31.127981"
+       fy="261.75186"
+       r="33.207756"
+       gradientTransform="matrix(2.0074322,-2.3680166e-8,1.9985543e-8,1.694229,-26.296101,-193.99811)" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient855"
+       id="radialGradient849-6"
+       gradientUnits="userSpaceOnUse"
+       cx="31.127981"
+       cy="261.75186"
+       fx="31.127981"
+       fy="261.75186"
+       r="33.207756"
+       gradientTransform="matrix(1.6428918,-1.9379957e-8,1.6356261e-8,1.3865648,-15.549513,-110.77212)" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="156.42192"
+     inkscape:cy="201.63706"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="1920"
+     inkscape:window-height="1027"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-229.26668)">
+    <rect
+       style="fill:#000036;fill-opacity:1;stroke:#000000;stroke-width:0.17045943;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect815"
+       width="56.536976"
+       height="56.536976"
+       x="5.4658847"
+       y="235.18613"
+       rx="42.614857"
+       ry="42.614857"
+       inkscape:export-xdpi="97.730003"
+       inkscape:export-ydpi="97.730003" />
+    <rect
+       style="fill:url(#radialGradient849-6);fill-opacity:1;stroke:#0000c6;stroke-width:0.42614859;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect815-4"
+       width="54.288719"
+       height="54.288719"
+       x="6.5900121"
+       y="236.31027"
+       rx="40.920231"
+       ry="40.920231"
+       inkscape:export-xdpi="97.730003"
+       inkscape:export-ydpi="97.730003" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot857"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.42965416,0,0,0.42965416,1.6725421,222.65374)"
+       inkscape:export-xdpi="97.730003"
+       inkscape:export-ydpi="97.730003"><flowRegion
+         id="flowRegion859"><rect
+           id="rect861"
+           width="161.42857"
+           height="212.85715"
+           x="27.857143"
+           y="22.428572" /></flowRegion><flowPara
+         id="flowPara863"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:133.33332825px;font-family:Calibri;-inkscape-font-specification:'Calibri, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1">G</flowPara></flowRoot>    <flowRoot
+       transform="matrix(0.36262333,0,0,0.32758856,26.222612,222.59177)"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#3bff3b;fill-opacity:1;stroke:none"
+       id="flowRoot871-6"
+       xml:space="preserve"
+       inkscape:export-xdpi="97.730003"
+       inkscape:export-ydpi="97.730003"><flowRegion
+         id="flowRegion867-7"
+         style="fill:#3bff3b;fill-opacity:1"><rect
+           y="22.428572"
+           x="27.857143"
+           height="212.85715"
+           width="161.42857"
+           id="rect865-7"
+           style="fill:#3bff3b;fill-opacity:1" /></flowRegion><flowPara
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:133.33332825px;font-family:Calibri;-inkscape-font-specification:'Calibri, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#3bff3b;fill-opacity:1"
+         id="flowPara869-7">+</flowPara></flowRoot>  </g>
+</svg>
