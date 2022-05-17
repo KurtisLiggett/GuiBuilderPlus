@@ -449,6 +449,7 @@ Func _copy_selected()
 		Case True
 			_remove_all_from_clipboard()
 
+
 			Local Const $smallest = _left_top_union_rect()
 
 			Local Const $selected = _selected_to_array($sel_count, $smallest)

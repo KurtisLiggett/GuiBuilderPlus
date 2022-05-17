@@ -49,7 +49,7 @@ Func _formObjectExplorer()
 ;~ 	_GUICtrlListView_SetColumnWidth($lvObjects, 0, $w / 2 - 20 - 5) ; sets column width
 
 	;bottom section
-	$labelObjectCount = GUICtrlCreateLabel("Object Count: " & $mControls.ControlCount, 5, $h - 18 - $titleBarHeight, $w - 20)
+	$labelObjectCount = GUICtrlCreateLabel("Object Count: " & $oCtrls.count, 5, $h - 18 - $titleBarHeight, $w - 20)
 
 	_formObjectExplorer_updateList()
 
@@ -175,16 +175,14 @@ EndFunc   ;==>_onLvObjectsDeleteMenu
 Func _formObjectExplorer_updateList()
 	If Not IsHWnd($hFormObjectExplorer) Then Return
 
-	Local $mcl_ctrl
-	Local $count = $mControls.ControlCount
+	Local $count = $oCtrls.count
 	Local $aList[$count]
 
 
 	Local $lvItem, $lvMenu, $lvMenuDelete, $childItem
 	_GUICtrlTreeView_DeleteAll($lvObjects)
-	For $i = 1 To $count
-		$mcl_ctrl = $mControls[$i]
-		$lvItem = GUICtrlCreateTreeViewItem($mcl_ctrl.Name & "       " & @TAB & "(HWND: " & Hex($mcl_ctrl.Hwnd) & ")", $lvObjects)
+	For $oCtrl in $oCtrls.ctrls
+		$lvItem = GUICtrlCreateTreeViewItem($oCtrl.Name & "       " & @TAB & "(HWND: " & Hex($oCtrl.Hwnd) & ")", $lvObjects)
 		GUICtrlSetOnEvent(-1, "_onLvObjectsItem")
 
 		$lvMenu = GUICtrlCreateContextMenu($lvItem)
@@ -192,9 +190,9 @@ Func _formObjectExplorer_updateList()
 		;menu events
 		GUICtrlSetOnEvent($lvMenuDelete, "_onLvObjectsDeleteMenu")
 
-		If $mcl_ctrl.Type = "Tab" Then
-			Local $tabCount = $mcl_ctrl.TabCount
-			Local $tabs = $mcl_ctrl.Tabs
+		If $oCtrl.Type = "Tab" Then
+			Local $tabCount = $oCtrl.TabCount
+			Local $tabs = $oCtrl.Tabs
 			Local $tab
 
 			For $j = 1 To $tabCount

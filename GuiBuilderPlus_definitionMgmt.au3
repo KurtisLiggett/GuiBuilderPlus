@@ -134,8 +134,8 @@ Func _save_gui_definition()
 			If $oCtrl.TabCount > 0 Then
 				Local $j = 1
 				For $oTab in $oCtrl.Tabs
-					$mControls &= "Global $" & $oTab.Name & " = "
-					$mControls &= 'GUICtrlCreateTabItem("' & $oTab.Text & '")' & @CRLF
+;~ 					$mControls &= "Global $" & $oTab.Name & " = "
+;~ 					$mControls &= 'GUICtrlCreateTabItem("' & $oTab.Text & '")' & @CRLF
 					IniWrite($AgdOutFile, $Key, "TabItem" & $j & "_Name", $oTab.Name)
 					IniWrite($AgdOutFile, $Key, "TabItem" & $j & "_Text", $oTab.Text)
 					$j += 1
@@ -162,7 +162,7 @@ EndFunc   ;==>_save_gui_definition
 ; Author..........: Roy
 ;------------------------------------------------------------------------------
 Func _load_gui_definition($AgdInfile = '')
-	If $mControls.ControlCount > 0 Then
+	If $oCtrls.count > 0 Then
 		Switch MsgBox($MB_ICONWARNING + $MB_YESNO, "Load Gui Definition from file", "Loading a Gui Definition will clear existing controls." & @CRLF & "Are you sure?" & @CRLF)
 			Case $IDNO
 				Return
@@ -249,7 +249,7 @@ Func _load_gui_definition($AgdInfile = '')
 
 					$oCtrl.Tabs.at($j).Name = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Name", "tempName")
 					$oCtrl.Tabs.at($j).Text = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Text", "tempText")
-					_GUICtrlTab_SetItemText($mCtrl.Hwnd, $j - 1, $tabs[$j].Text)
+					_GUICtrlTab_SetItemText($oCtrl.Hwnd, $j - 1, $oCtrl.Tabs.at($j).Text)
 				Next
 			EndIf
 		EndIf
