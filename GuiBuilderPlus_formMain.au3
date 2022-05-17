@@ -1065,14 +1065,8 @@ Func _onMouseMove()
 
 		Case $init_selection
 			Local Const $oRect = _rect_from_points($mMouse.X, $mMouse.Y, MouseGetPos(0), MouseGetPos(1))
-
 			_display_selection_rect($oRect)
-
-			$count = $oCtrls.count
-
-			For $i = 1 To $count
-				_add_remove_selected_control($i, $oRect)
-			Next
+			_add_remove_selected_control($oRect)
 
 		Case $resize_nw
 			_handle_nw_grippy($oSelected.getLast())

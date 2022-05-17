@@ -41,7 +41,7 @@ Func _create_ctrl(Const $oCtrl = '')
 			$oNewControl = $oCtrls.createNew()
 
 			$oNewControl.HwndCount = 1
-			$oNewControl.Type = $mControls.CurrentType
+			$oNewControl.Type = $oCtrls.CurrentType
 			$oNewControl.Left = $cursor_pos[0]
 			$oNewControl.Top = $cursor_pos[1]
 	EndSwitch
@@ -672,50 +672,49 @@ Func _add_to_selected(Const $oCtrl, Const $overwrite = True)
 	Return True
 EndFunc   ;==>_add_to_selected
 
-Func _add_remove_selected_control(Const $i, Const $mRect)
-	Local Const $mCtrl = $mControls[$i]
 
-	Switch _control_intersection($mCtrl, $mRect)
-		Case True
-			Switch _add_to_selected($mCtrl, False)
-				Case True
-					_populate_control_properties_gui($mCtrl)
+;------------------------------------------------------------------------------
+; Title...........: _add_remove_selected_control
+; Description.....: while dragging selection rectangle, add controls as the
+;					as the rectangle intersects with the controls
+;------------------------------------------------------------------------------
+Func _add_remove_selected_control(Const $oRect)
+	For $oCtrl in $oCtrls.ctrls
+		Switch _control_intersection($oCtrl, $oRect)
+			Case True
+				Switch _add_to_selected($oCtrl, False)
+					Case True
+						_populate_control_properties_gui($oCtrl)
 
-					_display_selected_tooltip()
-			EndSwitch
+						_display_selected_tooltip()
+				EndSwitch
 
-		Case False
-			Switch _remove_from_selected($mCtrl)
-				Case True
-					Local Const $sel_count = $mSelected.SelectedCount
+			Case False
+				Switch _remove_from_selected($oCtrl)
+					Case True
+						Local Const $sel_count = $oSelected.count
 
-					Switch $sel_count >= 1
-						Case True
-							_populate_control_properties_gui($mSelected[$sel_count])
+						Switch $sel_count >= 1
+							Case True
+								_populate_control_properties_gui($oSelected.getLast())
 
-							_show_grippies($mSelected[$sel_count])
+								_show_grippies($mSelected[$sel_count])
 
-						Case False
-							_clear_control_properties_gui()
+							Case False
+								_clear_control_properties_gui()
 
-							_disable_control_properties_gui()
+								_disable_control_properties_gui()
 
-							_hide_grippies()
-					EndSwitch
+								_hide_grippies()
+						EndSwitch
 
-					_display_selected_tooltip()
-			EndSwitch
-	EndSwitch
+						_display_selected_tooltip()
+				EndSwitch
+		EndSwitch
 EndFunc   ;==>_add_remove_selected_control
 
 Func _remove_all_from_selected()
-	Local Const $count = $mSelected.SelectedCount
-
-	For $i = 1 To $count
-		MapRemove($mSelected, $i)
-	Next
-
-	$mSelected.SelectedCount = 0
+	$oSelected.removeAll()
 
 	_hide_grippies()
 
@@ -725,18 +724,14 @@ Func _remove_all_from_selected()
 EndFunc   ;==>_remove_all_from_selected
 
 Func _delete_selected_controls()
-	Local Const $sel_count = $mSelected.SelectedCount
+	Local Const $sel_count = $oSelected.count
 
 	Switch $sel_count >= 1
 		Case True
 			_clear_control_properties_gui()
 
-			Local $mCtrl
-
-			For $i = $sel_count To 1 Step -1
-				$mCtrl = $mSelected[$i]
-
-				_delete_ctrl($mCtrl)
+			For $oCtrl in $oSelected.ctrls
+				_delete_ctrl($oCtrl)
 			Next
 
 			_hide_grippies()
@@ -751,86 +746,48 @@ Func _delete_selected_controls()
 
 EndFunc   ;==>_delete_selected_controls
 
-Func _remove_from_selected(Const $mCtrl)
-	If Not IsMap($mCtrl) Then
+Func _remove_from_selected(Const $oCtrl)
+	If Not IsObj($oCtrl) Then
 		Return
 	EndIf
 
-	Switch _in_selected($mCtrl)
+	Switch $oSelected.exists($oCtrl.Hwnd)
 		Case False
 			Return SetError(1, 0, False)
 	EndSwitch
 
-	Local Const $count = $mSelected.SelectedCount
-
-	For $i = 1 To $count
-		Switch $mCtrl.Hwnd
-			Case $mSelected[$i].Hwnd
-				MapRemove($mSelected, $i)
-
-				_consolidate_selected($count)
-
+	For $oThisCtrl in $oSelected.ctrls
+		Switch $oCtrl.Hwnd
+			Case $oThisCtrl.Hwnd
+				$oSelected.remove($oThisCtrl.Hwnd)
 				ExitLoop
 		EndSwitch
 	Next
 
-	$mSelected.SelectedCount -= 1
-
-	_show_grippies($mSelected[$mSelected.SelectedCount])
+	_show_grippies($oSelected.getLast())
 
 	_enable_control_properties_gui()
 
 	Return True
 EndFunc   ;==>_remove_from_selected
 
-Func _consolidate_selected(Const $count)
-	; inefficient; but works
 
-	For $j = $count To 1 Step -1
-		If Not IsMap($mSelected[($j - 1)]) Then
-			$mSelected[($j - 1)] = $mSelected[$j]
-
-			MapRemove($mSelected, $mSelected[$j])
-
-			Return _consolidate_selected($count - 1)
-		EndIf
-	Next
-
-	Return $count
-EndFunc   ;==>_consolidate_selected
-
-Func _in_selected(Const $mCtrl)
-	Local Const $count = $mSelected.SelectedCount
-
-	For $i = 1 To $count
-		If $mSelected[$i].Hwnd = $mCtrl.Hwnd Then
-			Return True
-		EndIf
-	Next
-
-	Return False
-EndFunc   ;==>_in_selected
-
-Func _display_selection_rect(Const $mRect)
-	GUICtrlSetPos($overlay, $mRect.Left, $mRect.Top, $mRect.Width, $mRect.Height)
+Func _display_selection_rect(Const $oRect)
+	GUICtrlSetPos($overlay, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
 EndFunc   ;==>_display_selection_rect
 
 Func _hide_selected_controls()
-	Local Const $count = $mSelected.SelectedCount
-
-	For $i = 1 To $count
+	For $oCtrl in $oSelected.ctrls
 		If Not $setting_show_control Then
-			GUICtrlSetState($mSelected[$i].Hwnd, $GUI_HIDE)
+			GUICtrlSetState($oCtrl.Hwnd, $GUI_HIDE)
 		EndIf
 	Next
 EndFunc   ;==>_hide_selected_controls
 
 Func _show_selected_controls()
-	Local Const $count = $mSelected.SelectedCount
-
-	For $i = 1 To $count
+	For $oCtrl in $oSelected.ctrls
 		If Not $setting_show_control Then
-			GUICtrlSetState($mSelected[$i].Hwnd, $GUI_SHOW)
+			GUICtrlSetState($oCtrl.Hwnd, $GUI_SHOW)
 		EndIf
 	Next
 EndFunc   ;==>_show_selected_controls
@@ -838,23 +795,23 @@ EndFunc   ;==>_show_selected_controls
 
 
 #Region ; moving & resizing
-Func _change_ctrl_size_pos(ByRef $mCtrl, Const $left, Const $top, Const $width, Const $height)
+Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, Const $height)
 	If $width < 1 Or $height < 1 Then
 		Return
 	EndIf
 
-	Switch $mCtrl.Type
+	Switch $oCtrl.Type
 		Case "Updown"
-			GUICtrlSetPos($mCtrl.Hwnd1, $left, $top, $width, $height)
+			GUICtrlSetPos($oCtrl.Hwnd1, $left, $top, $width, $height)
 
 		Case Else
-			GUICtrlSetPos($mCtrl.Hwnd, $left, $top, $width, $height)
+			GUICtrlSetPos($oCtrl.Hwnd, $left, $top, $width, $height)
 	EndSwitch
 
-	$mCtrl.Left = $left
-	$mCtrl.Top = $top
-	$mCtrl.Width = $width
-	$mCtrl.Height = $height
+	$oCtrl.Left = $left
+	$oCtrl.Top = $top
+	$oCtrl.Width = $width
+	$oCtrl.Height = $height
 EndFunc   ;==>_change_ctrl_size_pos
 
 
@@ -893,78 +850,79 @@ Func _set_resize_mode()
 	_hide_selected_controls()
 EndFunc   ;==>_set_resize_mode
 
-Func _handle_grippy(ByRef $mCtrl, Const $left, Const $top, Const $right, Const $bottom)
+Func _handle_grippy(ByRef $oCtrl, Const $left, Const $top, Const $right, Const $bottom)
 	_set_current_mouse_pos()
 
-	Switch $mCtrl.Type
+	Switch $oCtrl.Type
 		Case "Slider"
-			GUICtrlSendMsg($mCtrl.Hwnd, 27 + 0x0400, $mCtrl.Height - 20, 0) ; TBS_SETTHUMBLENGTH
+			GUICtrlSendMsg($oCtrl.Hwnd, 27 + 0x0400, $oCtrl.Height - 20, 0) ; TBS_SETTHUMBLENGTH
 	EndSwitch
 
-	_change_ctrl_size_pos($mCtrl, $left, $top, $right, $bottom)
+	_change_ctrl_size_pos($oCtrl, $left, $top, $right, $bottom)
 
-	$mControls.Selected1 = $mCtrl
+;~ 	$mControls.Selected1 = $oCtrl
 
-	_update_control($mCtrl)
+;~ 	_update_control($oCtrl)
 
-	_show_grippies($mCtrl)
+	_show_grippies($oCtrl)
 
-	ToolTip($mControls.Selected1.Name & ": X:" & $mControls.Selected1.Left & ", Y:" & $mControls.Selected1.Top & ", W:" & $mControls.Selected1.Width & ", H:" & $mControls.Selected1.Height)
+	Local $oSelectedCtrl = $oSelected.getLast()
+	ToolTip($oSelectedCtrl.Name & ": X:" & $oSelectedCtrl.Left & ", Y:" & $oSelectedCtrl.Top & ", W:" & $oSelectedCtrl.Width & ", H:" & $oSelectedCtrl.Height)
 EndFunc   ;==>_handle_grippy
 
-Func _handle_nw_grippy($mCtrl)
-	Local Const $right = ($mCtrl.Width + $mCtrl.Left) - $mMouse.X
+Func _handle_nw_grippy($oCtrl)
+	Local Const $right = ($oCtrl.Width + $oCtrl.Left) - $mMouse.X
 
-	Local Const $bottom = ($mCtrl.Height + $mCtrl.Top) - $mMouse.Y
+	Local Const $bottom = ($oCtrl.Height + $oCtrl.Top) - $mMouse.Y
 
-	_handle_grippy($mCtrl, $mMouse.X, $mMouse.Y, $right, $bottom)
+	_handle_grippy($oCtrl, $mMouse.X, $mMouse.Y, $right, $bottom)
 EndFunc   ;==>_handle_nw_grippy
 
-Func _handle_n_grippy($mCtrl)
-	Local Const $bottom = ($mCtrl.Top + $mCtrl.Height) - $mMouse.Y
+Func _handle_n_grippy($oCtrl)
+	Local Const $bottom = ($oCtrl.Top + $oCtrl.Height) - $mMouse.Y
 
-	_handle_grippy($mCtrl, $mCtrl.Left, $mMouse.Y, $mCtrl.Width, $bottom)
+	_handle_grippy($oCtrl, $oCtrl.Left, $mMouse.Y, $oCtrl.Width, $bottom)
 EndFunc   ;==>_handle_n_grippy
 
-Func _handle_ne_grippy($mCtrl)
-	Local Const $bottom = ($mCtrl.Top + $mCtrl.Height) - $mMouse.Y
+Func _handle_ne_grippy($oCtrl)
+	Local Const $bottom = ($oCtrl.Top + $oCtrl.Height) - $mMouse.Y
 
-	_handle_grippy($mCtrl, $mCtrl.Left, $mMouse.Y, $mMouse.X - $mCtrl.Left, $bottom)
+	_handle_grippy($oCtrl, $oCtrl.Left, $mMouse.Y, $mMouse.X - $oCtrl.Left, $bottom)
 EndFunc   ;==>_handle_ne_grippy
 
-Func _handle_w_grippy($mCtrl)
-	Local Const $right = $mCtrl.Left + $mCtrl.Width
+Func _handle_w_grippy($oCtrl)
+	Local Const $right = $oCtrl.Left + $oCtrl.Width
 
-	_handle_grippy($mCtrl, $mMouse.X, $mCtrl.Top, $right - $mMouse.X, $mCtrl.Height)
+	_handle_grippy($oCtrl, $mMouse.X, $oCtrl.Top, $right - $mMouse.X, $oCtrl.Height)
 EndFunc   ;==>_handle_w_grippy
 
-Func _handle_e_grippy($mCtrl)
-	_handle_grippy($mCtrl, $mCtrl.Left, $mCtrl.Top, $mMouse.X - $mCtrl.Left, $mCtrl.Height)
+Func _handle_e_grippy($oCtrl)
+	_handle_grippy($oCtrl, $oCtrl.Left, $oCtrl.Top, $mMouse.X - $oCtrl.Left, $oCtrl.Height)
 EndFunc   ;==>_handle_e_grippy
 
-Func _handle_sw_grippy($mCtrl)
-	Local Const $right = ($mCtrl.Left + $mCtrl.Width) - $mMouse.X
+Func _handle_sw_grippy($oCtrl)
+	Local Const $right = ($oCtrl.Left + $oCtrl.Width) - $mMouse.X
 
-	_handle_grippy($mCtrl, $mMouse.X, $mCtrl.Top, $right, $mMouse.Y - $mCtrl.Top)
+	_handle_grippy($oCtrl, $mMouse.X, $oCtrl.Top, $right, $mMouse.Y - $oCtrl.Top)
 EndFunc   ;==>_handle_sw_grippy
 
-Func _handle_s_grippy($mCtrl)
-	_handle_grippy($mCtrl, $mCtrl.Left, $mCtrl.Top, $mCtrl.Width, $mMouse.Y - $mCtrl.Top)
+Func _handle_s_grippy($oCtrl)
+	_handle_grippy($oCtrl, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $mMouse.Y - $oCtrl.Top)
 EndFunc   ;==>_handle_s_grippy
 
-Func _handle_se_grippy($mCtrl)
-	_handle_grippy($mCtrl, $mCtrl.Left, $mCtrl.Top, $mMouse.X - $mCtrl.Left, $mMouse.Y - $mCtrl.Top)
+Func _handle_se_grippy($oCtrl)
+	_handle_grippy($oCtrl, $oCtrl.Left, $oCtrl.Top, $mMouse.X - $oCtrl.Left, $mMouse.Y - $oCtrl.Top)
 EndFunc   ;==>_handle_se_grippy
 
-Func _show_grippies(Const $mCtrl)
-	If Not IsMap($mCtrl) Then
+Func _show_grippies(Const $oCtrl)
+	If Not IsObj($oCtrl) Then
 		Return
 	EndIf
 
-	Local Const $l = $mCtrl.Left
-	Local Const $t = $mCtrl.Top
-	Local Const $w = $mCtrl.Width
-	Local Const $h = $mCtrl.Height
+	Local Const $l = $oCtrl.Left
+	Local Const $t = $oCtrl.Top
+	Local Const $w = $oCtrl.Width
+	Local Const $h = $oCtrl.Height
 
 	Local Const $nw_left = $l - $grippy_size
 	Local Const $nw_top = $t - $grippy_size
@@ -983,7 +941,7 @@ Func _show_grippies(Const $mCtrl)
 	Local Const $w_left = $nw_left
 	Local Const $w_top = $e_top
 
-	Switch $mCtrl.Type
+	Switch $oCtrl.Type
 		Case "Combo", "Checkbox", "Radio"
 			GUICtrlSetPos($East_Grippy, $e_left, $e_top, $grippy_size, $grippy_size)
 			GUICtrlSetPos($West_Grippy, $w_left, $w_top, $grippy_size, $grippy_size)
@@ -1024,10 +982,10 @@ EndFunc   ;==>_move_mouse_to_grippy
 
 
 #Region ; overlay management
-Func _dispatch_overlay(Const $mCtrl)
-	; ConsoleWrite($mCtrl.Name & @CRLF)
+Func _dispatch_overlay(Const $oCtrl)
+	; ConsoleWrite($oCtrl.Name & @CRLF)
 
-	GUICtrlSetPos($overlay, $mCtrl.Left, $mCtrl.Top, $mCtrl.Width, $mCtrl.Height)
+	GUICtrlSetPos($overlay, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
 
 	GUICtrlSetState($overlay, $GUI_ONTOP)
 EndFunc   ;==>_dispatch_overlay
