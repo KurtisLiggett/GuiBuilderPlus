@@ -1064,14 +1064,14 @@ Func _onMouseMove()
 			;ConsoleWrite("$move" & @CRLF)
 
 		Case $init_selection
-			Local Const $mRect = _rect_from_points($mMouse.X, $mMouse.Y, MouseGetPos(0), MouseGetPos(1))
+			Local Const $oRect = _rect_from_points($mMouse.X, $mMouse.Y, MouseGetPos(0), MouseGetPos(1))
 
-			_display_selection_rect($mRect)
+			_display_selection_rect($oRect)
 
 			$count = $oCtrls.count
 
 			For $i = 1 To $count
-				_add_remove_selected_control($i, $mRect)
+				_add_remove_selected_control($i, $oRect)
 			Next
 
 		Case $resize_nw
@@ -1931,17 +1931,17 @@ Func __WinAPI_PtInRectEx(Const $x, Const $y, Const $left, Const $top, Const $wid
 EndFunc   ;==>__WinAPI_PtInRectEx
 
 Func _rect_from_points(Const $a1, Const $a2, Const $b1, Const $b2)
-	Local $mRect[]
+	Local $oRect = _objCreateRect()
 
-	$mRect.Left = ($a1 < $b1) ? $a1 : $b1
+	$oRect.Left = ($a1 < $b1) ? $a1 : $b1
 
-	$mRect.Top = ($a2 < $b2) ? $a2 : $b2
+	$oRect.Top = ($a2 < $b2) ? $a2 : $b2
 
-	$mRect.Width = ($b1 > $a1) ? ($b1 - $mRect.Left) : ($a1 - $mRect.Left)
+	$oRect.Width = ($b1 > $a1) ? ($b1 - $oRect.Left) : ($a1 - $oRect.Left)
 
-	$mRect.Height = ($b2 > $a2) ? ($b2 - $mRect.Top) : ($a2 - $mRect.Top)
+	$oRect.Height = ($b2 > $a2) ? ($b2 - $oRect.Top) : ($a2 - $oRect.Top)
 
-	Return $mRect
+	Return $oRect
 EndFunc   ;==>_rect_from_points
 #EndRegion ; rectangle management
 

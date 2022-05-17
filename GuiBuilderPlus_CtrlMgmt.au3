@@ -10,16 +10,16 @@
 ; Description.....: create new control and add it to the map
 ; Called by.......: Draw with mouse; Paste
 ;------------------------------------------------------------------------------
-Func _create_ctrl(Const $mCtrl = '')
-	Local $mNewControl[], $incTypeCount = True
+Func _create_ctrl(Const $oCtrl = '')
+	Local $oNewControl, $incTypeCount = True
 	Local $isPaste = False
 
-	Switch IsMap($mCtrl)
+	Switch IsObj($oCtrl)
 		Case True
 			$isPaste = True
-			$mNewControl = $mCtrl
+			$oNewControl = $oCtrl
 
-;~ 			$mControls.CurrentType = $mNewControl.Type
+;~ 			$mControls.CurrentType = $oNewControl.Type
 
 ;~ 			ConsoleWrite("type " & $mControls.CurrentType & @CRLF)
 
@@ -38,26 +38,18 @@ Func _create_ctrl(Const $mCtrl = '')
 					$cursor_pos[1] = 0
 			EndSwitch
 
-			$mNewControl.HwndCount = 1
-			$mNewControl.Type = $mControls.CurrentType
-			$mNewControl.Left = $cursor_pos[0]
-			$mNewControl.Top = $cursor_pos[1]
-			$mNewControl.Width = 1
-			$mNewControl.Height = 1
-			$mNewControl.Visible = True
-			$mNewControl.Enabled = True
-			$mNewControl.Focus = False
-			$mNewControl.OnTop = False
-			$mNewControl.DropAccepted = False
-			$mNewControl.Focus = False
-			$mNewControl.DefButton = False
-			$mNewControl.Color = -1
-			$mNewControl.Background = -1
+			$oNewControl = $oCtrls.createNew()
+
+			$oNewControl.HwndCount = 1
+			$oNewControl.Type = $mControls.CurrentType
+			$oNewControl.Left = $cursor_pos[0]
+			$oNewControl.Top = $cursor_pos[1]
 	EndSwitch
 
-	_control_count_inc()
+	;at least 1 control, enable menu item wipe
+	GUICtrlSetState($menu_wipe, $GUI_ENABLE)
 
-	Local Const $count = $mControls.ControlCount
+	Local Const $count = $oCtrls.count
 	Local $name
 
 	;use next available name
@@ -66,7 +58,7 @@ Func _create_ctrl(Const $mCtrl = '')
 	While $found
 		$found = False
 		$j += 1
-		$name = $mNewControl.Type & "_" & $j
+		$name = $oNewControl.Type & "_" & $j
 
 		If $count > 1 Then
 			For $i = 1 To $count - 1
@@ -81,112 +73,110 @@ Func _create_ctrl(Const $mCtrl = '')
 			$found = False
 		EndIf
 	WEnd
-;~ 	$mNewControl.Name = $mNewControl.Type & "_" & $mControls[$mNewControl.Type & "Count"]
-	$mNewControl.Name = $name
+;~ 	$oNewControl.Name = $oNewControl.Type & "_" & $mControls[$oNewControl.Type & "Count"]
+	$oNewControl.Name = $name
 
-	Switch $mNewControl.Type
+	Switch $oNewControl.Type
 		Case "Updown"
-			$mNewControl.Text = "0"
+			$oNewControl.Text = "0"
 		Case Else
-;~ 			$mNewControl.Text = $mNewControl.Type & " " & $mControls[$mNewControl.Type & "Count"]
+;~ 			$oNewControl.Text = $oNewControl.Type & " " & $mControls[$oNewControl.Type & "Count"]
 			;if copy+paste, use same text
 			If Not $isPaste Then
-				$mNewControl.Text = $mNewControl.Type & " " & $j
+				$oNewControl.Text = $oNewControl.Type & " " & $j
 			EndIf
 	EndSwitch
 
-	Switch $mNewControl.Type
+	Switch $oNewControl.Type
 		Case "Button"
-			$mNewControl.Hwnd = GUICtrlCreateButton($mNewControl.Text, $mNewControl.Left, $mNewControl.Top, $mNewControl.Width, $mNewControl.Height)
+			$oNewControl.Hwnd = GUICtrlCreateButton($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
-			_set_button_styles($mNewControl)
-
-			$mControls[$mControls.ControlCount] = $mNewControl
+			$oCtrls.add($oNewControl)
 
 			$bStatusNewMessage = True
 			_GUICtrlStatusBar_SetText($hStatusbar, "new button")
 
 		Case "Group"
-			$mNewControl.Hwnd = GUICtrlCreateGroup($mNewControl.Text, $mNewControl.Left, $mNewControl.Top, $mNewControl.Width, $mNewControl.Height)
+			$oNewControl.Hwnd = GUICtrlCreateGroup($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
-			$mControls[$mControls.ControlCount] = $mNewControl
+			$oCtrls.add($oNewControl)
 
 		Case "Checkbox"
-			$mNewControl.Height = 20
+			$oNewControl.Height = 20
 
-			$mNewControl.Hwnd = GUICtrlCreateCheckbox($mNewControl.Text, $mNewControl.Left, $mNewControl.Top, $mNewControl.Width, $mNewControl.Height)
+			$oNewControl.Hwnd = GUICtrlCreateCheckbox($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
-			$mControls[$mControls.ControlCount] = $mNewControl
+			$oCtrls.add($oNewControl)
 
 		Case "Radio"
-			$mNewControl.Height = 20
+			$oNewControl.Height = 20
 
-			$mNewControl.Hwnd = GUICtrlCreateRadio($mNewControl.Text, $mNewControl.Left, $mNewControl.Top, $mNewControl.Width, $mNewControl.Height)
+			$oNewControl.Hwnd = GUICtrlCreateRadio($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
-			$mControls[$mControls.ControlCount] = $mNewControl
+			$oCtrls.add($oNewControl)
 
 		Case "Edit"
-			$mNewControl.Hwnd = GUICtrlCreateEdit('', $mNewControl.Left, $mNewControl.Top, $mNewControl.Width, $mNewControl.Height)
+			$oNewControl.Hwnd = GUICtrlCreateEdit('', $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
-			GUICtrlSetState($mNewControl.Hwnd, $GUI_DISABLE)
+			GUICtrlSetState($oNewControl.Hwnd, $GUI_DISABLE)
 
-			$mControls[$mControls.ControlCount] = $mNewControl
+			$oCtrls.add($oNewControl)
 
-			GUICtrlSetResizing($mNewControl.Hwnd, $GUI_DOCKALL)
+			GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
-			Return $mNewControl
+			Return $oNewControl
 
 		Case "Input"
-			$mNewControl.Hwnd = GUICtrlCreateInput($mNewControl.Text, $mNewControl.Left, $mNewControl.Top, $mNewControl.Width, $mNewControl.Height)
+			$oNewControl.Hwnd = GUICtrlCreateInput($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
-			GUICtrlSetState($mNewControl.Hwnd, $GUI_DISABLE)
+			GUICtrlSetState($oNewControl.Hwnd, $GUI_DISABLE)
 
-			$mControls[$mControls.ControlCount] = $mNewControl
+			$oCtrls.add($oNewControl)
 
 		Case "Label"
-			$mNewControl.Hwnd = GUICtrlCreateLabel($mNewControl.Text, $mNewControl.Left, $mNewControl.Top, $mNewControl.Width, $mNewControl.Height)
+			$oNewControl.Hwnd = GUICtrlCreateLabel($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 			If $isPaste Then
-				If $mNewControl.Background <> -1 Then
-					GUICtrlSetBkColor($mNewControl.Hwnd, $mNewControl.Background)
+				If $oNewControl.Background <> -1 Then
+					GUICtrlSetBkColor($oNewControl.Hwnd, $oNewControl.Background)
 				EndIf
-				If $mNewControl.Color <> -1 Then
-					GUICtrlSetColor($mNewControl.Hwnd, $mNewControl.Color)
+				If $oNewControl.Color <> -1 Then
+					GUICtrlSetColor($oNewControl.Hwnd, $oNewControl.Color)
 				EndIf
 			EndIf
 
-			$mControls[$mControls.ControlCount] = $mNewControl
+			$oCtrls.add($oNewControl)
 
 		Case "List"
-			$mNewControl.Hwnd = GUICtrlCreateList($mNewControl.Text, $mNewControl.Left, $mNewControl.Top, $mNewControl.Width, $mNewControl.Height)
+			$oNewControl.Hwnd = GUICtrlCreateList($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
-			GUICtrlSetState($mNewControl.Hwnd, $GUI_DISABLE)
+			GUICtrlSetState($oNewControl.Hwnd, $GUI_DISABLE)
 
-			$mControls[$mControls.ControlCount] = $mNewControl
+			$oCtrls.add($oNewControl)
 
 		Case "Combo"
-			$mNewControl.Height = 20
+			$oNewControl.Height = 20
 
-			$mNewControl.Hwnd = GUICtrlCreateCombo('', $mNewControl.Left, $mNewControl.Top, $mNewControl.Width, $mNewControl.Height)
+			$oNewControl.Hwnd = GUICtrlCreateCombo('', $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
-			$mControls[$mControls.ControlCount] = $mNewControl
+			$oCtrls.add($oNewControl)
 
 		Case "Date"
-			$mNewControl.Hwnd = GUICtrlCreateDate('', $mNewControl.Left, $mNewControl.Top, $mNewControl.Width, $mNewControl.Height)
+			$oNewControl.Hwnd = GUICtrlCreateDate('', $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
-			$mControls[$mControls.ControlCount] = $mNewControl
+			$oCtrls.add($oNewControl)
 
-			GUICtrlSetResizing($mNewControl.Hwnd, $GUI_DOCKALL)
+			GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
-			Return $mNewControl
+			Return $oNewControl
 
 		Case "Slider"
-			$mNewControl.Hwnd = _GuiCtrlCreateSlider($mNewControl.Left, $mNewControl.Top, $mNewControl.Width, $mNewControl.Height, $mNewControl.Height)
+			$oNewControl.Hwnd = _GuiCtrlCreateSlider($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height, $oNewControl.Height)
 
-			$mControls[$mControls.ControlCount] = $mNewControl
+			$oCtrls.add($oNewControl)
 
-			GUICtrlSetResizing($mNewControl.Hwnd, $GUI_DOCKALL)
+			GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
-			Return $mNewControl
+			Return $oNewControl
 
 		Case "Tab"
 			If $mControls.TabCount = 1 Then
@@ -196,16 +186,15 @@ Func _create_ctrl(Const $mCtrl = '')
 
 			If $incTypeCount Then    ;create the main control
 				;create main tab control
-				$mNewControl.Hwnd = GUICtrlCreateTab($mNewControl.Left, $mNewControl.Top, $mNewControl.Width, $mNewControl.Height)
-				GUICtrlSetOnEvent($mNewControl.Hwnd, "_onCtrlTabSwitch")
+				$oNewControl.Hwnd = GUICtrlCreateTab($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+				GUICtrlSetOnEvent($oNewControl.Hwnd, "_onCtrlTabSwitch")
 
 				;create tab map
 				Local $tabs[]
-				$mNewControl.TabCount = 0
-				$mNewControl.Tabs = $tabs
+				$oNewControl.TabCount = 0
+				$oNewControl.Tabs = $tabs
 
-				;close the control
-				$mControls[$mControls.ControlCount] = $mNewControl
+				$oCtrls.add($oNewControl)
 			EndIf
 
 			GUISwitch($hGUI)
@@ -217,74 +206,75 @@ Func _create_ctrl(Const $mCtrl = '')
 ;~ 			GUICtrlSetState($background, $GUI_DISABLE)
 
 		Case "TreeView"
-			$mNewControl.Hwnd = GUICtrlCreateTreeView($mNewControl.Left, $mNewControl.Top, $mNewControl.Width, $mNewControl.Height)
+			$oNewControl.Hwnd = GUICtrlCreateTreeView($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
-			GUICtrlCreateTreeViewItem($mNewControl.Text, $mNewControl.Hwnd)
+			GUICtrlCreateTreeViewItem($oNewControl.Text, $oNewControl.Hwnd)
 
-			$mControls[$mControls.ControlCount] = $mNewControl
+			$oCtrls.add($oNewControl)
 
 		Case "Updown"
-			$mNewControl.HwndCount = 2
+			$oNewControl.HwndCount = 2
 
-			$mNewControl.Height = 20
+			$oNewControl.Height = 20
 
-			$mNewControl.Hwnd1 = GUICtrlCreateInput($mNewControl.Text, $mNewControl.Left, $mNewControl.Top, $mNewControl.Width, $mNewControl.Height)
-			$mNewControl.Hwnd = $mNewControl.Hwnd1
-			$mNewControl.Hwnd2 = GUICtrlCreateUpdown($mNewControl.Hwnd1)
+			$oNewControl.Hwnd1 = GUICtrlCreateInput($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			$oNewControl.Hwnd = $oNewControl.Hwnd1
+			$oNewControl.Hwnd2 = GUICtrlCreateUpdown($oNewControl.Hwnd1)
 
-			$mControls[$mControls.ControlCount] = $mNewControl
+			$oCtrls.add($oNewControl)
 
 		Case "Progress"
-			$mNewControl.Hwnd = GUICtrlCreateProgress($mNewControl.Left, $mNewControl.Top, $mNewControl.Width, $mNewControl.Height)
+			$oNewControl.Hwnd = GUICtrlCreateProgress($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
-			GUICtrlSetData($mNewControl.Hwnd, 100)
+			GUICtrlSetData($oNewControl.Hwnd, 100)
 
-			$mControls[$mControls.ControlCount] = $mNewControl
+			$oCtrls.add($oNewControl)
 
-			GUICtrlSetResizing($mNewControl.Hwnd, $GUI_DOCKALL)
+			GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
-			Return $mNewControl
+			Return $oNewControl
 
 		Case "Pic"
-			$mNewControl.Hwnd = GUICtrlCreatePic($samplebmp, $mNewControl.Left, $mNewControl.Top, $mNewControl.Width, $mNewControl.Height)
-			GUICtrlSetImage($mNewControl.Hwnd, $samplebmp)
-			$mControls[$mControls.ControlCount] = $mNewControl
+			$oNewControl.Hwnd = GUICtrlCreatePic($samplebmp, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			GUICtrlSetImage($oNewControl.Hwnd, $samplebmp)
 
-			GUICtrlSetResizing($mNewControl.Hwnd, $GUI_DOCKALL)
+			$oCtrls.add($oNewControl)
 
-			Return $mNewControl
+			GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
+
+			Return $oNewControl
 
 		Case "Avi"
-			$mNewControl.Hwnd = GUICtrlCreateAvi($sampleavi, 0, $mNewControl.Left, $mNewControl.Top, $mNewControl.Width, $mNewControl.Height, $ACS_AUTOPLAY)
+			$oNewControl.Hwnd = GUICtrlCreateAvi($sampleavi, 0, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height, $ACS_AUTOPLAY)
 
-			$mControls[$mControls.ControlCount] = $mNewControl
+			$oCtrls.add($oNewControl)
 
-			GUICtrlSetResizing($mNewControl.Hwnd, $GUI_DOCKALL)
+			GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
-			Return $mNewControl
+			Return $oNewControl
 
 		Case "Icon"
-			$mNewControl.Hwnd = GUICtrlCreateIcon($iconset, 0, $mNewControl.Left, $mNewControl.Top, $mNewControl.Width, $mNewControl.Height)
+			$oNewControl.Hwnd = GUICtrlCreateIcon($iconset, 0, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
-			$mControls[$mControls.ControlCount] = $mNewControl
+			$oCtrls.add($oNewControl)
 
-			Return $mNewControl
+			Return $oNewControl
 	EndSwitch
 
 	If $incTypeCount Then
-		$mControls[$mNewControl.Type & "Count"] += 1
+		$oCtrls.incTypeCount($oNewControl.Type)
 
-		Switch IsMap($mCtrl)
-			Case True
-				GUICtrlSetData($mNewControl.Hwnd, $mNewControl.Text)
+		Switch IsObj($oCtrl)
+			Case True	;paste from existing object
+				GUICtrlSetData($oNewControl.Hwnd, $oNewControl.Text)
 
-			Case False
-				$mNewControl.Text = $mNewControl.Text
+			Case False	;new object
+				$oNewControl.Text = $oNewControl.Text
 		EndSwitch
 
-		GUICtrlSetResizing($mNewControl.Hwnd, $GUI_DOCKALL)
+		GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
-		Return $mNewControl
+		Return $oNewControl
 	Else
 		Return 0
 	EndIf
@@ -395,26 +385,11 @@ Func _delete_tab()
 EndFunc   ;==>_delete_tab
 
 
-Func _createAnotherTabItem(Const $tabHandle, Const $text)
-	; it would be better to explicitly use the handle of the parent GUI, but this the above function seems to work
-	;GuiSwitch($tabHandle)
-
-	;Local Const $item = GuiCtrlCreateTabItem($text)
-	Local Const $item = _GUICtrlTab_InsertItem($tabHandle, 0, $text)
-
-	If $text = "" Then
-		GUISwitch($hGUI) ; remember null text denotes "closing" tabitem
-	EndIf
-
-	Return $item
-EndFunc   ;==>_createAnotherTabItem
-#EndRegion ; control-creation
-
 
 #Region control-management
 Func _control_type()
-	$mControls.CurrentType = GUICtrlRead(@GUI_CtrlId, 1)
-	ConsoleWrite("tool selected: " & $mControls.CurrentType & @CRLF)
+	$oCtrls.CurrentType = GUICtrlRead(@GUI_CtrlId, 1)
+	ConsoleWrite("tool selected: " & $oCtrls.CurrentType & @CRLF)
 
 	$mode = $draw
 
@@ -422,285 +397,29 @@ Func _control_type()
 EndFunc   ;==>_control_type
 
 
-Func _set_button_styles(ByRef $mCtrl)
-	$mCtrl.StyleTabStop = True
-
-	Switch $mCtrl.StyleTop
-		Case True
-			GUICtrlSetState($mCtrl.Hwnd, $BS_TOP)
-
-		Case False
-			$mCtrl.StyleTop = False
-	EndSwitch
-
-	Switch $mCtrl.StyleAutoCheckbox
-		Case False
-			$mCtrl.StyleAutoCheckbox = False
-	EndSwitch
-
-	$mCtrl.ExStyleWindowEdge = True
-EndFunc   ;==>_set_button_styles
-
-
-;------------------------------------------------------------------------------
-; Title...........: _control_map_from_hwnd
-; Description.....: get control object from handle
-;------------------------------------------------------------------------------
-Func _control_map_from_hwnd(Const $ctrl_hwnd, $getIndex = False)
-	Local $mcl_ctrl
-
-	Local Const $count = $mControls.ControlCount
-
-	For $i = 1 To $count
-		$mcl_ctrl = $mControls[$i]
-
-		If $ctrl_hwnd = $mcl_ctrl.Hwnd Then
-			ExitLoop
-		EndIf
-	Next
-
-	If $getIndex Then
-		Return $i
-	Else
-		Return IsMap($mcl_ctrl) ? $mcl_ctrl : SetError(1, 0, False)
-	EndIf
-EndFunc   ;==>_control_map_from_hwnd
-
-
-;------------------------------------------------------------------------------
-;~ ; Title...........: _remove_all_control_maps
-;~ ; Description.....: remove all maps from mControls object
-;~ ;------------------------------------------------------------------------------
-;~ Func _mControls_DeleteAll(ByRef $mCtrl)
-;~ 	Local Const $count = $mControls.ControlCount
-;~ 	Local $mcl_element
-
-;~ 	For $i = 1 To $count
-;~ 		$mcl_element = $mControls[$i]
-
-;~ 		Switch $mcl_element.Type
-;~ 			Case "Updown"
-;~ 				GUICtrlDelete($mcl_element.Hwnd1)
-;~ 				GUICtrlDelete($mcl_element.Hwnd2)
-
-;~ 			Case Else
-;~ 				GUICtrlDelete($mcl_element.Hwnd)
-;~ 		EndSwitch
-;~ 	Next
-
-;~ 	_remove_all_control_maps()
-
-;~ 	$mControls.ButtonCount = 0
-;~ 	$mControls.GroupCount = 0
-;~ 	$mControls.CheckboxCount = 0
-;~ 	$mControls.RadioCount = 0
-;~ 	$mControls.EditCount = 0
-;~ 	$mControls.InputCount = 0
-;~ 	$mControls.LabelCount = 0
-;~ 	$mControls.ListCount = 0
-;~ 	$mControls.ComboCount = 0
-;~ 	$mControls.DateCount = 0
-;~ 	$mControls.SliderCount = 0
-;~ 	$mControls.TabCount = 0
-;~ 	$mControls.TreeViewCount = 0
-;~ 	$mControls.UpdownCount = 0
-;~ 	$mControls.ProgressCount = 0
-;~ 	$mControls.PicCount = 0
-;~ 	$mControls.AviCount = 0
-;~ 	$mControls.IconCount = 0
-;~ EndFunc   ;==>_mControls_DeleteAll
-
-
-;------------------------------------------------------------------------------
-; Title...........: _remove_all_control_maps
-; Description.....: remove all maps from mControls object
-;------------------------------------------------------------------------------
-Func _remove_all_control_maps()
-	Local Const $count = $mControls.ControlCount
-
-	For $i = 1 To $count
-		MapRemove($mControls, $i)
-
-		_control_count_dec()
-	Next
-EndFunc   ;==>_remove_all_control_maps
-
-
-;------------------------------------------------------------------------------
-; Title...........: _remove_from_control_map
-; Description.....: remove a control object from mControls object
-;------------------------------------------------------------------------------
-Func _remove_from_control_map(Const $mCtrl)
-	Local Const $count = $mControls.ControlCount
-
-	For $i = 1 To $count
-		If $mCtrl.Hwnd = $mControls[$i].Hwnd Then
-			MapRemove($mControls, $i)
-			ExitLoop
-		EndIf
-	Next
-
-	_consolidate_controls($i)
-
-	_control_count_dec()
-EndFunc   ;==>_remove_from_control_map
-
-
-;------------------------------------------------------------------------------
-; Title...........: _update_control
-; Description.....: replace selected control with another
-;------------------------------------------------------------------------------
-Func _update_control(Const $mCtrl)
-	Local Const $count = $mControls.ControlCount
-
-	For $i = 1 To $count
-		If $mCtrl.Hwnd = $mControls[$i].Hwnd Then
-			$mControls[$i] = $mCtrl
-
-			ExitLoop
-		EndIf
-	Next
-
-	Local Const $sel_count = $mSelected.SelectedCount
-
-	If $sel_count Then
-		For $i = 1 To $sel_count
-			If $mCtrl.Hwnd = $mSelected[$i].Hwnd Then
-				$mSelected[$i] = $mCtrl
-
-				ExitLoop
-			EndIf
-		Next
-	EndIf
-EndFunc   ;==>_update_control
-
-
-;------------------------------------------------------------------------------
-; Title...........: _consolidate_controls
-; Description.....: Shift (if necessary) and remove control object
-;					because controls are named by numbers (1, 2, 3...), we
-;					need to shift the maps or we cannot loop through the map
-;------------------------------------------------------------------------------
-Func _consolidate_controls(Const $startIndex)
-	Local Const $count = $mControls.ControlCount
-
-	Local $mCtrl
-	For $j = 1 To $count - 1
-		If Not IsMap($mControls[$j]) Then
-			$mCtrl = $mControls[($j + 1)]
-
-			$mControls[$j] = $mCtrl
-
-			MapRemove($mControls, ($j + 1))
-		EndIf
-	Next
-
-	Return $count
-EndFunc   ;==>_consolidate_controls
-
-
-;------------------------------------------------------------------------------
-; Title...........: _consolidate_tabs
-; Description.....: Shift (if necessary) and remove control object
-;					because controls are named by numbers (1, 2, 3...), we
-;					need to shift the maps or we cannot loop through the map
-;------------------------------------------------------------------------------
-Func _consolidate_tabs($tabCtrl)
-	Local Const $count = $tabCtrl.TabCount+1
-	ConsoleWrite($count & @CRLF)
-	Local $mCtrl, $mTabs
-	$mTabs = $tabCtrl.Tabs
-	_ArrayDisplay(MapKeys($mTabs))
-	For $j = 1 To $count - 1
-		If Not IsMap($mTabs[$j]) Then
-			$mCtrl = $mTabs[($j + 1)]
-
-			$mTabs[$j] = $mCtrl
-
-			MapRemove($mTabs, ($j + 1))
-		EndIf
-	Next
-	$tabCtrl.Tabs = $mTabs
-	_ArrayDisplay(MapKeys($tabCtrl.Tabs))
-
-	Return $tabCtrl
-EndFunc   ;==>_consolidate_controls
-
-
 ;------------------------------------------------------------------------------
 ; Title...........: _delete_ctrl
 ; Description.....: delete control from GUI and remove the map object
 ;------------------------------------------------------------------------------
-Func _delete_ctrl(Const $mCtrl)
-	$mControls[$mCtrl.Type & "Count"] -= 1
+Func _delete_ctrl(Const $oCtrl)
+	$oCtrls.decTypeCount($oCtrl.Type)
 
 	GUISwitch($hGUI)
-	Switch $mCtrl.Type
+	Switch $oCtrl.Type
 		Case "Updown"
-			GUICtrlDelete($mCtrl.Hwnd1)
-			GUICtrlDelete($mCtrl.Hwnd2)
+			GUICtrlDelete($oCtrl.Hwnd1)
+			GUICtrlDelete($oCtrl.Hwnd2)
 
 		Case Else
-			GUICtrlDelete($mCtrl.Hwnd)
+			GUICtrlDelete($oCtrl.Hwnd)
 	EndSwitch
 	GUISwitch($hGUI)
 
-	_remove_from_selected($mCtrl)
-
-	_remove_from_control_map($mCtrl)
+	$oCtrls.remove($oCtrl.Hwnd)
+	$oSelected.remove($oCtrl.Hwnd)
 
 	_formObjectExplorer_updateList()
 EndFunc   ;==>_delete_ctrl
-
-
-;------------------------------------------------------------------------------
-; Title...........: _control_count_inc
-; Description.....: increment control count
-;------------------------------------------------------------------------------
-Func _control_count_inc()
-	$mControls.ControlCount += 1
-
-	If $mControls.ControlCount = 1 Then
-		GUICtrlSetState($menu_wipe, $GUI_ENABLE)
-
-		_enable_control_properties_gui()
-	EndIf
-EndFunc   ;==>_control_count_inc
-
-
-;------------------------------------------------------------------------------
-; Title...........: _control_count_dec
-; Description.....: decrement control count
-;------------------------------------------------------------------------------
-Func _control_count_dec()
-	$mControls.ControlCount -= 1
-
-	If $mControls.ControlCount = 0 Then
-		GUICtrlSetState($menu_wipe, $GUI_DISABLE)
-
-		_disable_control_properties_gui()
-	EndIf
-EndFunc   ;==>_control_count_dec
-
-
-;------------------------------------------------------------------------------
-; Title...........: _is_control
-; Description.....: check if control is in the mControls list
-;------------------------------------------------------------------------------
-Func _is_control(Const $mCtrl)
-	If Not IsMap($mCtrl) Then Return False
-
-	Local Const $ctrl_count = $mControls.ControlCount
-
-	For $i = 1 To $ctrl_count
-		If $mCtrl.Hwnd = $mControls[$i].Hwnd Then
-			Return True
-		EndIf
-	Next
-
-	Return False
-EndFunc   ;==>_is_control
-#EndRegion control-management
 
 
 #Region ; selection and clipboard management
@@ -724,21 +443,19 @@ Func _left_top_union_rect()
 
 	Local $smallest[]
 
-	$smallest.Left = $mControls.Selected1.Left
+	$smallest.Left = $oCtrls.getFirst().Left
+	$smallest.Top = $oCtrls.getFirst().Top
 
-	$smallest.Top = $mControls.Selected1.Top
-
-	For $i = 2 To $sel_count
-		$sel_ctrl = $mSelected[$i]
+	For $oCtrl in $oSelected.ctrls
 
 		;ConsoleWrite('- ' & $sel_ctrl.Left & @TAB & $smallest.Left & @CRLF)
 
-		If Int($sel_ctrl.Left) < Int($smallest.Left) Then
-			$smallest.Left = $sel_ctrl.Left
+		If Int($oCtrl.Left) < Int($smallest.Left) Then
+			$smallest.Left = $oCtrl.Left
 		EndIf
 
-		If Int($sel_ctrl.Top) < Int($smallest.Top) Then
-			$smallest.Top = $sel_ctrl.Top
+		If Int($oCtrl.Top) < Int($smallest.Top) Then
+			$smallest.Top = $oCtrl.Top
 		EndIf
 	Next
 
@@ -746,8 +463,14 @@ Func _left_top_union_rect()
 EndFunc   ;==>_left_top_union_rect
 
 
+;------------------------------------------------------------------------------
+; Title...........: _copy_selected
+; Description.....: find top left corner,
+;					put all selected controls into an array, (necessary?)
+;					add the array to the clipboard object
+;------------------------------------------------------------------------------
 Func _copy_selected()
-	Local Const $sel_count = $mSelected.SelectedCount
+	Local Const $sel_count = $oSelected.count
 
 	Switch $sel_count >= 1
 		Case True
@@ -759,83 +482,91 @@ Func _copy_selected()
 
 			_selected_to_clipboard($selected, $sel_count)
 
-			Local $clip_ctrl
+;~ 			For $i = 1 To $sel_count
+;~ 				$clip_ctrl = $mClipboard[$i]
 
-			For $i = 1 To $sel_count
-				$clip_ctrl = $mClipboard[$i]
+;~ 				;$clip_ctrl.Left = Abs($smallest.Left - $clip_ctrl.Left)
+;~ 				;$clip_ctrl.Top = Abs($smallest.Top - $clip_ctrl.Top)
 
-;~ 				$clip_ctrl.Left = Abs($smallest.Left - $clip_ctrl.Left)
-
-;~ 				$clip_ctrl.Top = Abs($smallest.Top - $clip_ctrl.Top)
-
-				$mClipboard[$i] = $clip_ctrl
-			Next
+;~ 				$mClipboard[$i] = $clip_ctrl
+;~ 			Next
 	EndSwitch
 EndFunc   ;==>_copy_selected
 
 
+;------------------------------------------------------------------------------
+; Title...........: _selected_to_array
+; Description.....: put all selected controls into an array, (necessary?)
+;------------------------------------------------------------------------------
 Func _selected_to_array(Const $sel_count, Const $smallest)
 	Local $selected[$sel_count][2] ; second dimension is magnitude of the control's rectangle
 
-	Local $sel_ctrl
-
-	For $i = 0 To $sel_count - 1
-		$sel_ctrl = $mSelected[$i + 1]
-
-		$selected[$i][0] = $sel_ctrl
-
-		$selected[$i][1] = _vector_magnitude($smallest.Left, $smallest.Top, $sel_ctrl.Left, $sel_ctrl.Top)
+	Local $i = 0
+	For $oCtrl in $oSelected.ctrls
+		$selected[$i][0] = $oCtrl
+		$selected[$i][1] = _vector_magnitude($smallest.Left, $smallest.Top, $oCtrl.Left, $oCtrl.Top)
+		$i += 1
 	Next
 
-	_ArraySort($selected, 0, 0, 0, 1)
+;~ 	_ArraySort($selected, 0, 0, 0, 1)
 
 	Return $selected
 EndFunc   ;==>_selected_to_array
 
 
+;------------------------------------------------------------------------------
+; Title...........: _selected_to_clipboard
+; Description.....: add selected controls to clipboard object
+;------------------------------------------------------------------------------
 Func _selected_to_clipboard(Const $selected, Const $sel_count)
-	For $i = 1 To $sel_count
-		$mClipboard[$i] = $selected[$i - 1][0]
+	$oClipboard.removeAll()
+	Local $i = 0
+	For $oCtrl in $oSelected.ctrls
+		$oClipboard.add($selected[$i][0])
+		$i += 1
 	Next
-
-	$mClipboard.ClipboardCount = $sel_count
 EndFunc   ;==>_selected_to_clipboard
 
 
+;------------------------------------------------------------------------------
+; Title...........: _PasteSelected
+; Description.....: paste selected controls
+;------------------------------------------------------------------------------
 Func _PasteSelected($bDuplicate = False)
-	Local Const $clipboard_count = $mClipboard.ClipboardCount
+	Local Const $clipboard_count = $oClipboard.count
 	Local $aNewCtrls[$clipboard_count]
-	Local $newCtrl
 
 	Switch $clipboard_count >= 1
 		Case True
-			Local $clipboard
+			Local $oNewCtrl,  $i=0
 
-			For $i = 1 To $clipboard_count
-				$clipboard = $mClipboard[$i]
+			For $oCtrl in $oClipboard.ctrls
+				;create a copy, so we don't overwrite the original!
+				$oNewCtrl = $oClipboard.getCopy($oCtrl)
 
 				If $bDuplicate Then
-					$clipboard.Left += 20
-					$clipboard.Top += 20
+					$oNewCtrl.Left += 20
+					$oNewCtrl.Top += 20
 				Else
-					$clipboard.Left += $mMouse.X
-					$clipboard.Top += $mMouse.Y
+					$oNewCtrl.Left += $mMouse.X
+					$oNewCtrl.Top += $mMouse.Y
 				EndIf
 
-				$newCtrl = _create_ctrl($clipboard)
-				$aNewCtrls[$i - 1] = $newCtrl
+				Local $oNewCtrl = _create_ctrl($clipboard)
+				$aNewCtrls[$i] = $oNewCtrl
+				$i += 1
 			Next
 	EndSwitch
 
 	If $bDuplicate Then
 		For $i = 0 To UBound($aNewCtrls) - 1
-			$mCtrl = $aNewCtrls[$i]
+			$oNewCtrl = $aNewCtrls[$i]
 
 			If $i = 0 Then    ;select first item
-				_add_to_selected($mCtrl)
-				_populate_control_properties_gui($mCtrl)
+				_add_to_selected($oNewCtrl)
+				_populate_control_properties_gui($oNewCtrl)
 			Else    ;add to selection
-				_add_to_selected($mCtrl, False)
+				_add_to_selected($oNewCtrl, False)
 			EndIf
 		Next
 	EndIf
@@ -845,6 +576,10 @@ Func _PasteSelected($bDuplicate = False)
 EndFunc   ;==>_PasteSelected
 
 
+;------------------------------------------------------------------------------
+; Title...........: _DuplicateSelected
+; Description.....: copy then paste selected controls at an offset
+;------------------------------------------------------------------------------
 Func _DuplicateSelected()
 	If $mSelected.SelectedCount < 1 Then Return
 	;copy selected to clipboard
@@ -853,48 +588,33 @@ Func _DuplicateSelected()
 	;paste clipboard with duplicate flag
 	_PasteSelected(True)
 EndFunc   ;==>_DuplicateSelected
-
-
-Func _remove_all_from_clipboard()
-	Local Const $count = $mClipboard.ClipboardCount
-
-	For $i = 1 To $count
-		MapRemove($mClipboard, $i)
-	Next
-
-	$mClipboard.ClipboardCount = 0
-
-	Return True
-EndFunc   ;==>_remove_all_from_clipboard
 #EndRegion ; selection and clipboard management
 
 
 #Region ; selection
 Func _display_selected_tooltip()
-	Local $tooltip, $selected_ctrl
+	Local $tooltip
 
-	Local Const $count = $mSelected.SelectedCount
+	Local Const $count = $oSelected.count
 
-	For $i = 1 To $count
-		$selected_ctrl = $mSelected[$i]
-
-		$tooltip &= $selected_ctrl.Name & ": X:" & $selected_ctrl.Left & ", Y:" & $selected_ctrl.Top & ", W:" & $selected_ctrl.Width & ", H:" & $selected_ctrl.Height & @CRLF
+	For $oCtrl in $oSelected.ctrls
+		$tooltip &= $oCtrl.Name & ": X:" & $oCtrl.Left & ", Y:" & $oCtrl.Top & ", W:" & $oCtrl.Width & ", H:" & $oCtrl.Height & @CRLF
 	Next
 
 	ToolTip(StringTrimRight($tooltip, 2))
 EndFunc   ;==>_display_selected_tooltip
 
-Func _control_intersection(Const $mCtrl, Const $mRect)
-	If __WinAPI_PtInRectEx($mCtrl.Left, $mCtrl.Top, $mRect.Left, $mRect.Top, $mRect.Width, $mRect.Height) Then
+Func _control_intersection(Const $oCtrl, Const $oRect)
+	If __WinAPI_PtInRectEx($oCtrl.Left, $oCtrl.Top, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height) Then
 		Return True
 	EndIf
 
 	Return False
 EndFunc   ;==>_control_intersection
 
-Func _group_select(Const $mCtrl)
-	If $mCtrl.Type = "Group" Then
-		_select_control_group($mCtrl)
+Func _group_select(Const $oCtrl)
+	If $oCtrl.Type = "Group" Then
+		_select_control_group($oCtrl)
 
 		_set_current_mouse_pos()
 
@@ -910,29 +630,25 @@ Func _group_select(Const $mCtrl)
 	Return False
 EndFunc   ;==>_group_select
 
-Func _select_control_group(Const $mGroup)
-	Local $mGroupRect[]
+Func _select_control_group(Const $oGroup)
+	Local $oGroupRect = _objCreateRect()
 
-	$mGroupRect.Left = $mGroup.Left
-	$mGroupRect.Top = $mGroup.Top
-	$mGroupRect.Width = $mGroup.Width
-	$mGroupRect.Height = $mGroup.Height
+	$oGroupRect.Left = $oGroup.Left
+	$oGroupRect.Top = $oGroup.Top
+	$oGroupRect.Width = $oGroup.Width
+	$oGroupRect.Height = $oGroup.Height
 
-	Local $mCtrl
+	Local Const $count = $oCtrls.count
+	For $oCtrl in $oCtrls.ctrls
 
-	Local Const $count = $mControls.ControlCount
-
-	For $i = 1 To $count
-		$mCtrl = $mControls[$i]
-
-		If _control_intersection($mCtrl, $mGroupRect) Then
-			_add_to_selected($mCtrl, False)
+		If _control_intersection($oCtrl, $oGroupRect) Then
+			_add_to_selected($oCtrl, False)
 		EndIf
 	Next
 EndFunc   ;==>_select_control_group
 
-Func _add_to_selected(Const $mCtrl, Const $overwrite = True)
-	If Not IsMap($mCtrl) Then
+Func _add_to_selected(Const $oCtrl, Const $overwrite = True)
+	If Not IsObj($oCtrl) Then
 		Return
 	EndIf
 
@@ -941,21 +657,17 @@ Func _add_to_selected(Const $mCtrl, Const $overwrite = True)
 			_remove_all_from_selected()
 
 		Case False
-			Switch _in_selected($mCtrl)
+			Switch $oSelected.exists($oCtrl)
 				Case True
 					Return SetError(1, 0, False)
 			EndSwitch
 	EndSwitch
 
-	$mSelected.SelectedCount += 1
-
-	$mSelected[$mSelected.SelectedCount] = $mCtrl
+	$oSelected.add($oCtrl)
 
 	_enable_control_properties_gui()
-
-	_populate_control_properties_gui($mCtrl)
-
-	_show_grippies($mCtrl)
+	_populate_control_properties_gui($oCtrl)
+	_show_grippies($oCtrl)
 
 	Return True
 EndFunc   ;==>_add_to_selected
