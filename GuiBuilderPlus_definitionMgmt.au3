@@ -84,64 +84,65 @@ Func _save_gui_definition()
 	IniWrite($AgdOutFile, "Main", "Height", $p[3])
 	IniWrite($AgdOutFile, "Main", "Name", $mainName)
 
-	Local Const $ctrl_count = $mControls.ControlCount
+	Local Const $ctrl_count = $oCtrls.count
 
 	IniWrite($AgdOutFile, "Main", "numctrls", $ctrl_count)
 
-	For $i = 1 To $ctrl_count
+	$i = 1
+	For $oCtrl in $oCtrls.ctrls
 		Local $Key = "Control_" & $i
 
-		Local $mCtrl = $mControls[$i]
-
-		Local $handle = $mCtrl.Hwnd
+		Local $handle = $oCtrl.Hwnd
 
 		Local $pos = ControlGetPos($hGUI, "", $handle)
 
 		Local $text = ControlGetText($hGUI, "", $handle)
 
 		If @error Then
-			$text = $mControls[$i].Name
+			$text = $oCtrl.Name
 		EndIf
 
-		IniWrite($AgdOutFile, $Key, "Type", $mCtrl.Type)
-		IniWrite($AgdOutFile, $Key, "Name", $mCtrl.Name)
+		IniWrite($AgdOutFile, $Key, "Type", $oCtrl.Type)
+		IniWrite($AgdOutFile, $Key, "Name", $oCtrl.Name)
 		IniWrite($AgdOutFile, $Key, "Text", $text)
-		IniWrite($AgdOutFile, $Key, "Visible", $mCtrl.Visible)
-		IniWrite($AgdOutFile, $Key, "OnTop", $mCtrl.OnTop)
-		IniWrite($AgdOutFile, $Key, "DropAccepted", $mCtrl.DropAccepted)
+		IniWrite($AgdOutFile, $Key, "Visible", $oCtrl.Visible)
+		IniWrite($AgdOutFile, $Key, "OnTop", $oCtrl.OnTop)
+		IniWrite($AgdOutFile, $Key, "DropAccepted", $oCtrl.DropAccepted)
 		IniWrite($AgdOutFile, $Key, "Text", $text)
 		IniWrite($AgdOutFile, $Key, "Left", $pos[0])
 		IniWrite($AgdOutFile, $Key, "Top", $pos[1])
 		IniWrite($AgdOutFile, $Key, "Width", $pos[2])
 		IniWrite($AgdOutFile, $Key, "Height", $pos[3])
-		If $mCtrl.Color = -1 Then
+		If $oCtrl.Color = -1 Then
 			IniWrite($AgdOutFile, $Key, "Color", -1)
 		Else
-			IniWrite($AgdOutFile, $Key, "Color", "0x" & Hex($mCtrl.Color, 6))
+			IniWrite($AgdOutFile, $Key, "Color", "0x" & Hex($oCtrl.Color, 6))
 		EndIf
-		If $mCtrl.Background = -1 Then
+		If $oCtrl.Background = -1 Then
 			IniWrite($AgdOutFile, $Key, "Background", -1)
 		Else
-			IniWrite($AgdOutFile, $Key, "Background", "0x" & Hex($mCtrl.Background, 6))
+			IniWrite($AgdOutFile, $Key, "Background", "0x" & Hex($oCtrl.Background, 6))
 		EndIf
 
-		If $mCtrl.Type = "Tab" Then
-			IniWrite($AgdOutFile, $Key, "TabCount", $mCtrl.TabCount)
+		If $oCtrl.Type = "Tab" Then
+			IniWrite($AgdOutFile, $Key, "TabCount", $oCtrl.TabCount)
 
-			Local $tabCount = $mCtrl.TabCount
-			Local $tabs = $mCtrl.Tabs
+			Local $tabCount = $oCtrl.TabCount
+			Local $tabs = $oCtrl.Tabs
 			Local $tab
 
-			If $mCtrl.TabCount > 0 Then
-				For $j = 1 To $tabCount
-					$tab = $tabs[$j]
-					$mControls &= "Global $" & $tab.Name & " = "
-					$mControls &= 'GUICtrlCreateTabItem("' & $tab.Text & '")' & @CRLF
-					IniWrite($AgdOutFile, $Key, "TabItem" & $j & "_Name", $tab.Name)
-					IniWrite($AgdOutFile, $Key, "TabItem" & $j & "_Text", $tab.Text)
+			If $oCtrl.TabCount > 0 Then
+				Local $j = 1
+				For $oTab in $oCtrl.Tabs
+					$mControls &= "Global $" & $oTab.Name & " = "
+					$mControls &= 'GUICtrlCreateTabItem("' & $oTab.Text & '")' & @CRLF
+					IniWrite($AgdOutFile, $Key, "TabItem" & $j & "_Name", $oTab.Name)
+					IniWrite($AgdOutFile, $Key, "TabItem" & $j & "_Text", $oTab.Text)
+					$j += 1
 				Next
 			EndIf
 		EndIf
+		$i += 1
 	Next
 
 	$bStatusNewMessage = True
@@ -210,53 +211,49 @@ Func _load_gui_definition($AgdInfile = '')
 	Local Const $numCtrls = IniRead($AgdInfile, "Main", "numctrls", -1)
 	$mainName = IniRead($AgdInfile, "Main", "Name", "hGUI")
 
-	Local $control[], $Key
+	Local $oCtrl, $Key
+
 
 	For $i = 1 To $numCtrls
 		$Key = "Control_" & $i
+		$oCtrl = $oCtrls.createNew()
 
-		$control.HwndCount = 1
-		$control.Type = IniRead($AgdInfile, $Key, "Type", -1)
-		$control.Name = IniRead($AgdInfile, $Key, "Name", -1)
-		$control.Text = IniRead($AgdInfile, $Key, "Text", -1)
-		$control.Visible = IniRead($AgdInfile, $Key, "Visible", 1)
-		$control.OnTop = IniRead($AgdInfile, $Key, "OnTop", 0)
-		$control.Left = IniRead($AgdInfile, $Key, "Left", -1)
-		$control.Top = IniRead($AgdInfile, $Key, "Top", -1)
-		$control.Width = IniRead($AgdInfile, $Key, "Width", -1)
-		$control.Height = IniRead($AgdInfile, $Key, "Height", -1)
-		$control.Color = IniRead($AgdInfile, $Key, "Color", -1)
-		If $control.Color <> -1 Then
-			$control.Color = Dec(StringReplace($control.Color, "0x", ""))
+		$oCtrl.HwndCount = 1
+		$oCtrl.Type = IniRead($AgdInfile, $Key, "Type", -1)
+		$oCtrl.Name = IniRead($AgdInfile, $Key, "Name", -1)
+		$oCtrl.Text = IniRead($AgdInfile, $Key, "Text", -1)
+		$oCtrl.Visible = IniRead($AgdInfile, $Key, "Visible", 1)
+		$oCtrl.OnTop = IniRead($AgdInfile, $Key, "OnTop", 0)
+		$oCtrl.Left = IniRead($AgdInfile, $Key, "Left", -1)
+		$oCtrl.Top = IniRead($AgdInfile, $Key, "Top", -1)
+		$oCtrl.Width = IniRead($AgdInfile, $Key, "Width", -1)
+		$oCtrl.Height = IniRead($AgdInfile, $Key, "Height", -1)
+		$oCtrl.Color = IniRead($AgdInfile, $Key, "Color", -1)
+		If $oCtrl.Color <> -1 Then
+			$oCtrl.Color = Dec(StringReplace($oCtrl.Color, "0x", ""))
 		EndIf
-		$control.Background = IniRead($AgdInfile, $Key, "Background", -1)
-		If $control.Background <> -1 Then
-			$control.Background = Dec(StringReplace($control.Background, "0x", ""))
+		$oCtrl.Background = IniRead($AgdInfile, $Key, "Background", -1)
+		If $oCtrl.Background <> -1 Then
+			$oCtrl.Background = Dec(StringReplace($oCtrl.Background, "0x", ""))
 		EndIf
 
-		$mCtrl = _create_ctrl($control)
+		$oCtrl = _create_ctrl($oCtrl)
 
-		If $control.Type = "Tab" Then
+		$oCtrl = $oCtrls.get($oCtrl.Hwnd)
+		If $oCtrl.Type = "Tab" Then
 			Local $tabCount = IniRead($AgdInfile, $Key, "TabCount", 0)
-			Local $tabs[]
-			Local $tab[]
 
 			If $tabCount > 0 Then
 				For $j = 1 To $tabCount
 					_new_tab()
-					$mCtrl = _control_map_from_hwnd($mCtrl.Hwnd)
-					$tabs = $mCtrl.Tabs
-					$tabs[$j].Name = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Name", "tempName")
-					$tabs[$j].Text = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Text", "tempText")
+
+					$oCtrl.Tabs.at($j).Name = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Name", "tempName")
+					$oCtrl.Tabs.at($j).Text = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Text", "tempText")
 					_GUICtrlTab_SetItemText($mCtrl.Hwnd, $j - 1, $tabs[$j].Text)
-					$mCtrl.Tabs = $tabs
-					_update_control($mCtrl)
 				Next
 			EndIf
 		EndIf
 	Next
-
-	$mControls.Selected1 = Null
 
 	_formObjectExplorer_updateList()
 	_refreshGenerateCode()

@@ -28,13 +28,12 @@ Func _code_generation($x = -1, $y = -1)
 			"#include <Misc.au3>" & @CRLF & _
 			"#include <WindowsConstants.au3>"
 
-	Local Const $ctrl_count = $mControls.ControlCount
-	For $i = 1 To $ctrl_count
+	For $oCtrl in $oCtrls.ctrls
 		;generate includes
-		$includes &= _generate_includes($i, $includes)
+		$includes &= _generate_includes($oCtrl, $includes)
 
 		;generate controls
-		$controls &= _generate_controls($i)
+		$controls &= _generate_controls($oCtrl)
 	Next
 
 	Local $sGuiFunc = "", $bGuiFunc = 0
@@ -100,59 +99,52 @@ EndFunc   ;==>_functionDoc
 ; Title...........: _generate_controls
 ; Description.....: generate the code for the controls
 ;------------------------------------------------------------------------------
-Func _generate_controls(Const $i)
-	Local Const $mCtrl = $mControls[$i]
-
-	Local Const $ltwh = $mCtrl.Left & ", " & $mCtrl.Top & ", " & $mCtrl.Width & ", " & $mCtrl.Height
+Func _generate_controls(Const $oCtrl)
+	Local Const $ltwh = $oCtrl.Left & ", " & $oCtrl.Top & ", " & $oCtrl.Width & ", " & $oCtrl.Height
 
 	; The general template is GUICtrlCreateXXX( "text", left, top [, width [, height [, style [, exStyle]]] )
 	; but some controls do not use this.... Avi, Icon, Menu, Menuitem, Progress, Tabitem, TreeViewitem, updown
 	Local $mControls
 
-	Switch StringStripWS($mCtrl.Name, $STR_STRIPALL) <> ''
+	Switch StringStripWS($oCtrl.Name, $STR_STRIPALL) <> ''
 		Case True
-;~ 			$mControls = "Global $" & $mCtrl.Type & '_' & $i & " = "
-			$mControls = "Global $" & $mCtrl.Name & " = "
+;~ 			$mControls = "Global $" & $oCtrl.Type & '_' & $i & " = "
+			$mControls = "Global $" & $oCtrl.Name & " = "
 	EndSwitch
 
-	Switch $mCtrl.Type
+	Switch $oCtrl.Type
 		Case "Progress", "Slider", "TreeView" ; no text field
-			$mControls &= "GUICtrlCreate" & $mCtrl.Type & '(' & $ltwh & ")" & @CRLF
+			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '(' & $ltwh & ")" & @CRLF
 
 		Case "Icon" ; extra iconid [set to zero]
-			$mControls &= "GUICtrlCreate" & $mCtrl.Type & '("' & $mCtrl.Text & '", 0, ' & $ltwh & ")" & @CRLF
+			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", 0, ' & $ltwh & ")" & @CRLF
 
 		Case "Tab"
-			$mControls &= "GUICtrlCreate" & $mCtrl.Type & '(' & $ltwh & ')' & @CRLF
-			Local $tabCount = $mCtrl.TabCount
-			Local $tabs = $mCtrl.Tabs
-			Local $tab
+			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '(' & $ltwh & ')' & @CRLF
 
-			For $j = 1 To $tabCount
-				$tab = $tabs[$j]
-				$mControls &= "Global $" & $tab.Name & " = "
-				$mControls &= 'GUICtrlCreateTabItem("' & $tab.Text & '")' & @CRLF
+			For $oTab in $oCtrl.Tabs
+				$mControls &= "Global $" & $oTab.Name & " = "
+				$mControls &= 'GUICtrlCreateTabItem("' & $oTab.Text & '")' & @CRLF
 				$mControls &= 'GUICtrlCreateTabItem("")' & @CRLF
 			Next
 
-
 		Case "Updown"
-			$mControls &= "GUICtrlCreateInput" & '("' & $mCtrl.Text & '", ' & $ltwh & ")" & @CRLF
+			$mControls &= "GUICtrlCreateInput" & '("' & $oCtrl.Text & '", ' & $ltwh & ")" & @CRLF
 			$mControls &= "GUICtrlCreateUpdown(-1)" & @CRLF
 
 		Case "Pic"
-			$mControls &= "GUICtrlCreate" & $mCtrl.Type & '("", ' & $ltwh & ")" & @CRLF
+			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("", ' & $ltwh & ")" & @CRLF
 			$mControls &= "GUICtrlSetImage(-1, " & '"' & $samplebmp & '")' & @CRLF
 
 		Case Else
-			$mControls &= "GUICtrlCreate" & $mCtrl.Type & '("' & $mCtrl.Text & '", ' & $ltwh & ")" & @CRLF
+			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & ")" & @CRLF
 	EndSwitch
 
-	If $mCtrl.Color <> -1 Then
-		$mControls &= "GUICtrlSetColor(-1, 0x" & Hex($mCtrl.Color, 6) & ")" & @CRLF
+	If $oCtrl.Color <> -1 Then
+		$mControls &= "GUICtrlSetColor(-1, 0x" & Hex($oCtrl.Color, 6) & ")" & @CRLF
 	EndIf
-	If $mCtrl.Background <> -1 Then
-		$mControls &= "GUICtrlSetBkColor(-1, 0x" & Hex($mCtrl.Background, 6) & ")" & @CRLF
+	If $oCtrl.Background <> -1 Then
+		$mControls &= "GUICtrlSetBkColor(-1, 0x" & Hex($oCtrl.Background, 6) & ")" & @CRLF
 	EndIf
 
 	Return $mControls
@@ -163,10 +155,8 @@ EndFunc   ;==>_generate_controls
 ; Title...........: _generate_includes
 ; Description.....: generate the code for the includes
 ;------------------------------------------------------------------------------
-Func _generate_includes(Const $i, Const $includes)
-	Local Const $mCtrl = $mControls[$i]
-
-	Switch $mCtrl.Type
+Func _generate_includes(Const $oCtrl, Const $includes)
+	Switch $oCtrl.Type
 		Case "Button", "Checkbox", "Group", "Radio"
 			If Not StringInStr($includes, "<ButtonConstants.au3>") Then
 				Return @CRLF & "#include <ButtonConstants.au3>"
@@ -198,8 +188,8 @@ Func _generate_includes(Const $i, Const $includes)
 			EndIf
 
 		Case "Progress", "Slider", "TreeView", "Combo"
-			If Not StringInStr($includes, '<' & $mCtrl.Type & "Constants.au3>") Then
-				Return @CRLF & "#include <" & $mCtrl.Type & "Constants.au3>"
+			If Not StringInStr($includes, '<' & $oCtrl.Type & "Constants.au3>") Then
+				Return @CRLF & "#include <" & $oCtrl.Type & "Constants.au3>"
 			EndIf
 	EndSwitch
 

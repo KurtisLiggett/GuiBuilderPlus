@@ -181,9 +181,9 @@ Global $initDraw, $initResize
 
 ;mControls
 Global $oCtrls, $oSelected, $oClipboard
-Global $mControls[]
-Global $mSelected[]
-Global $mClipboard[]
+;~ Global $mControls[]
+;~ Global $mSelected[]
+;~ Global $mClipboard[]
 Global $mMouse[]
 
 ; added by: TheSaint (most are my own, others just not declared)

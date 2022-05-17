@@ -10,7 +10,7 @@
 ; Description.....: create new control and add it to the map
 ; Called by.......: Draw with mouse; Paste
 ;------------------------------------------------------------------------------
-Func _create_ctrl(Const $oCtrl = '')
+Func _create_ctrl($oCtrl = '')
 	Local $oNewControl, $incTypeCount = True
 	Local $isPaste = False
 
@@ -61,10 +61,9 @@ Func _create_ctrl(Const $oCtrl = '')
 		$name = $oNewControl.Type & "_" & $j
 
 		If $count > 1 Then
-			For $i = 1 To $count - 1
-				$mcl_ctrl = $mControls[$i]
+			For $oCtrl in $oCtrls.ctrls
 
-				If $mcl_ctrl.Name = $name Then
+				If $oCtrl.Name = $name Then
 					$found = True
 					ExitLoop
 				EndIf
@@ -179,20 +178,14 @@ Func _create_ctrl(Const $oCtrl = '')
 			Return $oNewControl
 
 		Case "Tab"
-			If $mControls.TabCount = 1 Then
+			If $oCtrl.TabCount = 1 Then
 				$incTypeCount = False
-				_control_count_dec()
 			EndIf
 
 			If $incTypeCount Then    ;create the main control
 				;create main tab control
 				$oNewControl.Hwnd = GUICtrlCreateTab($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 				GUICtrlSetOnEvent($oNewControl.Hwnd, "_onCtrlTabSwitch")
-
-				;create tab map
-				Local $tabs[]
-				$oNewControl.TabCount = 0
-				$oNewControl.Tabs = $tabs
 
 				$oCtrls.add($oNewControl)
 			EndIf
@@ -303,34 +296,26 @@ EndFunc   ;==>_GuiCtrlCreateSlider
 
 
 Func _new_tab()
-	Local $mcl_ctrl
+	Local $oCtrl
 
-	Local Const $count = $mControls.ControlCount
-
-	For $i = 1 To $count
-		$mcl_ctrl = $mControls[$i]
-
-		If $mcl_ctrl.Type = "Tab" Then
+	For $oCtrl in $oCtrls.ctrls
+		If $oCtrl.Type = "Tab" Then
 			ExitLoop
 		EndIf
 	Next
 
-	$mcl_ctrl.TabCount += 1
-	Local $tabCount = $mcl_ctrl.TabCount
-	Local $tabs = $mcl_ctrl.Tabs
-	Local $tab[]
-	$tab.Hwnd = GUICtrlCreateTabItem("Tab" & $mcl_ctrl.TabCount)
+	$oCtrl.TabCount = $oCtrl.TabCount + 1
+	Local $tab = _objCtrl()
+	$tab.Hwnd = GUICtrlCreateTabItem("Tab" & $oCtrl.TabCount)
 	GUICtrlCreateTabItem("")
-	$tab.Text = "Tab" & $mcl_ctrl.TabCount
-	$tab.Name = "TabItem_" & $mcl_ctrl.TabCount
-	$tabs[$mcl_ctrl.TabCount] = $tab
-	$mcl_ctrl.Tabs = $tabs
+	$tab.Text = "Tab" & $oCtrl.TabCount
+	$tab.Name = "TabItem_" & $oCtrl.TabCount
+	$oCtrl.Tabs.add($tab)
 
-	_GUICtrlTab_SetCurSel($mcl_ctrl.Hwnd, $mcl_ctrl.TabCount - 1)
+	_GUICtrlTab_SetCurSel($oCtrl.Hwnd, $oCtrl.TabCount - 1)
 
 ;~ 	GUISwitch($hGUI)
 
-	_update_control($mcl_ctrl)
 	_refreshGenerateCode()
 	_formObjectExplorer_updateList()
 EndFunc   ;==>_new_tab
@@ -348,32 +333,22 @@ EndFunc   ;==>_onCtrlTabSwitch
 
 
 Func _delete_tab()
-	Local $mcl_ctrl
+	Local $oCtrl
 
-	Local Const $count = $mControls.ControlCount
-
-	For $i = 1 To $count
-		$mcl_ctrl = $mControls[$i]
-
-		If $mcl_ctrl.Type = "Tab" Then
+	For $oCtrl in $oCtrls.ctrls
+		If $oCtrl.Type = "Tab" Then
 			ExitLoop
 		EndIf
 	Next
 
-	Local $iTabFocus = _GUICtrlTab_GetCurSel($mcl_ctrl.Hwnd)
+	Local $iTabFocus = _GUICtrlTab_GetCurSel($oCtrl.Hwnd)
 
 	If $iTabFocus >= 0 Then
-		_GUICtrlTab_DeleteItem($mcl_ctrl.Hwnd, $iTabFocus)
-		$mcl_ctrl.TabCount -= 1
-		Local $tabs = $mcl_ctrl.Tabs
-		MapRemove($tabs, $iTabFocus + 1)
-;~ 		$mcl_ctrl.Tabs = $tabs
+		_GUICtrlTab_DeleteItem($oCtrl.Hwnd, $iTabFocus)
+		$oCtrl.TabCount = $oCtrl.TabCount - 1
+		$oCtrls.Tabs.remove($iTabFocus)
 
-		_GUICtrlTab_SetCurSel($mcl_ctrl.Hwnd, 0)
-
-		$mcl_ctrl.Tabs = _consolidate_tabs($tabs)
-
-		_update_control($mcl_ctrl)
+		_GUICtrlTab_SetCurSel($oCtrl.Hwnd, 0)
 	Else
 ;~ 		_delete_ctrl($mControls[$i])
 		_delete_selected_controls()
@@ -437,8 +412,6 @@ EndFunc   ;==>_vector_magnitude
 ; Description.....: gets the xy coords of the union of the selected controls rectangles
 ;------------------------------------------------------------------------------
 Func _left_top_union_rect()
-	Local Const $sel_count = $mSelected.SelectedCount
-
 	Local $sel_ctrl
 
 	Local $smallest[]
@@ -552,7 +525,7 @@ Func _PasteSelected($bDuplicate = False)
 					$oNewCtrl.Top += $mMouse.Y
 				EndIf
 
-				Local $oNewCtrl = _create_ctrl($clipboard)
+				Local $oNewCtrl = _create_ctrl($oNewCtrl)
 				$aNewCtrls[$i] = $oNewCtrl
 				$i += 1
 			Next
@@ -581,7 +554,7 @@ EndFunc   ;==>_PasteSelected
 ; Description.....: copy then paste selected controls at an offset
 ;------------------------------------------------------------------------------
 Func _DuplicateSelected()
-	If $mSelected.SelectedCount < 1 Then Return
+	If $oSelected.count < 1 Then Return
 	;copy selected to clipboard
 	_copy_selected()
 
@@ -698,7 +671,7 @@ Func _add_remove_selected_control(Const $oRect)
 							Case True
 								_populate_control_properties_gui($oSelected.getLast())
 
-								_show_grippies($mSelected[$sel_count])
+								_show_grippies($oSelected.getLast())
 
 							Case False
 								_clear_control_properties_gui()
@@ -711,6 +684,7 @@ Func _add_remove_selected_control(Const $oRect)
 						_display_selected_tooltip()
 				EndSwitch
 		EndSwitch
+	Next
 EndFunc   ;==>_add_remove_selected_control
 
 Func _remove_all_from_selected()
