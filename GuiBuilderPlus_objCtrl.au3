@@ -226,6 +226,8 @@ Func _objCtrl()
 	Local $oObject = _AutoItObject_Create()
 
 	_AutoItObject_AddProperty($oObject, "Hwnd", $ELSCOPE_PUBLIC)
+	_AutoItObject_AddProperty($oObject, "Hwnd1", $ELSCOPE_PUBLIC)
+	_AutoItObject_AddProperty($oObject, "Hwnd2", $ELSCOPE_PUBLIC)
 	_AutoItObject_AddProperty($oObject, "Name", $ELSCOPE_PUBLIC, "")
 	_AutoItObject_AddProperty($oObject, "Text", $ELSCOPE_PUBLIC, "")
 	_AutoItObject_AddProperty($oObject, "HwndCount", $ELSCOPE_PUBLIC, 0)
@@ -242,10 +244,30 @@ Func _objCtrl()
 	_AutoItObject_AddProperty($oObject, "DefButton", $ELSCOPE_PUBLIC, False)
 	_AutoItObject_AddProperty($oObject, "Color", $ELSCOPE_PUBLIC, -1)
 	_AutoItObject_AddProperty($oObject, "Background", $ELSCOPE_PUBLIC, -1)
+	_AutoItObject_AddProperty($oObject, "ButtonCount", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "GroupCount", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "CheckboxCount", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "RadioCount", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "EditCount", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "InputCount", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "LabelCount", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "ListCount", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "ComboCount", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "DateCount", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "SliderCount", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "TabCount", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "TreeViewCount", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "UpdownCount", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "ProgressCount", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "PicCount", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "AviCount", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "IconCount", $ELSCOPE_PUBLIC, 0)
 
-	Local $aKeys[17] = _
+	Local $aKeys[37] = _
 	[ _
 		"Hwnd", _
+		"Hwnd1", _
+		"Hwnd2", _
 		"Name", _
 		"Text", _
 		"HwndCount", _
@@ -261,7 +283,25 @@ Func _objCtrl()
 		"DropAccepted", _
 		"DefButton", _
 		"Color", _
-		"Background" _
+		"Background", _
+		"GroupCount", _
+		"ButtonCount", _
+		"CheckboxCount", _
+		"RadioCount", _
+		"EditCount", _
+		"InputCount", _
+		"LabelCount", _
+		"ListCount", _
+		"ComboCount", _
+		"DateCount", _
+		"SliderCount", _
+		"TabCount", _
+		"TreeViewCount", _
+		"UpdownCount", _
+		"ProgressCount", _
+		"PicCount", _
+		"AviCount", _
+		"IconCount" _
 	]
 	_AutoItObject_AddProperty($oObject, "keys", $ELSCOPE_PUBLIC, $aKeys)
 

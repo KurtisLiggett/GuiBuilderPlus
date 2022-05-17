@@ -893,7 +893,7 @@ Func _onMousePrimaryUp()
 			$ctrl_hwnd = GUIGetCursorInfo($hGUI)[4]
 ;~ 			$mCtrl = _control_map_from_hwnd($ctrl_hwnd)
 			$oCtrl = $oCtrls.get($ctrl_hwnd)
-			$mControls.Selected1 = $oCtrl
+;~ 			$mControls.Selected1 = $oCtrl
 
 			_populate_control_properties_gui($oCtrl)
 
@@ -928,13 +928,14 @@ Func _onMousePrimaryUp()
 				$initDraw = False
 				;clicking empty space (background), cancel drawing and delete the new control
 				Local $tolerance = 5
-				Switch $mControls.Selected1.Type
+				$oCtrlSelectedFirst = $oSelected.getFirst()
+				Switch $oCtrlSelectedFirst.Type
 					Case 'Checkbox', 'Radio', 'Combo', 'Updown'
 						$tolerance = 25
 					Case Else
 						$tolerance = 5
 				EndSwitch
-				If $mControls.Selected1.Width < $tolerance And $mControls.Selected1.Height < $tolerance Then
+				If $oCtrlSelectedFirst.Width < $tolerance And $oCtrlSelectedFirst.Height < $tolerance Then
 					ConsoleWrite("  click away" & @CRLF)
 					GUICtrlSetState($default_cursor, $GUI_CHECKED)
 					_delete_selected_controls()
@@ -942,11 +943,11 @@ Func _onMousePrimaryUp()
 				EndIf
 			EndIf
 
-			If $mControls.Selected1.Type = 'Pic' Then
-				GUICtrlSetImage($mControls.Selected1.Hwnd, $samplebmp)
+			If $oCtrlSelectedFirst.Type = 'Pic' Then
+				GUICtrlSetImage($oCtrlSelectedFirst.Hwnd, $samplebmp)
 			EndIf
 
-			_populate_control_properties_gui($mControls.Selected1)
+			_populate_control_properties_gui($oCtrlSelectedFirst)
 
 			If BitAND(GUICtrlRead($default_cursor), $GUI_CHECKED) = $GUI_CHECKED Then
 				$mode = $default
@@ -969,7 +970,8 @@ Func _onMousePrimaryUp()
 			$ctrl_hwnd = GUIGetCursorInfo($hGUI)[4]
 ;~ 			$mCtrl = _control_map_from_hwnd($ctrl_hwnd)
 			$oCtrl = $oCtrls.get($ctrl_hwnd)
-			$mControls.Selected1 = $oCtrl
+;~ 			$mControls.Selected1 = $oCtrl
+			_add_to_selected($oCtrl)
 
 			_populate_control_properties_gui($oCtrl)
 
@@ -989,11 +991,11 @@ Func _onMouseSecondaryDown()
 			Local $oCtrl = $oCtrls.get($ctrl_hwnd)
 
 			If $oCtrls.exists($ctrl_hwnd) Then
-				$mControls.Selected1 = $oCtrl
+;~ 				$mControls.Selected1 = $oCtrl
 
 				_add_to_selected($oCtrl)
 
-				_show_grippies($mControls.Selected1)
+				_show_grippies($oCtrl)
 			EndIf
 	EndSwitch
 
@@ -1275,7 +1277,7 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 		GUICtrlSetData($h_form_Color, "")
 	EndIf
 
-	Switch $mControls.Selected1.Type
+	Switch $oCtrl.Type
 		Case "Edit", "Group", "Date"
 			GUICtrlSetState($h_form_fittowidth, $GUI_DISABLE + $GUI_HIDE)
 
@@ -1390,22 +1392,23 @@ EndFunc   ;==>_enable_control_properties_gui
 
 Func _ctrl_fit_to_width()
 	Local $n
+	Local $oCtrlSelectedFirst = $oSelected.getFirst()
 
-	Switch $mControls.Selected1.Type
+	Switch $oCtrlSelectedFirst.Type
 		Case "Input"
-			$n = _StringSize($mControls.Selected1.Text, 10) + 10
+			$n = _StringSize($oCtrlSelectedFirst.Text, 10) + 10
 
 		Case "Button", "Checkbox"
-			$n = _StringSize($mControls.Selected1.Text, 10) + 16
+			$n = _StringSize($oCtrlSelectedFirst.Text, 10) + 16
 
 		Case "Radio"
-			$n = _StringSize($mControls.Selected1.Text, 10) + 18
+			$n = _StringSize($oCtrlSelectedFirst.Text, 10) + 18
 
 		Case "Combo"
-			$n = _StringSize($mControls.Selected1.Text, 10) + 30
+			$n = _StringSize($oCtrlSelectedFirst.Text, 10) + 30
 
 		Case "Label"
-			$n = _StringSize($mControls.Selected1.Text, 10)
+			$n = _StringSize($oCtrlSelectedFirst.Text, 10)
 
 		Case "Edit", "Group", "Date"
 			Return
@@ -1416,13 +1419,13 @@ Func _ctrl_fit_to_width()
 
 	Local Const $new_width = Ceiling($n / $grid_ticks) * $grid_ticks
 
-	GUICtrlSetPos($mControls.Selected1.Hwnd, $mControls.Selected1.Left, $mControls.Selected1.Top, $new_width, $mControls.Selected1.Height)
+	GUICtrlSetPos($oCtrlSelectedFirst.Hwnd, $oCtrlSelectedFirst.Left, $oCtrlSelectedFirst.Top, $new_width, $oCtrlSelectedFirst.Height)
 
-	$mControls.Selected1.Width = $new_width
+	$oCtrlSelectedFirst.Width = $new_width
 
-	_update_control($mControls.Selected1)
+;~ 	_update_control($mControls.Selected1)
 
-	_show_grippies($mControls.Selected1)
+	_show_grippies($oCtrlSelectedFirst)
 
 	GUICtrlSetData($h_form_width, $new_width)
 
@@ -1760,48 +1763,46 @@ Func _wipe_current_gui()
 
 	GUICtrlSetState($menu_wipe, $GUI_DISABLE)
 
-	Local $mcl_element
+	Local Const $count = $oCtrls.count
 
-	Local Const $count = $mControls.ControlCount
+	For $oCtrl in $oCtrls.ctrls
 
-	For $i = 1 To $count
-		$mcl_element = $mControls[$i]
-
-		Switch $mcl_element.Type
+		Switch $oCtrl.Type
 			Case "Updown"
-				GUICtrlDelete($mcl_element.Hwnd1)
+				GUICtrlDelete($oCtrl.Hwnd1)
 
-				GUICtrlDelete($mcl_element.Hwnd2)
+				GUICtrlDelete($oCtrl.Hwnd2)
 
 			Case Else
-				GUICtrlDelete($mcl_element.Hwnd)
+				GUICtrlDelete($oCtrl.Hwnd)
 		EndSwitch
 	Next
 
-	_remove_all_control_maps()
+;~ 	_remove_all_control_maps()
+	$oCtrls.removeAll()
 
 	_set_default_mode()
 
 	_WinAPI_RedrawWindow($hGUI)
 
-	$mControls.ButtonCount = 0
-	$mControls.GroupCount = 0
-	$mControls.CheckboxCount = 0
-	$mControls.RadioCount = 0
-	$mControls.EditCount = 0
-	$mControls.InputCount = 0
-	$mControls.LabelCount = 0
-	$mControls.ListCount = 0
-	$mControls.ComboCount = 0
-	$mControls.DateCount = 0
-	$mControls.SliderCount = 0
-	$mControls.TabCount = 0
-	$mControls.TreeViewCount = 0
-	$mControls.UpdownCount = 0
-	$mControls.ProgressCount = 0
-	$mControls.PicCount = 0
-	$mControls.AviCount = 0
-	$mControls.IconCount = 0
+	$oCtrls.ButtonCount = 0
+	$oCtrls.GroupCount = 0
+	$oCtrls.CheckboxCount = 0
+	$oCtrls.RadioCount = 0
+	$oCtrls.EditCount = 0
+	$oCtrls.InputCount = 0
+	$oCtrls.LabelCount = 0
+	$oCtrls.ListCount = 0
+	$oCtrls.ComboCount = 0
+	$oCtrls.DateCount = 0
+	$oCtrls.SliderCount = 0
+	$oCtrls.TabCount = 0
+	$oCtrls.TreeViewCount = 0
+	$oCtrls.UpdownCount = 0
+	$oCtrls.ProgressCount = 0
+	$oCtrls.PicCount = 0
+	$oCtrls.AviCount = 0
+	$oCtrls.IconCount = 0
 
 	_refreshGenerateCode()
 	_formObjectExplorer_updateList()
@@ -2080,13 +2081,10 @@ Func _menu_show_hidden()
 
 			$setting_show_hidden = False
 
-			Local $ctrl
+			For $oCtrl in $oCtrls.ctrls
 
-			For $i = 1 To $mControls.ControlCount
-				$ctrl = $mControls[$i]
-
-				If Not $ctrl.Visible Then
-					GUICtrlSetState($ctrl.Hwnd, $GUI_HIDE)
+				If Not $oCtrl.Visible Then
+					GUICtrlSetState($oCtrl.Hwnd, $GUI_HIDE)
 				EndIf
 			Next
 
@@ -2101,13 +2099,10 @@ Func _menu_show_hidden()
 
 			$setting_show_hidden = True
 
-			Local $ctrl
+			For $oCtrl in $oCtrls.ctrls
 
-			For $i = 1 To $mControls.ControlCount
-				$ctrl = $mControls[$i]
-
-				If Not $ctrl.Visible Then
-					GUICtrlSetState($ctrl.Hwnd, $GUI_SHOW)
+				If Not $oCtrl.Visible Then
+					GUICtrlSetState($oCtrl.Hwnd, $GUI_SHOW)
 				EndIf
 			Next
 	EndSwitch
