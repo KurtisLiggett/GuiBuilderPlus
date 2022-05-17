@@ -447,7 +447,7 @@ Func _copy_selected()
 
 	Switch $sel_count >= 1
 		Case True
-			_remove_all_from_clipboard()
+			$oClipboard.removeAll()
 
 
 			Local Const $smallest = _left_top_union_rect()
@@ -631,7 +631,7 @@ Func _add_to_selected(Const $oCtrl, Const $overwrite = True)
 			_remove_all_from_selected()
 
 		Case False
-			Switch $oSelected.exists($oCtrl)
+			Switch $oSelected.exists($oCtrl.Hwnd)
 				Case True
 					Return SetError(1, 0, False)
 			EndSwitch

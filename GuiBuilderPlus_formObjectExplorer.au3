@@ -110,34 +110,34 @@ Func _onLvObjectsItem()
 			Local $aText = _GUICtrlTreeView_GetText($lvObjects, $hItem)
 			Local $aStrings = StringSplit($aText, @TAB)
 			Local $textHwnd = StringTrimRight(StringTrimLeft($aStrings[2], 7), 1)
-			$mCtrl = _control_map_from_hwnd(Dec($textHwnd))
+			$oCtrl = $oCtrls.get(Dec($textHwnd))
 
 			Local $hParent = _GUICtrlTreeView_GetParentHandle($lvObjects, $hItem)
 			If $hParent <> 0 Then    ;this is a child
 				Local $aParentText = _GUICtrlTreeView_GetText($lvObjects, $hParent)
 				Local $aParentStrings = StringSplit($aParentText, @TAB)
 				Local $ParentTextHwnd = StringTrimRight(StringTrimLeft($aParentStrings[2], 7), 1)
-				$mParentCtrl = _control_map_from_hwnd(Dec($ParentTextHwnd))
-				If $mParentCtrl.Type = "Tab" Then
+				$oParentCtrl = $oCtrls.get(Dec($ParentTextHwnd))
+				If $oParentCtrl.Type = "Tab" Then
 					;get tab #
-					Local $mTab
-					For $i = 1 To $mParentCtrl.TabCount
-						$mTab = $mParentCtrl.Tabs[$i]
-						If $mTab.Hwnd = Dec($textHwnd) Then
+					Local $i = 0
+					For $oTab in $oParentCtrl.Tabs
+						If $oTab.Hwnd = Dec($textHwnd) Then
 							$childSelected = True
-							_GUICtrlTab_SetCurSel($mParentCtrl.Hwnd, $i - 1)
+							_GUICtrlTab_SetCurSel($oParentCtrl.Hwnd, $i)
 						EndIf
+						$i += 1
 					Next
-					_add_to_selected($mParentCtrl)
-					_populate_control_properties_gui($mParentCtrl, Dec($textHwnd))
+					_add_to_selected($oParentCtrl)
+					_populate_control_properties_gui($oParentCtrl, Dec($textHwnd))
 				EndIf
 			Else
 				If $first Then    ;select first item
 					$first = False
-					_add_to_selected($mCtrl)
-					_populate_control_properties_gui($mCtrl)
+					_add_to_selected($oCtrl)
+					_populate_control_properties_gui($oCtrl)
 				Else    ;add to selection
-					_add_to_selected($mCtrl, False)
+					_add_to_selected($oCtrl, False)
 				EndIf
 			EndIf
 		EndIf

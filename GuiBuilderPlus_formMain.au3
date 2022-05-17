@@ -1271,45 +1271,45 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 		GUICtrlSetData($h_form_Color, "")
 	EndIf
 
-	Switch $oCtrl.Type
-		Case "Edit", "Group", "Date"
-			GUICtrlSetState($h_form_fittowidth, $GUI_DISABLE + $GUI_HIDE)
+;~ 	Switch $oCtrl.Type
+;~ 		Case "Edit", "Group", "Date"
+;~ 			GUICtrlSetState($h_form_fittowidth, $GUI_DISABLE + $GUI_HIDE)
 
-		Case Else
-			GUICtrlSetState($h_form_fittowidth, $GUI_ENABLE + $GUI_SHOW)
-	EndSwitch
+;~ 		Case Else
+;~ 			GUICtrlSetState($h_form_fittowidth, $GUI_ENABLE + $GUI_SHOW)
+;~ 	EndSwitch
 
-	Switch $oCtrl.Visible
-		Case True
-			GUICtrlSetState($h_form_visible, $GUI_CHECKED)
+;~ 	Switch $oCtrl.Visible
+;~ 		Case True
+;~ 			GUICtrlSetState($h_form_visible, $GUI_CHECKED)
 
-		Case False
-			GUICtrlSetState($h_form_visible, $GUI_UNCHECKED)
-	EndSwitch
+;~ 		Case False
+;~ 			GUICtrlSetState($h_form_visible, $GUI_UNCHECKED)
+;~ 	EndSwitch
 
-	Switch $oCtrl.Enabled
-		Case True
-			GUICtrlSetState($h_form_enabled, $GUI_CHECKED)
+;~ 	Switch $oCtrl.Enabled
+;~ 		Case True
+;~ 			GUICtrlSetState($h_form_enabled, $GUI_CHECKED)
 
-		Case False
-			GUICtrlSetState($h_form_enabled, $GUI_UNCHECKED)
-	EndSwitch
+;~ 		Case False
+;~ 			GUICtrlSetState($h_form_enabled, $GUI_UNCHECKED)
+;~ 	EndSwitch
 
-	Switch $oCtrl.OnTop
-		Case True
-			GUICtrlSetState($h_form_ontop, $GUI_CHECKED)
+;~ 	Switch $oCtrl.OnTop
+;~ 		Case True
+;~ 			GUICtrlSetState($h_form_ontop, $GUI_CHECKED)
 
-		Case False
-			GUICtrlSetState($h_form_ontop, $GUI_UNCHECKED)
-	EndSwitch
+;~ 		Case False
+;~ 			GUICtrlSetState($h_form_ontop, $GUI_UNCHECKED)
+;~ 	EndSwitch
 
-	Switch $oCtrl.StyleTop
-		Case True
-			GUICtrlSetState($h_form_style_top, $GUI_CHECKED)
+;~ 	Switch $oCtrl.StyleTop
+;~ 		Case True
+;~ 			GUICtrlSetState($h_form_style_top, $GUI_CHECKED)
 
-		Case False
-			GUICtrlSetState($h_form_style_top, $GUI_UNCHECKED)
-	EndSwitch
+;~ 		Case False
+;~ 			GUICtrlSetState($h_form_style_top, $GUI_UNCHECKED)
+;~ 	EndSwitch
 
 	;_enable_control_properties_gui()
 EndFunc   ;==>_populate_control_properties_gui
