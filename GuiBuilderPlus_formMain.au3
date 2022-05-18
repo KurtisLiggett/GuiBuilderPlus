@@ -797,7 +797,7 @@ Func _onMousePrimaryDown()
 						_hide_grippies()
 
 						;consider if this should be removed?
-						_add_to_selected($oCtrls.get($ctrl_hwnd))
+;~ 						_add_to_selected($oCtrls.get($ctrl_hwnd))
 
 						$mode = $init_move
 
