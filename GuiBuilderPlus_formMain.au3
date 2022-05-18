@@ -503,6 +503,7 @@ Func WM_NOTIFY($hWnd, $iMsg, $wParam, $lParam)
 	$hWndFrom = DllStructGetData($tNMHDR, "hWndFrom")
 	$iIDFrom = DllStructGetData($tNMHDR, "IDFrom")
 	$iCode = DllStructGetData($tNMHDR, "Code")
+
 	Switch $iIDFrom
 		Case $lvObjects
 			Switch $iCode
@@ -515,6 +516,7 @@ Func WM_NOTIFY($hWnd, $iMsg, $wParam, $lParam)
 					EndIf
 			EndSwitch
 	EndSwitch
+
 	Return $GUI_RUNDEFMSG
 EndFunc   ;==>WM_NOTIFY
 
@@ -1437,6 +1439,10 @@ Func _ctrl_fit_to_width()
 	_refreshGenerateCode()
 EndFunc   ;==>_ctrl_fit_to_width
 
+
+Func _onPropertyChange($sPropertyName, $value)
+	ConsoleWrite($sPropertyName & " " & $value & @CRLF)
+EndFunc
 
 Func _ctrl_change_text()
 	Local Const $new_text = GUICtrlRead(@GUI_CtrlId)

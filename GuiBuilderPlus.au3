@@ -151,7 +151,7 @@ Global $lvObjects, $labelObjectCount, $childSelected
 ;~ Global $hBgGraphic
 
 ;Property Inspector
-Global $lvPropertiesMain, $hLvPropertiesMain, $idEditOpen, $idEditClose, $bEditOpen
+
 
 ;GUI Constants
 Global Const $main_width = 400
@@ -214,11 +214,12 @@ _AutoItObject_StartUp()
 #include <FontConstants.au3>
 #include <GuiConstantsEx.au3>
 #include <GuiTab.au3>
+#include <GuiListView.au3>
 #include <Misc.au3>
 #include <MsgBoxConstants.au3>
 #include <StringConstants.au3>
 #include <StaticConstants.au3>
-#include <TreeViewConstants.au3>
+#include <ListViewConstants.au3>
 #include <TreeViewConstants.au3>
 #include <UpDownConstants.au3>
 #include <File.au3>
@@ -226,6 +227,7 @@ _AutoItObject_StartUp()
 #include <WinAPIMisc.au3>
 #include <WinAPISys.au3>
 #include <WindowsConstants.au3>
+#include <WinAPIvkeysConstants.au3>
 #include <GuiMenu.au3>
 #include <GuiEdit.au3>
 #include <GuiTreeView.au3>
@@ -251,7 +253,6 @@ _main()
 ; Description.....: Create the main GUI and run the main program loop.
 ;------------------------------------------------------------------------------
 Func _main()
-	ConsoleWrite($NM_CLICK & @CRLF)
 	;create the controls container objects
 	$oCtrls 	= _objCtrls()
 	$oSelected 	= _objCtrls()
