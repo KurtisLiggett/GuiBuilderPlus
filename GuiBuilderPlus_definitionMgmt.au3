@@ -237,9 +237,9 @@ Func _load_gui_definition($AgdInfile = '')
 			$oCtrl.Background = Dec(StringReplace($oCtrl.Background, "0x", ""))
 		EndIf
 
-		$oCtrl = _create_ctrl($oCtrl)
+		Local $oNewCtrl = _create_ctrl($oCtrl)
 
-		$oCtrl = $oCtrls.get($oCtrl.Hwnd)
+		$oCtrl = $oCtrls.get($oNewCtrl.Hwnd)
 		If $oCtrl.Type = "Tab" Then
 			Local $tabCount = IniRead($AgdInfile, $Key, "TabCount", 0)
 
@@ -247,9 +247,9 @@ Func _load_gui_definition($AgdInfile = '')
 				For $j = 1 To $tabCount
 					_new_tab()
 
-					$oCtrl.Tabs.at($j).Name = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Name", "tempName")
-					$oCtrl.Tabs.at($j).Text = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Text", "tempText")
-					_GUICtrlTab_SetItemText($oCtrl.Hwnd, $j - 1, $oCtrl.Tabs.at($j).Text)
+					$oCtrl.Tabs.at($j-1).Name = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Name", "tempName")
+					$oCtrl.Tabs.at($j-1).Text = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Text", "tempText")
+					_GUICtrlTab_SetItemText($oCtrl.Hwnd, $j - 1, $oCtrl.Tabs.at($j-1).Text)
 				Next
 			EndIf
 		EndIf

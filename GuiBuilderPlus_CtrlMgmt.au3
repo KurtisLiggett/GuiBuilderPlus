@@ -60,7 +60,7 @@ Func _create_ctrl($oCtrl = '')
 		$j += 1
 		$name = $oNewControl.Type & "_" & $j
 
-		If $count > 1 Then
+		If $count >= 1 Then
 			For $oCtrl in $oCtrls.ctrls
 
 				If $oCtrl.Name = $name Then
@@ -178,7 +178,7 @@ Func _create_ctrl($oCtrl = '')
 			Return $oNewControl
 
 		Case "Tab"
-			If $oCtrl.TabCount = 1 Then
+			If $oNewControl.TabCount = 1 Then
 				$incTypeCount = False
 			EndIf
 
@@ -345,9 +345,8 @@ Func _delete_tab()
 
 	If $iTabFocus >= 0 Then
 		_GUICtrlTab_DeleteItem($oCtrl.Hwnd, $iTabFocus)
+		$oCtrl.Tabs.remove($iTabFocus)
 		$oCtrl.TabCount = $oCtrl.TabCount - 1
-		$oCtrls.Tabs.remove($iTabFocus)
-
 		_GUICtrlTab_SetCurSel($oCtrl.Hwnd, 0)
 	Else
 ;~ 		_delete_ctrl($mControls[$i])
@@ -516,18 +515,17 @@ Func _PasteSelected($bDuplicate = False)
 
 			For $oCtrl in $oClipboard.ctrls
 				;create a copy, so we don't overwrite the original!
-				$oNewCtrl = $oClipboard.getCopy($oCtrl)
+				$oNewCtrl = $oClipboard.getCopy($oCtrl.Hwnd)
 
 				If $bDuplicate Then
 					$oNewCtrl.Left += 20
 					$oNewCtrl.Top += 20
 				Else
-					$oNewCtrl.Left += $mMouse.X
-					$oNewCtrl.Top += $mMouse.Y
+					$oNewCtrl.Left = $mMouse.X
+					$oNewCtrl.Top = $mMouse.Y
 				EndIf
 
-				Local $oNewCtrl = _create_ctrl($oNewCtrl)
-				$aNewCtrls[$i] = $oNewCtrl
+				$aNewCtrls[$i] = _create_ctrl($oNewCtrl)
 				$i += 1
 			Next
 	EndSwitch

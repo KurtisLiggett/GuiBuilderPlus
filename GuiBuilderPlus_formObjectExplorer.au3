@@ -191,14 +191,8 @@ Func _formObjectExplorer_updateList()
 		GUICtrlSetOnEvent($lvMenuDelete, "_onLvObjectsDeleteMenu")
 
 		If $oCtrl.Type = "Tab" Then
-			Local $tabCount = $oCtrl.TabCount
-			Local $tabs = $oCtrl.Tabs
-			Local $tab
-
-			For $j = 1 To $tabCount
-				ConsoleWrite($j & @CRLF)
-				$tab = $tabs[$j]
-				$childItem = GUICtrlCreateTreeViewItem($tab.Name & "       " & @TAB & "(HWND: " & Hex($tab.Hwnd) & ")", $lvItem)
+			For $oTab in $oCtrl.Tabs
+				$childItem = GUICtrlCreateTreeViewItem($oTab.Name & "       " & @TAB & "(HWND: " & Hex($oTab.Hwnd) & ")", $lvItem)
 				GUICtrlSetOnEvent(-1, "_onLvObjectsItem")
 
 ;~ 				$lvMenu = GUICtrlCreateContextMenu($childItem)

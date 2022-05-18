@@ -12,6 +12,10 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
+;  05/17/2022 ...: 	- UPDATE:	Converted maps to objects using AutoItObject UDF
+;					- FIXED:	Delete certain tab items caused a program crash
+;					- FIXED:	Pasted control offset from mouse position
+;
 ;  05/13/2022 ...: 	- FIXED:	Tab control not showing when grid is on
 ;					- FIXED:	Tab control and tab item creation now should work properly
 ;					- FIXED:	Right-click menu deletes wrong item
@@ -146,6 +150,8 @@ Global $lvObjects, $labelObjectCount, $childSelected
 ;background graphics
 ;~ Global $hBgGraphic
 
+;Property Inspector
+Global $lvPropertiesMain, $hLvPropertiesMain, $idEditOpen, $idEditClose, $bEditOpen
 
 ;GUI Constants
 Global Const $main_width = 400
@@ -223,6 +229,7 @@ _AutoItObject_StartUp()
 #include <GuiMenu.au3>
 #include <GuiEdit.au3>
 #include <GuiTreeView.au3>
+#include "UDFS\Functions.au3"
 #include "UDFs\StringSize.au3"
 #include "GuiBuilderPlus_objCtrl.au3"
 #include "GuiBuilderPlus_CtrlMgmt.au3"
@@ -244,6 +251,7 @@ _main()
 ; Description.....: Create the main GUI and run the main program loop.
 ;------------------------------------------------------------------------------
 Func _main()
+	ConsoleWrite($NM_CLICK & @CRLF)
 	;create the controls container objects
 	$oCtrls 	= _objCtrls()
 	$oSelected 	= _objCtrls()
@@ -302,6 +310,7 @@ Func _main()
 				$aTestGuiPos = WinGetPos(_WinGetByPID($TestFilePID))
 			EndIf
 		EndIf
+
 		Sleep(100)
 	Until False
 EndFunc   ;==>_main

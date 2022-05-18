@@ -82,6 +82,35 @@
 ;~ $myControls.decTypeCount("Button")
 ;~ ConsoleWrite("count: " & $myControls.getTypeCount("Button") & @CRLF)
 
+
+;~ ;get last control
+;~ ConsoleWrite(@CRLF)
+;~ $myControls.removeAll()
+
+;~ Local $ctrl3 = GUICtrlCreateLabel("test2", 0, 50)
+;~ Local $ctrl4 = GUICtrlCreateLabel("test2", 0, 50)
+;~ Local $ctrl5 = GUICtrlCreateLabel("test2", 0, 50)
+
+;~ Global $thisCtrl3 = $myControls.createNew()
+;~ $thisCtrl3.Hwnd = $ctrl3
+;~ $thisCtrl3.Name = "Ctrl3"
+;~ $myControls.add($thisCtrl3)
+
+;~ Global $thisCtrl4 = $myControls.createNew()
+;~ $thisCtrl4.Hwnd = $ctrl4
+;~ $thisCtrl4.Name = "Ctrl4"
+;~ $myControls.add($thisCtrl4)
+
+;~ Global $thisCtrl5 = $myControls.createNew()
+;~ $thisCtrl5.Hwnd = $ctrl5
+;~ $thisCtrl5.Name = "Ctrl5"
+;~ $myControls.add($thisCtrl5)
+
+;~ ConsoleWrite("count: " & $myControls.count & @CRLF)
+;~ ConsoleWrite("get Ctrl5: " & $myControls.get($ctrl5).Name & @CRLF)
+;~ ConsoleWrite("get last: " & $myControls.getLast().Name & @CRLF)
+;~ ;ConsoleWrite( IsObj($myControls.getLast()) & @CRLF)
+
 ;~ ConsoleWrite(@CRLF)
 ;~ #EndRegion
 
@@ -119,8 +148,6 @@ Func _objCtrls()
 	$oTypeCountList.add(_CreateListItem("Avi", 0))
 	$oTypeCountList.add(_CreateListItem("Icon", 0))
 	_AutoItObject_AddProperty($oObject, "typeCounts", $ELSCOPE_PUBLIC, $oTypeCountList)
-	_AutoItObject_AddProperty($oObject, "TabCount", $ELSCOPE_PUBLIC, 0)
-	_AutoItObject_AddProperty($oObject, "Tabs", $ELSCOPE_PUBLIC, LinkedList())
 
 	_AutoItObject_AddMethod($oObject, "createNew", "_objCtrls_createNew")
 	_AutoItObject_AddMethod($oObject, "add", "_objCtrls_add")
@@ -138,11 +165,6 @@ Func _objCtrls()
 
 	Return $oObject
 EndFunc   ;==>_objCtrls
-
-Func _objCtrls_getKeys($oSelf)
-	#forceref $oSelf
-	Return $oSelf.keys
-EndFunc   ;==>_objCtrls_getKeys
 
 Func _objCtrls_createNew($oSelf)
 	#forceref $oSelf
@@ -218,7 +240,7 @@ Func _objCtrls_getLast($oSelf)
 	#forceref $oSelf
 
 	If $oSelf.count > 0 Then
-		Return $oSelf.ctrls.at($oSelf.count)
+		Return $oSelf.ctrls.at($oSelf.count-1)
 	Else
 		Return -1
 	EndIf
@@ -315,8 +337,10 @@ Func _objCtrl()
 	_AutoItObject_AddProperty($oObject, "DefButton", $ELSCOPE_PUBLIC, False)
 	_AutoItObject_AddProperty($oObject, "Color", $ELSCOPE_PUBLIC, -1)
 	_AutoItObject_AddProperty($oObject, "Background", $ELSCOPE_PUBLIC, -1)
+	_AutoItObject_AddProperty($oObject, "TabCount", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "Tabs", $ELSCOPE_PUBLIC, LinkedList())
 
-	Local $aKeys[19] = _
+	Local $aKeys[21] = _
 			[ _
 			"Hwnd", _
 			"Hwnd1", _
@@ -336,7 +360,9 @@ Func _objCtrl()
 			"DropAccepted", _
 			"DefButton", _
 			"Color", _
-			"Background" _
+			"Background", _
+			"TabCount", _
+			"Tabs" _
 			]
 	_AutoItObject_AddProperty($oObject, "keys", $ELSCOPE_PUBLIC, $aKeys)
 

@@ -817,6 +817,7 @@ Func _onMousePrimaryDown()
 
 				Case Else
 					If $oCtrls.exists($ctrl_hwnd) Then
+						ConsoleWrite("  control exists" & @CRLF)
 						Local $oCtrl = $oCtrls.get($ctrl_hwnd)
 						If $oSelected.count > 1 Then
 							_add_to_selected($oCtrl, False)
@@ -853,6 +854,7 @@ Func _onMousePrimaryDown()
 
 				Case Else
 					If Not $oCtrls.exists($ctrl_hwnd) Then Return
+					ConsoleWrite("  control exists" & @CRLF)
 
 					Local $oCtrl = $oCtrls.get($ctrl_hwnd)
 					ConsoleWrite("  " & $oCtrl.Type & @CRLF)
@@ -890,12 +892,19 @@ Func _onMousePrimaryUp()
 			ConsoleWrite("** PrimaryUp: move **" & @CRLF)
 			ToolTip('')
 
-			$ctrl_hwnd = GUIGetCursorInfo($hGUI)[4]
+;~ 			$ctrl_hwnd = GUIGetCursorInfo($hGUI)[4]
 ;~ 			$mCtrl = _control_map_from_hwnd($ctrl_hwnd)
-			$oCtrl = $oCtrls.get($ctrl_hwnd)
+;~ 			$oCtrl = $oCtrls.get($ctrl_hwnd)
 ;~ 			$mControls.Selected1 = $oCtrl
 
-			_populate_control_properties_gui($oCtrl)
+			;we don't care what was dragged, we just want to populate based on latest selection
+			;to prevent mouse 'falling off' of control when dropped
+			$oCtrl = $oSelected.getLast()
+			If IsObj($oCtrl) Then
+				_populate_control_properties_gui($oCtrl)
+			Else
+				ConsoleWrite("  -------- not object: " & $oCtrl & @CRLF)
+			EndIf
 
 			_refreshGenerateCode()
 
@@ -923,12 +932,13 @@ Func _onMousePrimaryUp()
 			ConsoleWrite("** PrimaryUp: Resize **" & @CRLF)
 			ToolTip('')
 
+			$oCtrlSelectedFirst = $oSelected.getFirst()
 			If $initDraw Then    ;if we just started drawing, check to see if drawing or just clicking away from control
 				ConsoleWrite("  init draw" & @CRLF)
 				$initDraw = False
 				;clicking empty space (background), cancel drawing and delete the new control
 				Local $tolerance = 5
-				$oCtrlSelectedFirst = $oSelected.getFirst()
+
 				Switch $oCtrlSelectedFirst.Type
 					Case 'Checkbox', 'Radio', 'Combo', 'Updown'
 						$tolerance = 25
@@ -971,9 +981,10 @@ Func _onMousePrimaryUp()
 ;~ 			$mCtrl = _control_map_from_hwnd($ctrl_hwnd)
 			$oCtrl = $oCtrls.get($ctrl_hwnd)
 ;~ 			$mControls.Selected1 = $oCtrl
-			_add_to_selected($oCtrl)
-
-			_populate_control_properties_gui($oCtrl)
+			If IsObj($oCtrl) Then	;if not an object, then probably a menu
+				_add_to_selected($oCtrl)
+				_populate_control_properties_gui($oCtrl)
+			EndIf
 
 	EndSwitch
 EndFunc   ;==>_onMousePrimaryUp
@@ -1237,7 +1248,7 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 			Local $iTabFocus = _GUICtrlTab_GetCurSel($oCtrl.Hwnd)
 
 			If $iTabFocus >= 0 Then
-				$text = $oCtrl.Tabs[$iTabFocus + 1].Text
+				$text = $oCtrl.Tabs.at($iTabFocus).Text
 			EndIf
 		EndIf
 	EndIf
@@ -1250,7 +1261,7 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 			Local $iTabFocus = _GUICtrlTab_GetCurSel($oCtrl.Hwnd)
 
 			If $iTabFocus >= 0 Then
-				$name = $oCtrl.Tabs[$iTabFocus + 1].Name
+				$name = $oCtrl.Tabs.at($iTabFocus).Name
 			EndIf
 		EndIf
 	EndIf
@@ -1441,13 +1452,11 @@ Func _ctrl_change_text()
 					$oCtrl.Text = $new_text
 				ElseIf $oCtrl.Type = "Tab" Then
 					If $childSelected Then
-						Local $iTabFocus = _GUICtrlTab_GetCurFocus($oCtrl.Hwnd)
+						Local $iTabFocus = _GUICtrlTab_GetCurSel($oCtrl.Hwnd)
 
 						If $iTabFocus >= 0 Then
 							_GUICtrlTab_SetItemText($oCtrl.Hwnd, $iTabFocus, $new_text)
-							Local $tabs = $oCtrl.Tabs
-							$tabs[$iTabFocus + 1].Text = $new_text
-							$oCtrl.Tabs = $tabs
+							$oCtrl.Tabs.at($iTabFocus).Text = $new_text
 						EndIf
 					Else
 						$oCtrl.Text = $new_text
@@ -1477,13 +1486,10 @@ Func _ctrl_change_name()
 
 		If $oCtrl.Type = "Tab" Then
 			If $childSelected Then
-				Local $iTabFocus = _GUICtrlTab_GetCurFocus($oCtrl.Hwnd)
+				Local $iTabFocus = _GUICtrlTab_GetCurSel($oCtrl.Hwnd)
 
 				If $iTabFocus >= 0 Then
-					Local $tabs = $oCtrl.Tabs
-
-					$tabs[$iTabFocus + 1].Name = $new_name
-					$oCtrl.Tabs = $tabs
+					$oCtrl.Tabs.at($iTabFocus).Name = $new_name
 				Else
 					$oCtrl.Name = $new_name
 				EndIf
@@ -1838,7 +1844,6 @@ Func _set_current_mouse_pos()
 	Local Const $mouse_snap_pos = _mouse_snap_pos()
 
 	$mMouse.X = $mouse_snap_pos[0]
-
 	$mMouse.Y = $mouse_snap_pos[1]
 EndFunc   ;==>_set_current_mouse_pos
 
