@@ -92,20 +92,18 @@
 ;					- Removed/updated some antiquated references and functions
 ;					- Updated to latest StringSize UDF
 ;
-; Roadmap .......:	- Finish investigating and documenting the code
-;					- Add custom multiplier to controls' position and size (for DPI scaling)
-;					- Add option to make GUI in separate function
+; Roadmap .......:	- Add option to make GUI in separate function
 ;					- Add options for declaring controls as global or local
-;					- Support for Msg or OnEvent mode attached to controls (still debating)
+;					- Support for Msg or OnEvent mode attached to controls
 ;					- Add IP control
 ;					- Add GUI options like background color, width, height, position
 ;					- Add control alignment buttons (left, right, top, bottom)
 ;					- Finish control properties tabs
-;					- Make group selection more robust
 ;					- Add shortcut to select all controls (for moving, deleting)
 ;					- creating controls on top of TAB will place them inside the tab
 ;					- Undo / Redo functionality
-;					- Make grippies into Objects, so we may have multiple
+;					- Make separate grippies for each selected object
+;					- Finish menu controls
 ;
 ; Known Issues ..:	- Property Inspector gets deleted when deleting TAB control
 ;					- State, style, and ex style properties not implemented yet
