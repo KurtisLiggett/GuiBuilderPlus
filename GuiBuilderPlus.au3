@@ -15,6 +15,9 @@
 ;  05/17/2022 ...: 	- UPDATE:	Converted maps to objects using AutoItObject UDF
 ;					- FIXED:	Delete certain tab items caused a program crash
 ;					- FIXED:	Pasted control offset from mouse position
+;					- ADDED:	Added setting to apply a DPI scaling factor to the size and position properties (includes function to get DPI factor)
+;					- ADDED:	Added 'New Tab' and 'Delete Tab' items in Object Explorer right-click context menu
+;					- KNOWN ISSUE: Property tabs other than 'Main' are temporarily disabled (don't do anything)
 ;
 ;  05/13/2022 ...: 	- FIXED:	Tab control not showing when grid is on
 ;					- FIXED:	Tab control and tab item creation now should work properly
@@ -31,7 +34,7 @@
 ;					- UPDATED:	Arrow keys will now "nudge" the controls by 1 px, Ctrl+arrow key will move the controls by 10px
 ;					- UPDATED:	Copy+Paste should not change the control text
 ;					- UPDATED:	Changed object explorer from listview to treeview to show tab items
-;					- KNOWWN ISSUE:	Deleting a Tab control also deletes the property inspector!
+;					- KNOWN ISSUE:	Deleting a Tab control also deletes the property inspector!
 ;
 ;  05/11/2022 ...: 	- FIXED: object explorer and code viewer not updated after .agd load
 ;					- FIXED: object explorer not updated after copy/paste
@@ -102,6 +105,7 @@
 ;					- Add shortcut to select all controls (for moving, deleting)
 ;					- creating controls on top of TAB will place them inside the tab
 ;					- Undo / Redo functionality
+;					- Make grippies into Objects, so we may have multiple
 ;
 ; Known Issues ..:	- Property Inspector gets deleted when deleting TAB control
 ;					- State, style, and ex style properties not implemented yet
@@ -131,7 +135,7 @@ Global $hGUI, $hFormGenerateCode, $toolbar, $hFormObjectExplorer, $hStatusbar, $
 Global $menu_wipe
 Global $menu_testForm
 Global $overlay_contextmenu_newtab, $overlay_contextmenu_deletetab, $hoverlay_contextmenu_newtab, $hoverlay_contextmenu_deletetab, $hoverlay_contextmenu
-Global $menu_show_grid, $menu_grid_snap, $menu_paste_pos, $menu_show_ctrl, $menu_show_hidden
+Global $menu_show_grid, $menu_grid_snap, $menu_paste_pos, $menu_show_ctrl, $menu_show_hidden, $menu_dpi_scaling
 Global $menu_generateCode, $menu_ObjectExplorer
 Global $background, $background_contextmenu, $background_contextmenu_paste
 Global $overlay, $overlay_contextmenu, $overlay_contextmenutab
@@ -185,16 +189,13 @@ Global $TestFilePID = 0, $bReTest = 0, $aTestGuiPos, $hTestGui
 Global $au3InstallPath = @ProgramFilesDir & "\AutoIt3\AutoIt3.exe"
 Global $initDraw, $initResize
 
-;mControls
+;Control Objects
 Global $oCtrls, $oSelected, $oClipboard
-;~ Global $mControls[]
-;~ Global $mSelected[]
-;~ Global $mClipboard[]
 Global $mMouse[]
 
 ; added by: TheSaint (most are my own, others just not declared)
 Global $AgdInfile, $AgdOutFile, $gdtitle, $lfld, $mygui
-Global $setting_snap_grid, $setting_paste_pos, $setting_show_control, $setting_show_hidden
+Global $setting_snap_grid, $setting_paste_pos, $setting_show_control, $setting_show_hidden, $setting_dpi_scaling
 
 Global $sampleavi = @ScriptDir & "\resources\sampleAVI.avi"
 Global $samplebmp = @ScriptDir & "\resources\SampleImage.bmp"
@@ -254,9 +255,9 @@ _main()
 ;------------------------------------------------------------------------------
 Func _main()
 	;create the controls container objects
-	$oCtrls 	= _objCtrls()
-	$oSelected 	= _objCtrls()
-	$oClipboard	= _objCtrls()
+	$oCtrls = _objCtrls()
+	$oSelected = _objCtrls()
+	$oClipboard = _objCtrls()
 
 	;make the main program GUI
 	_formMain()
@@ -383,6 +384,7 @@ Func _initialize_settings()
 	Local $bShowHidden = False
 	Local $bShowCode = False
 	Local $bShowObjectExplorer = False
+	Local $bDpiScaling = False
 
 	Local $aSettings = IniReadSection($sIniPath, "Settings")
 	If Not @error Then
@@ -402,6 +404,8 @@ Func _initialize_settings()
 					$bShowCode = ($aSettings[$i][1] = 1) ? True : False
 				Case "ShowObjectExplorer"
 					$bShowObjectExplorer = ($aSettings[$i][1] = 1) ? True : False
+				Case "DpiScaling"
+					$bDpiScaling = ($aSettings[$i][1] = 1) ? True : False
 			EndSwitch
 		Next
 	EndIf
@@ -420,11 +424,13 @@ Func _initialize_settings()
 	_setCheckedState($menu_show_hidden, $bShowHidden)
 	_setCheckedState($menu_generateCode, $bShowCode)
 	_setCheckedState($menu_ObjectExplorer, $bShowObjectExplorer)
+	_setCheckedState($menu_dpi_scaling, $bDpiScaling)
 
 	$setting_paste_pos = $bPastePos
 	$setting_snap_grid = $bGridSnap
 	$setting_show_control = $bShowControl
 	$setting_show_hidden = $bShowHidden
+	$setting_dpi_scaling = $bDpiScaling
 
 	If Not FileExists("storage") Then
 		DirCreate("storage")

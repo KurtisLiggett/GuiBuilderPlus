@@ -18,9 +18,9 @@ Func _formGenerateCode()
 ;~ 		$hWin = $hFormObjectExplorer
 ;~ 	EndIf
 
-	Local $currentWinPos = WinGetPos($hWin)
-	Local $x = $currentWinPos[0] + 50
-	Local $y = $currentWinPos[1] + 50
+	Local $currentWinPos = WinGetPos($toolbar)
+	Local $x = $currentWinPos[0] + 100
+	Local $y = $currentWinPos[1] - 50
 
 	;make sure $x is not set off screen
 	Local $ixCoordMin = _WinAPI_GetSystemMetrics(76)
@@ -55,12 +55,6 @@ Func _formGenerateCode()
 	GUICtrlCreateButton("Save to file", $w - 20 - 75 - 5, $h - 27 - $titleBarHeight, 75, 22)
 	GUICtrlSetOnEvent(-1, "_onCodeSave")
 	GUICtrlSetResizing(-1, $GUI_DOCKRIGHT + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
-;~ 	GUICtrlCreateButton("Refresh", $w - 20 - 75 * 2 - 5, $h - 27 - $titleBarHeight, 75, 22)
-;~ 	GUICtrlSetOnEvent(-1, "_onCodeRefresh")
-;~ 	GUICtrlSetResizing(-1, $GUI_DOCKRIGHT + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
-;~ 	GUICtrlCreateButton("Close", $w - 20 - 75, $h - 27 - $titleBarHeight, 75, 22)
-;~ 	GUICtrlSetOnEvent(-1, "_onExitGenerateCode")
-;~ 	GUICtrlSetResizing(-1, $GUI_DOCKRIGHT + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
 
 	GUISetState(@SW_SHOW, $hFormGenerateCode)
 	_GUICtrlEdit_SetSel($editCodeGeneration, 0, 0)

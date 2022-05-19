@@ -31,12 +31,6 @@ Func _save_gui_definition()
 		If @error = 1 Or $AgdOutFile = "" Then
 			$bStatusNewMessage = True
 			_GUICtrlStatusBar_SetText($hStatusbar, "Error saving definition file!")
-;~ 			SplashTextOn("Save GUI Definition to file", "Definition not saved!", 200, 80)
-
-;~ 			Sleep(1000)
-
-;~ 			SplashOff()
-
 			Return
 		Else
 			; added by: TheSaint
@@ -65,12 +59,6 @@ Func _save_gui_definition()
 	If @error Then
 		$bStatusNewMessage = True
 		_GUICtrlStatusBar_SetText($hStatusbar, "Error saving definition file!")
-;~ 		SplashTextOn("Save GUI Definition to file", "Definition not saved!", 200, 80)
-
-;~ 		Sleep(1000)
-
-;~ 		SplashOff()
-
 		Return
 	EndIf
 
@@ -89,7 +77,7 @@ Func _save_gui_definition()
 	IniWrite($AgdOutFile, "Main", "numctrls", $ctrl_count)
 
 	$i = 1
-	For $oCtrl in $oCtrls.ctrls
+	For $oCtrl In $oCtrls.ctrls
 		Local $Key = "Control_" & $i
 
 		Local $handle = $oCtrl.Hwnd
@@ -133,9 +121,7 @@ Func _save_gui_definition()
 
 			If $oCtrl.TabCount > 0 Then
 				Local $j = 1
-				For $oTab in $oCtrl.Tabs
-;~ 					$mControls &= "Global $" & $oTab.Name & " = "
-;~ 					$mControls &= 'GUICtrlCreateTabItem("' & $oTab.Text & '")' & @CRLF
+				For $oTab In $oCtrl.Tabs
 					IniWrite($AgdOutFile, $Key, "TabItem" & $j & "_Name", $oTab.Name)
 					IniWrite($AgdOutFile, $Key, "TabItem" & $j & "_Text", $oTab.Text)
 					$j += 1
@@ -147,12 +133,6 @@ Func _save_gui_definition()
 
 	$bStatusNewMessage = True
 	_GUICtrlStatusBar_SetText($hStatusbar, "Definition saved to file")
-
-;~ 	SplashTextOn("Save GUI Definition to file", "Saved to " & @CRLF & $AgdOutFile, 500, 100)
-
-;~ 	Sleep(1000)
-
-;~ 	SplashOff()
 EndFunc   ;==>_save_gui_definition
 
 
@@ -194,8 +174,6 @@ Func _load_gui_definition($AgdInfile = '')
 	If $w = -1 Then
 		$bStatusNewMessage = True
 		_GUICtrlStatusBar_SetText($hStatusbar, "Error loading gui definition file!")
-;~ 		MsgBox($MB_ICONERROR, "Load Gui Error", "Error loading gui definition.")
-
 		Return
 	EndIf
 
@@ -247,9 +225,9 @@ Func _load_gui_definition($AgdInfile = '')
 				For $j = 1 To $tabCount
 					_new_tab()
 
-					$oCtrl.Tabs.at($j-1).Name = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Name", "tempName")
-					$oCtrl.Tabs.at($j-1).Text = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Text", "tempText")
-					_GUICtrlTab_SetItemText($oCtrl.Hwnd, $j - 1, $oCtrl.Tabs.at($j-1).Text)
+					$oCtrl.Tabs.at($j - 1).Name = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Name", "tempName")
+					$oCtrl.Tabs.at($j - 1).Text = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Text", "tempText")
+					_GUICtrlTab_SetItemText($oCtrl.Hwnd, $j - 1, $oCtrl.Tabs.at($j - 1).Text)
 				Next
 			EndIf
 		EndIf
@@ -260,10 +238,4 @@ Func _load_gui_definition($AgdInfile = '')
 
 	$bStatusNewMessage = True
 	_GUICtrlStatusBar_SetText($hStatusbar, "Loaded successfully")
-
-;~ 	SplashTextOn("Load GUI Definition from file", "Loaded from " & @CRLF & $AgdInfile, 500, 100)
-
-;~ 	Sleep(1000)
-
-;~ 	SplashOff()
 EndFunc   ;==>_load_gui_definition

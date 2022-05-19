@@ -116,7 +116,6 @@ Func _formToolbar()
 
 	;create the Edit menu
 	Local $menu_edit = GUICtrlCreateMenu("Edit")
-;~ 	Local $menu_vals = GUICtrlCreateMenuItem("Vals", $menu_edit)           ; added by: TheSaint
 	Local $menu_copy = GUICtrlCreateMenuItem("Copy" & @TAB & "Ctrl+C", $menu_edit)
 	Local $menu_paste = GUICtrlCreateMenuItem("Paste" & @TAB & "Ctrl+V", $menu_edit)
 	Local $menu_duplicate = GUICtrlCreateMenuItem("Duplicate" & @TAB & "Ctrl+D", $menu_edit)
@@ -125,7 +124,6 @@ Func _formToolbar()
 
 	GUICtrlSetState($menu_wipe, $GUI_DISABLE)
 
-;~ 	GUICtrlSetOnEvent($menu_vals, _menu_vals)
 	GUICtrlSetOnEvent($menu_copy, "_copy_selected")
 	GUICtrlSetOnEvent($menu_paste, "_onPasteSelected")
 	GUICtrlSetOnEvent($menu_duplicate, "_onDuplicate")
@@ -154,18 +152,22 @@ Func _formToolbar()
 	$menu_paste_pos = GUICtrlCreateMenuItem("Paste at mouse position", $menu_settings)
 	$menu_show_ctrl = GUICtrlCreateMenuItem("Show control when moving", $menu_settings)
 	$menu_show_hidden = GUICtrlCreateMenuItem("Show hidden controls", $menu_settings)
+	$menu_dpi_scaling = GUICtrlCreateMenuItem("Apply DPI scaling factor", $menu_settings)
 
 	GUICtrlSetOnEvent($menu_show_grid, _showgrid)
 	GUICtrlSetOnEvent($menu_grid_snap, _gridsnap)
 	GUICtrlSetOnEvent($menu_paste_pos, _pastepos)
 	GUICtrlSetOnEvent($menu_show_ctrl, _show_control)
 	GUICtrlSetOnEvent($menu_show_hidden, _menu_show_hidden)
+	GUICtrlSetOnEvent($menu_dpi_scaling, "_menu_dpi_scaling")
 
 	GUICtrlSetState($menu_show_grid, $GUI_CHECKED)
 	GUICtrlSetState($menu_grid_snap, $GUI_CHECKED)
 	GUICtrlSetState($menu_paste_pos, $GUI_CHECKED)
 	GUICtrlSetState($menu_show_ctrl, $GUI_CHECKED)
 	GUICtrlSetState($menu_show_hidden, $GUI_UNCHECKED)
+	GUICtrlSetState($menu_dpi_scaling, $GUI_UNCHECKED)
+
 	#EndRegion create-menu
 
 	#Region control-creation
@@ -654,7 +656,7 @@ Func _nudgeSelected($x = 0, $y = 0)
 	Local $nudgeAmount = 1
 	Local $adjustmentX = 0, $adjustmentX = 0
 	Local $count = $oSelected.count
-	For $oCtrl in $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls
 
 		$adjustmentX = Mod($oCtrl.Left, $nudgeAmount)
 		If $adjustmentX > 0 Then
@@ -673,9 +675,6 @@ Func _nudgeSelected($x = 0, $y = 0)
 			EndIf
 		EndIf
 		_change_ctrl_size_pos($oCtrl, $oCtrl.Left + $x * ($nudgeAmount + $adjustmentX), $oCtrl.Top + $y * ($nudgeAmount + $adjustmentY), $oCtrl.Width, $oCtrl.Height)
-
-;~ 		_update_control($oCtrl)
-
 	Next
 
 	;get last control
@@ -720,7 +719,6 @@ Func _onMousePrimaryDown()
 
 	Local $aDrawStartPos = GUIGetCursorInfo($hGUI)
 	Local Const $ctrl_hwnd = $aDrawStartPos[4]
-;~ 	Local $mCtrl = _control_map_from_hwnd($ctrl_hwnd)
 
 	Local $pos
 
@@ -796,12 +794,7 @@ Func _onMousePrimaryDown()
 
 						_hide_grippies()
 
-						;consider if this should be removed?
-;~ 						_add_to_selected($oCtrls.get($ctrl_hwnd))
-
 						$mode = $init_move
-
-						;ConsoleWrite("$init_move" & @CRLF)
 					EndIf
 			EndSwitch
 
@@ -815,8 +808,6 @@ Func _onMousePrimaryDown()
 
 					$mode = $init_selection
 
-					;ConsoleWrite("$init_selection" & @CRLF)
-
 				Case Else
 					If $oCtrls.exists($ctrl_hwnd) Then
 						ConsoleWrite("  control exists" & @CRLF)
@@ -829,13 +820,9 @@ Func _onMousePrimaryDown()
 
 						_show_grippies($oCtrl)
 
-;~ 						$mControls.Selected1 = $oCtrl
-
 						_populate_control_properties_gui($oCtrl)
 
 						$mode = $default
-
-						;ConsoleWrite("$default" & @CRLF)
 					EndIf
 			EndSwitch
 
@@ -851,8 +838,6 @@ Func _onMousePrimaryDown()
 					$mode = $init_selection
 
 					$bGuiClick = 1
-
-;~ 					ConsoleWrite("$init_selection" & @CRLF)
 
 				Case Else
 					If Not $oCtrls.exists($ctrl_hwnd) Then Return
@@ -894,18 +879,11 @@ Func _onMousePrimaryUp()
 			ConsoleWrite("** PrimaryUp: move **" & @CRLF)
 			ToolTip('')
 
-;~ 			$ctrl_hwnd = GUIGetCursorInfo($hGUI)[4]
-;~ 			$mCtrl = _control_map_from_hwnd($ctrl_hwnd)
-;~ 			$oCtrl = $oCtrls.get($ctrl_hwnd)
-;~ 			$mControls.Selected1 = $oCtrl
-
 			;we don't care what was dragged, we just want to populate based on latest selection
 			;to prevent mouse 'falling off' of control when dropped
 			$oCtrl = $oSelected.getLast()
 			If IsObj($oCtrl) Then
 				_populate_control_properties_gui($oCtrl)
-			Else
-				ConsoleWrite("  -------- not object: " & $oCtrl & @CRLF)
 			EndIf
 
 			_refreshGenerateCode()
@@ -923,11 +901,9 @@ Func _onMousePrimaryUp()
 			If $oSelected.count > 0 Then
 				$mode = $selection
 
-				;ConsoleWrite("$selection" & @CRLF)
 			Else
 				$mode = $default
 
-				;ConsoleWrite("$default" & @CRLF)
 			EndIf
 
 		Case $resize_nw, $resize_n, $resize_ne, $resize_e, $resize_se, $resize_s, $resize_sw, $resize_w
@@ -971,19 +947,16 @@ Func _onMousePrimaryUp()
 			$initResize = False
 
 			;clear graphics glitches (combobox, group)
-;~ 			if $mControls.Selected1.Type = 'Combo' Then
 			_WinAPI_RedrawWindow($hGUI)
-;~ 			EndIf
 
 			_formObjectExplorer_updateList()
 
 		Case Else    ;select single control
 			ConsoleWrite("** PrimaryUp: Else **" & @CRLF)
 			$ctrl_hwnd = GUIGetCursorInfo($hGUI)[4]
-;~ 			$mCtrl = _control_map_from_hwnd($ctrl_hwnd)
 			$oCtrl = $oCtrls.get($ctrl_hwnd)
-;~ 			$mControls.Selected1 = $oCtrl
-			If IsObj($oCtrl) Then	;if not an object, then probably a menu
+
+			If IsObj($oCtrl) Then    ;if not an object, then probably a menu
 				_add_to_selected($oCtrl)
 				_populate_control_properties_gui($oCtrl)
 			EndIf
@@ -1000,12 +973,9 @@ Func _onMouseSecondaryDown()
 			_set_current_mouse_pos()
 
 		Case Else
-;~ 			Local Const $mCtrl = _control_map_from_hwnd($ctrl_hwnd)
 			Local $oCtrl = $oCtrls.get($ctrl_hwnd)
 
 			If $oCtrls.exists($ctrl_hwnd) Then
-;~ 				$mControls.Selected1 = $oCtrl
-
 				_add_to_selected($oCtrl)
 
 				_show_grippies($oCtrl)
@@ -1024,7 +994,6 @@ Func _onMouseSecondaryUp()
 			ShowMenu($background_contextmenu, $mMouse.X, $mMouse.Y)
 
 		Case Else
-;~ 			Local Const $mCtrl = _control_map_from_hwnd($ctrl_hwnd)
 			Local $oCtrl = $oCtrls.get($ctrl_hwnd)
 
 			If $oCtrls.exists($ctrl_hwnd) Then
@@ -1059,11 +1028,9 @@ Func _onMouseMove()
 
 			Local $count = $oSelected.count
 
-			For $oCtrl in $oSelected.ctrls
+			For $oCtrl In $oSelected.ctrls
 
 				_change_ctrl_size_pos($oCtrl, $oCtrl.Left - $delta_x, $oCtrl.Top - $delta_y, $oCtrl.Width, $oCtrl.Height)
-
-;~ 				_update_control($oCtrl)
 
 				$tooltip &= $oCtrl.Name & ": X:" & $oCtrl.Left & ", Y:" & $oCtrl.Top & ", W:" & $oCtrl.Width & ", H:" & $oCtrl.Height & @CRLF
 			Next
@@ -1073,8 +1040,6 @@ Func _onMouseMove()
 			_show_grippies($oSelected.getLast())
 
 			$mode = $move
-
-			;ConsoleWrite("$move" & @CRLF)
 
 		Case $init_selection
 			Local Const $oRect = _rect_from_points($mMouse.X, $mMouse.Y, MouseGetPos(0), MouseGetPos(1))
@@ -1430,8 +1395,6 @@ Func _ctrl_fit_to_width()
 
 	$oCtrlSelectedFirst.Width = $new_width
 
-;~ 	_update_control($mControls.Selected1)
-
 	_show_grippies($oCtrlSelectedFirst)
 
 	GUICtrlSetData($h_form_width, $new_width)
@@ -1442,7 +1405,7 @@ EndFunc   ;==>_ctrl_fit_to_width
 
 Func _onPropertyChange($sPropertyName, $value)
 	ConsoleWrite($sPropertyName & " " & $value & @CRLF)
-EndFunc
+EndFunc   ;==>_onPropertyChange
 
 Func _ctrl_change_text()
 	Local Const $new_text = GUICtrlRead(@GUI_CtrlId)
@@ -1451,7 +1414,7 @@ Func _ctrl_change_text()
 
 	Switch $sel_count >= 1
 		Case True
-			For $oCtrl in $oSelected.ctrls
+			For $oCtrl In $oSelected.ctrls
 
 				If $oCtrl.Type = "Combo" Then
 					GUICtrlSetData($oCtrl.Hwnd, $new_text, $new_text)
@@ -1471,8 +1434,6 @@ Func _ctrl_change_text()
 					GUICtrlSetData($oCtrl.Hwnd, $new_text)
 					$oCtrl.Text = $new_text
 				EndIf
-
-;~ 				_update_control($mCtrl)
 			Next
 	EndSwitch
 
@@ -1505,8 +1466,6 @@ Func _ctrl_change_name()
 		Else
 			$oCtrl.Name = $new_name
 		EndIf
-
-;~ 		_update_control($mCtrl)
 	EndIf
 
 	_refreshGenerateCode()
@@ -1521,7 +1480,7 @@ Func _ctrl_change_left()
 
 	Switch $sel_count >= 1
 		Case True
-			For $oCtrl in $oSelected.ctrls
+			For $oCtrl In $oSelected.ctrls
 
 				;move the selected control
 				GUICtrlSetPos($oCtrl.Hwnd, $new_data, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
@@ -1529,7 +1488,6 @@ Func _ctrl_change_left()
 				$oCtrl.Left = $new_data
 
 				;update the mControls map
-;~ 				_update_control($mCtrl)
 
 				_show_grippies($oCtrl)
 
@@ -1547,15 +1505,12 @@ Func _ctrl_change_top()
 
 	Switch $sel_count >= 1
 		Case True
-			For $oCtrl in $oSelected.ctrls
+			For $oCtrl In $oSelected.ctrls
 
 				;move the selected control
 				GUICtrlSetPos($oCtrl.Hwnd, $oCtrl.Left, $new_data, $oCtrl.Width, $oCtrl.Height)
 				;update the selected property
 				$oCtrl.Top = $new_data
-
-				;update the mControls map
-;~ 				_update_control($oCtrl)
 
 				_show_grippies($oCtrl)
 			Next
@@ -1572,15 +1527,12 @@ Func _ctrl_change_width()
 
 	Switch $sel_count >= 1
 		Case True
-			For $oCtrl in $oSelected.ctrls
+			For $oCtrl In $oSelected.ctrls
 
 				;move the selected control
 				GUICtrlSetPos($oCtrl.Hwnd, $oCtrl.Left, $oCtrl.Top, $new_data, $oCtrl.Height)
 				;update the selected property
 				$oCtrl.Width = $new_data
-
-				;update the mControls map
-;~ 				_update_control($oCtrl)
 
 				_show_grippies($oCtrl)
 			Next
@@ -1597,15 +1549,12 @@ Func _ctrl_change_height()
 
 	Switch $sel_count >= 1
 		Case True
-			For $oCtrl in $oSelected.ctrls
+			For $oCtrl In $oSelected.ctrls
 
 				;move the selected control
 				GUICtrlSetPos($oCtrl.Hwnd, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $new_data)
 				;update the selected property
 				$oCtrl.Height = $new_data
-
-				;update the mControls map
-;~ 				_update_control($oCtrl)
 
 				_show_grippies($oCtrl)
 			Next
@@ -1637,7 +1586,7 @@ Func _ctrl_change_bkColor()
 
 	Switch $sel_count >= 1
 		Case True
-			For $oCtrl in $oSelected.ctrls
+			For $oCtrl In $oSelected.ctrls
 
 				;convert string to color then apply
 				If $oCtrl.Type <> "Label" Then Return 0
@@ -1654,9 +1603,6 @@ Func _ctrl_change_bkColor()
 				EndIf
 
 				$oCtrl.Background = $colorInput
-
-				;update the mControls map
-;~ 				_update_control($oCtrl)
 			Next
 	EndSwitch
 
@@ -1686,7 +1632,7 @@ Func _ctrl_change_Color()
 
 	Switch $sel_count >= 1
 		Case True
-			For $oCtrl in $oSelected.ctrls
+			For $oCtrl In $oSelected.ctrls
 				;convert string to color then apply
 				If $oCtrl.Type <> "Label" Then Return 0
 
@@ -1702,9 +1648,6 @@ Func _ctrl_change_Color()
 				EndIf
 
 				$oCtrl.Color = $colorInput
-
-				;update the mControls map
-;~ 				_update_control($oCtrl)
 			Next
 	EndSwitch
 
@@ -1771,7 +1714,7 @@ Func _wipe_current_gui()
 
 	Local Const $count = $oCtrls.count
 
-	For $oCtrl in $oCtrls.ctrls
+	For $oCtrl In $oCtrls.ctrls
 
 		Switch $oCtrl.Type
 			Case "Updown"
@@ -1784,7 +1727,6 @@ Func _wipe_current_gui()
 		EndSwitch
 	Next
 
-;~ 	_remove_all_control_maps()
 	$oCtrls.removeAll()
 
 	_set_default_mode()
@@ -2086,7 +2028,7 @@ Func _menu_show_hidden()
 
 			$setting_show_hidden = False
 
-			For $oCtrl in $oCtrls.ctrls
+			For $oCtrl In $oCtrls.ctrls
 
 				If Not $oCtrl.Visible Then
 					GUICtrlSetState($oCtrl.Hwnd, $GUI_HIDE)
@@ -2104,7 +2046,7 @@ Func _menu_show_hidden()
 
 			$setting_show_hidden = True
 
-			For $oCtrl in $oCtrls.ctrls
+			For $oCtrl In $oCtrls.ctrls
 
 				If Not $oCtrl.Visible Then
 					GUICtrlSetState($oCtrl.Hwnd, $GUI_SHOW)
@@ -2112,6 +2054,36 @@ Func _menu_show_hidden()
 			Next
 	EndSwitch
 EndFunc   ;==>_menu_show_hidden
+
+
+;------------------------------------------------------------------------------
+; Title...........: _menu_dpi_scaling
+; Description.....: Update INI setting for dpi scaling
+; Events..........: settings menu item select
+;------------------------------------------------------------------------------
+Func _menu_dpi_scaling()
+	ConsoleWrite("scaling" & @CRLF)
+	Switch BitAND(GUICtrlRead($menu_dpi_scaling), $GUI_CHECKED) = $GUI_CHECKED
+		Case True
+			GUICtrlSetState($menu_dpi_scaling, $GUI_UNCHECKED)
+
+			IniWrite($sIniPath, "Settings", "DpiScaling", 0)
+
+			$setting_dpi_scaling = False
+
+
+		Case False
+			GUICtrlSetState($menu_dpi_scaling, $GUI_CHECKED)
+
+			IniWrite($sIniPath, "Settings", "DpiScaling", 1)
+
+			$setting_dpi_scaling = True
+
+	EndSwitch
+
+	_refreshGenerateCode()
+EndFunc   ;==>_menu_dpi_scaling
+
 
 
 ;------------------------------------------------------------------------------
@@ -2133,7 +2105,7 @@ Func _menu_vals()
 
 	Local $values = "Total Of Controls = " & $ctrl_count & @CRLF & @CRLF
 
-	For $oCtrl in $oCtrls.ctrls
+	For $oCtrl In $oCtrls.ctrls
 
 		$values &= "Handle = " & Hex($oCtrl.Hwnd) & @CRLF & _
 				"Type   = " & $oCtrl.Type & @CRLF & _

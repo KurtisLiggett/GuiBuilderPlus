@@ -19,10 +19,6 @@ Func _create_ctrl($oCtrl = '')
 			$isPaste = True
 			$oNewControl = $oCtrl
 
-;~ 			$mControls.CurrentType = $oNewControl.Type
-
-;~ 			ConsoleWrite("type " & $mControls.CurrentType & @CRLF)
-
 		Case False
 			Local $cursor_pos = _mouse_snap_pos()
 
@@ -61,7 +57,7 @@ Func _create_ctrl($oCtrl = '')
 		$name = $oNewControl.Type & "_" & $j
 
 		If $count >= 1 Then
-			For $oCtrl in $oCtrls.ctrls
+			For $oCtrl In $oCtrls.ctrls
 
 				If $oCtrl.Name = $name Then
 					$found = True
@@ -72,14 +68,12 @@ Func _create_ctrl($oCtrl = '')
 			$found = False
 		EndIf
 	WEnd
-;~ 	$oNewControl.Name = $oNewControl.Type & "_" & $mControls[$oNewControl.Type & "Count"]
 	$oNewControl.Name = $name
 
 	Switch $oNewControl.Type
 		Case "Updown"
 			$oNewControl.Text = "0"
 		Case Else
-;~ 			$oNewControl.Text = $oNewControl.Type & " " & $mControls[$oNewControl.Type & "Count"]
 			;if copy+paste, use same text
 			If Not $isPaste Then
 				$oNewControl.Text = $oNewControl.Type & " " & $j
@@ -196,7 +190,6 @@ Func _create_ctrl($oCtrl = '')
 			If BitAND(GUICtrlRead($menu_show_grid), $GUI_CHECKED) = $GUI_CHECKED Then
 				_show_grid($background, $win_client_size[0], $win_client_size[1])
 			EndIf
-;~ 			GUICtrlSetState($background, $GUI_DISABLE)
 
 		Case "TreeView"
 			$oNewControl.Hwnd = GUICtrlCreateTreeView($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
@@ -258,10 +251,10 @@ Func _create_ctrl($oCtrl = '')
 		$oCtrls.incTypeCount($oNewControl.Type)
 
 		Switch IsObj($oCtrl)
-			Case True	;paste from existing object
+			Case True    ;paste from existing object
 				GUICtrlSetData($oNewControl.Hwnd, $oNewControl.Text)
 
-			Case False	;new object
+			Case False    ;new object
 				$oNewControl.Text = $oNewControl.Text
 		EndSwitch
 
@@ -298,7 +291,7 @@ EndFunc   ;==>_GuiCtrlCreateSlider
 Func _new_tab()
 	Local $oCtrl
 
-	For $oCtrl in $oCtrls.ctrls
+	For $oCtrl In $oCtrls.ctrls
 		If $oCtrl.Type = "Tab" Then
 			ExitLoop
 		EndIf
@@ -313,8 +306,6 @@ Func _new_tab()
 	$oCtrl.Tabs.add($tab)
 
 	_GUICtrlTab_SetCurSel($oCtrl.Hwnd, $oCtrl.TabCount - 1)
-
-;~ 	GUISwitch($hGUI)
 
 	_refreshGenerateCode()
 	_formObjectExplorer_updateList()
@@ -335,7 +326,7 @@ EndFunc   ;==>_onCtrlTabSwitch
 Func _delete_tab()
 	Local $oCtrl
 
-	For $oCtrl in $oCtrls.ctrls
+	For $oCtrl In $oCtrls.ctrls
 		If $oCtrl.Type = "Tab" Then
 			ExitLoop
 		EndIf
@@ -349,7 +340,6 @@ Func _delete_tab()
 		$oCtrl.TabCount = $oCtrl.TabCount - 1
 		_GUICtrlTab_SetCurSel($oCtrl.Hwnd, 0)
 	Else
-;~ 		_delete_ctrl($mControls[$i])
 		_delete_selected_controls()
 	EndIf
 
@@ -366,8 +356,6 @@ Func _control_type()
 	ConsoleWrite("tool selected: " & $oCtrls.CurrentType & @CRLF)
 
 	$mode = $draw
-
-	;ConsoleWrite("$draw" & @CRLF)
 EndFunc   ;==>_control_type
 
 
@@ -418,7 +406,7 @@ Func _left_top_union_rect()
 	$smallest.Left = $oCtrls.getFirst().Left
 	$smallest.Top = $oCtrls.getFirst().Top
 
-	For $oCtrl in $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls
 
 		;ConsoleWrite('- ' & $sel_ctrl.Left & @TAB & $smallest.Left & @CRLF)
 
@@ -455,14 +443,6 @@ Func _copy_selected()
 
 			_selected_to_clipboard($selected, $sel_count)
 
-;~ 			For $i = 1 To $sel_count
-;~ 				$clip_ctrl = $mClipboard[$i]
-
-;~ 				;$clip_ctrl.Left = Abs($smallest.Left - $clip_ctrl.Left)
-;~ 				;$clip_ctrl.Top = Abs($smallest.Top - $clip_ctrl.Top)
-
-;~ 				$mClipboard[$i] = $clip_ctrl
-;~ 			Next
 	EndSwitch
 EndFunc   ;==>_copy_selected
 
@@ -475,13 +455,11 @@ Func _selected_to_array(Const $sel_count, Const $smallest)
 	Local $selected[$sel_count][2] ; second dimension is magnitude of the control's rectangle
 
 	Local $i = 0
-	For $oCtrl in $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls
 		$selected[$i][0] = $oCtrl
 		$selected[$i][1] = _vector_magnitude($smallest.Left, $smallest.Top, $oCtrl.Left, $oCtrl.Top)
 		$i += 1
 	Next
-
-;~ 	_ArraySort($selected, 0, 0, 0, 1)
 
 	Return $selected
 EndFunc   ;==>_selected_to_array
@@ -494,7 +472,7 @@ EndFunc   ;==>_selected_to_array
 Func _selected_to_clipboard(Const $selected, Const $sel_count)
 	$oClipboard.removeAll()
 	Local $i = 0
-	For $oCtrl in $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls
 		$oClipboard.add($selected[$i][0])
 		$i += 1
 	Next
@@ -511,9 +489,9 @@ Func _PasteSelected($bDuplicate = False)
 
 	Switch $clipboard_count >= 1
 		Case True
-			Local $oNewCtrl,  $i=0
+			Local $oNewCtrl, $i = 0
 
-			For $oCtrl in $oClipboard.ctrls
+			For $oCtrl In $oClipboard.ctrls
 				;create a copy, so we don't overwrite the original!
 				$oNewCtrl = $oClipboard.getCopy($oCtrl.Hwnd)
 
@@ -569,7 +547,7 @@ Func _display_selected_tooltip()
 
 	Local Const $count = $oSelected.count
 
-	For $oCtrl in $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls
 		$tooltip &= $oCtrl.Name & ": X:" & $oCtrl.Left & ", Y:" & $oCtrl.Top & ", W:" & $oCtrl.Width & ", H:" & $oCtrl.Height & @CRLF
 	Next
 
@@ -587,14 +565,10 @@ EndFunc   ;==>_control_intersection
 Func _group_select(Const $oCtrl)
 	If $oCtrl.Type = "Group" Then
 		_select_control_group($oCtrl)
-
 		_set_current_mouse_pos()
-
 		_hide_grippies()
 
 		$mode = $init_move
-
-		;ConsoleWrite("$init_move" & @CRLF)
 
 		Return True
 	EndIf
@@ -611,7 +585,7 @@ Func _select_control_group(Const $oGroup)
 	$oGroupRect.Height = $oGroup.Height
 
 	Local Const $count = $oCtrls.count
-	For $oCtrl in $oCtrls.ctrls
+	For $oCtrl In $oCtrls.ctrls
 
 		If _control_intersection($oCtrl, $oGroupRect) Then
 			_add_to_selected($oCtrl, False)
@@ -651,7 +625,7 @@ EndFunc   ;==>_add_to_selected
 ;					as the rectangle intersects with the controls
 ;------------------------------------------------------------------------------
 Func _add_remove_selected_control(Const $oRect)
-	For $oCtrl in $oCtrls.ctrls
+	For $oCtrl In $oCtrls.ctrls
 		Switch _control_intersection($oCtrl, $oRect)
 			Case True
 				Switch _add_to_selected($oCtrl, False)
@@ -703,7 +677,7 @@ Func _delete_selected_controls()
 		Case True
 			_clear_control_properties_gui()
 
-			For $oCtrl in $oSelected.ctrls
+			For $oCtrl In $oSelected.ctrls
 				_delete_ctrl($oCtrl)
 			Next
 
@@ -729,7 +703,7 @@ Func _remove_from_selected(Const $oCtrl)
 			Return SetError(1, 0, False)
 	EndSwitch
 
-	For $oThisCtrl in $oSelected.ctrls
+	For $oThisCtrl In $oSelected.ctrls
 		Switch $oCtrl.Hwnd
 			Case $oThisCtrl.Hwnd
 				$oSelected.remove($oThisCtrl.Hwnd)
@@ -750,7 +724,7 @@ Func _display_selection_rect(Const $oRect)
 EndFunc   ;==>_display_selection_rect
 
 Func _hide_selected_controls()
-	For $oCtrl in $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls
 		If Not $setting_show_control Then
 			GUICtrlSetState($oCtrl.Hwnd, $GUI_HIDE)
 		EndIf
@@ -758,7 +732,7 @@ Func _hide_selected_controls()
 EndFunc   ;==>_hide_selected_controls
 
 Func _show_selected_controls()
-	For $oCtrl in $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls
 		If Not $setting_show_control Then
 			GUICtrlSetState($oCtrl.Hwnd, $GUI_SHOW)
 		EndIf
@@ -832,10 +806,6 @@ Func _handle_grippy(ByRef $oCtrl, Const $left, Const $top, Const $right, Const $
 	EndSwitch
 
 	_change_ctrl_size_pos($oCtrl, $left, $top, $right, $bottom)
-
-;~ 	$mControls.Selected1 = $oCtrl
-
-;~ 	_update_control($oCtrl)
 
 	_show_grippies($oCtrl)
 

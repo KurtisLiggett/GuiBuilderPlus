@@ -46,7 +46,6 @@ Func _formObjectExplorer()
 	;object list
 	$lvObjects = GUICtrlCreateTreeView(1, 5, $w, $h - $titleBarHeight - 40, BitOR($TVS_LINESATROOT, $TVS_HASLINES, $TVS_HASBUTTONS, $TVS_FULLROWSELECT, $TVS_SHOWSELALWAYS), $WS_EX_TRANSPARENT)
 	GUICtrlSetResizing(-1, $GUI_DOCKBORDERS)
-;~ 	_GUICtrlListView_SetColumnWidth($lvObjects, 0, $w / 2 - 20 - 5) ; sets column width
 
 	;bottom section
 	$labelObjectCount = GUICtrlCreateLabel("Object Count: " & $oCtrls.count, 5, $h - 18 - $titleBarHeight, $w - 20)
@@ -94,7 +93,6 @@ EndFunc   ;==>_onExitObjectExplorer
 ; Events..........: select listview item
 ;------------------------------------------------------------------------------
 Func _onLvObjectsItem()
-;~ 	Local $aIndices = _GUICtrlListView_GetSelectedIndices($lvObjects, True)
 	$childSelected = False
 
 	Local $count = _GUICtrlTreeView_GetCount($lvObjects)
@@ -121,7 +119,7 @@ Func _onLvObjectsItem()
 				If $oParentCtrl.Type = "Tab" Then
 					;get tab #
 					Local $i = 0
-					For $oTab in $oParentCtrl.Tabs
+					For $oTab In $oParentCtrl.Tabs
 						If $oTab.Hwnd = Dec($textHwnd) Then
 							$childSelected = True
 							_GUICtrlTab_SetCurSel($oParentCtrl.Hwnd, $i)
@@ -165,6 +163,16 @@ Func _onLvObjectsDeleteMenu()
 	;WM_NOTIFY is called right before this, which selects the right-clicked control
 	_delete_selected_controls()
 EndFunc   ;==>_onLvObjectsDeleteMenu
+
+
+;------------------------------------------------------------------------------
+; Title...........: _onLvObjectsTabItemDelete
+; Description.....: Show Tab Item delete menu
+; Events..........: right-click context menu
+;------------------------------------------------------------------------------
+Func _onLvObjectsTabItemDelete()
+	ShowMenu($overlay_contextmenutab, $mMouse.X, $mMouse.Y)
+EndFunc
 #EndRegion events
 
 
@@ -178,27 +186,30 @@ Func _formObjectExplorer_updateList()
 	Local $count = $oCtrls.count
 	Local $aList[$count]
 
-
-	Local $lvItem, $lvMenu, $lvMenuDelete, $childItem
+	Local $lvItem, $lvMenu, $lvMenuDelete, $childItem, $tabMenu, $tabMenuDelete, $lvMenuNewTab, $lvMenuDeleteTab
 	_GUICtrlTreeView_DeleteAll($lvObjects)
-	For $oCtrl in $oCtrls.ctrls
+	For $oCtrl In $oCtrls.ctrls
 		$lvItem = GUICtrlCreateTreeViewItem($oCtrl.Name & "       " & @TAB & "(HWND: " & Hex($oCtrl.Hwnd) & ")", $lvObjects)
 		GUICtrlSetOnEvent(-1, "_onLvObjectsItem")
 
 		$lvMenu = GUICtrlCreateContextMenu($lvItem)
 		$lvMenuDelete = GUICtrlCreateMenuItem("Delete", $lvMenu)
-		;menu events
 		GUICtrlSetOnEvent($lvMenuDelete, "_onLvObjectsDeleteMenu")
 
 		If $oCtrl.Type = "Tab" Then
-			For $oTab in $oCtrl.Tabs
+			$lvMenuNewTab = GUICtrlCreateMenuItem("New Tab", $lvMenu)
+			$lvMenuDeleteTab = GUICtrlCreateMenuItem("Delete Tab", $lvMenu)
+			GUICtrlSetOnEvent($lvMenuNewTab, "_new_tab")
+			GUICtrlSetOnEvent($lvMenuDeleteTab, "_delete_tab")
+
+			For $oTab In $oCtrl.Tabs
 				$childItem = GUICtrlCreateTreeViewItem($oTab.Name & "       " & @TAB & "(HWND: " & Hex($oTab.Hwnd) & ")", $lvItem)
 				GUICtrlSetOnEvent(-1, "_onLvObjectsItem")
 
-;~ 				$lvMenu = GUICtrlCreateContextMenu($childItem)
-;~ 				$lvMenuDelete = GUICtrlCreateMenuItem("Delete", $lvMenu)
-;~ 				;menu events
-;~ 				GUICtrlSetOnEvent($lvMenuDelete, "_onLvObjectsDeleteMenu")
+				$tabMenu = GUICtrlCreateContextMenu($childItem)
+				$tabMenuDelete = GUICtrlCreateMenuItem("Delete Tab", $tabMenu)
+				GUICtrlSetOnEvent($tabMenuDelete, "_delete_tab")
+
 				_GUICtrlTreeView_Expand($lvObjects, $lvItem)
 			Next
 		EndIf

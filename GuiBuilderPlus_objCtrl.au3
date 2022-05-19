@@ -3,117 +3,6 @@
 ; Description ...: Create and manage objects for control components
 ; ===============================================================================================================================
 
-;~ #Region object test scripts
-;~ #include "UDFs\AutoItObject.au3"
-;~ #include "UDFs\oLinkedList.au3"
-;~ #include <Array.au3>
-;~ _AutoItObject_StartUp()
-
-;~ ;create GUI for generating HWNDs
-;~ Global $hGUI = GUICreate("", 100, 100)
-;~ Local $ctrl1 = GUICtrlCreateLabel("test1", 0, 0)
-;~ ConsoleWrite("$ctrl1: " & $ctrl1 & @CRLF)
-;~ Local $ctrl2 = GUICtrlCreateLabel("test2", 0, 50)
-;~ ConsoleWrite("$ctrl2: " & $ctrl2 & @CRLF)
-
-;~ ;create container
-;~ Global $myControls = _objCtrls()
-;~ ConsoleWrite("Count: " & $myControls.count & @CRLF)
-
-;~ ;create 1st control
-;~ Global $thisCtrl1 = $myControls.createNew()
-;~ $thisCtrl1.Hwnd = $ctrl1
-;~ $thisCtrl1.Name = "Ctrl1"
-;~ $myControls.add($thisCtrl1)
-
-;~ ;create 2nd control
-;~ Global $thisCtrl2 = $myControls.createNew()
-;~ $thisCtrl2.Hwnd = $ctrl2
-;~ $thisCtrl2.Name = "Ctrl2"
-;~ $myControls.add($thisCtrl2)
-
-;~ ;get name of ctrl
-;~ ConsoleWrite(@CRLF)
-;~ ConsoleWrite("name 1: " & $myControls.get($ctrl1).Name & @CRLF)
-;~ ConsoleWrite("name 2: " & $myControls.get($ctrl2).Name & @CRLF)
-
-;~ ;remove 1st
-;~ ConsoleWrite(@CRLF)
-;~ ConsoleWrite("count: " & $myControls.count & ", list size: " & $myControls.ctrls.size & @CRLF)
-;~ $myControls.remove($ctrl1)
-;~ ConsoleWrite("count: " & $myControls.count & ", list size: " & $myControls.ctrls.size & @CRLF)
-
-;~ ;get 2nd ctrl Name again,  to make sure it's still there
-;~ ConsoleWrite(@CRLF)
-;~ ConsoleWrite("name 1: " & $myControls.get($ctrl1).Name & @CRLF)    ;1st control no longer exists, returns nothing
-;~ $myControls.get($ctrl1)    ;does not exist, returns -1
-;~ ConsoleWrite("name 2: " & $myControls.get($ctrl2).Name & @CRLF)
-
-;~ ;get ctrl and set new name
-;~ ConsoleWrite(@CRLF)
-;~ $myControls.add($thisCtrl1)
-;~ ConsoleWrite("Name 1: " & $myControls.get($ctrl1).Name & @CRLF)
-;~ $myControls.get($ctrl1).Name = "Test Name 1"
-;~ ConsoleWrite("New Name 1: " & $myControls.get($ctrl1).Name & @CRLF)
-
-;~ ConsoleWrite(@CRLF)
-;~ ConsoleWrite("Ctrl 1 exists: " & $myControls.exists($ctrl1) & @CRLF)
-;~ ConsoleWrite("Ctrl 3 exists: " & $myControls.exists(5) & @CRLF)
-
-;~ Global $test = $myControls.get($ctrl1)
-;~ Global $keys = $myControls.get($ctrl1).getKeys()
-;~ ;_ArrayDisplay($keys)
-
-
-;~ ;delete all
-;~ ConsoleWrite(@CRLF)
-;~ ConsoleWrite("before delete all -- count: " & $myControls.count & ", list size: " & $myControls.ctrls.size & @CRLF)
-;~ $myControls.removeAll()
-;~ ConsoleWrite("count: " & $myControls.count & ", list size: " & $myControls.ctrls.size & @CRLF)
-
-
-;~ ;increment type count
-;~ ConsoleWrite(@CRLF)
-;~ ConsoleWrite("count: " & $myControls.getTypeCount("Button") & @CRLF)
-;~ $myControls.incTypeCount("Button")
-;~ $myControls.incTypeCount("Tab")
-;~ $myControls.incTypeCount("Button")
-;~ $myControls.incTypeCount("Label")
-;~ $myControls.decTypeCount("Button")
-;~ ConsoleWrite("count: " & $myControls.getTypeCount("Button") & @CRLF)
-
-
-;~ ;get last control
-;~ ConsoleWrite(@CRLF)
-;~ $myControls.removeAll()
-
-;~ Local $ctrl3 = GUICtrlCreateLabel("test2", 0, 50)
-;~ Local $ctrl4 = GUICtrlCreateLabel("test2", 0, 50)
-;~ Local $ctrl5 = GUICtrlCreateLabel("test2", 0, 50)
-
-;~ Global $thisCtrl3 = $myControls.createNew()
-;~ $thisCtrl3.Hwnd = $ctrl3
-;~ $thisCtrl3.Name = "Ctrl3"
-;~ $myControls.add($thisCtrl3)
-
-;~ Global $thisCtrl4 = $myControls.createNew()
-;~ $thisCtrl4.Hwnd = $ctrl4
-;~ $thisCtrl4.Name = "Ctrl4"
-;~ $myControls.add($thisCtrl4)
-
-;~ Global $thisCtrl5 = $myControls.createNew()
-;~ $thisCtrl5.Hwnd = $ctrl5
-;~ $thisCtrl5.Name = "Ctrl5"
-;~ $myControls.add($thisCtrl5)
-
-;~ ConsoleWrite("count: " & $myControls.count & @CRLF)
-;~ ConsoleWrite("get Ctrl5: " & $myControls.get($ctrl5).Name & @CRLF)
-;~ ConsoleWrite("get last: " & $myControls.getLast().Name & @CRLF)
-;~ ;ConsoleWrite( IsObj($myControls.getLast()) & @CRLF)
-
-;~ ConsoleWrite(@CRLF)
-;~ #EndRegion
-
 
 ;------------------------------------------------------------------------------
 ; Title...........: _objCtrls
@@ -157,7 +46,6 @@ Func _objCtrls()
 	_AutoItObject_AddMethod($oObject, "getFirst", "_objCtrls_getFist")
 	_AutoItObject_AddMethod($oObject, "getLast", "_objCtrls_getLast")
 	_AutoItObject_AddMethod($oObject, "getCopy", "_objCtrls_getCopy")
-;~ 	_AutoItObject_AddMethod($oObject, "set", "_objCtrls_set")
 	_AutoItObject_AddMethod($oObject, "exists", "_objCtrls_exists")
 	_AutoItObject_AddMethod($oObject, "incTypeCount", "_objCtrls_incTypeCount")
 	_AutoItObject_AddMethod($oObject, "decTypeCount", "_objCtrls_decTypeCount")
@@ -240,7 +128,7 @@ Func _objCtrls_getLast($oSelf)
 	#forceref $oSelf
 
 	If $oSelf.count > 0 Then
-		Return $oSelf.ctrls.at($oSelf.count-1)
+		Return $oSelf.ctrls.at($oSelf.count - 1)
 	Else
 		Return -1
 	EndIf
@@ -386,7 +274,7 @@ Func _objCreateRect()
 	_AutoItObject_AddProperty($oSelf, "Height", $ELSCOPE_PUBLIC, 0)
 
 	Return $oSelf
-EndFunc   ;==>_CreateListItem
+EndFunc   ;==>_objCreateRect
 
 
 ;example by ProgAndy
