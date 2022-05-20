@@ -12,6 +12,8 @@ Func _formMain()
 	;create the GUI
 	$hGUI = GUICreate($progName & " - Form (" & $main_width & ", " & $main_height & ')', $main_width, $main_height, $main_left, $main_top, BitOR($WS_SIZEBOX, $WS_SYSMENU, $WS_MINIMIZEBOX), $WS_EX_ACCEPTFILES)
 	$win_client_size = WinGetClientSize($hGUI)
+	WinSetTitle($hGUI, "", $progName & " - Form (" & $win_client_size[0] & ", " & $win_client_size[1] & ")")
+
 
 	;GUI events
 	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExit", $hGUI)
@@ -31,7 +33,7 @@ Func _formMain()
 	GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY")
 
 	;set GUI font
-	GUISetFont(10, -1, -1, "Segoe UI")
+;~ 	GUISetFont(10, -1, -1, "Segoe UI")
 
 
 	;create the background and context menu
@@ -1325,25 +1327,25 @@ Func _clear_control_properties_gui()
 EndFunc   ;==>_clear_control_properties_gui
 
 
-Func _disable_control_properties_gui()
-	GUICtrlSetState($h_form_text, $GUI_DISABLE)
-	GUICtrlSetState($h_form_name, $GUI_DISABLE)
-	GUICtrlSetState($h_form_left, $GUI_DISABLE)
-	GUICtrlSetState($h_form_top, $GUI_DISABLE)
-	GUICtrlSetState($h_form_width, $GUI_DISABLE)
-	GUICtrlSetState($h_form_height, $GUI_DISABLE)
-	GUICtrlSetState($h_form_bkColor, $GUI_DISABLE)
-	GUICtrlSetState($h_form_Color, $GUI_DISABLE)
+;~ Func _disable_control_properties_gui()
+;~ 	GUICtrlSetState($h_form_text, $GUI_DISABLE)
+;~ 	GUICtrlSetState($h_form_name, $GUI_DISABLE)
+;~ 	GUICtrlSetState($h_form_left, $GUI_DISABLE)
+;~ 	GUICtrlSetState($h_form_top, $GUI_DISABLE)
+;~ 	GUICtrlSetState($h_form_width, $GUI_DISABLE)
+;~ 	GUICtrlSetState($h_form_height, $GUI_DISABLE)
+;~ 	GUICtrlSetState($h_form_bkColor, $GUI_DISABLE)
+;~ 	GUICtrlSetState($h_form_Color, $GUI_DISABLE)
 
-	GUICtrlSetState($h_form_visible, $GUI_DISABLE)
-	GUICtrlSetState($h_form_enabled, $GUI_DISABLE)
-	GUICtrlSetState($h_form_ontop, $GUI_DISABLE)
-	GUICtrlSetState($h_form_dropaccepted, $GUI_DISABLE)
-	GUICtrlSetState($h_form_focus, $GUI_DISABLE)
+;~ 	GUICtrlSetState($h_form_visible, $GUI_DISABLE)
+;~ 	GUICtrlSetState($h_form_enabled, $GUI_DISABLE)
+;~ 	GUICtrlSetState($h_form_ontop, $GUI_DISABLE)
+;~ 	GUICtrlSetState($h_form_dropaccepted, $GUI_DISABLE)
+;~ 	GUICtrlSetState($h_form_focus, $GUI_DISABLE)
 
-	GUICtrlSetState($h_form_style_top, $GUI_DISABLE)
-	GUICtrlSetState($h_form_style_autocheckbox, $GUI_DISABLE)
-EndFunc   ;==>_disable_control_properties_gui
+;~ 	GUICtrlSetState($h_form_style_top, $GUI_DISABLE)
+;~ 	GUICtrlSetState($h_form_style_autocheckbox, $GUI_DISABLE)
+;~ EndFunc   ;==>_disable_control_properties_gui
 
 
 Func _enable_control_properties_gui()
@@ -1848,7 +1850,8 @@ Func _set_default_mode()
 
 	_clear_control_properties_gui()
 
-	_disable_control_properties_gui()
+;~ 	_disable_control_properties_gui()
+	_showProperties($props_Main)
 
 	$mode = $default
 EndFunc   ;==>_set_default_mode

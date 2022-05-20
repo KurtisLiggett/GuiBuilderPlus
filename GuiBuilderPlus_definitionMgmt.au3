@@ -178,7 +178,7 @@ Func _load_gui_definition($AgdInfile = '')
 	EndIf
 
 	;only wipe if GUI exists already
-	If Not $CmdLine[0] Then
+	If IsHWnd($hGUI) Then
 		_wipe_current_gui()
 	EndIf
 
@@ -215,7 +215,8 @@ Func _load_gui_definition($AgdInfile = '')
 			$oCtrl.Background = Dec(StringReplace($oCtrl.Background, "0x", ""))
 		EndIf
 
-		Local $oNewCtrl = _create_ctrl($oCtrl)
+		Local $oNewCtrl = _create_ctrl($oCtrl, True)
+
 
 		$oCtrl = $oCtrls.get($oNewCtrl.Hwnd)
 		If $oCtrl.Type = "Tab" Then

@@ -12,6 +12,10 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
+;  05/19/2022 ...: 	- FIXED:	Wrong GUI width and height displayed at startup
+;					- FIXED:	Control names not applied when loading from agd definition file
+;					- ADDED:	Now you can set properties for the main GUI
+;
 ;  05/19/2022 ...: 	- UPDATE:	Converted maps to objects using AutoItObject UDF
 ;					- UPDATE:	Changed to new style of property inspector using GUIScrollBars_Ex UDF by Melba23
 ;					- FIXED:	Better handling in Object Explorer for controls with no name
@@ -156,7 +160,7 @@ Global $lvObjects, $labelObjectCount, $childSelected
 ;~ Global $hBgGraphic
 
 ;Property Inspector
-Global $hPropGUI
+Global $hPropGUI_Main, $hPropGUI_Ctrls
 
 ;GUI Constants
 Global Const $main_width = 400
@@ -169,8 +173,9 @@ Global Const $toolbar_left = $main_left - ($toolbar_width + 5)
 Global Const $toolbar_top = $main_top
 Global Const $iconset = @ScriptDir & "\resources\Icons\" ; Added by: TheSaint
 Global Const $grippy_size = 5
-Const $default = 0, $draw = 1, $init_move = 2, $move = 3, $init_selection = 4, $selection = 5, _
-		$resize_nw = 6, $resize_n = 7, $resize_ne = 8, $resize_e = 9, $resize_se = 10, $resize_s = 11, $resize_sw = 12, $resize_w = 13
+Const Enum $default, $draw, $init_move, $move, $init_selection, $selection, _
+		$resize_nw, $resize_n, $resize_ne, $resize_e, $resize_se, $resize_s, $resize_sw, $resize_w
+Const Enum $props_Main, $props_Ctrls
 ; Cursor Consts - added by: Jaberwacky
 Global Const $ARROW = 2, $CROSS = 3, $SIZE_ALL = 9, $SIZENESW = 10, $SIZENS = 11, $SIZENWSE = 12, $SIZEWS = 13
 
@@ -285,7 +290,8 @@ Func _main()
 	EndIf
 
 	GUISetState(@SW_SHOWNORMAL, $toolbar)
-	GUISetState(@SW_SHOWNORMAL, $hPropGUI)
+	GUISetState(@SW_SHOWNOACTIVATE, $hPropGUI_Main)
+	GUISwitch($hGUI)
 	GUISetState(@SW_SHOWNORMAL, $hGUI)
 	$bResizedFlag = 0
 
@@ -332,7 +338,7 @@ Func _check_command_line()
 	If $CmdLine[0] > 0 Then
 		If StringRight($CmdLine[1], 4) = ".agd" Then
 			$AgdInfile = FileGetLongName($CmdLine[1])
-			MsgBox(0, "", $AgdInfile)
+;~ 			MsgBox(0, "", $AgdInfile)
 			_load_gui_definition($AgdInfile)
 		EndIf
 	EndIf
@@ -379,7 +385,7 @@ EndFunc   ;==>_get_script_title
 ; Description.....: Read and initialize INI file settings
 ;------------------------------------------------------------------------------
 Func _initialize_settings()
-	_disable_control_properties_gui()
+;~ 	_disable_control_properties_gui()
 
 	Local $bShowGrid = True
 	Local $bPastePos = True

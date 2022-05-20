@@ -4,13 +4,12 @@
 ; ===============================================================================================================================
 
 
-#Region ; control-creation
 ;------------------------------------------------------------------------------
 ; Title...........: _create_ctrl
 ; Description.....: create new control and add it to the ctrls object
 ; Called by.......: Draw with mouse; Paste
 ;------------------------------------------------------------------------------
-Func _create_ctrl($oCtrl = '')
+Func _create_ctrl($oCtrl = '', $bUseName = False)
 	Local $oNewControl, $incTypeCount = True
 	Local $isPaste = False
 
@@ -40,6 +39,7 @@ Func _create_ctrl($oCtrl = '')
 			$oNewControl.Type = $oCtrls.CurrentType
 			$oNewControl.Left = $cursor_pos[0]
 			$oNewControl.Top = $cursor_pos[1]
+
 	EndSwitch
 
 	;at least 1 control, enable menu item wipe
@@ -68,7 +68,9 @@ Func _create_ctrl($oCtrl = '')
 			$found = False
 		EndIf
 	WEnd
-	$oNewControl.Name = $name
+	If Not $bUseName Then
+		$oNewControl.Name = $name
+	EndIf
 
 	Switch $oNewControl.Type
 		Case "Updown"
@@ -350,7 +352,6 @@ EndFunc   ;==>_delete_tab
 
 
 
-#Region control-management
 Func _control_type()
 	$oCtrls.CurrentType = GUICtrlRead(@GUI_CtrlId, 1)
 	ConsoleWrite("tool selected: " & $oCtrls.CurrentType & @CRLF)
@@ -611,7 +612,8 @@ Func _add_to_selected(Const $oCtrl, Const $overwrite = True)
 
 	$oSelected.add($oCtrl)
 
-	_enable_control_properties_gui()
+;~ 	_enable_control_properties_gui()
+	_showProperties($props_Ctrls)
 	_populate_control_properties_gui($oCtrl)
 	_show_grippies($oCtrl)
 
@@ -649,7 +651,8 @@ Func _add_remove_selected_control(Const $oRect)
 							Case False
 								_clear_control_properties_gui()
 
-								_disable_control_properties_gui()
+;~ 								_disable_control_properties_gui()
+								_showProperties($props_Main)
 
 								_hide_grippies()
 						EndSwitch
@@ -665,7 +668,8 @@ Func _remove_all_from_selected()
 
 	_hide_grippies()
 
-	_disable_control_properties_gui()
+;~ 	_disable_control_properties_gui()
+	_showProperties($props_Main)
 
 	Return True
 EndFunc   ;==>_remove_all_from_selected
@@ -713,7 +717,12 @@ Func _remove_from_selected(Const $oCtrl)
 
 	_show_grippies($oSelected.getLast())
 
-	_enable_control_properties_gui()
+;~ 	_enable_control_properties_gui()
+	If $oSelected.count > 0 Then
+		_showProperties($props_Ctrls)
+	Else
+		_showProperties($props_Main)
+	EndIf
 
 	Return True
 EndFunc   ;==>_remove_from_selected

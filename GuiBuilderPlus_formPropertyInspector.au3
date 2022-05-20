@@ -4,18 +4,18 @@
 ; ===============================================================================================================================
 
 
-Global Enum $typeText, $typeNumber, $typeCheck, $typeColor, $getHeight
-Global $hLvEdit, $bLvEditOpen, $aLvRect
-Global $pEditCallback, $pGuiCallback, $aColLeftEdgePosAcc, $aColumnWidths
+Global Enum $typeHeading, $typeText, $typeNumber, $typeCheck, $typeColor, $getHeight
 ;------------------------------------------------------------------------------
 ; Title...........: formGenerateCode
 ; Description.....:	Create the code generation GUI
 ;------------------------------------------------------------------------------
 Func _formPropertyInspector($x, $y, $w, $h)
 
-	$hPropGUI = GUICreate("", $w, $h, $x, $y, $WS_POPUPWINDOW, $WS_EX_MDICHILD, $toolbar)
+	#Region properties-tab-main
+	;create the child gui for controls properties
+	$hPropGUI_Main = GUICreate("", $w, $h, $x, $y, $WS_POPUPWINDOW, $WS_EX_MDICHILD, $toolbar)
 	GUISetBkColor(0xFFFFFF)
-	_GUIScrollbars_Generate($hPropGUI, $w - 2, $h)
+	_GUIScrollbars_Generate($hPropGUI_Main, $w - 2, $h)
 
 	Local $iScrollbarWidth = $__g_aSB_WindowInfo[0][5]
 
@@ -35,30 +35,18 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	Local $labelLine = GUICtrlCreateLabel("", $w - $iScrollbarWidth - 1, 0, 1, $h)
 	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
-	$x = 0
-	$y = 0
-	$w = $w - $iScrollbarWidth - 1
-
-;~ 	GUICtrlCreateTab($x, $y, $w, $h)
-;~ 	GUICtrlSetBkColor(-1, 0xEEEEEE)
-
-;~ 	#Region properties-tab-main
-;~ 	GUICtrlCreateTabItem("Main")
-
-
 	;items
-	$h_form_text = _formPropertyInspector_newitem("Text", $typeText, $x, $y + 1, $w, 20)
+	$h_form_text = _formPropertyInspector_newitem("Title", $typeText, 0, 1, $w - $iScrollbarWidth - 1, 20)
 	$h_form_name = _formPropertyInspector_newitem("Name", $typeText)
 	$h_form_left = _formPropertyInspector_newitem("Left", $typeNumber)
 	$h_form_top = _formPropertyInspector_newitem("Top", $typeNumber)
 	$h_form_width = _formPropertyInspector_newitem("Width", $typeNumber)
 	$h_form_height = _formPropertyInspector_newitem("Height", $typeNumber)
-	$h_form_Color = _formPropertyInspector_newitem("Font Color", $typeColor, -1, -1, -1, -1, "_ctrl_pick_Color")
 	$h_form_bkColor = _formPropertyInspector_newitem("Background", $typeColor, -1, -1, -1, -1, "_ctrl_pick_bkColor")
 
 	;vertical line
 	Local $itemsHeight = _formPropertyInspector_newitem("", $getHeight)
-	$labelLine = GUICtrlCreateLabel("", $w - 81, 0, 1, $itemsHeight)
+	$labelLine = GUICtrlCreateLabel("", $w - $iScrollbarWidth - 1 - 81, 0, 1, $itemsHeight)
 	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
 	GUICtrlSetOnEvent($h_form_text, _ctrl_change_text)
@@ -70,64 +58,58 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	GUICtrlSetOnEvent($h_form_height, _ctrl_change_height)
 	GUICtrlSetOnEvent($h_form_Color, _ctrl_change_Color)
 	GUICtrlSetOnEvent($h_form_bkColor, _ctrl_change_bkColor)
-
 	#EndRegion properties-tab-main
 
-;~ 	#Region properties-tab-state
-;~ 	GUICtrlCreateTabItem("State")
 
-;~ 	;top line
-;~ 	$labelLine = GUICtrlCreateLabel("", $x + 1, $y + 23, $w - 4, 1)
-;~ 	GUICtrlSetBkColor(-1, 0xDDDDDD)
+	#Region properties-tab-controls
+	;create the child gui for controls properties
+	$hPropGUI_Ctrls = GUICreate("", $w, $h, $x, $y, $WS_POPUPWINDOW, $WS_EX_MDICHILD, $toolbar)
+	GUISetBkColor(0xFFFFFF)
+	_GUIScrollbars_Generate($hPropGUI_Ctrls, $w - 2, $h)
 
-;~ 	;items
-;~ 	$h_form_visible = _formPropertyInspector_newitem("Visible", $typeCheck, $x, $y + 24, $w - 3)
-;~ 	$h_form_enabled = _formPropertyInspector_newitem("Enabled", $typeCheck)
-;~ 	$h_form_ontop = _formPropertyInspector_newitem("OnTop", $typeCheck)
-;~ 	$h_form_dropaccepted = _formPropertyInspector_newitem("Drop Accepted", $typeCheck)
-;~ 	$h_form_focus = _formPropertyInspector_newitem("Focus", $typeCheck)
+	;top line
+	Local $labelLine = GUICtrlCreateLabel("", 0, 0, $w, 1)
+	GUICtrlSetBkColor(-1, 0xDDDDDD)
+	;bottom line
+	Local $labelLine = GUICtrlCreateLabel("", 0, $h - 1, $w, 1)
+	GUICtrlSetBkColor(-1, 0xDDDDDD)
+	;Left line
+	Local $labelLine = GUICtrlCreateLabel("", 0, 0, 1, $h)
+	GUICtrlSetBkColor(-1, 0xDDDDDD)
+	;Right line
+	Local $labelLine = GUICtrlCreateLabel("", $w - 1, 0, 1, $h)
+	GUICtrlSetBkColor(-1, 0xDDDDDD)
+	;End line
+	Local $labelLine = GUICtrlCreateLabel("", $w - $iScrollbarWidth - 1, 0, 1, $h)
+	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
-;~ 	;vertical line
-;~ 	$itemsHeight = _formPropertyInspector_newitem("", $getHeight)
-;~ 	$labelLine = GUICtrlCreateLabel("", $x + $w - 4 - 81, $y + 23, 1, $itemsHeight - ($y + 24))
-;~ 	GUICtrlSetBkColor(-1, 0xDDDDDD)
+	;items
+	$h_form_text = _formPropertyInspector_newitem("Text", $typeText, 0, 1, $w - $iScrollbarWidth - 1, 20)
+	$h_form_name = _formPropertyInspector_newitem("Name", $typeText)
+	$h_form_left = _formPropertyInspector_newitem("Left", $typeNumber)
+	$h_form_top = _formPropertyInspector_newitem("Top", $typeNumber)
+	$h_form_width = _formPropertyInspector_newitem("Width", $typeNumber)
+	$h_form_height = _formPropertyInspector_newitem("Height", $typeNumber)
+	$h_form_Color = _formPropertyInspector_newitem("Font Color", $typeColor, -1, -1, -1, -1, "_ctrl_pick_Color")
+	$h_form_bkColor = _formPropertyInspector_newitem("Background", $typeColor, -1, -1, -1, -1, "_ctrl_pick_bkColor")
 
-;~ 	GUICtrlSetOnEvent($h_form_visible, _ctrl_change_visible)
-;~ 	GUICtrlSetOnEvent($h_form_enabled, _ctrl_change_enabled)
-;~ 	GUICtrlSetOnEvent($h_form_ontop, _ctrl_change_ontop)
-;~ 	GUICtrlSetOnEvent($h_form_dropaccepted, _ctrl_change_dropaccepted)
-;~ 	GUICtrlSetOnEvent($h_form_focus, _ctrl_change_focus)
-;~ 	#EndRegion properties-tab-state
+	;vertical line
+	Local $itemsHeight = _formPropertyInspector_newitem("", $getHeight)
+	$labelLine = GUICtrlCreateLabel("", $w - $iScrollbarWidth - 1 - 81, 0, 1, $itemsHeight)
+	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
-;~ 	#Region properties-tab-style
-;~ 	GUICtrlCreateTabItem("Style")
+	GUICtrlSetOnEvent($h_form_text, _ctrl_change_text)
+	GUICtrlSetOnEvent($h_form_name, _ctrl_change_name)
+	GUICtrlSetOnEvent($h_form_left, _ctrl_change_left)
+	GUICtrlSetOnEvent($h_form_top, _ctrl_change_top)
+	GUICtrlSetOnEvent($h_form_width, _ctrl_change_width)
+	GUICtrlSetOnEvent($h_form_fittowidth, _ctrl_fit_to_width)
+	GUICtrlSetOnEvent($h_form_height, _ctrl_change_height)
+	GUICtrlSetOnEvent($h_form_Color, _ctrl_change_Color)
+	GUICtrlSetOnEvent($h_form_bkColor, _ctrl_change_bkColor)
+	#EndRegion properties-tab-controls
 
-;~ 	;top line
-;~ 	Local $labelLine = GUICtrlCreateLabel("", $x + 1, $y + 23, $w - 4, 1)
-;~ 	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
-;~ 	;items
-;~ 	$h_form_style_autocheckbox = _formPropertyInspector_newitem("AutoCheckBox", $typeCheck, $x, $y + 24, $w - 3)
-;~ 	$h_form_style_top = _formPropertyInspector_newitem("Top", $typeCheck)
-
-;~ 	;vertical line
-;~ 	$itemsHeight = _formPropertyInspector_newitem("", $getHeight)
-;~ 	$labelLine = GUICtrlCreateLabel("", $x + $w - 4 - 81, $y + 23, 1, $itemsHeight - ($y + 24))
-;~ 	GUICtrlSetBkColor(-1, 0xDDDDDD)
-
-;~ 	GUICtrlSetOnEvent($h_form_style_autocheckbox, _ctrl_change_style_autocheckbox)
-;~ 	GUICtrlSetOnEvent($h_form_style_top, _ctrl_change_style_top)
-;~ 	#EndRegion properties-tab-style
-
-;~ 	#Region properties-tab-exstyle
-;~ 	GUICtrlCreateTabItem("ExStyle")
-
-;~ 	;top line
-;~ 	Local $labelLine = GUICtrlCreateLabel("", $x + 1, $y + 23, $w - 4, 1)
-;~ 	GUICtrlSetBkColor(-1, 0xDDDDDD)
-;~ 	#EndRegion properties-tab-exstyle
-
-;~ 	GUICtrlCreateTabItem("")
 
 	GUISwitch($toolbar)
 
@@ -139,6 +121,14 @@ Func _formPropertyInspector_newitem($text, $type = -1, $x = -1, $y = -1, $w = -1
 
 	If $type = $getHeight Then
 		Return $item_y + $item_h
+	EndIf
+
+	If $x <> -1 Then
+		$item_x = $x
+	Else
+		If $count = 0 Then
+			$item_x = 0
+		EndIf
 	EndIf
 
 	If $x <> -1 Then
@@ -200,6 +190,15 @@ Func _formPropertyInspector_newitem($text, $type = -1, $x = -1, $y = -1, $w = -1
 		GUICtrlSetState(-1, $GUI_DISABLE)
 		Local $edit = GUICtrlCreateCheckbox("", $item_x + $item_w - 45, $item_y, -1, $item_h - 1, $SS_CENTERIMAGE)
 		GUICtrlSetBkColor(-1, 0xFFFFFF)
+	ElseIf $type = $typeHeading Then
+		Local $aStrings = StringSplit($text, "|", $STR_NOCOUNT)
+		GUICtrlSetData($label, $aStrings[0])
+		GUICtrlSetFont($label, 9, $FW_BOLD)
+
+		Local $edit = GUICtrlCreateLabel(" " & $aStrings[1], $item_x + $item_w - $editWidth, $item_y, $editWidth, $item_h - 1, $SS_CENTERIMAGE)
+		GUICtrlSetColor(-1, 0x333333)
+		GUICtrlSetBkColor(-1, 0xFFFFFF)
+		GUICtrlSetFont($edit, 9, $FW_BOLD)
 	Else
 		Local $edit = GUICtrlCreateInput("", $item_x + $item_w - $editWidth, $item_y, $editWidth, $item_h - 1, BitOR($ES_AUTOHSCROLL, $SS_CENTERIMAGE), $WS_EX_TRANSPARENT)
 	EndIf
@@ -209,3 +208,41 @@ Func _formPropertyInspector_newitem($text, $type = -1, $x = -1, $y = -1, $w = -1
 
 	Return $edit
 EndFunc   ;==>_formPropertyInspector_newitem
+
+
+Func _showProperties($props = $props_Main)
+	Switch $props
+		Case $props_Main
+			GUISetState(@SW_SHOWNOACTIVATE, $hPropGUI_Main)
+			GUISetState(@SW_HIDE, $hPropGUI_Ctrls)
+
+		Case $props_Ctrls
+			If _isAllLabels() Then
+				GUICtrlSetState($h_form_Color, $GUI_ENABLE)
+				GUICtrlSetState($h_form_bkColor, $GUI_ENABLE)
+			Else
+				GUICtrlSetState($h_form_Color, $GUI_DISABLE)
+				GUICtrlSetState($h_form_bkColor, $GUI_DISABLE)
+			EndIf
+			GUISetState(@SW_HIDE, $hPropGUI_Main)
+			GUISetState(@SW_SHOWNOACTIVATE, $hPropGUI_Ctrls)
+
+		Case Else
+			GUISetState(@SW_SHOWNOACTIVATE, $hPropGUI_Main)
+			GUISetState(@SW_HIDE, $hPropGUI_Ctrls)
+	EndSwitch
+
+	GUISwitch($hGUI)
+EndFunc
+
+Func _isAllLabels()
+	If $oSelected.count > 0 Then
+		For $oCtrl in $oSelected.ctrls
+			If $oCtrl.Type <> "Label" Then
+				Return False
+			EndIf
+		Next
+	EndIf
+
+	Return True
+EndFunc
