@@ -13,7 +13,7 @@
 ;
 ; Revisions
 ;  05/19/2022 ...: 	- UPDATE:	Converted maps to objects using AutoItObject UDF
-;					- UPDATE:	Changed to new style of property inspector
+;					- UPDATE:	Changed to new style of property inspector using GUIScrollBars_Ex UDF by Melba23
 ;					- FIXED:	Better handling in Object Explorer for controls with no name
 ;					- FIXED:	Delete certain tab items caused a program crash
 ;					- FIXED:	Pasted control was offset from mouse position
@@ -109,8 +109,7 @@
 ;					- Make separate grippies for each selected object
 ;					- Finish menu controls
 ;
-; Known Issues ..:	- Property Inspector gets deleted when deleting TAB control
-;					- State, style, and ex style properties not implemented yet
+; Known Issues ..:	- State, style, and ex style properties not implemented yet
 ;					- Menu control not implemented yet
 ; ===============================================================================================================================
 
