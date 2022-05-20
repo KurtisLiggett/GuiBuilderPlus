@@ -7,7 +7,7 @@
 #Region ; control-creation
 ;------------------------------------------------------------------------------
 ; Title...........: _create_ctrl
-; Description.....: create new control and add it to the map
+; Description.....: create new control and add it to the ctrls object
 ; Called by.......: Draw with mouse; Paste
 ;------------------------------------------------------------------------------
 Func _create_ctrl($oCtrl = '')
@@ -361,7 +361,7 @@ EndFunc   ;==>_control_type
 
 ;------------------------------------------------------------------------------
 ; Title...........: _delete_ctrl
-; Description.....: delete control from GUI and remove the map object
+; Description.....: delete control from GUI and remove the data object
 ;------------------------------------------------------------------------------
 Func _delete_ctrl(Const $oCtrl)
 	$oCtrls.decTypeCount($oCtrl.Type)
@@ -499,8 +499,8 @@ Func _PasteSelected($bDuplicate = False)
 					$oNewCtrl.Left += 20
 					$oNewCtrl.Top += 20
 				Else
-					$oNewCtrl.Left = $mMouse.X
-					$oNewCtrl.Top = $mMouse.Y
+					$oNewCtrl.Left = $oMouse.X
+					$oNewCtrl.Top = $oMouse.Y
 				EndIf
 
 				$aNewCtrls[$i] = _create_ctrl($oNewCtrl)
@@ -814,47 +814,47 @@ Func _handle_grippy(ByRef $oCtrl, Const $left, Const $top, Const $right, Const $
 EndFunc   ;==>_handle_grippy
 
 Func _handle_nw_grippy($oCtrl)
-	Local Const $right = ($oCtrl.Width + $oCtrl.Left) - $mMouse.X
+	Local Const $right = ($oCtrl.Width + $oCtrl.Left) - $oMouse.X
 
-	Local Const $bottom = ($oCtrl.Height + $oCtrl.Top) - $mMouse.Y
+	Local Const $bottom = ($oCtrl.Height + $oCtrl.Top) - $oMouse.Y
 
-	_handle_grippy($oCtrl, $mMouse.X, $mMouse.Y, $right, $bottom)
+	_handle_grippy($oCtrl, $oMouse.X, $oMouse.Y, $right, $bottom)
 EndFunc   ;==>_handle_nw_grippy
 
 Func _handle_n_grippy($oCtrl)
-	Local Const $bottom = ($oCtrl.Top + $oCtrl.Height) - $mMouse.Y
+	Local Const $bottom = ($oCtrl.Top + $oCtrl.Height) - $oMouse.Y
 
-	_handle_grippy($oCtrl, $oCtrl.Left, $mMouse.Y, $oCtrl.Width, $bottom)
+	_handle_grippy($oCtrl, $oCtrl.Left, $oMouse.Y, $oCtrl.Width, $bottom)
 EndFunc   ;==>_handle_n_grippy
 
 Func _handle_ne_grippy($oCtrl)
-	Local Const $bottom = ($oCtrl.Top + $oCtrl.Height) - $mMouse.Y
+	Local Const $bottom = ($oCtrl.Top + $oCtrl.Height) - $oMouse.Y
 
-	_handle_grippy($oCtrl, $oCtrl.Left, $mMouse.Y, $mMouse.X - $oCtrl.Left, $bottom)
+	_handle_grippy($oCtrl, $oCtrl.Left, $oMouse.Y, $oMouse.X - $oCtrl.Left, $bottom)
 EndFunc   ;==>_handle_ne_grippy
 
 Func _handle_w_grippy($oCtrl)
 	Local Const $right = $oCtrl.Left + $oCtrl.Width
 
-	_handle_grippy($oCtrl, $mMouse.X, $oCtrl.Top, $right - $mMouse.X, $oCtrl.Height)
+	_handle_grippy($oCtrl, $oMouse.X, $oCtrl.Top, $right - $oMouse.X, $oCtrl.Height)
 EndFunc   ;==>_handle_w_grippy
 
 Func _handle_e_grippy($oCtrl)
-	_handle_grippy($oCtrl, $oCtrl.Left, $oCtrl.Top, $mMouse.X - $oCtrl.Left, $oCtrl.Height)
+	_handle_grippy($oCtrl, $oCtrl.Left, $oCtrl.Top, $oMouse.X - $oCtrl.Left, $oCtrl.Height)
 EndFunc   ;==>_handle_e_grippy
 
 Func _handle_sw_grippy($oCtrl)
-	Local Const $right = ($oCtrl.Left + $oCtrl.Width) - $mMouse.X
+	Local Const $right = ($oCtrl.Left + $oCtrl.Width) - $oMouse.X
 
-	_handle_grippy($oCtrl, $mMouse.X, $oCtrl.Top, $right, $mMouse.Y - $oCtrl.Top)
+	_handle_grippy($oCtrl, $oMouse.X, $oCtrl.Top, $right, $oMouse.Y - $oCtrl.Top)
 EndFunc   ;==>_handle_sw_grippy
 
 Func _handle_s_grippy($oCtrl)
-	_handle_grippy($oCtrl, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $mMouse.Y - $oCtrl.Top)
+	_handle_grippy($oCtrl, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oMouse.Y - $oCtrl.Top)
 EndFunc   ;==>_handle_s_grippy
 
 Func _handle_se_grippy($oCtrl)
-	_handle_grippy($oCtrl, $oCtrl.Left, $oCtrl.Top, $mMouse.X - $oCtrl.Left, $mMouse.Y - $oCtrl.Top)
+	_handle_grippy($oCtrl, $oCtrl.Left, $oCtrl.Top, $oMouse.X - $oCtrl.Left, $oMouse.Y - $oCtrl.Top)
 EndFunc   ;==>_handle_se_grippy
 
 Func _show_grippies(Const $oCtrl)

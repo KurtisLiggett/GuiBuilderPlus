@@ -125,7 +125,7 @@ Func _formToolbar()
 	GUICtrlSetState($menu_wipe, $GUI_DISABLE)
 
 	GUICtrlSetOnEvent($menu_copy, "_copy_selected")
-	GUICtrlSetOnEvent($menu_paste, "_onPasteSelected")
+	GUICtrlSetOnEvent($menu_paste, "_onMenuPasteSelected")
 	GUICtrlSetOnEvent($menu_duplicate, "_onDuplicate")
 	GUICtrlSetOnEvent($menu_wipe, _wipe_current_gui)
 	GUICtrlSetOnEvent($menu_about, _menu_about)
@@ -298,7 +298,7 @@ Func _formToolbar()
 
 
 	;create property inspector
-	_formPropertyInspector(5, 215, 200, 215)
+	_formPropertyInspector(5, 215, $toolbar_width - 10, 215)
 
 
 	$hStatusbar = _GUICtrlStatusBar_Create($toolbar)
@@ -698,6 +698,16 @@ EndFunc   ;==>_onPasteSelected
 
 
 ;------------------------------------------------------------------------------
+; Title...........: _onMenuPasteSelected
+; Description.....: Call the paste selected function
+; Events..........: Edit menu item
+;------------------------------------------------------------------------------
+Func _onMenuPasteSelected()
+	_PasteSelected(True)
+EndFunc   ;==>_onMenuPasteSelected
+
+
+;------------------------------------------------------------------------------
 ; Title...........: _onDuplicate
 ; Description.....: Duplicate the selected control
 ; Events..........: menu item, accel key Ctrl+D
@@ -736,9 +746,9 @@ Func _onMousePrimaryDown()
 
 		Local Const $smallest = _left_top_union_rect()
 
-		$mMouse.X = $smallest.Left
+		$oMouse.X = $smallest.Left
 
-		$mMouse.Y = $smallest.Top
+		$oMouse.Y = $smallest.Top
 
 		_PasteSelected()
 	EndIf
@@ -991,7 +1001,7 @@ Func _onMouseSecondaryUp()
 
 	Switch $ctrl_hwnd
 		Case $background
-			ShowMenu($background_contextmenu, $mMouse.X, $mMouse.Y)
+			ShowMenu($background_contextmenu, $oMouse.X, $oMouse.Y)
 
 		Case Else
 			Local $oCtrl = $oCtrls.get($ctrl_hwnd)
@@ -999,9 +1009,9 @@ Func _onMouseSecondaryUp()
 			If $oCtrls.exists($ctrl_hwnd) Then
 
 				If $oCtrl.Type = "Tab" Then
-					ShowMenu($overlay_contextmenutab, $mMouse.X, $mMouse.Y)
+					ShowMenu($overlay_contextmenutab, $oMouse.X, $oMouse.Y)
 				Else
-					ShowMenu($overlay_contextmenu, $mMouse.X, $mMouse.Y)
+					ShowMenu($overlay_contextmenu, $oMouse.X, $oMouse.Y)
 				EndIf
 
 			EndIf
@@ -1014,13 +1024,13 @@ Func _onMouseMove()
 		Case $init_move, $move, $default
 			Local Const $mouse_pos = _mouse_snap_pos()
 
-			Local Const $delta_x = $mMouse.X - $mouse_pos[0]
+			Local Const $delta_x = $oMouse.X - $mouse_pos[0]
 
-			Local Const $delta_y = $mMouse.Y - $mouse_pos[1]
+			Local Const $delta_y = $oMouse.Y - $mouse_pos[1]
 
-			$mMouse.X = $mouse_pos[0]
+			$oMouse.X = $mouse_pos[0]
 
-			$mMouse.Y = $mouse_pos[1]
+			$oMouse.Y = $mouse_pos[1]
 
 			If Not $left_click Then Return
 
@@ -1042,7 +1052,7 @@ Func _onMouseMove()
 			$mode = $move
 
 		Case $init_selection
-			Local Const $oRect = _rect_from_points($mMouse.X, $mMouse.Y, MouseGetPos(0), MouseGetPos(1))
+			Local Const $oRect = _rect_from_points($oMouse.X, $oMouse.Y, MouseGetPos(0), MouseGetPos(1))
 			_display_selection_rect($oRect)
 			_add_remove_selected_control($oRect)
 
@@ -1408,6 +1418,7 @@ Func _onPropertyChange($sPropertyName, $value)
 EndFunc   ;==>_onPropertyChange
 
 Func _ctrl_change_text()
+	ConsoleWrite("change text" & @CRLF)
 	Local Const $new_text = GUICtrlRead(@GUI_CtrlId)
 
 	Local Const $sel_count = $oSelected.count
@@ -1442,6 +1453,7 @@ EndFunc   ;==>_ctrl_change_text
 
 
 Func _ctrl_change_name()
+	ConsoleWrite("change name" & @CRLF)
 	Local $new_name = GUICtrlRead(@GUI_CtrlId)
 	$new_name = StringReplace($new_name, " ", "_")
 	GUICtrlSetData(@GUI_CtrlId, $new_name)
@@ -1474,7 +1486,11 @@ EndFunc   ;==>_ctrl_change_name
 
 
 Func _ctrl_change_left()
-	Local Const $new_data = GUICtrlRead(@GUI_CtrlId)
+	Local $new_data = GUICtrlRead(@GUI_CtrlId)
+	If $new_data = "" Then
+		$new_data = 0
+		GUICtrlSetData(@GUI_CtrlId, $new_data)
+	EndIf
 
 	Local Const $sel_count = $oSelected.count
 
@@ -1487,8 +1503,6 @@ Func _ctrl_change_left()
 				;update the selected property
 				$oCtrl.Left = $new_data
 
-				;update the mControls map
-
 				_show_grippies($oCtrl)
 
 			Next
@@ -1499,7 +1513,11 @@ EndFunc   ;==>_ctrl_change_left
 
 
 Func _ctrl_change_top()
-	Local Const $new_data = GUICtrlRead(@GUI_CtrlId)
+	Local $new_data = GUICtrlRead(@GUI_CtrlId)
+	If $new_data = "" Then
+		$new_data = 0
+		GUICtrlSetData(@GUI_CtrlId, $new_data)
+	EndIf
 
 	Local Const $sel_count = $oSelected.count
 
@@ -1521,7 +1539,11 @@ EndFunc   ;==>_ctrl_change_top
 
 
 Func _ctrl_change_width()
-	Local Const $new_data = GUICtrlRead(@GUI_CtrlId)
+	Local $new_data = GUICtrlRead(@GUI_CtrlId)
+	If $new_data = "" Then
+		$new_data = 0
+		GUICtrlSetData(@GUI_CtrlId, $new_data)
+	EndIf
 
 	Local Const $sel_count = $oSelected.count
 
@@ -1543,7 +1565,11 @@ EndFunc   ;==>_ctrl_change_width
 
 
 Func _ctrl_change_height()
-	Local Const $new_data = GUICtrlRead(@GUI_CtrlId)
+	Local $new_data = GUICtrlRead(@GUI_CtrlId)
+	If $new_data = "" Then
+		$new_data = 0
+		GUICtrlSetData(@GUI_CtrlId, $new_data)
+	EndIf
 
 	Local Const $sel_count = $oSelected.count
 
@@ -1791,8 +1817,8 @@ EndFunc   ;==>_snap_to_grid
 Func _set_current_mouse_pos()
 	Local Const $mouse_snap_pos = _mouse_snap_pos()
 
-	$mMouse.X = $mouse_snap_pos[0]
-	$mMouse.Y = $mouse_snap_pos[1]
+	$oMouse.X = $mouse_snap_pos[0]
+	$oMouse.Y = $mouse_snap_pos[1]
 EndFunc   ;==>_set_current_mouse_pos
 
 Func _cursor_out_of_bounds(Const $cursor_pos)

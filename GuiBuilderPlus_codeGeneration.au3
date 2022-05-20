@@ -307,6 +307,7 @@ Func _getCodeDpiScalingFunc()
 			'; Parameters ....: $iDPIDef             - [optional] An integer value. Default is 96.' & @CRLF & _
 			'; Return values .: Scaling value for control sizes and positions' & @CRLF & _
 			'; Author ........: UEZ' & @CRLF & _
+			'; Modified by....: KurtyKurtyBoy' & @CRLF & _
 			'; Link ..........: http://www.autoitscript.com/forum/topic/159612-dpi-resolution-problem/?hl=%2Bdpi#entry1158317' & @CRLF & _
 			'; ===============================================================================================================================' & @CRLF & _
 			'Func _GDIPlus_GraphicsGetDPIRatio($iDPIDef = 96)' & @CRLF & _

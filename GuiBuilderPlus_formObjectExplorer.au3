@@ -171,7 +171,7 @@ EndFunc   ;==>_onLvObjectsDeleteMenu
 ; Events..........: right-click context menu
 ;------------------------------------------------------------------------------
 Func _onLvObjectsTabItemDelete()
-	ShowMenu($overlay_contextmenutab, $mMouse.X, $mMouse.Y)
+	ShowMenu($overlay_contextmenutab, $oMouse.X, $oMouse.Y)
 EndFunc
 #EndRegion events
 
@@ -186,10 +186,15 @@ Func _formObjectExplorer_updateList()
 	Local $count = $oCtrls.count
 	Local $aList[$count]
 
-	Local $lvItem, $lvMenu, $lvMenuDelete, $childItem, $tabMenu, $tabMenuDelete, $lvMenuNewTab, $lvMenuDeleteTab
+	Local $lvItem, $lvMenu, $lvMenuDelete, $childItem, $tabMenu, $tabMenuDelete, $lvMenuNewTab, $lvMenuDeleteTab, $sName
 	_GUICtrlTreeView_DeleteAll($lvObjects)
 	For $oCtrl In $oCtrls.ctrls
-		$lvItem = GUICtrlCreateTreeViewItem($oCtrl.Name & "       " & @TAB & "(HWND: " & Hex($oCtrl.Hwnd) & ")", $lvObjects)
+		$sName = $oCtrl.Name
+		If $sName = "" Then
+			$sName = $oCtrl.Type & "*"
+		EndIf
+
+		$lvItem = GUICtrlCreateTreeViewItem($sName & "       " & @TAB & "(HWND: " & Hex($oCtrl.Hwnd) & ")", $lvObjects)
 		GUICtrlSetOnEvent(-1, "_onLvObjectsItem")
 
 		$lvMenu = GUICtrlCreateContextMenu($lvItem)

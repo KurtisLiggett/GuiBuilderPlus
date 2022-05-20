@@ -12,12 +12,16 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  05/17/2022 ...: 	- UPDATE:	Converted maps to objects using AutoItObject UDF
+;  05/19/2022 ...: 	- UPDATE:	Converted maps to objects using AutoItObject UDF
+;					- UPDATE:	Changed to new style of property inspector
+;					- FIXED:	Better handling in Object Explorer for controls with no name
 ;					- FIXED:	Delete certain tab items caused a program crash
-;					- FIXED:	Pasted control offset from mouse position
+;					- FIXED:	Pasted control was offset from mouse position
+;					- FIXED:	Paste from Edit menu pasted off-screen, now pastes offset from copied control
 ;					- ADDED:	Added setting to apply a DPI scaling factor to the size and position properties (includes function to get DPI factor)
 ;					- ADDED:	Added 'New Tab' and 'Delete Tab' items in Object Explorer right-click context menu
-;					- KNOWN ISSUE: Property tabs other than 'Main' are temporarily disabled (don't do anything)
+;					- MAINT:	Cleaned up old commented-out code
+;					- KNOWN ISSUE: Property tabs other than 'Main' are temporarily removed
 ;
 ;  05/13/2022 ...: 	- FIXED:	Tab control not showing when grid is on
 ;					- FIXED:	Tab control and tab item creation now should work properly
@@ -115,8 +119,8 @@
 #AutoIt3Wrapper_Res_HiDpi=y
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.22.exe
-#AutoIt3Wrapper_Res_Fileversion=0.22.0.0
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.23.exe
+#AutoIt3Wrapper_Res_Fileversion=0.23.0.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 
 Opt("WinTitleMatchMode", 4) ; advanced
@@ -153,7 +157,7 @@ Global $lvObjects, $labelObjectCount, $childSelected
 ;~ Global $hBgGraphic
 
 ;Property Inspector
-
+Global $hPropGUI
 
 ;GUI Constants
 Global Const $main_width = 400
@@ -174,7 +178,7 @@ Global Const $ARROW = 2, $CROSS = 3, $SIZE_ALL = 9, $SIZENESW = 10, $SIZENS = 11
 
 ;other variables
 Global $progName = "GUIBuilderPlus"
-Global $progVersion = "v0.22"
+Global $progVersion = "v0.23"
 Global $default_cursor
 Global $win_client_size
 Global $mode = $default
@@ -188,8 +192,7 @@ Global $au3InstallPath = @ProgramFilesDir & "\AutoIt3\AutoIt3.exe"
 Global $initDraw, $initResize
 
 ;Control Objects
-Global $oCtrls, $oSelected, $oClipboard
-Global $mMouse[]
+Global $oCtrls, $oSelected, $oClipboard, $oMouse
 
 ; added by: TheSaint (most are my own, others just not declared)
 Global $AgdInfile, $AgdOutFile, $gdtitle, $lfld, $mygui
@@ -230,7 +233,7 @@ _AutoItObject_StartUp()
 #include <GuiMenu.au3>
 #include <GuiEdit.au3>
 #include <GuiTreeView.au3>
-#include "UDFS\Functions.au3"
+#include "UDFS\GUIScrollbars_Ex.au3"
 #include "UDFs\StringSize.au3"
 #include "GuiBuilderPlus_objCtrl.au3"
 #include "GuiBuilderPlus_CtrlMgmt.au3"
@@ -252,7 +255,8 @@ _main()
 ; Description.....: Create the main GUI and run the main program loop.
 ;------------------------------------------------------------------------------
 Func _main()
-	;create the controls container objects
+	;create the main program data objects
+	$oMouse = _objCreateMouse()
 	$oCtrls = _objCtrls()
 	$oSelected = _objCtrls()
 	$oClipboard = _objCtrls()
@@ -282,6 +286,7 @@ Func _main()
 	EndIf
 
 	GUISetState(@SW_SHOWNORMAL, $toolbar)
+	GUISetState(@SW_SHOWNORMAL, $hPropGUI)
 	GUISetState(@SW_SHOWNORMAL, $hGUI)
 	$bResizedFlag = 0
 
@@ -310,6 +315,8 @@ Func _main()
 				$aTestGuiPos = WinGetPos(_WinGetByPID($TestFilePID))
 			EndIf
 		EndIf
+
+		_GUIScrollbars_EventMonitor()
 
 		Sleep(100)
 	Until False
@@ -448,3 +455,13 @@ Func _setCheckedState($ctrlID, $bState)
 	EndIf
 EndFunc   ;==>_setCheckedState
 #EndRegion functions
+
+
+Func _objCreateMouse()
+	Local $oSelf = _AutoItObject_Create()
+
+	_AutoItObject_AddProperty($oSelf, "X", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oSelf, "Y", $ELSCOPE_PUBLIC, 0)
+
+	Return $oSelf
+EndFunc   ;==>_objCreateMouse
