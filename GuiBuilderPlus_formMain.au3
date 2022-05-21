@@ -450,6 +450,8 @@ EndFunc   ;==>_onExit
 ;------------------------------------------------------------------------------
 Func _onMinimize()
 	GUISetState(@SW_MINIMIZE, $hGUI)
+;~ 	GUISetState(@SW_MINIMIZE, $oProperties_Main.Hwnd)
+;~ 	GUISetState(@SW_MINIMIZE, $oProperties_Ctrls.Hwnd)
 EndFunc   ;==>_onMinimize
 
 
@@ -460,6 +462,8 @@ EndFunc   ;==>_onMinimize
 ;------------------------------------------------------------------------------
 Func _onRestore()
 	GUISetState(@SW_RESTORE, $hGUI)
+;~ 	GUISetState(@SW_RESTORE, $oProperties_Main.Hwnd)
+;~ 	GUISetState(@SW_RESTORE, $oProperties_Ctrls.Hwnd)
 	GUISetState(@SW_SHOWNORMAL, $hGUI)
 	GUISwitch($hGUI)
 
@@ -1231,7 +1235,7 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 			EndIf
 		EndIf
 	EndIf
-	GUICtrlSetData($h_form_text, $text)
+	$oProperties_Ctrls.Text.value = $text
 
 	;NAME
 	Local $name = $oCtrl.Name
@@ -1244,21 +1248,22 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 			EndIf
 		EndIf
 	EndIf
-	GUICtrlSetData($h_form_name, $name)
+	$oProperties_Ctrls.Name.value = $name
 
-	GUICtrlSetData($h_form_left, $oCtrl.Left)
-	GUICtrlSetData($h_form_top, $oCtrl.Top)
-	GUICtrlSetData($h_form_width, $oCtrl.Width)
-	GUICtrlSetData($h_form_height, $oCtrl.Height)
+	$oProperties_Ctrls.Left.value = $oCtrl.Left
+	$oProperties_Ctrls.Top.value = $oCtrl.Top
+	$oProperties_Ctrls.Width.value = $oCtrl.Width
+	$oProperties_Ctrls.Height.value = $oCtrl.Height
+
 	If $oCtrl.Background <> -1 Then
-		GUICtrlSetData($h_form_bkColor, "0x" & Hex($oCtrl.Background, 6))
+		$oProperties_Ctrls.Background.value = "0x" & Hex($oCtrl.Background, 6)
 	Else
-		GUICtrlSetData($h_form_bkColor, "")
+		$oProperties_Ctrls.Background.value = ""
 	EndIf
 	If $oCtrl.Color <> -1 Then
-		GUICtrlSetData($h_form_Color, "0x" & Hex($oCtrl.Color, 6))
+		$oProperties_Ctrls.Color.value = "0x" & Hex($oCtrl.Color, 6)
 	Else
-		GUICtrlSetData($h_form_Color, "")
+		$oProperties_Ctrls.Color.value = ""
 	EndIf
 
 ;~ 	Switch $oCtrl.Type
@@ -1305,26 +1310,26 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 EndFunc   ;==>_populate_control_properties_gui
 
 
-Func _clear_control_properties_gui()
-	GUICtrlSetData($h_form_text, '')
+;~ Func _clear_control_properties_gui()
+;~ 	GUICtrlSetData($h_form_text, '')
 
-	GUICtrlSetData($h_form_name, '')
+;~ 	GUICtrlSetData($h_form_name, '')
 
-	GUICtrlSetData($h_form_left, '')
-	GUICtrlSetData($h_form_top, '')
-	GUICtrlSetData($h_form_width, '')
-	GUICtrlSetData($h_form_height, '')
-	GUICtrlSetData($h_form_bkColor, '')
-	GUICtrlSetData($h_form_Color, '')
+;~ 	GUICtrlSetData($h_form_left, '')
+;~ 	GUICtrlSetData($h_form_top, '')
+;~ 	GUICtrlSetData($h_form_width, '')
+;~ 	GUICtrlSetData($h_form_height, '')
+;~ 	GUICtrlSetData($h_form_bkColor, '')
+;~ 	GUICtrlSetData($h_form_Color, '')
 
-	GUICtrlSetState($h_form_visible, $GUI_UNCHECKED)
+;~ 	GUICtrlSetState($h_form_visible, $GUI_UNCHECKED)
 
-	GUICtrlSetState($h_form_ontop, $GUI_UNCHECKED)
+;~ 	GUICtrlSetState($h_form_ontop, $GUI_UNCHECKED)
 
-	GUICtrlSetState($h_form_style_top, $GUI_UNCHECKED)
+;~ 	GUICtrlSetState($h_form_style_top, $GUI_UNCHECKED)
 
-	;_disable_control_properties_gui()
-EndFunc   ;==>_clear_control_properties_gui
+;~ 	;_disable_control_properties_gui()
+;~ EndFunc   ;==>_clear_control_properties_gui
 
 
 ;~ Func _disable_control_properties_gui()
@@ -1348,71 +1353,71 @@ EndFunc   ;==>_clear_control_properties_gui
 ;~ EndFunc   ;==>_disable_control_properties_gui
 
 
-Func _enable_control_properties_gui()
-	GUICtrlSetState($h_form_text, $GUI_ENABLE)
-	GUICtrlSetState($h_form_name, $GUI_ENABLE)
-	GUICtrlSetState($h_form_left, $GUI_ENABLE)
-	GUICtrlSetState($h_form_top, $GUI_ENABLE)
-	GUICtrlSetState($h_form_width, $GUI_ENABLE)
-	GUICtrlSetState($h_form_height, $GUI_ENABLE)
-	If IsObj($oSelected) And IsObj($oSelected.getFirst()) Then
-		If $oSelected.getFirst().Type = "Label" Then
-			GUICtrlSetState($h_form_Color, $GUI_ENABLE)
-			GUICtrlSetState($h_form_bkColor, $GUI_ENABLE)
-		EndIf
-	EndIf
+;~ Func _enable_control_properties_gui()
+;~ 	GUICtrlSetState($h_form_text, $GUI_ENABLE)
+;~ 	GUICtrlSetState($h_form_name, $GUI_ENABLE)
+;~ 	GUICtrlSetState($h_form_left, $GUI_ENABLE)
+;~ 	GUICtrlSetState($h_form_top, $GUI_ENABLE)
+;~ 	GUICtrlSetState($h_form_width, $GUI_ENABLE)
+;~ 	GUICtrlSetState($h_form_height, $GUI_ENABLE)
+;~ 	If IsObj($oSelected) And IsObj($oSelected.getFirst()) Then
+;~ 		If $oSelected.getFirst().Type = "Label" Then
+;~ 			GUICtrlSetState($h_form_Color, $GUI_ENABLE)
+;~ 			GUICtrlSetState($h_form_bkColor, $GUI_ENABLE)
+;~ 		EndIf
+;~ 	EndIf
 
-	GUICtrlSetState($h_form_visible, $GUI_ENABLE)
-	GUICtrlSetState($h_form_enabled, $GUI_ENABLE)
-	GUICtrlSetState($h_form_ontop, $GUI_ENABLE)
-	GUICtrlSetState($h_form_dropaccepted, $GUI_ENABLE)
-	GUICtrlSetState($h_form_focus, $GUI_ENABLE)
+;~ 	GUICtrlSetState($h_form_visible, $GUI_ENABLE)
+;~ 	GUICtrlSetState($h_form_enabled, $GUI_ENABLE)
+;~ 	GUICtrlSetState($h_form_ontop, $GUI_ENABLE)
+;~ 	GUICtrlSetState($h_form_dropaccepted, $GUI_ENABLE)
+;~ 	GUICtrlSetState($h_form_focus, $GUI_ENABLE)
 
-	GUICtrlSetState($h_form_style_top, $GUI_ENABLE)
-	GUICtrlSetState($h_form_style_autocheckbox, $GUI_ENABLE)
+;~ 	GUICtrlSetState($h_form_style_top, $GUI_ENABLE)
+;~ 	GUICtrlSetState($h_form_style_autocheckbox, $GUI_ENABLE)
 
-EndFunc   ;==>_enable_control_properties_gui
+;~ EndFunc   ;==>_enable_control_properties_gui
 
 
-Func _ctrl_fit_to_width()
-	Local $n
-	Local $oCtrlSelectedFirst = $oSelected.getFirst()
+;~ Func _ctrl_fit_to_width()
+;~ 	Local $n
+;~ 	Local $oCtrlSelectedFirst = $oSelected.getFirst()
 
-	Switch $oCtrlSelectedFirst.Type
-		Case "Input"
-			$n = _StringSize($oCtrlSelectedFirst.Text, 10) + 10
+;~ 	Switch $oCtrlSelectedFirst.Type
+;~ 		Case "Input"
+;~ 			$n = _StringSize($oCtrlSelectedFirst.Text, 10) + 10
 
-		Case "Button", "Checkbox"
-			$n = _StringSize($oCtrlSelectedFirst.Text, 10) + 16
+;~ 		Case "Button", "Checkbox"
+;~ 			$n = _StringSize($oCtrlSelectedFirst.Text, 10) + 16
 
-		Case "Radio"
-			$n = _StringSize($oCtrlSelectedFirst.Text, 10) + 18
+;~ 		Case "Radio"
+;~ 			$n = _StringSize($oCtrlSelectedFirst.Text, 10) + 18
 
-		Case "Combo"
-			$n = _StringSize($oCtrlSelectedFirst.Text, 10) + 30
+;~ 		Case "Combo"
+;~ 			$n = _StringSize($oCtrlSelectedFirst.Text, 10) + 30
 
-		Case "Label"
-			$n = _StringSize($oCtrlSelectedFirst.Text, 10)
+;~ 		Case "Label"
+;~ 			$n = _StringSize($oCtrlSelectedFirst.Text, 10)
 
-		Case "Edit", "Group", "Date"
-			Return
+;~ 		Case "Edit", "Group", "Date"
+;~ 			Return
 
-		Case Else
-			Return
-	EndSwitch
+;~ 		Case Else
+;~ 			Return
+;~ 	EndSwitch
 
-	Local Const $new_width = Ceiling($n / $grid_ticks) * $grid_ticks
+;~ 	Local Const $new_width = Ceiling($n / $grid_ticks) * $grid_ticks
 
-	GUICtrlSetPos($oCtrlSelectedFirst.Hwnd, $oCtrlSelectedFirst.Left, $oCtrlSelectedFirst.Top, $new_width, $oCtrlSelectedFirst.Height)
+;~ 	GUICtrlSetPos($oCtrlSelectedFirst.Hwnd, $oCtrlSelectedFirst.Left, $oCtrlSelectedFirst.Top, $new_width, $oCtrlSelectedFirst.Height)
 
-	$oCtrlSelectedFirst.Width = $new_width
+;~ 	$oCtrlSelectedFirst.Width = $new_width
 
-	_show_grippies($oCtrlSelectedFirst)
+;~ 	_show_grippies($oCtrlSelectedFirst)
 
-	GUICtrlSetData($h_form_width, $new_width)
+;~ 	GUICtrlSetData($h_form_width, $new_width)
 
-	_refreshGenerateCode()
-EndFunc   ;==>_ctrl_fit_to_width
+;~ 	_refreshGenerateCode()
+;~ EndFunc   ;==>_ctrl_fit_to_width
 
 
 Func _onPropertyChange($sPropertyName, $value)
@@ -1420,8 +1425,7 @@ Func _onPropertyChange($sPropertyName, $value)
 EndFunc   ;==>_onPropertyChange
 
 Func _ctrl_change_text()
-	ConsoleWrite("change text" & @CRLF)
-	Local Const $new_text = GUICtrlRead(@GUI_CtrlId)
+	Local Const $new_text = $oProperties_Ctrls.Text.value
 
 	Local Const $sel_count = $oSelected.count
 
@@ -1456,9 +1460,9 @@ EndFunc   ;==>_ctrl_change_text
 
 Func _ctrl_change_name()
 	ConsoleWrite("change name" & @CRLF)
-	Local $new_name = GUICtrlRead(@GUI_CtrlId)
+	Local $new_name = $oProperties_Ctrls.Name.value
 	$new_name = StringReplace($new_name, " ", "_")
-	GUICtrlSetData(@GUI_CtrlId, $new_name)
+	$oProperties_Ctrls.Name.value = $new_name
 
 	Local Const $sel_count = $oSelected.count
 
@@ -1488,10 +1492,10 @@ EndFunc   ;==>_ctrl_change_name
 
 
 Func _ctrl_change_left()
-	Local $new_data = GUICtrlRead(@GUI_CtrlId)
+	Local $new_data = $oProperties_Ctrls.Left.value
 	If $new_data = "" Then
 		$new_data = 0
-		GUICtrlSetData(@GUI_CtrlId, $new_data)
+		$oProperties_Ctrls.Left.value = $new_data
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
@@ -1515,10 +1519,10 @@ EndFunc   ;==>_ctrl_change_left
 
 
 Func _ctrl_change_top()
-	Local $new_data = GUICtrlRead(@GUI_CtrlId)
+	Local $new_data = $oProperties_Ctrls.Top.value
 	If $new_data = "" Then
 		$new_data = 0
-		GUICtrlSetData(@GUI_CtrlId, $new_data)
+		$oProperties_Ctrls.Top.value = $new_data
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
@@ -1541,10 +1545,10 @@ EndFunc   ;==>_ctrl_change_top
 
 
 Func _ctrl_change_width()
-	Local $new_data = GUICtrlRead(@GUI_CtrlId)
+	Local $new_data = $oProperties_Ctrls.Width.value
 	If $new_data = "" Then
 		$new_data = 0
-		GUICtrlSetData(@GUI_CtrlId, $new_data)
+		$oProperties_Ctrls.Width.value = $new_data
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
@@ -1567,10 +1571,10 @@ EndFunc   ;==>_ctrl_change_width
 
 
 Func _ctrl_change_height()
-	Local $new_data = GUICtrlRead(@GUI_CtrlId)
+	Local $new_data = $oProperties_Ctrls.Height.value
 	If $new_data = "" Then
 		$new_data = 0
-		GUICtrlSetData(@GUI_CtrlId, $new_data)
+		$oProperties_Ctrls.Height.value =  $new_data
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
@@ -1596,14 +1600,14 @@ Func _ctrl_pick_bkColor()
 	Local $color = _ChooseColor(2)
 
 	If $color = -1 Then Return 0
-	GUICtrlSetData($h_form_bkColor, $color)
+	$oProperties_Ctrls.Background.value = $color
 
 	_ctrl_change_bkColor()
 EndFunc   ;==>_ctrl_pick_bkColor
 
 
 Func _ctrl_change_bkColor()
-	Local $colorInput = GUICtrlRead($h_form_bkColor)
+	Local $colorInput = $oProperties_Ctrls.Background.value
 	If $colorInput = "" Then
 		$colorInput = -1
 	Else
@@ -1642,14 +1646,14 @@ Func _ctrl_pick_Color()
 	Local $color = _ChooseColor(2)
 
 	If $color = -1 Then Return 0
-	GUICtrlSetData($h_form_Color, $color)
+	$oProperties_Ctrls.Color.value = $color
 
 	_ctrl_change_Color()
 EndFunc   ;==>_ctrl_pick_Color
 
 
 Func _ctrl_change_Color()
-	Local $colorInput = GUICtrlRead($h_form_Color)
+	Local $colorInput = $oProperties_Ctrls.Color.value
 	If $colorInput = "" Then
 		$colorInput = -1
 	Else
@@ -1848,7 +1852,7 @@ Func _set_default_mode()
 
 	_remove_all_from_selected()
 
-	_clear_control_properties_gui()
+;~ 	_clear_control_properties_gui()
 
 ;~ 	_disable_control_properties_gui()
 	_showProperties($props_Main)

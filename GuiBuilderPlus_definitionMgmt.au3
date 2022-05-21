@@ -178,7 +178,7 @@ Func _load_gui_definition($AgdInfile = '')
 	EndIf
 
 	;only wipe if GUI exists already
-	If IsHWnd($hGUI) Then
+	If Not $CmdLine[0] Then
 		_wipe_current_gui()
 	EndIf
 

@@ -12,8 +12,9 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  05/19/2022 ...: 	- FIXED:	Wrong GUI width and height displayed at startup
+;  05/19/2022 ...: 	- FIXED:	Wrong GUI width and height displayed in the titlebar at startup
 ;					- FIXED:	Control names not applied when loading from agd definition file
+;					- FIXED:	Text looked slightly different in design vs runtime
 ;					- ADDED:	Now you can set properties for the main GUI
 ;
 ;  05/19/2022 ...: 	- UPDATE:	Converted maps to objects using AutoItObject UDF
@@ -146,8 +147,6 @@ Global $background, $background_contextmenu, $background_contextmenu_paste
 Global $overlay, $overlay_contextmenu, $overlay_contextmenutab
 ;grippys
 Global $NorthWest_Grippy, $North_Grippy, $NorthEast_Grippy, $West_Grippy, $East_Grippy, $SouthWest_Grippy, $South_Grippy, $SouthEast_Grippy
-;main tab
-Global $h_form_text, $h_form_name, $h_form_left, $h_form_top, $h_form_width, $h_form_fittowidth, $h_form_height, $h_form_Color, $h_form_bkColor
 ;state tab
 Global $h_form_visible, $h_form_enabled, $h_form_ontop, $h_form_dropaccepted, $h_form_focus
 ;style tab
@@ -160,7 +159,7 @@ Global $lvObjects, $labelObjectCount, $childSelected
 ;~ Global $hBgGraphic
 
 ;Property Inspector
-Global $hPropGUI_Main, $hPropGUI_Ctrls
+Global $oProperties_Main, $oProperties_Ctrls
 
 ;GUI Constants
 Global Const $main_width = 400
@@ -240,6 +239,7 @@ _AutoItObject_StartUp()
 #include "UDFS\GUIScrollbars_Ex.au3"
 #include "UDFs\StringSize.au3"
 #include "GuiBuilderPlus_objCtrl.au3"
+#include "GuiBuilderPlus_objProperties.au3"
 #include "GuiBuilderPlus_CtrlMgmt.au3"
 #include "GuiBuilderPlus_definitionMgmt.au3"
 #include "GuiBuilderPlus_codeGeneration.au3"
@@ -264,6 +264,10 @@ Func _main()
 	$oCtrls = _objCtrls()
 	$oSelected = _objCtrls()
 	$oClipboard = _objCtrls()
+
+	;create properties objects
+	$oProperties_Main = _objProperties()
+	$oProperties_Ctrls = _objProperties()
 
 	;make the main program GUI
 	_formMain()
@@ -290,7 +294,7 @@ Func _main()
 	EndIf
 
 	GUISetState(@SW_SHOWNORMAL, $toolbar)
-	GUISetState(@SW_SHOWNOACTIVATE, $hPropGUI_Main)
+	GUISetState(@SW_SHOWNORMAL, $oProperties_Main.Hwnd)
 	GUISwitch($hGUI)
 	GUISetState(@SW_SHOWNORMAL, $hGUI)
 	$bResizedFlag = 0

@@ -649,7 +649,7 @@ Func _add_remove_selected_control(Const $oRect)
 								_show_grippies($oSelected.getLast())
 
 							Case False
-								_clear_control_properties_gui()
+;~ 								_clear_control_properties_gui()
 
 ;~ 								_disable_control_properties_gui()
 								_showProperties($props_Main)
@@ -679,8 +679,7 @@ Func _delete_selected_controls()
 
 	Switch $sel_count >= 1
 		Case True
-			_clear_control_properties_gui()
-
+;~ 			_clear_control_properties_gui()
 			For $oCtrl In $oSelected.ctrls
 				_delete_ctrl($oCtrl)
 			Next
@@ -692,7 +691,18 @@ Func _delete_selected_controls()
 			_set_default_mode()
 
 			_refreshGenerateCode()
+
+			If $oSelected.count > 0 Then
+				_populate_control_properties_gui($oSelected.getFirst())
+				_showProperties($props_Ctrls)
+			Else
+				_showProperties($props_Main)
+			EndIf
+
 			Return True
+
+		Case False
+			_showProperties($props_Main)
 	EndSwitch
 
 EndFunc   ;==>_delete_selected_controls
