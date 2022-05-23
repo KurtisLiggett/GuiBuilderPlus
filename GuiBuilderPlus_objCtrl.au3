@@ -286,3 +286,27 @@ Func _CreateListItem($name, $value)
 
 	Return $oSelf
 EndFunc   ;==>_CreateListItem
+
+
+
+
+
+;------------------------------------------------------------------------------
+; Title...........: _objMain
+; Description.....:	Main GUI object
+;------------------------------------------------------------------------------
+Func _objMain()
+	Local $oObject = _AutoItObject_Create()
+
+	_AutoItObject_AddProperty($oObject, "Hwnd", $ELSCOPE_PUBLIC)
+	_AutoItObject_AddProperty($oObject, "Title", $ELSCOPE_PUBLIC)
+	_AutoItObject_AddProperty($oObject, "Name", $ELSCOPE_PUBLIC, "")
+	_AutoItObject_AddProperty($oObject, "Text", $ELSCOPE_PUBLIC, "")
+	_AutoItObject_AddProperty($oObject, "Left", $ELSCOPE_PUBLIC, -1)
+	_AutoItObject_AddProperty($oObject, "Top", $ELSCOPE_PUBLIC, -1)
+	_AutoItObject_AddProperty($oObject, "Width", $ELSCOPE_PUBLIC, -1)
+	_AutoItObject_AddProperty($oObject, "Height", $ELSCOPE_PUBLIC, -1)
+	_AutoItObject_AddProperty($oObject, "Background", $ELSCOPE_PUBLIC, -1)
+
+	Return $oObject
+EndFunc   ;==>_objMain

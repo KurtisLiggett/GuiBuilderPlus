@@ -10,9 +10,20 @@
 ;------------------------------------------------------------------------------
 Func _formMain()
 	;create the GUI
-	$hGUI = GUICreate($progName & " - Form (" & $main_width & ", " & $main_height & ')', $main_width, $main_height, $main_left, $main_top, BitOR($WS_SIZEBOX, $WS_SYSMENU, $WS_MINIMIZEBOX), $WS_EX_ACCEPTFILES)
+	$hGUI = GUICreate($progName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ')', $oMain.Width, $oMain.Height, $main_left, $main_top, BitOR($WS_SIZEBOX, $WS_SYSMENU, $WS_MINIMIZEBOX), $WS_EX_ACCEPTFILES)
+;~ 	$defaultGuiBkColor = GUIGetBkColor($hGUI)
+
+	Local $aWinPos = WinGetPos($hGUI)
+	Local $iClientX = 0, $iClientY = 0
+	ClientToScreen($iClientX, $iClientY)
+	$iGuiFrameW = 2 * ($iClientX - $aWinPos[0])
+	$iGuiFrameH = ($iClienty - $aWinPos[1]) + ($iClientX - $aWinPos[0])
+
+	WinMove($hGUI, "", Default, Default, $oMain.Width + $iGuiFrameW, $oMain.Height + $iGuiFrameH)
+
 	$win_client_size = WinGetClientSize($hGUI)
 	WinSetTitle($hGUI, "", $progName & " - Form (" & $win_client_size[0] & ", " & $win_client_size[1] & ")")
+
 
 
 	;GUI events
@@ -37,7 +48,7 @@ Func _formMain()
 
 
 	;create the background and context menu
-	$background = GUICtrlCreateGraphic(0, 0, $main_width, $main_height) ; used to show a grid --- GUICtrlCreatePic($blank_bmp, 0, 0, 0, 0) ; used to show a grid
+	$background = GUICtrlCreateGraphic(0, 0, $oMain.Width, $oMain.Height) ; used to show a grid --- GUICtrlCreatePic($blank_bmp, 0, 0, 0, 0) ; used to show a grid
 ;~ 	GUICtrlSetState($background, $GUI_DISABLE)
 	$background_contextmenu = GUICtrlCreateContextMenu(GUICtrlCreateDummy())
 	$background_contextmenu_paste = GUICtrlCreateMenuItem("Paste", $background_contextmenu)
@@ -107,13 +118,16 @@ Func _formToolbar()
 	#Region create-menu
 	;create up the File menu
 	Local $menu_file = GUICtrlCreateMenu("File")
-	Local $menu_save_definition = GUICtrlCreateMenuItem("Save", $menu_file) ; Roy add-on
-	Local $menu_load_definition = GUICtrlCreateMenuItem("Load", $menu_file) ; Roy add-on
+	Local $menu_save_definition = GUICtrlCreateMenuItem("Save" & @TAB & "Ctrl+s", $menu_file) ; Roy add-on
+	Local $menu_load_definition = GUICtrlCreateMenuItem("Load" & @TAB & "Ctrl+o", $menu_file) ; Roy add-on
 	GUICtrlCreateMenuItem("", $menu_file) ; Roy add-on
+	Local $menu_export_au3 = GUICtrlCreateMenuItem("Export to au3", $menu_file)
+	GUICtrlCreateMenuItem("", $menu_file)
 	Local $menu_exit = GUICtrlCreateMenuItem("Exit", $menu_file)
 
 	GUICtrlSetOnEvent($menu_save_definition, _save_gui_definition)
 	GUICtrlSetOnEvent($menu_load_definition, _load_gui_definition)
+	GUICtrlSetOnEvent($menu_export_au3, "_onExportMenuItem")
 	GUICtrlSetOnEvent($menu_exit, "_onExit")
 
 	;create the Edit menu
@@ -300,7 +314,7 @@ Func _formToolbar()
 
 
 	;create property inspector
-	_formPropertyInspector(5, 215, $toolbar_width - 10, 215)
+	_formPropertyInspector(0, 215, $toolbar_width, 222)
 
 
 	$hStatusbar = _GUICtrlStatusBar_Create($toolbar)
@@ -325,8 +339,10 @@ Func _set_accelerators()
 	Local Const $accel_Ctrldown = GUICtrlCreateDummy()
 	Local Const $accel_Ctrlleft = GUICtrlCreateDummy()
 	Local Const $accel_Ctrlright = GUICtrlCreateDummy()
+	Local Const $accel_s = GUICtrlCreateDummy()
+	Local Const $accel_o = GUICtrlCreateDummy()
 
-	Local Const $accelerators[15][2] = _
+	Local Const $accelerators[17][2] = _
 			[ _
 			["{Delete}", $accel_delete], _
 			["^c", $accel_c], _
@@ -342,7 +358,9 @@ Func _set_accelerators()
 			["^{RIGHT}", $accel_Ctrlright], _
 			["{F3}", $menu_grid_snap], _
 			["{F7}", $menu_show_grid], _
-			["{F5}", $menu_testForm] _
+			["{F5}", $menu_testForm], _
+			["^s", $accel_s], _
+			["^o", $accel_o] _
 			]
 	GUISetAccelerators($accelerators, $hGUI)
 
@@ -358,6 +376,8 @@ Func _set_accelerators()
 	GUICtrlSetOnEvent($accel_Ctrldown, "_onKeyCtrlDown")
 	GUICtrlSetOnEvent($accel_Ctrlleft, "_onKeyCtrlLeft")
 	GUICtrlSetOnEvent($accel_Ctrlright, "_onKeyCtrlRight")
+	GUICtrlSetOnEvent($accel_s, "_save_gui_definition")
+	GUICtrlSetOnEvent($accel_o, "_load_gui_definition")
 EndFunc   ;==>_set_accelerators
 #EndRegion formMain
 
@@ -450,8 +470,8 @@ EndFunc   ;==>_onExit
 ;------------------------------------------------------------------------------
 Func _onMinimize()
 	GUISetState(@SW_MINIMIZE, $hGUI)
-;~ 	GUISetState(@SW_MINIMIZE, $oProperties_Main.Hwnd)
-;~ 	GUISetState(@SW_MINIMIZE, $oProperties_Ctrls.Hwnd)
+	GUISetState(@SW_HIDE, $oProperties_Main.Hwnd)
+	GUISetState(@SW_HIDE, $oProperties_Ctrls.Hwnd)
 EndFunc   ;==>_onMinimize
 
 
@@ -462,8 +482,11 @@ EndFunc   ;==>_onMinimize
 ;------------------------------------------------------------------------------
 Func _onRestore()
 	GUISetState(@SW_RESTORE, $hGUI)
-;~ 	GUISetState(@SW_RESTORE, $oProperties_Main.Hwnd)
-;~ 	GUISetState(@SW_RESTORE, $oProperties_Ctrls.Hwnd)
+	If $oSelected.count > 0 Then
+		GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Ctrls.Hwnd)
+	Else
+		GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Main.Hwnd)
+	EndIf
 	GUISetState(@SW_SHOWNORMAL, $hGUI)
 	GUISwitch($hGUI)
 
@@ -542,6 +565,11 @@ Func _onResize()
 	EndIf
 
 	WinSetTitle($hGUI, "", $progName & " - Form (" & $win_client_size[0] & ", " & $win_client_size[1] & ")")
+	$oMain.Width = $win_client_size[0]
+	$oMain.Height = $win_client_size[1]
+
+	$oProperties_Main.Width.value = $oMain.Width
+	$oProperties_Main.Height.value = $oMain.Height
 
 	_show_grippies($oSelected.getFirst())
 EndFunc   ;==>_onResize
@@ -1153,12 +1181,8 @@ Func _onTestGUI()
 		Return
 	EndIf
 
-	Local $x = -1, $y = -1
-	If IsArray($aTestGuiPos) Then
-		$x = $aTestGuiPos[0]
-		$y = $aTestGuiPos[1]
-	EndIf
-	Local $code = _code_generation($x, $y)
+	Local $code = _code_generation()
+;~ 	MsgBox(0,"",$code)
 
 	;create temporary file
 	$testFileName = _TempFile()
@@ -1420,6 +1444,102 @@ EndFunc   ;==>_populate_control_properties_gui
 ;~ EndFunc   ;==>_ctrl_fit_to_width
 
 
+#Region change-properties-main
+Func _main_change_title()
+	Local Const $new_text = $oProperties_Main.Title.value
+	$oMain.Title = $new_text
+
+	_refreshGenerateCode()
+EndFunc   ;==>_ctrl_change_text
+
+
+Func _main_change_name()
+	Local $new_name = $oProperties_Main.Name.value
+	$new_name = StringReplace($new_name, " ", "_")
+	$oProperties_Main.Name.value = $new_name
+	$oMain.Name = $new_name
+
+	_refreshGenerateCode()
+	_formObjectExplorer_updateList()
+EndFunc   ;==>_ctrl_change_name
+
+
+Func _main_change_left()
+	Local Const $new_text = $oProperties_Main.Left.value
+	$oMain.Left = $new_text
+
+	_refreshGenerateCode()
+EndFunc   ;==>_ctrl_change_left
+
+
+Func _main_change_top()
+	Local Const $new_text = $oProperties_Main.Top.value
+	$oMain.Top = $new_text
+
+	_refreshGenerateCode()
+EndFunc   ;==>_ctrl_change_left
+
+
+Func _main_change_width()
+	Local Const $newValue = $oProperties_Main.Width.value
+	$oMain.Width = $newValue
+
+	WinMove($hGUI, "", Default, Default, $newValue + $iGuiFrameW, Default)
+	WinSetTitle($hGUI, "", $progName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
+
+	$win_client_size = WinGetClientSize($hGUI)
+	If _setting_show_grid() Then
+		_display_grid($background, $win_client_size[0], $win_client_size[1])
+	EndIf
+
+	_refreshGenerateCode()
+EndFunc   ;==>_ctrl_change_left
+
+
+Func _main_change_height()
+	Local Const $newValue = $oProperties_Main.Height.value
+	$oMain.Height = $newValue
+
+	WinMove($hGUI, "", Default, Default, Default, $newValue + $iGuiFrameH)
+	WinSetTitle($hGUI, "", $progName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
+
+	$win_client_size = WinGetClientSize($hGUI)
+
+	If _setting_show_grid() Then
+		_display_grid($background, $win_client_size[0], $win_client_size[1])
+	EndIf
+
+	_refreshGenerateCode()
+EndFunc   ;==>_ctrl_change_left
+
+
+Func _main_pick_bkColor()
+	Local $color = _ChooseColor(2)
+
+	If $color = -1 Then Return 0
+	$oProperties_Main.Background.value = $color
+
+	_main_change_background()
+EndFunc   ;==>_ctrl_pick_bkColor
+
+
+Func _main_change_background()
+	Local $colorInput = $oProperties_Main.Background.value
+	If $colorInput = "" Then
+		$colorInput = $defaultGuiBkColor
+	Else
+		$colorInput = Dec(StringReplace($colorInput, "0x", ""))
+	EndIf
+	$oMain.Background = $oProperties_Main.Background.value
+
+	GUISetBkColor($colorInput, $hGUI)
+
+	_refreshGenerateCode()
+EndFunc   ;==>_ctrl_change_left
+#EndRegion
+
+
+#Region change-properties-ctrls
 Func _onPropertyChange($sPropertyName, $value)
 	ConsoleWrite($sPropertyName & " " & $value & @CRLF)
 EndFunc   ;==>_onPropertyChange
@@ -1722,6 +1842,7 @@ EndFunc   ;==>_ctrl_change_style_autocheckbox
 Func _ctrl_change_style_top()
 
 EndFunc   ;==>_ctrl_change_style_top
+#EndRegion
 #EndRegion ; styles
 #EndRegion ; control properties window
 #EndRegion events
@@ -1944,6 +2065,16 @@ EndFunc   ;==>_setting_show_grid
 
 #Region ; menu bar items
 ;------------------------------------------------------------------------------
+; Title...........: _onExportMenuItem
+; Description.....: Display the save dialog to save code to au3 file
+; Events..........: file menu item
+;------------------------------------------------------------------------------
+Func _onExportMenuItem()
+	_save_code()
+EndFunc
+
+
+;------------------------------------------------------------------------------
 ; Title...........: ShowMenu
 ; Description.....: Show context menu (right click) for control or GUI
 ;------------------------------------------------------------------------------
@@ -2124,7 +2255,7 @@ EndFunc   ;==>_menu_dpi_scaling
 ; Description.....: Display popup with program description
 ;------------------------------------------------------------------------------
 Func _menu_about()
-	MsgBox($MB_ICONINFORMATION, "About " & $progName, $progVersion & @CRLF & _
+	MsgBox(0, "About " & $progName, $progVersion & @CRLF & _
 			"Originally created by CyberSlug, " & @CRLF & _
 			"and modified by Roy, TheSaint, and Jaberwacky," & @CRLF & _
 			"with additional modifications by kurtykurtyboy!" & @CRLF & @CRLF & _
@@ -2150,3 +2281,24 @@ EndFunc   ;==>_menu_vals
 
 
 #EndRegion ; menu bar items
+
+
+; #FUNCTION# ====================================================================================================================
+; Name ..........: GUIGetBkColor
+; Description ...: Retrieves the RGB value of the GUI background.
+; Syntax ........: GUIGetBkColor($hWnd)
+; Parameters ....: $hWnd                - A handle of the GUI.
+; Return values .: Success - RGB value
+;                  Failure - 0
+; Author ........: guinness
+; Example .......: Yes
+; ===============================================================================================================================
+Func GUIGetBkColor($hWnd)
+    Local $iColor = 0
+    If IsHWnd($hWnd) Then
+        Local $hDC = _WinAPI_GetDC($hWnd)
+        $iColor = _WinAPI_GetBkColor($hDC)
+        _WinAPI_ReleaseDC($hWnd, $hDC)
+    EndIf
+    Return $iColor
+EndFunc   ;==>GUIGetBkColor

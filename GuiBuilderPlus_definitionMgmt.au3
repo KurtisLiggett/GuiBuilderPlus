@@ -62,15 +62,13 @@ Func _save_gui_definition()
 		Return
 	EndIf
 
-	Local Const $p = WinGetPos($hGUI)
-
-	IniWrite($AgdOutFile, "Main", "guiwidth", $win_client_size[0])
-	IniWrite($AgdOutFile, "Main", "guiheight", $win_client_size[1])
-	IniWrite($AgdOutFile, "Main", "Left", $p[0])
-	IniWrite($AgdOutFile, "Main", "Top", $p[1])
-	IniWrite($AgdOutFile, "Main", "Width", $p[2])
-	IniWrite($AgdOutFile, "Main", "Height", $p[3])
-	IniWrite($AgdOutFile, "Main", "Name", $mainName)
+	IniWrite($AgdOutFile, "Main", "Left", $oMain.Left)
+	IniWrite($AgdOutFile, "Main", "Top", $oMain.Top)
+	IniWrite($AgdOutFile, "Main", "Width", $oMain.Width)
+	IniWrite($AgdOutFile, "Main", "Height", $oMain.Height)
+	IniWrite($AgdOutFile, "Main", "Name", $oMain.Name)
+	IniWrite($AgdOutFile, "Main", "Title", $oMain.Title)
+	IniWrite($AgdOutFile, "Main", "Background", $oMain.Background)
 
 	Local Const $ctrl_count = $oCtrls.count
 
@@ -82,25 +80,16 @@ Func _save_gui_definition()
 
 		Local $handle = $oCtrl.Hwnd
 
-		Local $pos = ControlGetPos($hGUI, "", $handle)
-
-		Local $text = ControlGetText($hGUI, "", $handle)
-
-		If @error Then
-			$text = $oCtrl.Name
-		EndIf
-
 		IniWrite($AgdOutFile, $Key, "Type", $oCtrl.Type)
 		IniWrite($AgdOutFile, $Key, "Name", $oCtrl.Name)
-		IniWrite($AgdOutFile, $Key, "Text", $text)
+		IniWrite($AgdOutFile, $Key, "Text", $oCtrl.Text)
 		IniWrite($AgdOutFile, $Key, "Visible", $oCtrl.Visible)
 		IniWrite($AgdOutFile, $Key, "OnTop", $oCtrl.OnTop)
 		IniWrite($AgdOutFile, $Key, "DropAccepted", $oCtrl.DropAccepted)
-		IniWrite($AgdOutFile, $Key, "Text", $text)
-		IniWrite($AgdOutFile, $Key, "Left", $pos[0])
-		IniWrite($AgdOutFile, $Key, "Top", $pos[1])
-		IniWrite($AgdOutFile, $Key, "Width", $pos[2])
-		IniWrite($AgdOutFile, $Key, "Height", $pos[3])
+		IniWrite($AgdOutFile, $Key, "Left", $oCtrl.Left)
+		IniWrite($AgdOutFile, $Key, "Top", $oCtrl.Top)
+		IniWrite($AgdOutFile, $Key, "Width", $oCtrl.Width)
+		IniWrite($AgdOutFile, $Key, "Height", $oCtrl.Height)
 		If $oCtrl.Color = -1 Then
 			IniWrite($AgdOutFile, $Key, "Color", -1)
 		Else
@@ -142,6 +131,8 @@ EndFunc   ;==>_save_gui_definition
 ; Author..........: Roy
 ;------------------------------------------------------------------------------
 Func _load_gui_definition($AgdInfile = '')
+	Static $firstLoad = True
+
 	If $oCtrls.count > 0 Then
 		Switch MsgBox($MB_ICONWARNING + $MB_YESNO, "Load Gui Definition from file", "Loading a Gui Definition will clear existing controls." & @CRLF & "Are you sure?" & @CRLF)
 			Case $IDNO
@@ -169,29 +160,55 @@ Func _load_gui_definition($AgdInfile = '')
 
 	$AgdOutFile = $AgdInfile
 
-	Local Const $w = IniRead($AgdInfile, "Main", "guiwidth", -1)
-
-	If $w = -1 Then
-		$bStatusNewMessage = True
-		_GUICtrlStatusBar_SetText($hStatusbar, "Error loading gui definition file!")
-		Return
-	EndIf
-
 	;only wipe if GUI exists already
-	If Not $CmdLine[0] Then
+	If Not $firstLoad OR Not $CmdLine[0] Then
 		_wipe_current_gui()
 	EndIf
+	If $firstLoad then $firstLoad = False
 
-	WinMove($hGUI, "", IniRead($AgdInfile, "Main", "Left", -1), _
-			IniRead($AgdInfile, "Main", "Top", -1), _
-			IniRead($AgdInfile, "Main", "Width", -1), _
-			IniRead($AgdInfile, "Main", "Height", -1))
+	$oMain.Name = IniRead($AgdInfile, "Main", "Name", "hGUI")
+	$oMain.Title = IniRead($AgdInfile, "Main", "Title", StringTrimRight(StringTrimLeft(_get_script_title(), 1),1))
+	$oMain.Left = IniRead($AgdInfile, "Main", "Left", -1)
+	$oMain.Top = IniRead($AgdInfile, "Main", "Top", -1)
+	$oMain.Width = IniRead($AgdInfile, "Main", "Width", 400)
+	$oMain.Height = IniRead($AgdInfile, "Main", "Height", 350)
+	If IsHWnd($hGUI) Then
+		Local $newLeft = $oMain.Left, $newTop = $oMain.Top
+		If $oMain.Left = -1 Then
+			$newLeft = Default
+		EndIf
+		If $oMain.Top = -1 Then
+			$newTop = Default
+		EndIf
+		WinMove($hGUI, "", $newLeft, $newTop, $oMain.Width + $iGuiFrameW, $oMain.Height + $iGuiFrameH)
+		WinSetTitle($hGUI, "", $progName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
+
+		$win_client_size = WinGetClientSize($hGUI)
+		If _setting_show_grid() Then
+			_display_grid($background, $win_client_size[0], $win_client_size[1])
+		EndIf
+	EndIf
+	$oMain.Background = IniRead($AgdInfile, "Main", "Background", -1)
+	$oProperties_Main.Background.value = $oMain.Background
+	If $oMain.Background <> -1 Then
+		$oMain.Background = Dec(StringReplace($oMain.Background, "0x", ""))
+		GUISetBkColor($oMain.Background, $hGUI)
+	Else
+		GUISetBkColor($defaultGuiBkColor, $hGUI)
+	EndIf
+
+	$oProperties_Main.Title.value = $oMain.Title
+	$oProperties_Main.Name.value = $oMain.Name
+	$oProperties_Main.Left.value = $oMain.Left
+	$oProperties_Main.Top.value = $oMain.Top
+	$oProperties_Main.Width.value = $oMain.Width
+	$oProperties_Main.Height.value = $oMain.Height
+
+
 	Local Const $numCtrls = IniRead($AgdInfile, "Main", "numctrls", -1)
-	$mainName = IniRead($AgdInfile, "Main", "Name", "hGUI")
+
 
 	Local $oCtrl, $Key
-
-
 	For $i = 1 To $numCtrls
 		$Key = "Control_" & $i
 		$oCtrl = $oCtrls.createNew()

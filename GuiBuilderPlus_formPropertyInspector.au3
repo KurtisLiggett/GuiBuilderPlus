@@ -10,42 +10,22 @@ Global Enum $typeHeading, $typeText, $typeNumber, $typeCheck, $typeColor, $getHe
 ; Description.....:	Create the code generation GUI
 ;------------------------------------------------------------------------------
 Func _formPropertyInspector($x, $y, $w, $h)
+	;top line
+	Local $labelLine = GUICtrlCreateLabel("", $x, $y, $w, 1)
+	GUICtrlSetBkColor(-1, 0xDDDDDD)
+
 
 	#Region properties-tab-main
-	Local $currentWinPos = WinGetPos($toolbar)
-
-	Local $Parent_x = $currentWinPos[0]
-	Local $Parent_y = $currentWinPos[1] + _WinAPI_GetSystemMetrics($SM_CYCAPTION) + _WinAPI_GetSystemMetrics($SM_CYMENU)
-
 	;create the child gui for controls properties
-	Local $guiHandle = GUICreate("", $w, $h, $x, $y, BitOR($WS_POPUP, $WS_CLIPCHILDREN), $WS_EX_MDICHILD + $WS_EX_TOOLWINDOW, $toolbar)
+	Local $guiHandle = GUICreate("", $w, $h-2, $x, $y+1, $WS_POPUP, $WS_EX_MDICHILD, $toolbar)
 	GUISetBkColor(0xFFFFFF)
-	Local $ret = _GUIScrollbars_Generate($oProperties_Main.Hwnd, $w - 2, $h+20)
-	ConsoleWrite($guiHandle & @CRLF)
+	Local $ret = _GUIScrollbars_Generate($guiHandle, $w - 2, $h+20)
 	$oProperties_Main.Hwnd = $guiHandle
-	ConsoleWrite(Hex($oProperties_Main.Hwnd, 16) & @CRLF)
-	if Not IsArray($ret) Then
-		ConsoleWrite($ret & @CRLF)
-	Else
-		_ArrayDisplay($ret)
-	EndIf
 
 	Local $iScrollbarWidth = $__g_aSB_WindowInfo[0][5]
 
-	;top line
-	Local $labelLine = GUICtrlCreateLabel("", 0, 0, $w, 1)
-	GUICtrlSetBkColor(-1, 0xDDDDDD)
-	;bottom line
-	Local $labelLine = GUICtrlCreateLabel("", 0, $h - 1, $w, 1)
-	GUICtrlSetBkColor(-1, 0xDDDDDD)
-	;Left line
-	Local $labelLine = GUICtrlCreateLabel("", 0, 0, 1, $h)
-	GUICtrlSetBkColor(-1, 0xDDDDDD)
-	;Right line
-	Local $labelLine = GUICtrlCreateLabel("", $w - 1, 0, 1, $h)
-	GUICtrlSetBkColor(-1, 0xDDDDDD)
 	;End line
-	Local $labelLine = GUICtrlCreateLabel("", $w - $iScrollbarWidth - 1, 0, 1, $h)
+	Local $labelLine = GUICtrlCreateLabel("", $w - $iScrollbarWidth - 1, 0, 1, $h+20)
 	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
 	;items
@@ -55,43 +35,43 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	$oProperties_Main.Top.Hwnd = _formPropertyInspector_newitem("Top", $typeNumber)
 	$oProperties_Main.Width.Hwnd = _formPropertyInspector_newitem("Width", $typeNumber)
 	$oProperties_Main.Height.Hwnd = _formPropertyInspector_newitem("Height", $typeNumber)
-	$oProperties_Main.Background.Hwnd = _formPropertyInspector_newitem("Background", $typeColor, -1, -1, -1, -1, "_ctrl_pick_bkColor")
+	$oProperties_Main.Background.Hwnd = _formPropertyInspector_newitem("Background", $typeColor, -1, -1, -1, -1, "_main_pick_bkColor")
 
 	;vertical line
 	Local $itemsHeight = _formPropertyInspector_newitem("", $getHeight)
 	$labelLine = GUICtrlCreateLabel("", $w - $iScrollbarWidth - 1 - 81, 0, 1, $itemsHeight)
 	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
-	GUICtrlSetOnEvent($oProperties_Main.Text.Hwnd, _ctrl_change_text)
-	GUICtrlSetOnEvent($oProperties_Main.Name.Hwnd, _ctrl_change_name)
-	GUICtrlSetOnEvent($oProperties_Main.Left.Hwnd, _ctrl_change_left)
-	GUICtrlSetOnEvent($oProperties_Main.Top.Hwnd, _ctrl_change_top)
-	GUICtrlSetOnEvent($oProperties_Main.Width.Hwnd, _ctrl_change_width)
-	GUICtrlSetOnEvent($oProperties_Main.Height.Hwnd, _ctrl_change_height)
-	GUICtrlSetOnEvent($oProperties_Main.Background.Hwnd, _ctrl_change_bkColor)
+	GUICtrlSetOnEvent($oProperties_Main.Title.Hwnd, _main_change_title)
+	GUICtrlSetOnEvent($oProperties_Main.Name.Hwnd, _main_change_name)
+	GUICtrlSetOnEvent($oProperties_Main.Left.Hwnd, _main_change_left)
+	GUICtrlSetOnEvent($oProperties_Main.Top.Hwnd, _main_change_top)
+	GUICtrlSetOnEvent($oProperties_Main.Width.Hwnd, _main_change_width)
+	GUICtrlSetOnEvent($oProperties_Main.Height.Hwnd, _main_change_height)
+	GUICtrlSetOnEvent($oProperties_Main.Background.Hwnd, _main_change_background)
+
+	;populate settings with default values
+	$oProperties_Main.Title.value = $oMain.Title
+	$oProperties_Main.Name.value = $oMain.Name
+	$oProperties_Main.Width.value = $oMain.Width
+	$oProperties_Main.Height.value = $oMain.Height
+	$oProperties_Main.Left.value = $oMain.Left
+	$oProperties_Main.Top.value = $oMain.Top
+	$oProperties_Main.Background.value = $oMain.Background
+
 	#EndRegion properties-tab-main
+
 
 
 	#Region properties-tab-controls
 	;create the child gui for controls properties
-	$oProperties_Ctrls.Hwnd = GUICreate("", $w, $h, $x, $y, BitOR($WS_POPUP, $WS_CLIPCHILDREN), $WS_EX_MDICHILD + $WS_EX_TOOLWINDOW, $toolbar)
+	$guiHandle = GUICreate("", $w, $h-1, $x, $y+1, $WS_POPUP, $WS_EX_MDICHILD, $toolbar)
 	GUISetBkColor(0xFFFFFF)
-;~ 	_GUIScrollbars_Generate($oProperties_Ctrls.Hwnd, $w - 2, $h)
+	_GUIScrollbars_Generate($guiHandle, $w - 2, $h)
+	$oProperties_Ctrls.Hwnd = $guiHandle
 
-	;top line
-	Local $labelLine = GUICtrlCreateLabel("", 0, 0, $w, 1)
-	GUICtrlSetBkColor(-1, 0xDDDDDD)
-	;bottom line
-	Local $labelLine = GUICtrlCreateLabel("", 0, $h - 1, $w, 1)
-	GUICtrlSetBkColor(-1, 0xDDDDDD)
-	;Left line
-	Local $labelLine = GUICtrlCreateLabel("", 0, 0, 1, $h)
-	GUICtrlSetBkColor(-1, 0xDDDDDD)
-	;Right line
-	Local $labelLine = GUICtrlCreateLabel("", $w - 1, 0, 1, $h)
-	GUICtrlSetBkColor(-1, 0xDDDDDD)
 	;End line
-	Local $labelLine = GUICtrlCreateLabel("", $w - $iScrollbarWidth - 1, 0, 1, $h)
+	Local $labelLine = GUICtrlCreateLabel("", $w - $iScrollbarWidth - 1, 0, 1, $h+20)
 	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
 	;items
@@ -122,6 +102,10 @@ Func _formPropertyInspector($x, $y, $w, $h)
 
 
 	GUISwitch($toolbar)
+
+	;bottom line
+;~ 	Local $labelLine = GUICtrlCreateLabel("", $x, $y+$h, $w, 1)
+;~ 	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
 EndFunc   ;==>_formPropertyInspector
 
@@ -223,8 +207,8 @@ EndFunc   ;==>_formPropertyInspector_newitem
 Func _showProperties($props = $props_Main)
 	Switch $props
 		Case $props_Main
-;~ 			GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Main.Hwnd)
-;~ 			GUISetState(@SW_HIDE, $oProperties_Ctrls.Hwnd)
+			GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Main.Hwnd)
+			GUISetState(@SW_HIDE, $oProperties_Ctrls.Hwnd)
 ;~ 			_GUIScrollbars_Generate($oProperties_Main.Hwnd, $w - 2, $h)
 
 		Case $props_Ctrls
@@ -235,13 +219,13 @@ Func _showProperties($props = $props_Main)
 				GUICtrlSetState($oProperties_Ctrls.Color.Hwnd, $GUI_DISABLE)
 				GUICtrlSetState($oProperties_Ctrls.Background.Hwnd, $GUI_DISABLE)
 			EndIf
-;~ 			GUISetState(@SW_HIDE, $oProperties_Main.Hwnd)
-;~ 			GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Ctrls.Hwnd)
+			GUISetState(@SW_HIDE, $oProperties_Main.Hwnd)
+			GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Ctrls.Hwnd)
 ;~ 			_GUIScrollbars_Generate($oProperties_Ctrls.Hwnd, $w - 2, $h)
 
 		Case Else
-;~ 			GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Main.Hwnd)
-;~ 			GUISetState(@SW_HIDE, $oProperties_Ctrls.Hwnd)
+			GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Main.Hwnd)
+			GUISetState(@SW_HIDE, $oProperties_Ctrls.Hwnd)
 ;~ 			_GUIScrollbars_Generate($oProperties_Main.Hwnd, $w - 2, $h)
 	EndSwitch
 

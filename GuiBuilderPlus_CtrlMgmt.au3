@@ -640,7 +640,7 @@ Func _add_remove_selected_control(Const $oRect)
 			Case False
 				Switch _remove_from_selected($oCtrl)
 					Case True
-						Local Const $sel_count = $oSelected.count
+						Local $sel_count = $oSelected.count
 
 						Switch $sel_count >= 1
 							Case True

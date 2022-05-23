@@ -9,7 +9,7 @@
 ; Description.....: generate the au3 code
 ; Return..........: code as string
 ;------------------------------------------------------------------------------
-Func _code_generation($x = -1, $y = -1)
+Func _code_generation()
 	Local $controls
 
 	;get options
@@ -68,29 +68,49 @@ Func _code_generation($x = -1, $y = -1)
 			@TAB & "WEnd" & @CRLF & _
 			"EndFunc   ;==>_main"
 
+
 	Local $w = $win_client_size[0]
 	Local $h = $win_client_size[1]
 
+	If $oMain.Name = "" Then
+		$oMain.Name = "hGUI"
+	EndIf
+
+	If $oMain.Title = "" Then
+		$oMain.Title = $gdtitle
+	ElseIf $oMain.Title <> $gdtitle Then
+		$oMain.Title = """" & $oMain.Title & """"
+	EndIf
+
 	;apply the DPI scaling factor
+	Local $w = $oMain.Width
 	If $w <> -1 Then
 		$w &= $sDpiScale
 	EndIf
 
+	Local $h = $oMain.Height
 	If $h <> -1 Then
 		$h &= $sDpiScale
 	EndIf
 
+	Local $x = $oMain.Left
 	If $x <> -1 Then
 		$x &= $sDpiScale
 	EndIf
 
+	Local $y = $oMain.Top
 	If $y <> -1 Then
 		$y &= $sDpiScale
 	EndIf
 
-	If $mainName = "" Then
-		$mainName = "hGUI"
+	Local $background = ""
+	If $oMain.Background <> -1 and $oMain.Background <> "" Then
+		$background = "GUISetBkColor(0x" & Hex($oMain.Background, 6) & ")" & @CRLF & @CRLF
+	Else
+		$background = @CRLF
 	EndIf
+
+
 
 	; Mod by TheSaint
 	Local $code = ""
@@ -103,7 +123,8 @@ Func _code_generation($x = -1, $y = -1)
 	EndIf
 	$code &= $regionStart & @CRLF & _
 			"Global $MainStyle = BitOR($WS_OVERLAPPED, $WS_CAPTION, $WS_SYSMENU, $WS_VISIBLE, $WS_CLIPSIBLINGS, $WS_MINIMIZEBOX)" & @CRLF & _
-			"Global $" & $mainName & " = GUICreate(" & $gdtitle & ", " & $w & ", " & $h & ", " & $x & ", " & $y & ", $MainStyle)" & @CRLF & @CRLF & _
+			"Global $" & $oMain.Name & " = GUICreate(" & $oMain.Title & ", " & $w & ", " & $h & ", " & $x & ", " & $y & ", $MainStyle)" & @CRLF & _
+			$background & _
 			$controls & _
 			$regionEnd & @CRLF & @CRLF & _
 			$mainProg & @CRLF & @CRLF

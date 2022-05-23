@@ -12,10 +12,15 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  05/19/2022 ...: 	- FIXED:	Wrong GUI width and height displayed in the titlebar at startup
+;  05/22/2022 ...: 	- ADDED:	Now you can set properties for the main GUI!
+;					- ADDED;	Added file menu item "Export to au3" for a more convenient and obvious way to save the generated code
+;					- ADDED;	Keyboard shortcuts to save to (Ctrl+s) or load from (Ctrl+o) definition file
+;					- FIXED:	Wrong GUI width and height displayed in the titlebar at startup
 ;					- FIXED:	Control names not applied when loading from agd definition file
 ;					- FIXED:	Text looked slightly different in design vs runtime
-;					- ADDED:	Now you can set properties for the main GUI
+;					- FIXED:	Property Inspector window did not minimize/restore with the main GUI
+;					- FIXED:	Inconsistencies with displayed vs saved vs loaded GUI sizes
+;					- FIXED:	Controls not cleared when re-loading agd file
 ;
 ;  05/19/2022 ...: 	- UPDATE:	Converted maps to objects using AutoItObject UDF
 ;					- UPDATE:	Changed to new style of property inspector using GUIScrollBars_Ex UDF by Melba23
@@ -105,7 +110,6 @@
 ;					- Add options for declaring controls as global or local
 ;					- Support for Msg or OnEvent mode attached to controls
 ;					- Add IP control
-;					- Add GUI options like background color, width, height, position
 ;					- Add control alignment buttons (left, right, top, bottom)
 ;					- Finish control properties tabs
 ;					- Add shortcut to select all controls (for moving, deleting)
@@ -123,8 +127,8 @@
 #AutoIt3Wrapper_Res_HiDpi=y
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.23.exe
-#AutoIt3Wrapper_Res_Fileversion=0.23.0.0
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.24.exe
+#AutoIt3Wrapper_Res_Fileversion=0.24.0.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 
 Opt("WinTitleMatchMode", 4) ; advanced
@@ -138,6 +142,7 @@ Const $grid_ticks = 10
 
 ;GUI components
 Global $hGUI, $hFormGenerateCode, $toolbar, $hFormObjectExplorer, $hStatusbar, $bStatusNewMessage
+Global $iGuiFrameH, $iGuiFrameW, $defaultGuiBkColor = 0xF0F0F0
 Global $menu_wipe
 Global $menu_testForm
 Global $overlay_contextmenu_newtab, $overlay_contextmenu_deletetab, $hoverlay_contextmenu_newtab, $hoverlay_contextmenu_deletetab, $hoverlay_contextmenu
@@ -181,21 +186,21 @@ Global Const $ARROW = 2, $CROSS = 3, $SIZE_ALL = 9, $SIZENESW = 10, $SIZENS = 11
 
 ;other variables
 Global $progName = "GUIBuilderPlus"
-Global $progVersion = "v0.23"
+Global $progVersion = "v0.24"
 Global $default_cursor
 Global $win_client_size
 Global $mode = $default
 Global $right_click = False
 Global $left_click = False
 Global $bResizedFlag
-Global $bGuiClick, $mainName = ""
+Global $bGuiClick
 Global $testFileName
 Global $TestFilePID = 0, $bReTest = 0, $aTestGuiPos, $hTestGui
 Global $au3InstallPath = @ProgramFilesDir & "\AutoIt3\AutoIt3.exe"
 Global $initDraw, $initResize
 
 ;Control Objects
-Global $oCtrls, $oSelected, $oClipboard, $oMouse
+Global $oCtrls, $oSelected, $oClipboard, $oMouse, $oMain
 
 ; added by: TheSaint (most are my own, others just not declared)
 Global $AgdInfile, $AgdOutFile, $gdtitle, $lfld, $mygui
@@ -264,6 +269,14 @@ Func _main()
 	$oCtrls = _objCtrls()
 	$oSelected = _objCtrls()
 	$oClipboard = _objCtrls()
+	$oMain = _objMain()
+		$oMain.Title = StringTrimRight(StringTrimLeft(_get_script_title(), 1),1)
+		$oMain.Name = "hGUI"
+		$oMain.Width = $main_width
+		$oMain.Height = $main_height
+		$oMain.Left = -1
+		$oMain.Top = -1
+		$oMain.Background = -1
 
 	;create properties objects
 	$oProperties_Main = _objProperties()
@@ -320,8 +333,8 @@ Func _main()
 				Else
 					FileDelete($testFileName)
 				EndIf
-			Else
-				$aTestGuiPos = WinGetPos(_WinGetByPID($TestFilePID))
+;~ 			Else
+;~ 				$aTestGuiPos = WinGetPos(_WinGetByPID($TestFilePID))
 			EndIf
 		EndIf
 
@@ -381,6 +394,7 @@ Func _get_script_title()
 	$mygui = $gdtitle & ".au3"
 
 	$gdtitle = '"' & $gdtitle & '"'
+	Return $gdtitle
 EndFunc   ;==>_get_script_title
 
 
