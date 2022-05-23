@@ -23,12 +23,7 @@ Func _formMain()
 	$hGUI = GUICreate($progName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ')', $oMain.Width, $oMain.Height, $main_left, $main_top, BitOR($WS_SIZEBOX, $WS_SYSMENU, $WS_MINIMIZEBOX), $WS_EX_ACCEPTFILES)
 ;~ 	$defaultGuiBkColor = GUIGetBkColor($hGUI)
 
-	Local $aWinPos = WinGetPos($hGUI)
-	Local $iClientX = 0, $iClientY = 0
-	ClientToScreen($iClientX, $iClientY)
-	$iGuiFrameW = 2 * ($iClientX - $aWinPos[0])
-	$iGuiFrameH = ($iClientY - $aWinPos[1]) + ($iClientX - $aWinPos[0])
-
+	_getGuiFrameSize()
 	WinMove($hGUI, "", Default, Default, $oMain.Width + $iGuiFrameW, $oMain.Height + $iGuiFrameH)
 
 	$win_client_size = WinGetClientSize($hGUI)
@@ -192,6 +187,7 @@ Func _formToolbar()
 	$menu_show_ctrl = GUICtrlCreateMenuItem("Show control when moving", $menu_settings)
 	$menu_show_hidden = GUICtrlCreateMenuItem("Show hidden controls", $menu_settings)
 ;~ 	$menu_gui_function = GUICtrlCreateMenuItem("Create GUI in a function", $menu_settings)
+	$menu_onEvent_mode = GUICtrlCreateMenuItem("Enable OnEvent mode", $menu_settings)
 	$menu_dpi_scaling = GUICtrlCreateMenuItem("Apply DPI scaling factor", $menu_settings)
 
 	GUICtrlSetOnEvent($menu_show_grid, _showgrid)
@@ -200,6 +196,7 @@ Func _formToolbar()
 	GUICtrlSetOnEvent($menu_show_ctrl, _show_control)
 	GUICtrlSetOnEvent($menu_show_hidden, _menu_show_hidden)
 ;~ 	GUICtrlSetOnEvent($menu_gui_function, "_menu_gui_function")
+	GUICtrlSetOnEvent($menu_onEvent_mode, "_menu_onEvent_mode")
 	GUICtrlSetOnEvent($menu_dpi_scaling, "_menu_dpi_scaling")
 
 	GUICtrlSetState($menu_show_grid, $GUI_CHECKED)
@@ -320,7 +317,7 @@ Func _formToolbar()
 	GUICtrlSetImage(-1, $iconset & "\Icon 19.ico")
 	GUICtrlSetTip(-1, "Menu")
 	GUICtrlSetOnEvent(-1, _control_type)
-	GUICtrlSetState(-1, $GUI_DISABLE)
+;~ 	GUICtrlSetState(-1, $GUI_DISABLE)
 
 	GUICtrlCreateRadio("ContextMenu", 165, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
 	GUICtrlSetImage(-1, $iconset & "\Icon 20.ico")
@@ -408,6 +405,19 @@ Func _set_accelerators()
 	GUICtrlSetOnEvent($accel_o, "_load_gui_definition")
 EndFunc   ;==>_set_accelerators
 #EndRegion formMain
+
+
+;------------------------------------------------------------------------------
+; Title...........: _getGuiFrameSize
+; Description.....: find frame size + menu
+;------------------------------------------------------------------------------
+Func _getGuiFrameSize()
+	Local $aWinPos = WinGetPos($hGUI)
+	Local $iClientX = 0, $iClientY = 0
+	ClientToScreen($iClientX, $iClientY)
+	$iGuiFrameW = 2 * ($iClientX - $aWinPos[0])
+	$iGuiFrameH = ($iClientY - $aWinPos[1]) + ($iClientX - $aWinPos[0])
+EndFunc   ;==>_getGuiFrameSize
 
 
 #Region grid management
@@ -597,12 +607,16 @@ Func _onResize()
 		_display_grid($background, $win_client_size[0], $win_client_size[1])
 	EndIf
 
-	WinSetTitle($hGUI, "", $progName & " - Form (" & $win_client_size[0] & ", " & $win_client_size[1] & ")")
 	$oMain.Width = $win_client_size[0]
 	$oMain.Height = $win_client_size[1]
 
 	$oProperties_Main.Width.value = $oMain.Width
-	$oProperties_Main.Height.value = $oMain.Height
+	If $oCtrls.hasMenu Then
+		$oProperties_Main.Height.value = $oMain.Height + _WinAPI_GetSystemMetrics($SM_CYMENU)
+	Else
+		$oProperties_Main.Height.value = $oMain.Height
+	EndIf
+	WinSetTitle($hGUI, "", $progName & " - Form (" & $oProperties_Main.Width.value & ", " & $oProperties_Main.Height.value & ")")
 
 	_show_grippies($oSelected.getFirst())
 EndFunc   ;==>_onResize
@@ -848,13 +862,22 @@ Func _onMousePrimaryDown()
 
 						$mode = $resize_e
 
+						_move_mouse_to_grippy($pos[0], $pos[1])
+
+					Case "Menu"
+						_set_default_mode()
+						$mode = $default
+						_formObjectExplorer_updateList()
+						_refreshGenerateCode()
+						GUICtrlSetState($default_cursor, $GUI_CHECKED)
+
 					Case Else
 						$pos = ControlGetPos($hGUI, '', $SouthEast_Grippy)
 
 						$mode = $resize_se
-				EndSwitch
 
-				_move_mouse_to_grippy($pos[0], $pos[1])
+						_move_mouse_to_grippy($pos[0], $pos[1])
+				EndSwitch
 
 				_set_current_mouse_pos()
 			Else
@@ -862,7 +885,6 @@ Func _onMousePrimaryDown()
 				_set_default_mode()
 				$mode = $default
 ;~ 				$mode = $resize_se
-
 			EndIf
 
 		Case $selection
@@ -883,6 +905,7 @@ Func _onMousePrimaryDown()
 
 						$mode = $init_move
 					EndIf
+;~ 					_setLvSelected($oSelected.getFirst())
 			EndSwitch
 
 		Case $move
@@ -910,6 +933,10 @@ Func _onMousePrimaryDown()
 						_populate_control_properties_gui($oCtrl)
 
 						$mode = $default
+					EndIf
+
+					If $oSelected.count <= 1 Then
+						_setLvSelected($oSelected.getFirst())
 					EndIf
 			EndSwitch
 
@@ -948,12 +975,18 @@ Func _onMousePrimaryDown()
 
 								Case False
 									_add_to_selected($oCtrl, False)
+									ConsoleWrite($oSelected.count & @CRLF)
 
 									_set_current_mouse_pos()
 							EndSwitch
 					EndSwitch
+
+					If $oSelected.count <= 1 Then
+						_setLvSelected($oSelected.getFirst())
+					EndIf
 			EndSwitch
 	EndSwitch
+
 EndFunc   ;==>_onMousePrimaryDown
 
 
@@ -1038,6 +1071,8 @@ Func _onMousePrimaryUp()
 
 			_formObjectExplorer_updateList()
 
+			_setLvSelected($oSelected.getFirst())
+
 		Case Else    ;select single control
 			ConsoleWrite("** PrimaryUp: Else **" & @CRLF)
 			$ctrl_hwnd = GUIGetCursorInfo($hGUI)[4]
@@ -1047,6 +1082,8 @@ Func _onMousePrimaryUp()
 				_add_to_selected($oCtrl)
 				_populate_control_properties_gui($oCtrl)
 			EndIf
+
+;~ 			_setLvSelected($oSelected.getFirst())
 
 	EndSwitch
 EndFunc   ;==>_onMousePrimaryUp
@@ -1066,6 +1103,8 @@ Func _onMouseSecondaryDown()
 				_add_to_selected($oCtrl)
 
 				_show_grippies($oCtrl)
+
+				_setLvSelected($oSelected.getFirst())
 			EndIf
 	EndSwitch
 
@@ -1132,6 +1171,7 @@ Func _onMouseMove()
 			Local Const $oRect = _rect_from_points($oMouse.X, $oMouse.Y, MouseGetPos(0), MouseGetPos(1))
 			_display_selection_rect($oRect)
 			_add_remove_selected_control($oRect)
+			_setLvSelected($oSelected.getFirst())
 
 		Case $resize_nw
 			_handle_nw_grippy($oSelected.getLast())
@@ -1525,14 +1565,17 @@ EndFunc   ;==>_main_change_top
 
 Func _main_change_width()
 	Local Const $newValue = $oProperties_Main.Width.value
-	$oMain.Width = $newValue
 
+;~ 	_getGuiFrameSize()
 	WinMove($hGUI, "", Default, Default, $newValue + $iGuiFrameW, Default)
-	WinSetTitle($hGUI, "", $progName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
 
-	$win_client_size = WinGetClientSize($hGUI)
+	Local $aWinPos = WinGetClientSize($hGUI)
+	WinSetTitle($hGUI, "", $progName & " - Form (" & $aWinPos[0] & ", " & $aWinPos[1] & ")")
+
+	$oMain.Width = $aWinPos[0]
+
 	If _setting_show_grid() Then
-		_display_grid($background, $win_client_size[0], $win_client_size[1])
+		_display_grid($background, $aWinPos[0], $aWinPos[1])
 	EndIf
 
 	_refreshGenerateCode()
@@ -1541,15 +1584,17 @@ EndFunc   ;==>_main_change_width
 
 Func _main_change_height()
 	Local Const $newValue = $oProperties_Main.Height.value
-	$oMain.Height = $newValue
 
+;~ 	_getGuiFrameSize()
 	WinMove($hGUI, "", Default, Default, Default, $newValue + $iGuiFrameH)
-	WinSetTitle($hGUI, "", $progName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
 
-	$win_client_size = WinGetClientSize($hGUI)
+	Local $aWinPos = WinGetClientSize($hGUI)
+	WinSetTitle($hGUI, "", $progName & " - Form (" & $aWinPos[0] & ", " & $aWinPos[1] & ")")
+
+	$oMain.Height = $aWinPos[1]
 
 	If _setting_show_grid() Then
-		_display_grid($background, $win_client_size[0], $win_client_size[1])
+		_display_grid($background, $aWinPos[0], $aWinPos[1])
 	EndIf
 
 	_refreshGenerateCode()
@@ -2021,6 +2066,9 @@ Func _set_default_mode()
 ;~ 	_disable_control_properties_gui()
 	_showProperties($props_Main)
 
+	;clear listview selections
+	_setLvSelected(0)
+
 	$mode = $default
 EndFunc   ;==>_set_default_mode
 
@@ -2269,34 +2317,6 @@ EndFunc   ;==>_menu_show_hidden
 ; Events..........: settings menu item select
 ;------------------------------------------------------------------------------
 Func _menu_dpi_scaling()
-	Switch BitAND(GUICtrlRead($menu_gui_function), $GUI_CHECKED) = $GUI_CHECKED
-		Case True
-			GUICtrlSetState($menu_gui_function, $GUI_UNCHECKED)
-
-			IniWrite($sIniPath, "Settings", "GuiInFunction", 0)
-
-			$setting_gui_function = False
-
-
-		Case False
-			GUICtrlSetState($menu_gui_function, $GUI_CHECKED)
-
-			IniWrite($sIniPath, "Settings", "GuiInFunction", 1)
-
-			$setting_gui_function = True
-
-	EndSwitch
-
-	_refreshGenerateCode()
-EndFunc   ;==>_menu_dpi_scaling
-
-
-;------------------------------------------------------------------------------
-; Title...........: _menu_gui_function
-; Description.....: Update INI setting
-; Events..........: settings menu item
-;------------------------------------------------------------------------------
-Func _menu_gui_function()
 	Switch BitAND(GUICtrlRead($menu_dpi_scaling), $GUI_CHECKED) = $GUI_CHECKED
 		Case True
 			GUICtrlSetState($menu_dpi_scaling, $GUI_UNCHECKED)
@@ -2312,6 +2332,62 @@ Func _menu_gui_function()
 			IniWrite($sIniPath, "Settings", "DpiScaling", 1)
 
 			$setting_dpi_scaling = True
+
+	EndSwitch
+
+	_refreshGenerateCode()
+EndFunc   ;==>_menu_dpi_scaling
+
+
+;------------------------------------------------------------------------------
+; Title...........: _menu_onEvent_mode
+; Description.....: Update INI setting
+; Events..........: settings menu item
+;------------------------------------------------------------------------------
+Func _menu_onEvent_mode()
+	Switch BitAND(GUICtrlRead($menu_onEvent_mode), $GUI_CHECKED) = $GUI_CHECKED
+		Case True
+			GUICtrlSetState($menu_onEvent_mode, $GUI_UNCHECKED)
+
+			IniWrite($sIniPath, "Settings", "OnEventMode", 0)
+
+			$setting_onEvent_mode = False
+
+
+		Case False
+			GUICtrlSetState($menu_onEvent_mode, $GUI_CHECKED)
+
+			IniWrite($sIniPath, "Settings", "OnEventMode", 1)
+
+			$setting_onEvent_mode = True
+
+	EndSwitch
+
+	_refreshGenerateCode()
+EndFunc   ;==>_menu_onEvent_mode
+
+
+;------------------------------------------------------------------------------
+; Title...........: _menu_gui_function
+; Description.....: Update INI setting
+; Events..........: settings menu item
+;------------------------------------------------------------------------------
+Func _menu_gui_function()
+	Switch BitAND(GUICtrlRead($menu_gui_function), $GUI_CHECKED) = $GUI_CHECKED
+		Case True
+			GUICtrlSetState($menu_gui_function, $GUI_UNCHECKED)
+
+			IniWrite($sIniPath, "Settings", "GuiInFunction", 0)
+
+			$setting_gui_function = False
+
+
+		Case False
+			GUICtrlSetState($menu_gui_function, $GUI_CHECKED)
+
+			IniWrite($sIniPath, "Settings", "GuiInFunction", 1)
+
+			$setting_gui_function = True
 
 	EndSwitch
 

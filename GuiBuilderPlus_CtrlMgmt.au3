@@ -247,6 +247,18 @@ Func _create_ctrl($oCtrl = '', $bUseName = False)
 			$oCtrls.add($oNewControl)
 
 			Return $oNewControl
+
+		Case "Menu"
+			$oNewControl.Hwnd = GUICtrlCreateMenu("Menu 1")
+			$oNewControl.Left = -1
+			$oNewControl.Top = -1
+			$oNewControl.Width = 0
+			$oNewControl.Height = 0
+
+			$oCtrls.add($oNewControl)
+
+			;resize the GUI for menu
+;~ 			WinMove($hGUI, "", Default, Default, Default, $oMain.Height + $iGuiFrameH + _WinAPI_GetSystemMetrics($SM_CYMENU))
 	EndSwitch
 
 	If $incTypeCount Then
@@ -628,7 +640,7 @@ EndFunc   ;==>_add_to_selected
 Func _selectAll()
 	Local $first = True
 
-	For $oCtrl in $oCtrls.ctrls
+	For $oCtrl In $oCtrls.ctrls
 		If $first Then
 			_add_to_selected($oCtrl)
 			$first = False
@@ -638,7 +650,7 @@ Func _selectAll()
 	Next
 	$mode = $selection
 EndFunc   ;==>_selectAll
-#EndRegion ; selection and clipboard management
+#EndRegion ; selection
 
 
 ;------------------------------------------------------------------------------
@@ -777,7 +789,6 @@ Func _show_selected_controls()
 		EndIf
 	Next
 EndFunc   ;==>_show_selected_controls
-#EndRegion ; selection
 
 
 #Region ; moving & resizing

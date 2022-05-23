@@ -17,12 +17,17 @@
 ;					- ADDED;	Keyboard shortcuts to save to (Ctrl+S) or load from (Ctrl+O) definition file
 ;					- ADDED;	Keyboard shortcut (Ctrl+A) and edit menu item to select all controls
 ;					- ADDED;	Save window positions
+;					- ADDED;	Started implementation of main menu controls (no menu items yet)
+;					- ADDED;	Setting to generate code using OnEvent mode or Msg mode
+;					- ADDED;	Move control's creation order up or down the tree
+;					- ADDED;	Selecting a control will also highlight it in the object explorer (single select only, for now)
 ;					- FIXED:	Wrong GUI width and height displayed in the titlebar at startup
 ;					- FIXED:	Control names not applied when loading from agd definition file
 ;					- FIXED:	Text looked slightly different in design vs runtime
 ;					- FIXED:	Property Inspector window did not minimize/restore with the main GUI
 ;					- FIXED:	Inconsistencies with displayed vs saved vs loaded GUI sizes
 ;					- FIXED:	Controls not cleared when re-loading agd file
+;					- FIXED:	Sanitized some of the property inputs for invalid entry or removal (ex: -1 or "")
 ;					- UPDATE:	More code generation improvements
 ;
 ;  05/19/2022 ...: 	- UPDATE:	Converted maps to objects using AutoItObject UDF
@@ -149,7 +154,7 @@ Global $iGuiFrameH, $iGuiFrameW, $defaultGuiBkColor = 0xF0F0F0
 Global $menu_wipe
 Global $menu_testForm
 Global $overlay_contextmenu_newtab, $overlay_contextmenu_deletetab, $hoverlay_contextmenu_newtab, $hoverlay_contextmenu_deletetab, $hoverlay_contextmenu
-Global $menu_show_grid, $menu_grid_snap, $menu_paste_pos, $menu_show_ctrl, $menu_show_hidden, $menu_dpi_scaling, $menu_gui_function
+Global $menu_show_grid, $menu_grid_snap, $menu_paste_pos, $menu_show_ctrl, $menu_show_hidden, $menu_dpi_scaling, $menu_gui_function, $menu_onEvent_mode
 Global $menu_generateCode, $menu_ObjectExplorer
 Global $background, $background_contextmenu, $background_contextmenu_paste
 Global $overlay, $overlay_contextmenu, $overlay_contextmenutab
@@ -207,7 +212,7 @@ Global $oCtrls, $oSelected, $oClipboard, $oMouse, $oMain
 
 ; added by: TheSaint (most are my own, others just not declared)
 Global $AgdInfile, $AgdOutFile, $gdtitle, $lfld, $mygui
-Global $setting_snap_grid, $setting_paste_pos, $setting_show_control, $setting_show_hidden, $setting_dpi_scaling, $setting_gui_function
+Global $setting_snap_grid, $setting_paste_pos, $setting_show_control, $setting_show_hidden, $setting_dpi_scaling, $setting_gui_function, $setting_onEvent_mode
 
 Global $sampleavi = @ScriptDir & "\resources\sampleAVI.avi"
 Global $samplebmp = @ScriptDir & "\resources\SampleImage.bmp"
@@ -300,6 +305,12 @@ Func _main()
 
 	_initialize_settings()
 
+	GUISetState(@SW_SHOWNORMAL, $toolbar)
+	GUISetState(@SW_SHOWNORMAL, $oProperties_Main.Hwnd)
+	GUISwitch($hGUI)
+	GUISetState(@SW_SHOWNORMAL, $hGUI)
+	$bResizedFlag = 0
+
 	;load the extra toolbars
 	If BitAND(GUICtrlRead($menu_ObjectExplorer), $GUI_CHECKED) = $GUI_CHECKED Then
 		_formObjectExplorer()
@@ -309,11 +320,6 @@ Func _main()
 		_formGenerateCode()
 	EndIf
 
-	GUISetState(@SW_SHOWNORMAL, $toolbar)
-	GUISetState(@SW_SHOWNORMAL, $oProperties_Main.Hwnd)
-	GUISwitch($hGUI)
-	GUISetState(@SW_SHOWNORMAL, $hGUI)
-	$bResizedFlag = 0
 
 	Local $statusDelay = 3000
 	Static $startTimer = False
@@ -417,6 +423,7 @@ Func _initialize_settings()
 	Local $bShowObjectExplorer = False
 	Local $bDpiScaling = False
 	Local $bGuiFunction = False
+	Local $bOnEventMode = False
 
 	Local $aSettings = IniReadSection($sIniPath, "Settings")
 	If Not @error Then
@@ -440,6 +447,8 @@ Func _initialize_settings()
 					$bDpiScaling = ($aSettings[$i][1] = 1) ? True : False
 				Case "GuiInFunction"
 					$bGuiFunction = ($aSettings[$i][1] = 1) ? True : False
+				Case "OnEventMode"
+					$bOnEventMode = ($aSettings[$i][1] = 1) ? True : False
 			EndSwitch
 		Next
 	EndIf
@@ -459,13 +468,15 @@ Func _initialize_settings()
 	_setCheckedState($menu_generateCode, $bShowCode)
 	_setCheckedState($menu_ObjectExplorer, $bShowObjectExplorer)
 	_setCheckedState($menu_dpi_scaling, $bDpiScaling)
-	_setCheckedState($menu_gui_function, $bGuiFunction)
+	_setCheckedState($menu_onEvent_mode, $bOnEventMode)
+;~ 	_setCheckedState($menu_gui_function, $bGuiFunction)
 
 	$setting_paste_pos = $bPastePos
 	$setting_snap_grid = $bGridSnap
 	$setting_show_control = $bShowControl
 	$setting_show_hidden = $bShowHidden
 	$setting_dpi_scaling = $bDpiScaling
+	$setting_onEvent_mode = $bOnEventMode
 	$setting_gui_function = $bGuiFunction
 
 	If Not FileExists("storage") Then

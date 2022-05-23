@@ -51,7 +51,13 @@ Func _formObjectExplorer()
 	GUICtrlSetResizing(-1, $GUI_DOCKBORDERS)
 
 	;bottom section
-	$labelObjectCount = GUICtrlCreateLabel("Object Count: " & $oCtrls.count, 5, $h - 18 - $titleBarHeight, $w - 20)
+	$labelObjectCount = GUICtrlCreateLabel("Object Count: " & $oCtrls.count, 5, $h - 18 - $titleBarHeight)
+	GUICtrlCreateButton("Move Up", $w - 20 - 58 * 2 - 5 * 1, $h - 22 - $titleBarHeight, 68, 20)
+	GUICtrlSetOnEvent(-1, "_onLvMoveUp")
+	GUICtrlSetResizing(-1, $GUI_DOCKRIGHT + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+	GUICtrlCreateButton("Move Down", $w - 20 - 48 - 5, $h - 22 - $titleBarHeight, 68, 20)
+	GUICtrlSetOnEvent(-1, "_onLvMoveDown")
+	GUICtrlSetResizing(-1, $GUI_DOCKRIGHT + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
 
 	_formObjectExplorer_updateList()
 
@@ -177,8 +183,129 @@ EndFunc   ;==>_onLvObjectsDeleteMenu
 ;------------------------------------------------------------------------------
 Func _onLvObjectsTabItemDelete()
 	ShowMenu($overlay_contextmenutab, $oMouse.X, $oMouse.Y)
-EndFunc
+EndFunc   ;==>_onLvObjectsTabItemDelete
+
+
+;------------------------------------------------------------------------------
+; Title...........: _onLvMoveUp
+; Description.....: Move control up the list
+; Events..........: button click
+;------------------------------------------------------------------------------
+Func _onLvMoveUp()
+	Local $oCtrlMove = _getLvSelected()
+
+	If IsObj($oCtrlMove) Then
+		ConsoleWrite($oCtrlMove.Name & @CRLF)
+		$oCtrls.moveUp($oCtrlMove)
+
+		_refreshGenerateCode()
+		_formObjectExplorer_updateList()
+
+		_setLvSelected($oCtrlMove)
+	Else
+		ConsoleWrite($oCtrlMove & @CRLF)
+	EndIf
+
+EndFunc   ;==>_onLvMoveUp
+
+
+;------------------------------------------------------------------------------
+; Title...........: _onLvMoveDown
+; Description.....: Move control down the list
+; Events..........: button click
+;------------------------------------------------------------------------------
+Func _onLvMoveDown()
+	Local $oCtrlMove = _getLvSelected()
+
+	If IsObj($oCtrlMove) Then
+		ConsoleWrite($oCtrlMove.Name & @CRLF)
+		$oCtrls.moveDown($oCtrlMove)
+
+		_refreshGenerateCode()
+		_formObjectExplorer_updateList()
+
+		_setLvSelected($oCtrlMove)
+	Else
+		ConsoleWrite($oCtrlMove & @CRLF)
+	EndIf
+
+EndFunc   ;==>_onLvMoveDown
 #EndRegion events
+
+
+Func _getLvSelected()
+	$childSelected = False
+
+	Local $count = _GUICtrlTreeView_GetCount($lvObjects)
+	Local $aItems[$count]
+	Local $iIndex = 0, $first = True
+	Local $hItem = _GUICtrlTreeView_GetFirstItem($lvObjects)
+	If $hItem = 0 Then Return -1
+	Do
+		If _GUICtrlTreeView_GetSelected($lvObjects, $hItem) Then
+			Local $aText = _GUICtrlTreeView_GetText($lvObjects, $hItem)
+			Local $aStrings = StringSplit($aText, @TAB)
+			Local $textHwnd = StringTrimRight(StringTrimLeft($aStrings[2], 7), 1)
+			$oCtrl = $oCtrls.get(Dec($textHwnd))
+
+			Local $hParent = _GUICtrlTreeView_GetParentHandle($lvObjects, $hItem)
+			If $hParent <> 0 Then    ;this is a child
+				Local $aParentText = _GUICtrlTreeView_GetText($lvObjects, $hParent)
+				Local $aParentStrings = StringSplit($aParentText, @TAB)
+				Local $ParentTextHwnd = StringTrimRight(StringTrimLeft($aParentStrings[2], 7), 1)
+				$oCtrl = $oCtrls.get(Dec($ParentTextHwnd))
+			EndIf
+
+			Return $oCtrl
+		EndIf
+
+		$hItem = _GUICtrlTreeView_GetNext($lvObjects, $hItem)
+		$iIndex += 1
+	Until $hItem = 0
+
+	Return 0
+EndFunc   ;==>_getLvSelected
+
+
+Func _setLvSelected($oCtrlSelect, $bSelect = False)
+	Local $i = 0
+	Local $hItem = _GUICtrlTreeView_GetFirstItem($lvObjects)
+	If $hItem = 0 Then Return -1
+
+	;first, loop through and deselect all items
+	Do
+		_GUICtrlTreeView_SetSelected($lvObjects, $hItem, False)
+		$hItem = _GUICtrlTreeView_GetNext($lvObjects, $hItem)
+	Until $hItem = 0
+
+	;if not an object, return now
+	If Not IsObj($oCtrlSelect) Then Return 0
+
+	$i = 0
+	$hItem = _GUICtrlTreeView_GetFirstItem($lvObjects)
+	If $hItem = 0 Then Return -1
+
+	;otherwise, loop through and select only the passed in control(s)
+	Do
+		Local $aText = _GUICtrlTreeView_GetText($lvObjects, $hItem)
+		Local $aStrings = StringSplit($aText, @TAB)
+		Local $textHwnd = StringTrimRight(StringTrimLeft($aStrings[2], 7), 1)
+
+		If Dec($textHwnd) = $oCtrlSelect.Hwnd Then
+			_GUICtrlTreeView_SetSelected($lvObjects, $hItem, True)
+			;if set, trigger the selection event
+			If $bSelect Then
+				_GUICtrlTreeView_SelectItem($lvObjects, $hItem, $TVGN_CARET)
+			EndIf
+			Return 0
+		EndIf
+
+		$hItem = _GUICtrlTreeView_GetNext($lvObjects, $hItem)
+		$i += 1
+	Until $hItem = 0
+
+	Return -1
+EndFunc   ;==>_setLvSelected
 
 
 ;------------------------------------------------------------------------------

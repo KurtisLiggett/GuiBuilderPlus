@@ -14,6 +14,8 @@ Func _objCtrls()
 
 	_AutoItObject_AddProperty($oObject, "count", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "CurrentType", $ELSCOPE_PUBLIC, "")
+	_AutoItObject_AddProperty($oObject, "menuCount", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "hasMenu", $ELSCOPE_PUBLIC, False)
 	;actual list of controls
 	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, LinkedList())
 
@@ -50,6 +52,8 @@ Func _objCtrls()
 	_AutoItObject_AddMethod($oObject, "incTypeCount", "_objCtrls_incTypeCount")
 	_AutoItObject_AddMethod($oObject, "decTypeCount", "_objCtrls_decTypeCount")
 	_AutoItObject_AddMethod($oObject, "getTypeCount", "_objCtrls_getTypeCount")
+	_AutoItObject_AddMethod($oObject, "moveUp", "_objCtrls_moveUp")
+	_AutoItObject_AddMethod($oObject, "moveDown", "_objCtrls_moveDown")
 
 	Return $oObject
 EndFunc   ;==>_objCtrls
@@ -67,6 +71,11 @@ Func _objCtrls_add($oSelf, $objCtrl)
 	$oSelf.ctrls.add($objCtrl)
 	$oSelf.count = $oSelf.count + 1
 
+	If $objCtrl.Type = "Menu" Then
+		$oSelf.menuCount = $oSelf.menuCount + 1
+		$oSelf.hasMenu = True
+	EndIf
+
 	Return $oSelf.count
 EndFunc   ;==>_objCtrls_add
 
@@ -83,6 +92,14 @@ Func _objCtrls_remove($oSelf, $Hwnd)
 	Next
 
 	If $bFoundItem Then
+		If $oSelf.ctrls.at($i).Type = "Menu" Then
+			$oSelf.menuCount = $oSelf.menuCount - 1
+			If $oSelf.menuCount >= 1 Then
+				$oSelf.hasMenu = True
+			Else
+				$oSelf.hasMenu = False
+			EndIf
+		EndIf
 		$oSelf.ctrls.remove($i)
 	EndIf
 
@@ -92,6 +109,7 @@ Func _objCtrls_remove($oSelf, $Hwnd)
 	Else
 		Return -1
 	EndIf
+
 EndFunc   ;==>_objCtrls_remove
 
 Func _objCtrls_removeAll($oSelf)
@@ -100,6 +118,8 @@ Func _objCtrls_removeAll($oSelf)
 	$oSelf.ctrls = 0
 	$oSelf.ctrls = LinkedList()
 	$oSelf.count = 0
+	$oSelf.menuCount = 0
+	$oSelf.hasMenu = False
 EndFunc   ;==>_objCtrls_removeAll
 
 Func _objCtrls_get($oSelf, $Hwnd)
@@ -197,6 +217,95 @@ Func _objCtrls_getTypeCount($oSelf, $sType)
 
 	Return -1
 EndFunc   ;==>_objCtrls_getTypeCount
+
+Func _objCtrls_moveUp($oSelf, $oCtrlStart)
+	#forceref $oSelf
+
+	;find start and end index
+	Local $iStart = -1
+	Local $i = 0
+	For $oCtrl In $oSelf.ctrls
+		If $oCtrl.Hwnd = $oCtrlStart.Hwnd Then
+			$iStart = $i
+			$iEnd = $iStart - 1
+			ExitLoop
+		EndIf
+
+		$i += 1
+	Next
+
+	ConsoleWrite("Start " & $iStart & " end " & $iEnd & @CRLF)
+;~ 	Return
+
+	If $iStart = -1 Or $iEnd > $oSelf.count - 1 Or $iEnd < 0 Then Return 1
+
+	Local $oCtrlsTemp = LinkedList()
+
+	;loop through items, creating new order in temp list
+	$i = 0
+	For $oCtrl In $oSelf.ctrls
+		If $i <> $iStart Then
+			If $i = $iEnd Then
+				$oCtrlsTemp.add($oCtrlStart)
+			EndIf
+			$oCtrlsTemp.add($oCtrl)
+		EndIf
+		$i += 1
+	Next
+
+	;clear ctrls list
+	$oSelf.ctrls = 0
+
+	;move temp list to our list
+	$oSelf.ctrls = $oCtrlsTemp
+
+	Return $oCtrlStart
+EndFunc   ;==>_objCtrls_moveUp
+
+
+Func _objCtrls_moveDown($oSelf, $oCtrlStart)
+	#forceref $oSelf
+
+	;find start and end index
+	Local $iStart = -1
+	Local $i = 0
+	For $oCtrl In $oSelf.ctrls
+		If $oCtrl.Hwnd = $oCtrlStart.Hwnd Then
+			$iStart = $i
+			$iEnd = $iStart + 1
+			ExitLoop
+		EndIf
+
+		$i += 1
+	Next
+
+	ConsoleWrite("Start " & $iStart & " end " & $iEnd & @CRLF)
+;~ 	Return
+
+	If $iStart = -1 Or $iEnd > $oSelf.count - 1 Or $iEnd < 0 Then Return 1
+
+	Local $oCtrlsTemp = LinkedList()
+
+	;loop through items, creating new order in temp list
+	$i = 0
+	For $oCtrl In $oSelf.ctrls
+		If $i <> $iStart Then
+			$oCtrlsTemp.add($oCtrl)
+			If $i = $iEnd Then
+				$oCtrlsTemp.add($oCtrlStart)
+			EndIf
+		EndIf
+		$i += 1
+	Next
+
+	;clear ctrls list
+	$oSelf.ctrls = 0
+
+	;move temp list to our list
+	$oSelf.ctrls = $oCtrlsTemp
+
+	Return $oCtrlStart
+EndFunc   ;==>_objCtrls_moveDown
 
 
 ;------------------------------------------------------------------------------
