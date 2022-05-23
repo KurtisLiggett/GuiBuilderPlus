@@ -622,6 +622,26 @@ EndFunc   ;==>_add_to_selected
 
 
 ;------------------------------------------------------------------------------
+; Title...........: _selectAll
+; Description.....: Select all controls
+;------------------------------------------------------------------------------
+Func _selectAll()
+	Local $first = True
+
+	For $oCtrl in $oCtrls.ctrls
+		If $first Then
+			_add_to_selected($oCtrl)
+			$first = False
+		Else
+			_add_to_selected($oCtrl, False)
+		EndIf
+	Next
+	$mode = $selection
+EndFunc   ;==>_selectAll
+#EndRegion ; selection and clipboard management
+
+
+;------------------------------------------------------------------------------
 ; Title...........: _add_remove_selected_control
 ; Description.....: while dragging selection rectangle, add controls as the
 ;					as the rectangle intersects with the controls

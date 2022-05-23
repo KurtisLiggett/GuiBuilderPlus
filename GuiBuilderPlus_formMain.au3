@@ -27,7 +27,7 @@ Func _formMain()
 	Local $iClientX = 0, $iClientY = 0
 	ClientToScreen($iClientX, $iClientY)
 	$iGuiFrameW = 2 * ($iClientX - $aWinPos[0])
-	$iGuiFrameH = ($iClienty - $aWinPos[1]) + ($iClientX - $aWinPos[0])
+	$iGuiFrameH = ($iClientY - $aWinPos[1]) + ($iClientX - $aWinPos[0])
 
 	WinMove($hGUI, "", Default, Default, $oMain.Width + $iGuiFrameW, $oMain.Height + $iGuiFrameH)
 
@@ -138,8 +138,8 @@ Func _formToolbar()
 	#Region create-menu
 	;create up the File menu
 	Local $menu_file = GUICtrlCreateMenu("File")
-	Local $menu_save_definition = GUICtrlCreateMenuItem("Save" & @TAB & "Ctrl+s", $menu_file) ; Roy add-on
-	Local $menu_load_definition = GUICtrlCreateMenuItem("Load" & @TAB & "Ctrl+o", $menu_file) ; Roy add-on
+	Local $menu_save_definition = GUICtrlCreateMenuItem("Save GUI" & @TAB & "Ctrl+S", $menu_file) ; Roy add-on
+	Local $menu_load_definition = GUICtrlCreateMenuItem("Load GUI" & @TAB & "Ctrl+O", $menu_file) ; Roy add-on
 	GUICtrlCreateMenuItem("", $menu_file) ; Roy add-on
 	Local $menu_export_au3 = GUICtrlCreateMenuItem("Export to au3", $menu_file)
 	GUICtrlCreateMenuItem("", $menu_file)
@@ -155,6 +155,8 @@ Func _formToolbar()
 	Local $menu_copy = GUICtrlCreateMenuItem("Copy" & @TAB & "Ctrl+C", $menu_edit)
 	Local $menu_paste = GUICtrlCreateMenuItem("Paste" & @TAB & "Ctrl+V", $menu_edit)
 	Local $menu_duplicate = GUICtrlCreateMenuItem("Duplicate" & @TAB & "Ctrl+D", $menu_edit)
+	Local $menu_selectall = GUICtrlCreateMenuItem("Select All" & @TAB & "Ctrl+A", $menu_edit)
+	GUICtrlCreateMenuItem("", $menu_edit)
 	$menu_wipe = GUICtrlCreateMenuItem("Clear All Controls", $menu_edit)
 	Local $menu_about = GUICtrlCreateMenuItem("About", $menu_edit)         ; added by: TheSaint
 
@@ -163,6 +165,7 @@ Func _formToolbar()
 	GUICtrlSetOnEvent($menu_copy, "_copy_selected")
 	GUICtrlSetOnEvent($menu_paste, "_onMenuPasteSelected")
 	GUICtrlSetOnEvent($menu_duplicate, "_onDuplicate")
+	GUICtrlSetOnEvent($menu_selectall, "_onMenuSelectAll")
 	GUICtrlSetOnEvent($menu_wipe, _wipe_current_gui)
 	GUICtrlSetOnEvent($menu_about, _menu_about)
 
@@ -188,6 +191,7 @@ Func _formToolbar()
 	$menu_paste_pos = GUICtrlCreateMenuItem("Paste at mouse position", $menu_settings)
 	$menu_show_ctrl = GUICtrlCreateMenuItem("Show control when moving", $menu_settings)
 	$menu_show_hidden = GUICtrlCreateMenuItem("Show hidden controls", $menu_settings)
+;~ 	$menu_gui_function = GUICtrlCreateMenuItem("Create GUI in a function", $menu_settings)
 	$menu_dpi_scaling = GUICtrlCreateMenuItem("Apply DPI scaling factor", $menu_settings)
 
 	GUICtrlSetOnEvent($menu_show_grid, _showgrid)
@@ -195,6 +199,7 @@ Func _formToolbar()
 	GUICtrlSetOnEvent($menu_paste_pos, _pastepos)
 	GUICtrlSetOnEvent($menu_show_ctrl, _show_control)
 	GUICtrlSetOnEvent($menu_show_hidden, _menu_show_hidden)
+;~ 	GUICtrlSetOnEvent($menu_gui_function, "_menu_gui_function")
 	GUICtrlSetOnEvent($menu_dpi_scaling, "_menu_dpi_scaling")
 
 	GUICtrlSetState($menu_show_grid, $GUI_CHECKED)
@@ -351,6 +356,7 @@ Func _set_accelerators()
 	Local Const $accel_c = GUICtrlCreateDummy()
 	Local Const $accel_v = GUICtrlCreateDummy()
 	Local Const $accel_d = GUICtrlCreateDummy()
+	Local Const $accel_a = GUICtrlCreateDummy()
 	Local Const $accel_up = GUICtrlCreateDummy()
 	Local Const $accel_down = GUICtrlCreateDummy()
 	Local Const $accel_left = GUICtrlCreateDummy()
@@ -362,12 +368,13 @@ Func _set_accelerators()
 	Local Const $accel_s = GUICtrlCreateDummy()
 	Local Const $accel_o = GUICtrlCreateDummy()
 
-	Local Const $accelerators[17][2] = _
+	Local Const $accelerators[18][2] = _
 			[ _
 			["{Delete}", $accel_delete], _
 			["^c", $accel_c], _
 			["^v", $accel_v], _
 			["^d", $accel_d], _
+			["^a", $accel_a], _
 			["{UP}", $accel_up], _
 			["{DOWN}", $accel_down], _
 			["{LEFT}", $accel_left], _
@@ -388,6 +395,7 @@ Func _set_accelerators()
 	GUICtrlSetOnEvent($accel_c, _copy_selected)
 	GUICtrlSetOnEvent($accel_v, "_onPasteSelected")
 	GUICtrlSetOnEvent($accel_d, "_onDuplicate")
+	GUICtrlSetOnEvent($accel_a, "_onMenuSelectAll")
 	GUICtrlSetOnEvent($accel_up, "_onKeyUp")
 	GUICtrlSetOnEvent($accel_down, "_onKeyDown")
 	GUICtrlSetOnEvent($accel_left, "_onKeyLeft")
@@ -774,6 +782,16 @@ EndFunc   ;==>_onMenuPasteSelected
 Func _onDuplicate()
 	_DuplicateSelected()
 EndFunc   ;==>_onDuplicate
+
+
+;------------------------------------------------------------------------------
+; Title...........: _onMenuSelectAll
+; Description.....: Select all controls
+; Events..........: menu item, accel key Ctrl+A
+;------------------------------------------------------------------------------
+Func _onMenuSelectAll()
+	_selectAll()
+EndFunc   ;==>_onMenuSelectAll
 
 
 #Region mouse events
@@ -1475,7 +1493,7 @@ Func _main_change_title()
 	$oMain.Title = $new_text
 
 	_refreshGenerateCode()
-EndFunc   ;==>_ctrl_change_text
+EndFunc   ;==>_main_change_title
 
 
 Func _main_change_name()
@@ -1486,7 +1504,7 @@ Func _main_change_name()
 
 	_refreshGenerateCode()
 	_formObjectExplorer_updateList()
-EndFunc   ;==>_ctrl_change_name
+EndFunc   ;==>_main_change_name
 
 
 Func _main_change_left()
@@ -1494,7 +1512,7 @@ Func _main_change_left()
 	$oMain.Left = $new_text
 
 	_refreshGenerateCode()
-EndFunc   ;==>_ctrl_change_left
+EndFunc   ;==>_main_change_left
 
 
 Func _main_change_top()
@@ -1502,7 +1520,7 @@ Func _main_change_top()
 	$oMain.Top = $new_text
 
 	_refreshGenerateCode()
-EndFunc   ;==>_ctrl_change_left
+EndFunc   ;==>_main_change_top
 
 
 Func _main_change_width()
@@ -1518,7 +1536,7 @@ Func _main_change_width()
 	EndIf
 
 	_refreshGenerateCode()
-EndFunc   ;==>_ctrl_change_left
+EndFunc   ;==>_main_change_width
 
 
 Func _main_change_height()
@@ -1535,7 +1553,7 @@ Func _main_change_height()
 	EndIf
 
 	_refreshGenerateCode()
-EndFunc   ;==>_ctrl_change_left
+EndFunc   ;==>_main_change_height
 
 
 Func _main_pick_bkColor()
@@ -1545,7 +1563,7 @@ Func _main_pick_bkColor()
 	$oProperties_Main.Background.value = $color
 
 	_main_change_background()
-EndFunc   ;==>_ctrl_pick_bkColor
+EndFunc   ;==>_main_pick_bkColor
 
 
 Func _main_change_background()
@@ -1560,8 +1578,8 @@ Func _main_change_background()
 	GUISetBkColor($colorInput, $hGUI)
 
 	_refreshGenerateCode()
-EndFunc   ;==>_ctrl_change_left
-#EndRegion
+EndFunc   ;==>_main_change_background
+#EndRegion change-properties-main
 
 
 #Region change-properties-ctrls
@@ -1719,7 +1737,7 @@ Func _ctrl_change_height()
 	Local $new_data = $oProperties_Ctrls.Height.value
 	If $new_data = "" Then
 		$new_data = 0
-		$oProperties_Ctrls.Height.value =  $new_data
+		$oProperties_Ctrls.Height.value = $new_data
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
@@ -1867,8 +1885,8 @@ EndFunc   ;==>_ctrl_change_style_autocheckbox
 Func _ctrl_change_style_top()
 
 EndFunc   ;==>_ctrl_change_style_top
-#EndRegion
 #EndRegion ; styles
+#EndRegion change-properties-ctrls
 #EndRegion ; control properties window
 #EndRegion events
 
@@ -2096,7 +2114,7 @@ EndFunc   ;==>_setting_show_grid
 ;------------------------------------------------------------------------------
 Func _onExportMenuItem()
 	_save_code()
-EndFunc
+EndFunc   ;==>_onExportMenuItem
 
 
 ;------------------------------------------------------------------------------
@@ -2251,7 +2269,34 @@ EndFunc   ;==>_menu_show_hidden
 ; Events..........: settings menu item select
 ;------------------------------------------------------------------------------
 Func _menu_dpi_scaling()
-	ConsoleWrite("scaling" & @CRLF)
+	Switch BitAND(GUICtrlRead($menu_gui_function), $GUI_CHECKED) = $GUI_CHECKED
+		Case True
+			GUICtrlSetState($menu_gui_function, $GUI_UNCHECKED)
+
+			IniWrite($sIniPath, "Settings", "GuiInFunction", 0)
+
+			$setting_gui_function = False
+
+
+		Case False
+			GUICtrlSetState($menu_gui_function, $GUI_CHECKED)
+
+			IniWrite($sIniPath, "Settings", "GuiInFunction", 1)
+
+			$setting_gui_function = True
+
+	EndSwitch
+
+	_refreshGenerateCode()
+EndFunc   ;==>_menu_dpi_scaling
+
+
+;------------------------------------------------------------------------------
+; Title...........: _menu_gui_function
+; Description.....: Update INI setting
+; Events..........: settings menu item
+;------------------------------------------------------------------------------
+Func _menu_gui_function()
 	Switch BitAND(GUICtrlRead($menu_dpi_scaling), $GUI_CHECKED) = $GUI_CHECKED
 		Case True
 			GUICtrlSetState($menu_dpi_scaling, $GUI_UNCHECKED)
@@ -2271,7 +2316,7 @@ Func _menu_dpi_scaling()
 	EndSwitch
 
 	_refreshGenerateCode()
-EndFunc   ;==>_menu_dpi_scaling
+EndFunc   ;==>_menu_gui_function
 
 
 
@@ -2319,13 +2364,13 @@ EndFunc   ;==>_menu_vals
 ; Example .......: Yes
 ; ===============================================================================================================================
 Func GUIGetBkColor($hWnd)
-    Local $iColor = 0
-    If IsHWnd($hWnd) Then
-        Local $hDC = _WinAPI_GetDC($hWnd)
-        $iColor = _WinAPI_GetBkColor($hDC)
-        _WinAPI_ReleaseDC($hWnd, $hDC)
-    EndIf
-    Return $iColor
+	Local $iColor = 0
+	If IsHWnd($hWnd) Then
+		Local $hDC = _WinAPI_GetDC($hWnd)
+		$iColor = _WinAPI_GetBkColor($hDC)
+		_WinAPI_ReleaseDC($hWnd, $hDC)
+	EndIf
+	Return $iColor
 EndFunc   ;==>GUIGetBkColor
 
 
@@ -2335,7 +2380,7 @@ EndFunc   ;==>GUIGetBkColor
 ;------------------------------------------------------------------------------
 Func _saveWinPositions()
 	If Not BitAND(WinGetState($hGUI), $WIN_STATE_MINIMIZED) Then
-		Local $currentWinPos = WinGetPos($hgui)
+		Local $currentWinPos = WinGetPos($hGUI)
 		IniWrite($sIniPath, "Settings", "posMain", $currentWinPos[0] & "," & $currentWinPos[1])
 
 		$currentWinPos = WinGetPos($toolbar)
@@ -2347,4 +2392,4 @@ Func _saveWinPositions()
 		$currentWinPos = WinGetPos($hFormObjectExplorer)
 		IniWrite($sIniPath, "Settings", "posObjectExplorer", $currentWinPos[0] & "," & $currentWinPos[1])
 	EndIf
-EndFunc
+EndFunc   ;==>_saveWinPositions

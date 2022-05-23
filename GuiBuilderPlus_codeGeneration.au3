@@ -10,7 +10,7 @@
 ; Return..........: code as string
 ;------------------------------------------------------------------------------
 Func _code_generation()
-	Local $controls
+	Local $controls, $globals
 
 	;get options
 	Local $bAddDpiScale = $setting_dpi_scaling
@@ -39,6 +39,9 @@ Func _code_generation()
 	EndIf
 
 	For $oCtrl In $oCtrls.ctrls
+		;generate globals for controls
+;~ 		$globals &= "," & $oCtrl.Name
+
 		;generate includes
 		$includes &= _generate_includes($oCtrl, $includes)
 
@@ -72,10 +75,6 @@ Func _code_generation()
 	Local $w = $win_client_size[0]
 	Local $h = $win_client_size[1]
 
-	If $oMain.Name = "" Then
-		$oMain.Name = "hGUI"
-	EndIf
-
 	If $oMain.Title = "" Then
 		$oMain.Title = $gdtitle
 	ElseIf $oMain.Title <> $gdtitle Then
@@ -104,7 +103,7 @@ Func _code_generation()
 	EndIf
 
 	Local $background = ""
-	If $oMain.Background <> -1 and $oMain.Background <> "" Then
+	If $oMain.Background <> -1 And $oMain.Background <> "" Then
 		$background = "GUISetBkColor(0x" & Hex($oMain.Background, 6) & ")" & @CRLF & @CRLF
 	Else
 		$background = @CRLF
@@ -121,10 +120,14 @@ Func _code_generation()
 	If $bAddDpiScale Then
 		$code &= "Global $iDpiFactor = _GDIPlus_GraphicsGetDPIRatio()" & @CRLF & @CRLF
 	EndIf
-	$code &= $regionStart & @CRLF & _
-			"Global $MainStyle = BitOR($WS_OVERLAPPED, $WS_CAPTION, $WS_SYSMENU, $WS_VISIBLE, $WS_CLIPSIBLINGS, $WS_MINIMIZEBOX)" & @CRLF & _
-			"Global $" & $oMain.Name & " = GUICreate(" & $oMain.Title & ", " & $w & ", " & $h & ", " & $x & ", " & $y & ", $MainStyle)" & @CRLF & _
-			$background & _
+	$code &= $regionStart & @CRLF
+;~ 			"Global $MainStyle = BitOR($WS_OVERLAPPED, $WS_CAPTION, $WS_SYSMENU, $WS_VISIBLE, $WS_CLIPSIBLINGS, $WS_MINIMIZEBOX)" & @CRLF
+	If $oMain.Name = "" Then
+		$code &= "GUICreate(" & $oMain.Title & ", " & $w & ", " & $h & ", " & $x & ", " & $y & ")" & @CRLF
+	Else
+		$code &= "Global $" & $oMain.Name & " = GUICreate(" & $oMain.Title & ", " & $w & ", " & $h & ", " & $x & ", " & $y & ")" & @CRLF
+	EndIf
+	$code &= $background & _
 			$controls & _
 			$regionEnd & @CRLF & @CRLF & _
 			$mainProg & @CRLF & @CRLF
