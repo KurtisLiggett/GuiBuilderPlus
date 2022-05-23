@@ -15,6 +15,7 @@
 ;  05/22/2022 ...: 	- ADDED:	Now you can set properties for the main GUI!
 ;					- ADDED;	Added file menu item "Export to au3" for a more convenient and obvious way to save the generated code
 ;					- ADDED;	Keyboard shortcuts to save to (Ctrl+s) or load from (Ctrl+o) definition file
+;					- ADDED;	Save window positions
 ;					- FIXED:	Wrong GUI width and height displayed in the titlebar at startup
 ;					- FIXED:	Control names not applied when loading from agd definition file
 ;					- FIXED:	Text looked slightly different in design vs runtime
@@ -169,12 +170,12 @@ Global $oProperties_Main, $oProperties_Ctrls
 ;GUI Constants
 Global Const $main_width = 400
 Global Const $main_height = 350
-Global Const $main_left = (@DesktopWidth / 2) - ($main_width / 2)
-Global Const $main_top = (@DesktopHeight / 2) - ($main_height / 2)
+Global $main_left = (@DesktopWidth / 2) - ($main_width / 2)
+Global $main_top = (@DesktopHeight / 2) - ($main_height / 2)
 Global Const $toolbar_width = 215
 Global Const $toolbar_height = 480
-Global Const $toolbar_left = $main_left - ($toolbar_width + 5)
-Global Const $toolbar_top = $main_top
+Global $toolbar_left = $main_left - ($toolbar_width + 5)
+Global $toolbar_top = $main_top
 Global Const $iconset = @ScriptDir & "\resources\Icons\" ; Added by: TheSaint
 Global Const $grippy_size = 5
 Const Enum $default, $draw, $init_move, $move, $init_selection, $selection, _

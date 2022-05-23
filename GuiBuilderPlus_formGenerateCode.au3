@@ -12,15 +12,19 @@
 Func _formGenerateCode()
 	Local $w = 450
 	Local $h = 550
+	Local $x, $y
 
-	Local $hWin = $hGUI
-;~ 	If IsHWnd($hFormObjectExplorer) Then
-;~ 		$hWin = $hFormObjectExplorer
-;~ 	EndIf
+	Local $sPos = IniRead($sIniPath, "Settings", "posGenerateCode", "")
+	If $sPos <> "" Then
+		Local $aPos = StringSplit($sPos, ",")
+		$x = $aPos[1]
+		$y = $aPos[2]
+	Else
+		Local $currentWinPos = WinGetPos($toolbar)
+		$x = $currentWinPos[0] + 100
+		$y = $currentWinPos[1] - 50
+	EndIf
 
-	Local $currentWinPos = WinGetPos($toolbar)
-	Local $x = $currentWinPos[0] + 100
-	Local $y = $currentWinPos[1] - 50
 
 	;make sure $x is not set off screen
 	Local $ixCoordMin = _WinAPI_GetSystemMetrics(76)
@@ -101,6 +105,8 @@ EndFunc   ;==>_onCodeCopy
 ; Events..........: close button or menu item
 ;------------------------------------------------------------------------------
 Func _onExitGenerateCode()
+	_saveWinPositions()
+
 	GUIDelete($hFormGenerateCode)
 	GUICtrlSetState($menu_generateCode, $GUI_UNCHECKED)
 

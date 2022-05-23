@@ -10,6 +10,16 @@
 ;------------------------------------------------------------------------------
 Func _formMain()
 	;create the GUI
+	Local $sPos = IniRead($sIniPath, "Settings", "posMain", "")
+	If $sPos <> "" Then
+		Local $aPos = StringSplit($sPos, ",")
+		$main_left = $aPos[1]
+		$main_top = $aPos[2]
+	Else
+		$main_left = (@DesktopWidth / 2) - ($main_width / 2)
+		$main_top = (@DesktopHeight / 2) - ($main_height / 2)
+	EndIf
+
 	$hGUI = GUICreate($progName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ')', $oMain.Width, $oMain.Height, $main_left, $main_top, BitOR($WS_SIZEBOX, $WS_SYSMENU, $WS_MINIMIZEBOX), $WS_EX_ACCEPTFILES)
 ;~ 	$defaultGuiBkColor = GUIGetBkColor($hGUI)
 
@@ -113,6 +123,16 @@ EndFunc   ;==>_formMain
 ;------------------------------------------------------------------------------
 Func _formToolbar()
 	;create the GUI
+	Local $sPos = IniRead($sIniPath, "Settings", "posToolbar", "")
+	If $sPos <> "" Then
+		Local $aPos = StringSplit($sPos, ",")
+		$toolbar_left = $aPos[1]
+		$toolbar_top = $aPos[2]
+	Else
+		$toolbar_left = $main_left - ($toolbar_width + 5)
+		$toolbar_top = $main_top
+	EndIf
+
 	$toolbar = GUICreate("Choose Control Type", $toolbar_width, $toolbar_height, $toolbar_left, $toolbar_top, $WS_CAPTION, -1, $hGUI)
 
 	#Region create-menu
@@ -452,6 +472,9 @@ Func _onExit()
 		EndSwitch
 	EndIf
 
+	; save window positions in ini file
+	_saveWinPositions()
+
 	GUIDelete($toolbar)
 	GUIDelete($hGUI)
 
@@ -469,6 +492,8 @@ EndFunc   ;==>_onExit
 ; Event...........: minimize button [-]
 ;------------------------------------------------------------------------------
 Func _onMinimize()
+	_saveWinPositions()
+
 	GUISetState(@SW_MINIMIZE, $hGUI)
 	GUISetState(@SW_HIDE, $oProperties_Main.Hwnd)
 	GUISetState(@SW_HIDE, $oProperties_Ctrls.Hwnd)
@@ -2302,3 +2327,24 @@ Func GUIGetBkColor($hWnd)
     EndIf
     Return $iColor
 EndFunc   ;==>GUIGetBkColor
+
+
+;------------------------------------------------------------------------------
+; Title...........: _saveWinPositions
+; Description.....: Save current window positions to ini file
+;------------------------------------------------------------------------------
+Func _saveWinPositions()
+	If Not BitAND(WinGetState($hGUI), $WIN_STATE_MINIMIZED) Then
+		Local $currentWinPos = WinGetPos($hgui)
+		IniWrite($sIniPath, "Settings", "posMain", $currentWinPos[0] & "," & $currentWinPos[1])
+
+		$currentWinPos = WinGetPos($toolbar)
+		IniWrite($sIniPath, "Settings", "posToolbar", $currentWinPos[0] & "," & $currentWinPos[1])
+
+		$currentWinPos = WinGetPos($hFormGenerateCode)
+		IniWrite($sIniPath, "Settings", "posGenerateCode", $currentWinPos[0] & "," & $currentWinPos[1])
+
+		$currentWinPos = WinGetPos($hFormObjectExplorer)
+		IniWrite($sIniPath, "Settings", "posObjectExplorer", $currentWinPos[0] & "," & $currentWinPos[1])
+	EndIf
+EndFunc

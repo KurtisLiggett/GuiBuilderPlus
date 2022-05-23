@@ -12,15 +12,18 @@
 Func _formObjectExplorer()
 	Local $w = 250
 	Local $h = 500
+	Local $x, $y
 
-	Local $hWin = $hGUI
-;~ 	If IsHWnd($hFormGenerateCode) Then
-;~ 		$hWin = $hFormGenerateCode
-;~ 	EndIf
-
-	Local $currentWinPos = WinGetPos($hWin)
-	Local $x = $currentWinPos[0] + $currentWinPos[2]
-	Local $y = $currentWinPos[1]
+	Local $sPos = IniRead($sIniPath, "Settings", "posObjectExplorer", "")
+	If $sPos <> "" Then
+		Local $aPos = StringSplit($sPos, ",")
+		$x = $aPos[1]
+		$y = $aPos[2]
+	Else
+		Local $currentWinPos = WinGetPos($hGUI)
+		$x = $currentWinPos[0] + $currentWinPos[2]
+		$y = $currentWinPos[1]
+	EndIf
 
 	;make sure $x is not set off screen
 	Local $ixCoordMin = _WinAPI_GetSystemMetrics(76)
@@ -77,6 +80,8 @@ EndFunc   ;==>_formObjectExplorer
 ; Events..........: close button or menu item
 ;------------------------------------------------------------------------------
 Func _onExitObjectExplorer()
+	_saveWinPositions()
+
 	GUIDelete($hFormObjectExplorer)
 	GUICtrlSetState($menu_ObjectExplorer, $GUI_UNCHECKED)
 
