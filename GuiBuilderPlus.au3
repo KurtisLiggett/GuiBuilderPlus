@@ -115,8 +115,8 @@
 ;					- Add IP control
 ;					- Add control alignment buttons (left, right, top, bottom)
 ;					- Finish control properties tabs
-;					- Add shortcut to select all controls (for moving, deleting)
 ;					- creating controls on top of TAB will place them inside the tab
+;					- creating controls on top of GROUP will place them inside the group
 ;					- Undo / Redo functionality
 ;					- Make separate grippies for each selected object
 ;					- Finish menu controls
