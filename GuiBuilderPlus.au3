@@ -12,7 +12,7 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  05/22/2022 ...: 	- ADDED:	Now you can set properties for the main GUI!
+;  05/23/2022 ...: 	- ADDED:	Now you can set properties for the main GUI!
 ;					- ADDED;	Added file menu item "Export to au3" for a more convenient and obvious way to save the generated code
 ;					- ADDED;	Keyboard shortcuts to save to (Ctrl+S) or load from (Ctrl+O) definition file
 ;					- ADDED;	Keyboard shortcut (Ctrl+A) and edit menu item to select all controls
