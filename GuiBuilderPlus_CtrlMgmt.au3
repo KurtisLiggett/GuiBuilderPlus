@@ -190,7 +190,7 @@ Func _create_ctrl($oCtrl = '', $bUseName = False)
 
 			_hide_grid($background)
 			If BitAND(GUICtrlRead($menu_show_grid), $GUI_CHECKED) = $GUI_CHECKED Then
-				_show_grid($background, $win_client_size[0], $win_client_size[1])
+				_show_grid($background, $oMain.Width, $oMain.Height)
 			EndIf
 
 		Case "TreeView"
@@ -327,13 +327,7 @@ EndFunc   ;==>_new_tab
 
 
 Func _onCtrlTabSwitch()
-;~ 	ConsoleWrite("tab switch" & @CRLF)
-;~ 	ConsoleWrite("size " & $win_client_size[1] & @CRLF)
-;~ 	_hide_grid($background)
-;~ 	If BitAND(GUICtrlRead($menu_show_grid), $GUI_CHECKED) = $GUI_CHECKED Then
-;~ 		_show_grid($background, $win_client_size[0], $win_client_size[1])
-;~ 	EndIf
-;~ 	GUICtrlSetState($background, $GUI_DISABLE)
+
 EndFunc   ;==>_onCtrlTabSwitch
 
 

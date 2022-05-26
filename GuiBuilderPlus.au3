@@ -12,15 +12,18 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
+;  05/25/2022 ...: 	- MAINT:	removed more global variables
+;					- MAINT:	modified the About dialog text for a more detailed naming history
+;
 ;  05/23/2022 ...: 	- ADDED:	Now you can set properties for the main GUI!
-;					- ADDED;	Added file menu item "Export to au3" for a more convenient and obvious way to save the generated code
-;					- ADDED;	Keyboard shortcuts to save to (Ctrl+S) or load from (Ctrl+O) definition file
-;					- ADDED;	Keyboard shortcut (Ctrl+A) and edit menu item to select all controls
-;					- ADDED;	Save window positions
-;					- ADDED;	Started implementation of main menu controls (no menu items yet)
-;					- ADDED;	Setting to generate code using OnEvent mode or Msg mode
-;					- ADDED;	Move control's creation order up or down the tree
-;					- ADDED;	Selecting a control will also highlight it in the object explorer (single select only, for now)
+;					- ADDED:	Added file menu item "Export to au3" for a more convenient and obvious way to save the generated code
+;					- ADDED:	Keyboard shortcuts to save to (Ctrl+S) or load from (Ctrl+O) definition file
+;					- ADDED:	Keyboard shortcut (Ctrl+A) and edit menu item to select all controls
+;					- ADDED:	Save window positions
+;					- ADDED:	Started implementation of main menu controls (no menu items yet)
+;					- ADDED:	Setting to generate code using OnEvent mode or Msg mode
+;					- ADDED:	Move control's creation order up or down the tree
+;					- ADDED:	Selecting a control will also highlight it in the object explorer (single select only, for now)
 ;					- FIXED:	Wrong GUI width and height displayed in the titlebar at startup
 ;					- FIXED:	Control names not applied when loading from agd definition file
 ;					- FIXED:	Text looked slightly different in design vs runtime
@@ -131,7 +134,6 @@
 ; ===============================================================================================================================
 
 #Region project-settings
-;~ #AutoIt3Wrapper_Run_Au3Stripper=y
 #AutoIt3Wrapper_Res_HiDpi=y
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
@@ -146,72 +148,53 @@ Opt("GuiEventOptions", 1)
 #EndRegion project-settings
 
 #Region ; globals
-Const $grid_ticks = 10
-
 ;GUI components
-Global $hGUI, $hFormGenerateCode, $toolbar, $hFormObjectExplorer, $hStatusbar, $bStatusNewMessage
+Global $hGUI, $hToolbar, $hFormGenerateCode, $hFormObjectExplorer, $hStatusbar
 Global $iGuiFrameH, $iGuiFrameW, $defaultGuiBkColor = 0xF0F0F0
 Global $menu_wipe
-Global $menu_testForm
-Global $overlay_contextmenu_newtab, $overlay_contextmenu_deletetab, $hoverlay_contextmenu_newtab, $hoverlay_contextmenu_deletetab, $hoverlay_contextmenu
+;Settings menu
 Global $menu_show_grid, $menu_grid_snap, $menu_paste_pos, $menu_show_ctrl, $menu_show_hidden, $menu_dpi_scaling, $menu_gui_function, $menu_onEvent_mode
+;View menu
 Global $menu_generateCode, $menu_ObjectExplorer
+;Background
 Global $background, $background_contextmenu, $background_contextmenu_paste
 Global $overlay, $overlay_contextmenu, $overlay_contextmenutab
 ;grippys
 Global $NorthWest_Grippy, $North_Grippy, $NorthEast_Grippy, $West_Grippy, $East_Grippy, $SouthWest_Grippy, $South_Grippy, $SouthEast_Grippy
-;state tab
-Global $h_form_visible, $h_form_enabled, $h_form_ontop, $h_form_dropaccepted, $h_form_focus
-;style tab
-Global $h_form_style_autocheckbox, $h_form_style_top
 ;code generation popup
 Global $editCodeGeneration
 ;object explorer popup
 Global $lvObjects, $labelObjectCount, $childSelected
-;background graphics
-;~ Global $hBgGraphic
 
 ;Property Inspector
 Global $oProperties_Main, $oProperties_Ctrls
 
 ;GUI Constants
-Global Const $main_width = 400
-Global Const $main_height = 350
-Global $main_left = (@DesktopWidth / 2) - ($main_width / 2)
-Global $main_top = (@DesktopHeight / 2) - ($main_height / 2)
-Global Const $toolbar_width = 215
-Global Const $toolbar_height = 480
-Global $toolbar_left = $main_left - ($toolbar_width + 5)
-Global $toolbar_top = $main_top
+Global Const $grid_ticks = 10
 Global Const $iconset = @ScriptDir & "\resources\Icons\" ; Added by: TheSaint
 Global Const $grippy_size = 5
-Const Enum $default, $draw, $init_move, $move, $init_selection, $selection, _
+Global Enum $default, $draw, $init_move, $move, $init_selection, $selection, _
 		$resize_nw, $resize_n, $resize_ne, $resize_e, $resize_se, $resize_s, $resize_sw, $resize_w
-Const Enum $props_Main, $props_Ctrls
+Global Enum $props_Main, $props_Ctrls
 ; Cursor Consts - added by: Jaberwacky
 Global Const $ARROW = 2, $CROSS = 3, $SIZE_ALL = 9, $SIZENESW = 10, $SIZENS = 11, $SIZENWSE = 12, $SIZEWS = 13
 
 
 ;other variables
-Global $progName = "GUIBuilderPlus"
-Global $progVersion = "v0.24"
-Global $default_cursor
-Global $win_client_size
+Global $bStatusNewMessage
 Global $mode = $default
 Global $right_click = False
 Global $left_click = False
 Global $bResizedFlag
-Global $bGuiClick
-Global $testFileName
-Global $TestFilePID = 0, $bReTest = 0, $aTestGuiPos, $hTestGui
+Global $testFileName, $TestFilePID = 0, $bReTest = 0, $aTestGuiPos, $hTestGui
 Global $au3InstallPath = @ProgramFilesDir & "\AutoIt3\AutoIt3.exe"
 Global $initDraw, $initResize
 
 ;Control Objects
-Global $oCtrls, $oSelected, $oClipboard, $oMouse, $oMain
+Global $oMain, $oCtrls, $oSelected, $oClipboard, $oMouse
 
 ; added by: TheSaint (most are my own, others just not declared)
-Global $AgdInfile, $AgdOutFile, $gdtitle, $lfld, $mygui
+Global $AgdOutFile, $lfld, $mygui
 Global $setting_snap_grid, $setting_paste_pos, $setting_show_control, $setting_show_hidden, $setting_dpi_scaling, $setting_gui_function, $setting_onEvent_mode
 
 Global $sampleavi = @ScriptDir & "\resources\sampleAVI.avi"
@@ -278,13 +261,15 @@ Func _main()
 	$oSelected = _objCtrls()
 	$oClipboard = _objCtrls()
 	$oMain = _objMain()
+	$oMain.AppName = "GuiBuilderPlus"
+	$oMain.AppVersion = "0.25"
 	$oMain.Title = StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1)
 	$oMain.Name = "hGUI"
-	$oMain.Width = $main_width
-	$oMain.Height = $main_height
+	$oMain.Width = 400
+	$oMain.Height = 350
 	$oMain.Left = -1
 	$oMain.Top = -1
-	$oMain.Background = -1
+	$oMain.Background = ""
 
 	;create properties objects
 	$oProperties_Main = _objProperties()
@@ -301,11 +286,9 @@ Func _main()
 	;check if ran with parameters to load definition file
 	_check_command_line()
 
-	_get_script_title()
-
 	_initialize_settings()
 
-	GUISetState(@SW_SHOWNORMAL, $toolbar)
+	GUISetState(@SW_SHOWNORMAL, $hToolbar)
 	GUISetState(@SW_SHOWNORMAL, $oProperties_Main.Hwnd)
 	GUISwitch($hGUI)
 	GUISetState(@SW_SHOWNORMAL, $hGUI)
@@ -363,8 +346,7 @@ EndFunc   ;==>_main
 Func _check_command_line()
 	If $CmdLine[0] > 0 Then
 		If StringRight($CmdLine[1], 4) = ".agd" Then
-			$AgdInfile = FileGetLongName($CmdLine[1])
-;~ 			MsgBox(0, "", $AgdInfile)
+			Local $AgdInfile = FileGetLongName($CmdLine[1])
 			_load_gui_definition($AgdInfile)
 		EndIf
 	EndIf
@@ -376,10 +358,20 @@ EndFunc   ;==>_check_command_line
 ; Description.....: Get/create the script title
 ;------------------------------------------------------------------------------
 Func _get_script_title()
-	If $AgdInfile = "" Then
-		$gdtitle = WinGetTitle("classname=SciTEWindow", "")
-	Else
+	Local $AgdInfile = ""
+	If $CmdLine[0] > 0 Then
+		If StringRight($CmdLine[1], 4) = ".agd" Then
+			$AgdInfile = FileGetLongName($CmdLine[1])
+		EndIf
+	EndIf
+
+	Local $gdtitle
+	If $AgdOutFile <> "" Then
 		$gdtitle = $AgdOutFile
+	ElseIf $AgdInfile = "" Then
+		$gdtitle = $AgdInfile
+	Else
+		$gdtitle = WinGetTitle("classname=SciTEWindow", "")
 	EndIf
 
 	If $gdtitle <> "" Then
@@ -454,7 +446,7 @@ Func _initialize_settings()
 	EndIf
 
 	If $bShowGrid Then
-		_show_grid($background, $win_client_size[0], $win_client_size[1])
+		_show_grid($background, $oMain.Width, $oMain.Height)
 	Else
 		_hide_grid($background)
 	EndIf

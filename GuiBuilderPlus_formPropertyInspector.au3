@@ -17,7 +17,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 
 	#Region properties-tab-main
 	;create the child gui for controls properties
-	Local $guiHandle = GUICreate("", $w, $h-2, $x, $y+1, $WS_POPUP, $WS_EX_MDICHILD, $toolbar)
+	Local $guiHandle = GUICreate("", $w, $h-2, $x, $y+1, $WS_POPUP, $WS_EX_MDICHILD, $hToolbar)
 	GUISetBkColor(0xFFFFFF)
 	Local $ret = _GUIScrollbars_Generate($guiHandle, $w - 2, $h+20)
 	$oProperties_Main.Hwnd = $guiHandle
@@ -65,7 +65,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 
 	#Region properties-tab-controls
 	;create the child gui for controls properties
-	$guiHandle = GUICreate("", $w, $h-1, $x, $y+1, $WS_POPUP, $WS_EX_MDICHILD, $toolbar)
+	$guiHandle = GUICreate("", $w, $h-1, $x, $y+1, $WS_POPUP, $WS_EX_MDICHILD, $hToolbar)
 	GUISetBkColor(0xFFFFFF)
 	_GUIScrollbars_Generate($guiHandle, $w - 2, $h)
 	$oProperties_Ctrls.Hwnd = $guiHandle
@@ -101,7 +101,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 
 
 
-	GUISwitch($toolbar)
+	GUISwitch($hToolbar)
 
 	;bottom line
 ;~ 	Local $labelLine = GUICtrlCreateLabel("", $x, $y+$h, $w, 1)

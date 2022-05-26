@@ -1,15 +1,14 @@
 ; #HEADER# ======================================================================================================================
-; Title .........: GuiBuilderPlus_objCtrl.au3
-; Description ...: Create and manage objects for control components
+; Title .........: GuiBuilderPlus_objOptions.au3
+; Description ...: Create and manage objects for program settings
 ; ===============================================================================================================================
 
 
 ;------------------------------------------------------------------------------
-; Title...........: _objCtrls
-; Description.....:	Main container for all controls, a wrapper for linked list
-;					with additional properties and methods
+; Title...........: _objOptions
+; Description.....:	contains option menu handles, states, and values
 ;------------------------------------------------------------------------------
-Func _objCtrls()
+Func _objOptions()
 	Local $oObject = _AutoItObject_Create()
 
 	_AutoItObject_AddProperty($oObject, "count", $ELSCOPE_PUBLIC, 0)

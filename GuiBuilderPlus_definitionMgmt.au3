@@ -26,6 +26,7 @@ Func _save_gui_definition()
 			$lfld = @MyDocumentsDir
 		EndIf
 
+		Local $gdtitle = _get_script_title()
 		$AgdOutFile = FileSaveDialog("Save GUI Definition to file?", $lfld, "AutoIt Gui Definitions (*.agd)", BitOR($FD_PATHMUSTEXIST, $FD_PROMPTOVERWRITE), StringReplace($gdtitle, '"', ""))
 
 		If @error = 1 Or $AgdOutFile = "" Then
@@ -47,8 +48,6 @@ Func _save_gui_definition()
 			$mygui = StringReplace($AgdOutFile, $lfld & "\", "")
 
 			$mygui = StringReplace($mygui, ".agd", "")
-
-			$gdtitle = '"' & $mygui & '"'
 
 			$mygui = $mygui & ".au3"
 		EndIf
@@ -181,11 +180,10 @@ Func _load_gui_definition($AgdInfile = '')
 			$newTop = Default
 		EndIf
 		WinMove($hGUI, "", $newLeft, $newTop, $oMain.Width + $iGuiFrameW, $oMain.Height + $iGuiFrameH)
-		WinSetTitle($hGUI, "", $progName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
+		WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
 
-		$win_client_size = WinGetClientSize($hGUI)
 		If _setting_show_grid() Then
-			_display_grid($background, $win_client_size[0], $win_client_size[1])
+			_display_grid($background, $oMain.Width, $oMain.Height)
 		EndIf
 	EndIf
 	$oMain.Background = IniRead($AgdInfile, "Main", "Background", -1)

@@ -20,7 +20,7 @@ Func _formGenerateCode()
 		$x = $aPos[1]
 		$y = $aPos[2]
 	Else
-		Local $currentWinPos = WinGetPos($toolbar)
+		Local $currentWinPos = WinGetPos($hToolbar)
 		$x = $currentWinPos[0] + 100
 		$y = $currentWinPos[1] - 50
 	EndIf

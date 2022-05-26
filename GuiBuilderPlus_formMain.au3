@@ -9,6 +9,8 @@
 ; Description.....: Create the blank form designer GUI
 ;------------------------------------------------------------------------------
 Func _formMain()
+	Local $main_left, $main_top
+
 	;create the GUI
 	Local $sPos = IniRead($sIniPath, "Settings", "posMain", "")
 	If $sPos <> "" Then
@@ -16,18 +18,16 @@ Func _formMain()
 		$main_left = $aPos[1]
 		$main_top = $aPos[2]
 	Else
-		$main_left = (@DesktopWidth / 2) - ($main_width / 2)
-		$main_top = (@DesktopHeight / 2) - ($main_height / 2)
+		$main_left = (@DesktopWidth / 2) - ($oMain.Width / 2)
+		$main_top = (@DesktopHeight / 2) - ($oMain.Height / 2)
 	EndIf
 
-	$hGUI = GUICreate($progName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ')', $oMain.Width, $oMain.Height, $main_left, $main_top, BitOR($WS_SIZEBOX, $WS_SYSMENU, $WS_MINIMIZEBOX), $WS_EX_ACCEPTFILES)
-;~ 	$defaultGuiBkColor = GUIGetBkColor($hGUI)
+	$hGUI = GUICreate($oMain.AppName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ')', $oMain.Width, $oMain.Height, $main_left, $main_top, BitOR($WS_SIZEBOX, $WS_SYSMENU, $WS_MINIMIZEBOX), $WS_EX_ACCEPTFILES)
 
 	_getGuiFrameSize()
 	WinMove($hGUI, "", Default, Default, $oMain.Width + $iGuiFrameW, $oMain.Height + $iGuiFrameH)
 
-	$win_client_size = WinGetClientSize($hGUI)
-	WinSetTitle($hGUI, "", $progName & " - Form (" & $win_client_size[0] & ", " & $win_client_size[1] & ")")
+	WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
 
 
 
@@ -117,6 +117,9 @@ EndFunc   ;==>_formMain
 ; Description.....: Create the toolbar/properties GUI
 ;------------------------------------------------------------------------------
 Func _formToolbar()
+	Local $toolbar_left, $toolbar_top
+	Local Const $toolbar_width = 215
+	Local Const $toolbar_height = 480
 	;create the GUI
 	Local $sPos = IniRead($sIniPath, "Settings", "posToolbar", "")
 	If $sPos <> "" Then
@@ -124,11 +127,11 @@ Func _formToolbar()
 		$toolbar_left = $aPos[1]
 		$toolbar_top = $aPos[2]
 	Else
-		$toolbar_left = $main_left - ($toolbar_width + 5)
-		$toolbar_top = $main_top
+		$toolbar_left = $oMain.Left - ($toolbar_width + 5)
+		$toolbar_top = $oMain.Top
 	EndIf
 
-	$toolbar = GUICreate("Choose Control Type", $toolbar_width, $toolbar_height, $toolbar_left, $toolbar_top, $WS_CAPTION, -1, $hGUI)
+	$hToolbar = GUICreate("Choose Control Type", $toolbar_width, $toolbar_height, $toolbar_left, $toolbar_top, $WS_CAPTION, -1, $hGUI)
 
 	#Region create-menu
 	;create up the File menu
@@ -175,7 +178,7 @@ Func _formToolbar()
 
 	;create the Tools menu
 	Local $menu_tools = GUICtrlCreateMenu("Tools")
-	$menu_testForm = GUICtrlCreateMenuItem("Test GUI" & @TAB & "F5", $menu_tools)
+	Local $menu_testForm = GUICtrlCreateMenuItem("Test GUI" & @TAB & "F5", $menu_tools)
 
 	GUICtrlSetOnEvent($menu_testForm, "_onTestGUI")
 
@@ -213,7 +216,7 @@ Func _formToolbar()
 	Local Const $contype_btn_h = 40
 
 	;create 1st row of buttons
-	$default_cursor = GUICtrlCreateRadio('', 5, 5, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	$oMain.DefaultCursor = GUICtrlCreateRadio('', 5, 5, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
 	GUICtrlSetImage(-1, $iconset & "\Icon 1.ico")
 	GUICtrlSetTip(-1, "Cursor")
 	GUICtrlSetState(-1, $GUI_CHECKED) ; initial selection
@@ -339,7 +342,7 @@ Func _formToolbar()
 	_formPropertyInspector(0, 215, $toolbar_width, 222)
 
 
-	$hStatusbar = _GUICtrlStatusBar_Create($toolbar)
+	$hStatusbar = _GUICtrlStatusBar_Create($hToolbar)
 
 EndFunc   ;==>_formToolbar
 
@@ -364,6 +367,7 @@ Func _set_accelerators()
 	Local Const $accel_Ctrlright = GUICtrlCreateDummy()
 	Local Const $accel_s = GUICtrlCreateDummy()
 	Local Const $accel_o = GUICtrlCreateDummy()
+	Local Const $accel_F5 = GUICtrlCreateDummy()
 
 	Local Const $accelerators[18][2] = _
 			[ _
@@ -382,7 +386,7 @@ Func _set_accelerators()
 			["^{RIGHT}", $accel_Ctrlright], _
 			["{F3}", $menu_grid_snap], _
 			["{F7}", $menu_show_grid], _
-			["{F5}", $menu_testForm], _
+			["{F5}", $accel_F5], _
 			["^s", $accel_s], _
 			["^o", $accel_o] _
 			]
@@ -403,6 +407,7 @@ Func _set_accelerators()
 	GUICtrlSetOnEvent($accel_Ctrlright, "_onKeyCtrlRight")
 	GUICtrlSetOnEvent($accel_s, "_save_gui_definition")
 	GUICtrlSetOnEvent($accel_o, "_load_gui_definition")
+	GUICtrlSetOnEvent($accel_F5, "_onTestGUI")
 EndFunc   ;==>_set_accelerators
 #EndRegion formMain
 
@@ -440,7 +445,7 @@ Func _hide_grid(ByRef $grid_ctrl)
 	GUISwitch($hGUI)
 	;clear the grid by deleting the graphic and creating a new empty graphic
 	GUICtrlDelete($grid_ctrl)
-	$grid_ctrl = GUICtrlCreateGraphic(0, 0, $win_client_size[0], $win_client_size[1])
+	$grid_ctrl = GUICtrlCreateGraphic(0, 0, $oMain.Width, $oMain.Height)
 EndFunc   ;==>_hide_grid
 
 
@@ -493,7 +498,7 @@ Func _onExit()
 	; save window positions in ini file
 	_saveWinPositions()
 
-	GUIDelete($toolbar)
+	GUIDelete($hToolbar)
 	GUIDelete($hGUI)
 
 	If FileExists($testFileName) Then
@@ -601,7 +606,7 @@ EndFunc   ;==>WM_NOTIFY
 ; Events..........: Called after a window resize
 ;------------------------------------------------------------------------------
 Func _onResize()
-	$win_client_size = WinGetClientSize($hGUI)
+	Local $win_client_size = WinGetClientSize($hGUI)
 
 	If _setting_show_grid() Then
 		_display_grid($background, $win_client_size[0], $win_client_size[1])
@@ -616,7 +621,7 @@ Func _onResize()
 	Else
 		$oProperties_Main.Height.value = $oMain.Height
 	EndIf
-	WinSetTitle($hGUI, "", $progName & " - Form (" & $oProperties_Main.Width.value & ", " & $oProperties_Main.Height.value & ")")
+	WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $oProperties_Main.Width.value & ", " & $oProperties_Main.Height.value & ")")
 
 	_show_grippies($oSelected.getFirst())
 EndFunc   ;==>_onResize
@@ -826,7 +831,7 @@ Func _onMousePrimaryDown()
 	;if tool is selected and clicking on an existing control (but not resizing), switch to selection
 	If Not $initResize And Not $mode = $init_move Then
 		If $oCtrls.exists($ctrl_hwnd) And $ctrl_hwnd <> $background Then
-			GUICtrlSetState($default_cursor, $GUI_CHECKED)
+			GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 			$mode = $default
 		EndIf
 	EndIf
@@ -844,11 +849,10 @@ Func _onMousePrimaryDown()
 		_PasteSelected()
 	EndIf
 
-	$bGuiClick = 0
 	Switch $mode
 		Case $draw
 			ConsoleWrite("** PrimaryDown: draw **" & @CRLF)
-;~ 			GUICtrlSetState($default_cursor, $GUI_CHECKED)
+;~ 			GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 			$initDraw = True
 
 			Local $oCtrl = _create_ctrl()
@@ -869,7 +873,7 @@ Func _onMousePrimaryDown()
 						$mode = $default
 						_formObjectExplorer_updateList()
 						_refreshGenerateCode()
-						GUICtrlSetState($default_cursor, $GUI_CHECKED)
+						GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 
 					Case Else
 						$pos = ControlGetPos($hGUI, '', $SouthEast_Grippy)
@@ -881,7 +885,7 @@ Func _onMousePrimaryDown()
 
 				_set_current_mouse_pos()
 			Else
-				GUICtrlSetState($default_cursor, $GUI_CHECKED)
+				GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 				_set_default_mode()
 				$mode = $default
 ;~ 				$mode = $resize_se
@@ -950,8 +954,6 @@ Func _onMousePrimaryDown()
 					_set_current_mouse_pos()
 
 					$mode = $init_selection
-
-					$bGuiClick = 1
 
 				Case Else
 					If Not $oCtrls.exists($ctrl_hwnd) Then Return
@@ -1045,7 +1047,7 @@ Func _onMousePrimaryUp()
 				EndSwitch
 				If $oCtrlSelectedFirst.Width < $tolerance And $oCtrlSelectedFirst.Height < $tolerance Then
 					ConsoleWrite("  click away" & @CRLF)
-					GUICtrlSetState($default_cursor, $GUI_CHECKED)
+					GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 					_delete_selected_controls()
 					_set_default_mode()
 				EndIf
@@ -1057,7 +1059,7 @@ Func _onMousePrimaryUp()
 
 			_populate_control_properties_gui($oCtrlSelectedFirst)
 
-			If BitAND(GUICtrlRead($default_cursor), $GUI_CHECKED) = $GUI_CHECKED Then
+			If BitAND(GUICtrlRead($oMain.DefaultCursor), $GUI_CHECKED) = $GUI_CHECKED Then
 				$mode = $default
 			Else
 				$mode = $draw
@@ -1570,7 +1572,7 @@ Func _main_change_width()
 	WinMove($hGUI, "", Default, Default, $newValue + $iGuiFrameW, Default)
 
 	Local $aWinPos = WinGetClientSize($hGUI)
-	WinSetTitle($hGUI, "", $progName & " - Form (" & $aWinPos[0] & ", " & $aWinPos[1] & ")")
+	WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $aWinPos[0] & ", " & $aWinPos[1] & ")")
 
 	$oMain.Width = $aWinPos[0]
 
@@ -1589,7 +1591,7 @@ Func _main_change_height()
 	WinMove($hGUI, "", Default, Default, Default, $newValue + $iGuiFrameH)
 
 	Local $aWinPos = WinGetClientSize($hGUI)
-	WinSetTitle($hGUI, "", $progName & " - Form (" & $aWinPos[0] & ", " & $aWinPos[1] & ")")
+	WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $aWinPos[0] & ", " & $aWinPos[1] & ")")
 
 	$oMain.Height = $aWinPos[1]
 
@@ -2037,7 +2039,7 @@ Func _set_current_mouse_pos()
 EndFunc   ;==>_set_current_mouse_pos
 
 Func _cursor_out_of_bounds(Const $cursor_pos)
-	If __WinAPI_PtInRectEx($cursor_pos[0], $cursor_pos[1], 0, 0, $win_client_size[0], $win_client_size[1]) Then
+	If __WinAPI_PtInRectEx($cursor_pos[0], $cursor_pos[1], 0, 0, $oMain.Width, $oMain.Height) Then
 		Return False
 	EndIf
 
@@ -2197,7 +2199,7 @@ Func _showgrid()
 		Case BitAND($show_grid_data, $GUI_UNCHECKED) = $GUI_UNCHECKED
 			GUICtrlSetState($menu_show_grid, $GUI_CHECKED)
 
-			_show_grid($background, $win_client_size[0], $win_client_size[1])
+			_show_grid($background, $oMain.Width, $oMain.Height)
 
 			IniWrite($sIniPath, "Settings", "ShowGrid", 1)
 	EndSelect
@@ -2401,12 +2403,13 @@ EndFunc   ;==>_menu_gui_function
 ; Description.....: Display popup with program description
 ;------------------------------------------------------------------------------
 Func _menu_about()
-	MsgBox(0, "About " & $progName, $progVersion & @CRLF & _
-			"Originally created by CyberSlug, " & @CRLF & _
-			"and modified by Roy, TheSaint, and Jaberwacky," & @CRLF & _
-			"with additional modifications by kurtykurtyboy!" & @CRLF & @CRLF & _
+	MsgBox(0, "About " & $oMain.AppName, $oMain.AppVersion & @CRLF & _
+			"Originally created by CyberSlug (as AutoBuilder)," & @CRLF & _
+			"and modified by Roy, TheSaint, and others (as GuiBuilder)," & @CRLF & _
+			"and Jaberwacky (as GuiBuilderNxt)," & @CRLF & _
+			"with additional modifications by kurtykurtyboy (as GuiBuilderPlus)." & @CRLF & @CRLF & _
 			"Program Information" & @CRLF & _
-			"When you exit " & $progName & ", you will be prompted" & @CRLF & _
+			"When you exit " & $oMain.AppName & ", you will be prompted" & @CRLF & _
 			"to save what you may have created as an au3 file.")
 EndFunc   ;==>_menu_about
 
@@ -2459,7 +2462,7 @@ Func _saveWinPositions()
 		Local $currentWinPos = WinGetPos($hGUI)
 		IniWrite($sIniPath, "Settings", "posMain", $currentWinPos[0] & "," & $currentWinPos[1])
 
-		$currentWinPos = WinGetPos($toolbar)
+		$currentWinPos = WinGetPos($hToolbar)
 		IniWrite($sIniPath, "Settings", "posToolbar", $currentWinPos[0] & "," & $currentWinPos[1])
 
 		$currentWinPos = WinGetPos($hFormGenerateCode)
