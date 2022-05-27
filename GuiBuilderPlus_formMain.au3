@@ -82,33 +82,33 @@ Func _formMain()
 	GUICtrlSetOnEvent($overlay_contextmenutab_deletetab, "_delete_tab")
 
 
-	;create the grippies  <-- grippies also known as "handles" to show selection and drag resizing
-	$NorthWest_Grippy = GUICtrlCreateLabel('', -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	$North_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	$NorthEast_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	$West_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	$East_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	$SouthWest_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	$South_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	$SouthEast_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	;grippy mouse cursor
-	GUICtrlSetCursor($NorthWest_Grippy, $SIZENWSE)
-	GUICtrlSetCursor($North_Grippy, $SIZENS)
-	GUICtrlSetCursor($NorthEast_Grippy, $SIZENESW)
-	GUICtrlSetCursor($East_Grippy, $SIZEWS)
-	GUICtrlSetCursor($SouthEast_Grippy, $SIZENWSE)
-	GUICtrlSetCursor($South_Grippy, $SIZENS)
-	GUICtrlSetCursor($SouthWest_Grippy, $SIZENESW)
-	GUICtrlSetCursor($West_Grippy, $SIZEWS)
-	;grippy events
-	GUICtrlSetOnEvent($NorthWest_Grippy, _set_resize_mode)
-	GUICtrlSetOnEvent($North_Grippy, _set_resize_mode)
-	GUICtrlSetOnEvent($NorthEast_Grippy, _set_resize_mode)
-	GUICtrlSetOnEvent($West_Grippy, _set_resize_mode)
-	GUICtrlSetOnEvent($East_Grippy, _set_resize_mode)
-	GUICtrlSetOnEvent($SouthWest_Grippy, _set_resize_mode)
-	GUICtrlSetOnEvent($South_Grippy, _set_resize_mode)
-	GUICtrlSetOnEvent($SouthEast_Grippy, _set_resize_mode)
+;~ 	;create the grippies  <-- grippies also known as "handles" to show selection and drag resizing
+;~ 	$NorthWest_Grippy = GUICtrlCreateLabel('', -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
+;~ 	$North_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
+;~ 	$NorthEast_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
+;~ 	$West_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
+;~ 	$East_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
+;~ 	$SouthWest_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
+;~ 	$South_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
+;~ 	$SouthEast_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
+;~ 	;grippy mouse cursor
+;~ 	GUICtrlSetCursor($NorthWest_Grippy, $SIZENWSE)
+;~ 	GUICtrlSetCursor($North_Grippy, $SIZENS)
+;~ 	GUICtrlSetCursor($NorthEast_Grippy, $SIZENESW)
+;~ 	GUICtrlSetCursor($East_Grippy, $SIZEWS)
+;~ 	GUICtrlSetCursor($SouthEast_Grippy, $SIZENWSE)
+;~ 	GUICtrlSetCursor($South_Grippy, $SIZENS)
+;~ 	GUICtrlSetCursor($SouthWest_Grippy, $SIZENESW)
+;~ 	GUICtrlSetCursor($West_Grippy, $SIZEWS)
+;~ 	;grippy events
+;~ 	GUICtrlSetOnEvent($NorthWest_Grippy, _set_resize_mode)
+;~ 	GUICtrlSetOnEvent($North_Grippy, _set_resize_mode)
+;~ 	GUICtrlSetOnEvent($NorthEast_Grippy, _set_resize_mode)
+;~ 	GUICtrlSetOnEvent($West_Grippy, _set_resize_mode)
+;~ 	GUICtrlSetOnEvent($East_Grippy, _set_resize_mode)
+;~ 	GUICtrlSetOnEvent($SouthWest_Grippy, _set_resize_mode)
+;~ 	GUICtrlSetOnEvent($South_Grippy, _set_resize_mode)
+;~ 	GUICtrlSetOnEvent($SouthEast_Grippy, _set_resize_mode)
 EndFunc   ;==>_formMain
 
 
@@ -436,6 +436,7 @@ Func _show_grid(ByRef $grid_ctrl, Const $width, Const $height)
 	GUICtrlDelete($grid_ctrl)
 	$grid_ctrl = GUICtrlCreateGraphic(0, 0, $width, $height)
 
+
 	;draw the lines on the new graphic
 	_display_grid($grid_ctrl, $width, $height)
 EndFunc   ;==>_show_grid
@@ -623,7 +624,7 @@ Func _onResize()
 	EndIf
 	WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $oProperties_Main.Width.value & ", " & $oProperties_Main.Height.value & ")")
 
-	_show_grippies($oSelected.getFirst())
+;~ 	$oSelected.getFirst().grippies.show()
 EndFunc   ;==>_onResize
 
 
@@ -761,12 +762,12 @@ Func _nudgeSelected($x = 0, $y = 0)
 			EndIf
 		EndIf
 		_change_ctrl_size_pos($oCtrl, $oCtrl.Left + $x * ($nudgeAmount + $adjustmentX), $oCtrl.Top + $y * ($nudgeAmount + $adjustmentY), $oCtrl.Width, $oCtrl.Height)
+		$oCtrl.grippies.show()
+
 	Next
 
 	;get last control
 	Local $oCtrlLast = $oSelected.getLast()
-	_show_grippies($oCtrlLast)
-
 	_populate_control_properties_gui($oCtrlLast)
 
 	_refreshGenerateCode()
@@ -815,6 +816,8 @@ EndFunc   ;==>_onMenuSelectAll
 
 #Region mouse events
 Func _onMousePrimaryDown()
+	ConsoleWrite("Ctrls mode: " & $oCtrls.mode & @CRLF)
+
 	;if main window was resized or moved, then don't process mouse down event
 	If $bResizedFlag Then
 		$bResizedFlag = 0
@@ -829,10 +832,10 @@ Func _onMousePrimaryDown()
 	Local $pos
 
 	;if tool is selected and clicking on an existing control (but not resizing), switch to selection
-	If Not $initResize And Not $mode = $init_move Then
+	If Not $initResize And Not $oCtrls.mode = $mode_init_move Then
 		If $oCtrls.exists($ctrl_hwnd) And $ctrl_hwnd <> $background Then
 			GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
-			$mode = $default
+			$oCtrls.mode = $mode_default
 		EndIf
 	EndIf
 
@@ -849,8 +852,8 @@ Func _onMousePrimaryDown()
 		_PasteSelected()
 	EndIf
 
-	Switch $mode
-		Case $draw
+	Switch $oCtrls.mode
+		Case $mode_draw
 			ConsoleWrite("** PrimaryDown: draw **" & @CRLF)
 ;~ 			GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 			$initDraw = True
@@ -862,23 +865,23 @@ Func _onMousePrimaryDown()
 
 				Switch $oCtrl.Type
 					Case "Combo", "Checkbox", "Radio"
-						$pos = ControlGetPos($hGUI, '', $East_Grippy)
+						$pos = ControlGetPos($hGUI, '', $oCtrl.grippies.East)
 
-						$mode = $resize_e
+						$oCtrls.mode = $resize_e
 
 						_move_mouse_to_grippy($pos[0], $pos[1])
 
 					Case "Menu"
 						_set_default_mode()
-						$mode = $default
+						$oCtrls.mode = $mode_default
 						_formObjectExplorer_updateList()
 						_refreshGenerateCode()
 						GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 
 					Case Else
-						$pos = ControlGetPos($hGUI, '', $SouthEast_Grippy)
+						$pos = ControlGetPos($hGUI, '', $oCtrl.grippies.SE)
 
-						$mode = $resize_se
+						$oCtrls.mode = $resize_se
 
 						_move_mouse_to_grippy($pos[0], $pos[1])
 				EndSwitch
@@ -887,11 +890,11 @@ Func _onMousePrimaryDown()
 			Else
 				GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 				_set_default_mode()
-				$mode = $default
-;~ 				$mode = $resize_se
+				$oCtrls.mode = $mode_default
+;~ 				$oCtrls.mode = $resize_se
 			EndIf
 
-		Case $selection
+		Case $mode_selection
 			ConsoleWrite("** PrimaryDown: selection **" & @CRLF)
 			Switch $ctrl_hwnd
 				Case $background
@@ -905,14 +908,14 @@ Func _onMousePrimaryDown()
 
 						_set_current_mouse_pos()
 
-						_hide_grippies()
+;~ 						$oCtrls.grippies.hide()
 
-						$mode = $init_move
+						$oCtrls.mode = $mode_init_move
 					EndIf
 ;~ 					_setLvSelected($oSelected.getFirst())
 			EndSwitch
 
-		Case $move
+		Case $mode_move
 			ConsoleWrite("** PrimaryDown: move **" & @CRLF)
 			Switch GUIGetCursorInfo($hGUI)[4]
 				Case $background
@@ -920,7 +923,7 @@ Func _onMousePrimaryDown()
 
 					_set_current_mouse_pos()
 
-					$mode = $init_selection
+					$oCtrls.mode = $mode_init_selection
 
 				Case Else
 					If $oCtrls.exists($ctrl_hwnd) Then
@@ -932,11 +935,9 @@ Func _onMousePrimaryDown()
 							_add_to_selected($oCtrl)
 						EndIf
 
-						_show_grippies($oCtrl)
-
 						_populate_control_properties_gui($oCtrl)
 
-						$mode = $default
+						$oCtrls.mode = $mode_default
 					EndIf
 
 					If $oSelected.count <= 1 Then
@@ -944,7 +945,7 @@ Func _onMousePrimaryDown()
 					EndIf
 			EndSwitch
 
-		Case $default
+		Case $mode_default
 			ConsoleWrite("** PrimaryDown: default **" & @CRLF)
 			Switch $ctrl_hwnd
 				Case $background
@@ -953,7 +954,7 @@ Func _onMousePrimaryDown()
 
 					_set_current_mouse_pos()
 
-					$mode = $init_selection
+					$oCtrls.mode = $mode_init_selection
 
 				Case Else
 					If Not $oCtrls.exists($ctrl_hwnd) Then Return
@@ -996,8 +997,8 @@ Func _onMousePrimaryUp()
 	$left_click = False
 	Local $ctrl_hwnd, $oCtrl
 
-	Switch $mode
-		Case $move
+	Switch $oCtrls.mode
+		Case $mode_move
 			ConsoleWrite("** PrimaryUp: move **" & @CRLF)
 			ToolTip('')
 
@@ -1010,21 +1011,21 @@ Func _onMousePrimaryUp()
 
 			_refreshGenerateCode()
 
-		Case $init_move
+		Case $mode_init_move
 			ConsoleWrite("** PrimaryUp: init_move **" & @CRLF)
 			_set_default_mode()
 
-		Case $init_selection
+		Case $mode_init_selection
 			ConsoleWrite("** PrimaryUp: init_selection **" & @CRLF)
 			ToolTip('')
 
 			_recall_overlay()
 
 			If $oSelected.count > 0 Then
-				$mode = $selection
+				$oCtrls.mode = $mode_selection
 
 			Else
-				$mode = $default
+				$oCtrls.mode = $mode_default
 
 			EndIf
 
@@ -1060,9 +1061,9 @@ Func _onMousePrimaryUp()
 			_populate_control_properties_gui($oCtrlSelectedFirst)
 
 			If BitAND(GUICtrlRead($oMain.DefaultCursor), $GUI_CHECKED) = $GUI_CHECKED Then
-				$mode = $default
+				$oCtrls.mode = $mode_default
 			Else
-				$mode = $draw
+				$oCtrls.mode = $mode_draw
 			EndIf
 
 			_refreshGenerateCode()
@@ -1104,7 +1105,7 @@ Func _onMouseSecondaryDown()
 			If $oCtrls.exists($ctrl_hwnd) Then
 				_add_to_selected($oCtrl)
 
-				_show_grippies($oCtrl)
+;~ 				$oCtrl.grippies.show()
 
 				_setLvSelected($oSelected.getFirst())
 			EndIf
@@ -1138,8 +1139,8 @@ EndFunc   ;==>_onMouseSecondaryUp
 
 
 Func _onMouseMove()
-	Switch $mode
-		Case $init_move, $move, $default
+	Switch $oCtrls.mode
+		Case $mode_init_move, $mode_move, $mode_default
 			Local Const $mouse_pos = _mouse_snap_pos()
 
 			Local Const $delta_x = $oMouse.X - $mouse_pos[0]
@@ -1159,45 +1160,27 @@ Func _onMouseMove()
 			For $oCtrl In $oSelected.ctrls
 
 				_change_ctrl_size_pos($oCtrl, $oCtrl.Left - $delta_x, $oCtrl.Top - $delta_y, $oCtrl.Width, $oCtrl.Height)
+;~ 				$oCtrlSelect.grippies.moving($oCtrl.Left - $delta_x, $oCtrl.Top - $delta_y)
+				$oCtrl.grippies.show()
 
 				$tooltip &= $oCtrl.Name & ": X:" & $oCtrl.Left & ", Y:" & $oCtrl.Top & ", W:" & $oCtrl.Width & ", H:" & $oCtrl.Height & @CRLF
 			Next
 
 			ToolTip(StringTrimRight($tooltip, 2))
 
-			_show_grippies($oSelected.getLast())
+			$oCtrls.mode = $mode_move
 
-			$mode = $move
-
-		Case $init_selection
+		Case $mode_init_selection
 			Local Const $oRect = _rect_from_points($oMouse.X, $oMouse.Y, MouseGetPos(0), MouseGetPos(1))
 			_display_selection_rect($oRect)
 			_add_remove_selected_control($oRect)
 			_setLvSelected($oSelected.getFirst())
 
-		Case $resize_nw
-			_handle_nw_grippy($oSelected.getLast())
+		Case $resize_nw, $resize_n, $resize_ne, $resize_w, $resize_e, $resize_sw, $resize_s, $resize_se
+			For $oCtrlSelect in $oSelected.ctrls
+				$oCtrlSelect.grippies.resizing($oCtrls.mode)
+			Next
 
-		Case $resize_n
-			_handle_n_grippy($oSelected.getLast())
-
-		Case $resize_ne
-			_handle_ne_grippy($oSelected.getLast())
-
-		Case $resize_w
-			_handle_w_grippy($oSelected.getLast())
-
-		Case $resize_e
-			_handle_e_grippy($oSelected.getLast())
-
-		Case $resize_sw
-			_handle_sw_grippy($oSelected.getLast())
-
-		Case $resize_s
-			_handle_s_grippy($oSelected.getLast())
-
-		Case $resize_se
-			_handle_se_grippy($oSelected.getLast())
 	EndSwitch
 EndFunc   ;==>_onMouseMove
 #EndRegion mouse events
@@ -1719,7 +1702,7 @@ Func _ctrl_change_left()
 				;update the selected property
 				$oCtrl.Left = $new_data
 
-				_show_grippies($oCtrl)
+				$oCtrl.grippies.show()
 
 			Next
 	EndSwitch
@@ -1746,7 +1729,7 @@ Func _ctrl_change_top()
 				;update the selected property
 				$oCtrl.Top = $new_data
 
-				_show_grippies($oCtrl)
+				$oCtrl.grippies.show()
 			Next
 	EndSwitch
 
@@ -1772,7 +1755,7 @@ Func _ctrl_change_width()
 				;update the selected property
 				$oCtrl.Width = $new_data
 
-				_show_grippies($oCtrl)
+				$oCtrl.grippies.show()
 			Next
 	EndSwitch
 
@@ -1798,7 +1781,7 @@ Func _ctrl_change_height()
 				;update the selected property
 				$oCtrl.Height = $new_data
 
-				_show_grippies($oCtrl)
+				$oCtrl.grippies.show()
 			Next
 	EndSwitch
 
@@ -2057,7 +2040,7 @@ EndFunc   ;==>_cursor_out_of_bounds
 ;					- Clear and disable properties panel
 ;------------------------------------------------------------------------------
 Func _set_default_mode()
-	_hide_grippies()
+;~ 	_hide_grippies()
 
 	_recall_overlay()
 
@@ -2071,7 +2054,7 @@ Func _set_default_mode()
 	;clear listview selections
 	_setLvSelected(0)
 
-	$mode = $default
+	$oCtrls.mode = $mode_default
 EndFunc   ;==>_set_default_mode
 
 
@@ -2294,7 +2277,7 @@ Func _menu_show_hidden()
 
 			_recall_overlay()
 
-			_hide_grippies()
+;~ 			_hide_grippies()
 
 		Case False
 			GUICtrlSetState($menu_show_hidden, $GUI_CHECKED)
