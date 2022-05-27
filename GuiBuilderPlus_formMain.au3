@@ -965,9 +965,11 @@ Func _onMousePrimaryDown()
 
 					Switch _IsPressed("11") ; ctrl
 						Case False ; single select
-							_add_to_selected($oCtrl)
+							If Not $oSelected.exists($ctrl_hwnd) Then
+								_add_to_selected($oCtrl)
 
-							_set_current_mouse_pos()
+								_set_current_mouse_pos()
+							EndIf
 
 						Case True ; multiple select
 							Switch _group_select($oCtrl)
@@ -1082,7 +1084,7 @@ Func _onMousePrimaryUp()
 			$oCtrl = $oCtrls.get($ctrl_hwnd)
 
 			If IsObj($oCtrl) Then    ;if not an object, then probably a menu
-				_add_to_selected($oCtrl)
+;~ 				_add_to_selected($oCtrl)
 				_populate_control_properties_gui($oCtrl)
 			EndIf
 
