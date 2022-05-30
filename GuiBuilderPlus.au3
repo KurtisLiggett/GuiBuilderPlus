@@ -12,8 +12,9 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  05/25/2022 ...: 	- MAINT:	removed more global variables
+;  05/29/2022 ...: 	- MAINT:	cleand up more global variables
 ;					- MAINT:	modified the About dialog text for a more detailed naming history
+;					- ADDED:	Show grippies on each selected control!
 ;
 ;  05/23/2022 ...: 	- ADDED:	Now you can set properties for the main GUI!
 ;					- ADDED:	Added file menu item "Export to au3" for a more convenient and obvious way to save the generated code
@@ -137,8 +138,8 @@
 #AutoIt3Wrapper_Res_HiDpi=y
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.24.exe
-#AutoIt3Wrapper_Res_Fileversion=0.24.0.0
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.25.exe
+#AutoIt3Wrapper_Res_Fileversion=0.25.0.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 
 Opt("WinTitleMatchMode", 4) ; advanced
