@@ -12,9 +12,10 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  05/29/2022 ...: 	- MAINT:	cleand up more global variables
-;					- MAINT:	modified the About dialog text for a more detailed naming history
+;  05/29/2022 ...: 	- FIXED:	Array subscript error when closing tool windows.
 ;					- ADDED:	Show grippies on each selected control!
+;					- UPDATED:	modified the About dialog text for a more detailed naming history
+;					- MAINT:	cleand up more global variables
 ;
 ;  05/23/2022 ...: 	- ADDED:	Now you can set properties for the main GUI!
 ;					- ADDED:	Added file menu item "Export to au3" for a more convenient and obvious way to save the generated code

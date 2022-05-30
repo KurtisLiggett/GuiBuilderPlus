@@ -2450,10 +2450,14 @@ Func _saveWinPositions()
 		$currentWinPos = WinGetPos($hToolbar)
 		IniWrite($sIniPath, "Settings", "posToolbar", $currentWinPos[0] & "," & $currentWinPos[1])
 
-		$currentWinPos = WinGetPos($hFormGenerateCode)
-		IniWrite($sIniPath, "Settings", "posGenerateCode", $currentWinPos[0] & "," & $currentWinPos[1])
+		If IsHWnd($hFormGenerateCode) Then
+			$currentWinPos = WinGetPos($hFormGenerateCode)
+			IniWrite($sIniPath, "Settings", "posGenerateCode", $currentWinPos[0] & "," & $currentWinPos[1])
+		EndIf
 
-		$currentWinPos = WinGetPos($hFormObjectExplorer)
-		IniWrite($sIniPath, "Settings", "posObjectExplorer", $currentWinPos[0] & "," & $currentWinPos[1])
+		If IsHWnd($hFormObjectExplorer) Then
+			$currentWinPos = WinGetPos($hFormObjectExplorer)
+			IniWrite($sIniPath, "Settings", "posObjectExplorer", $currentWinPos[0] & "," & $currentWinPos[1])
+		EndIf
 	EndIf
 EndFunc   ;==>_saveWinPositions
