@@ -2,11 +2,17 @@
 
 GuiBuilderPlus is a small, easy to use GUI creator for AutoIt.
 
+Originally created as AutoBuilder by the user CyberSlug, enhanced as GuiBuilder by TheSaint, and further enhanced and expanded as GuiBuilderNxt by jaberwacky, GuiBuilderPlus is a continuation of their great work, with a focus on increased stability and usability followed by new features.
+
+Features
+---
 * Easily start creating GUIs for your AutoIt scripts
 * Object Explorer lets you view and select controls from a list
 * Test how your GUI will look while designing
 * Generate a script that is ready to run
 * View the generated code in real time as you are designing
+* Apply system DPI aware scaling factor to control positions and sizes
+* Support for GUIOnEventMode
 * Save your GUI design and load the file later for future modifications
 * Written completely in AutoIt
 
