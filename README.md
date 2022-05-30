@@ -1,6 +1,6 @@
 # GuiBuilderPlus
 
-GuiBuilderPlus is a small, easy to use GUI creator for AutoIt.
+GuiBuilderPlus is a small, easy to use GUI designer for AutoIt.
 
 Originally created as AutoBuilder by the user CyberSlug, enhanced as GuiBuilder by TheSaint, and further enhanced and expanded as GuiBuilderNxt by jaberwacky, GuiBuilderPlus is a continuation of their great work, with a focus on increased stability and usability followed by new features.
 
