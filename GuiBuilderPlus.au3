@@ -12,8 +12,9 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  05/25/2022 ...: 	- MAINT:	removed more global variables
+;  05/29/2022 ...: 	- MAINT:	cleand up more global variables
 ;					- MAINT:	modified the About dialog text for a more detailed naming history
+;					- ADDED:	Show grippies on each selected control!
 ;
 ;  05/23/2022 ...: 	- ADDED:	Now you can set properties for the main GUI!
 ;					- ADDED:	Added file menu item "Export to au3" for a more convenient and obvious way to save the generated code
@@ -137,8 +138,8 @@
 #AutoIt3Wrapper_Res_HiDpi=y
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.24.exe
-#AutoIt3Wrapper_Res_Fileversion=0.24.0.0
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.25.exe
+#AutoIt3Wrapper_Res_Fileversion=0.25.0.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 
 Opt("WinTitleMatchMode", 4) ; advanced
@@ -147,6 +148,7 @@ Opt("GUIOnEventMode", 1)
 Opt("GuiEventOptions", 1)
 #EndRegion project-settings
 
+Global $grippy_size = 5
 #Region ; globals
 ;GUI components
 Global $hGUI, $hToolbar, $hFormGenerateCode, $hFormObjectExplorer, $hStatusbar
@@ -160,7 +162,7 @@ Global $menu_generateCode, $menu_ObjectExplorer
 Global $background, $background_contextmenu, $background_contextmenu_paste
 Global $overlay, $overlay_contextmenu, $overlay_contextmenutab
 ;grippys
-Global $NorthWest_Grippy, $North_Grippy, $NorthEast_Grippy, $West_Grippy, $East_Grippy, $SouthWest_Grippy, $South_Grippy, $SouthEast_Grippy
+;~ Global $NorthWest_Grippy, $North_Grippy, $NorthEast_Grippy, $West_Grippy, $East_Grippy, $SouthWest_Grippy, $South_Grippy, $SouthEast_Grippy
 ;code generation popup
 Global $editCodeGeneration
 ;object explorer popup
@@ -172,8 +174,7 @@ Global $oProperties_Main, $oProperties_Ctrls
 ;GUI Constants
 Global Const $grid_ticks = 10
 Global Const $iconset = @ScriptDir & "\resources\Icons\" ; Added by: TheSaint
-Global Const $grippy_size = 5
-Global Enum $default, $draw, $init_move, $move, $init_selection, $selection, _
+Global Enum $mode_default, $mode_draw, $mode_init_move, $mode_move, $mode_init_selection, $mode_selection, _
 		$resize_nw, $resize_n, $resize_ne, $resize_e, $resize_se, $resize_s, $resize_sw, $resize_w
 Global Enum $props_Main, $props_Ctrls
 ; Cursor Consts - added by: Jaberwacky
@@ -182,7 +183,6 @@ Global Const $ARROW = 2, $CROSS = 3, $SIZE_ALL = 9, $SIZENESW = 10, $SIZENS = 11
 
 ;other variables
 Global $bStatusNewMessage
-Global $mode = $default
 Global $right_click = False
 Global $left_click = False
 Global $bResizedFlag
@@ -258,7 +258,8 @@ Func _main()
 	;create the main program data objects
 	$oMouse = _objCreateMouse()
 	$oCtrls = _objCtrls()
-	$oSelected = _objCtrls()
+	$oCtrls.mode = $mode_default
+	$oSelected = _objCtrls(True)
 	$oClipboard = _objCtrls()
 	$oMain = _objMain()
 	$oMain.AppName = "GuiBuilderPlus"
