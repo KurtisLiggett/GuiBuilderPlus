@@ -12,10 +12,13 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  05/29/2022 ...: 	- FIXED:	Array subscript error when closing tool windows.
+;  06/02/2022 ...: 	- FIXED:	Array subscript error when closing tool windows.
+;					- FIXED:	Multiple selection while holding Ctrl key now works properly.
 ;					- ADDED:	Show grippies on each selected control!
 ;					- UPDATED:	modified the About dialog text for a more detailed naming history
-;					- MAINT:	cleand up more global variables
+;					- MAINT:	cleaned up more global variables
+;					- MAINT:	created grippy objects built into each control object
+;					- MAINT:	made control selection much more robust and consistent
 ;
 ;  05/23/2022 ...: 	- ADDED:	Now you can set properties for the main GUI!
 ;					- ADDED:	Added file menu item "Export to au3" for a more convenient and obvious way to save the generated code
@@ -128,7 +131,6 @@
 ;					- creating controls on top of TAB will place them inside the tab
 ;					- creating controls on top of GROUP will place them inside the group
 ;					- Undo / Redo functionality
-;					- Make separate grippies for each selected object
 ;					- Finish menu controls
 ;
 ; Known Issues ..:	- State, style, and ex style properties not implemented yet
@@ -175,7 +177,7 @@ Global $oProperties_Main, $oProperties_Ctrls
 ;GUI Constants
 Global Const $grid_ticks = 10
 Global Const $iconset = @ScriptDir & "\resources\Icons\" ; Added by: TheSaint
-Global Enum $mode_default, $mode_draw, $mode_init_move, $mode_move, $mode_init_selection, $mode_selection, _
+Global Enum $mode_default, $mode_draw, $mode_init_move, $mode_init_selection, _
 		$resize_nw, $resize_n, $resize_ne, $resize_e, $resize_se, $resize_s, $resize_sw, $resize_w
 Global Enum $props_Main, $props_Ctrls
 ; Cursor Consts - added by: Jaberwacky

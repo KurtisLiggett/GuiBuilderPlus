@@ -894,57 +894,6 @@ Func _onMousePrimaryDown()
 ;~ 				$oCtrls.mode = $resize_se
 			EndIf
 
-		Case $mode_selection
-			ConsoleWrite("** PrimaryDown: selection **" & @CRLF)
-			Switch $ctrl_hwnd
-				Case $background
-					_set_default_mode()
-
-				Case Else
-					If $oCtrls.exists($ctrl_hwnd) Then
-						;_hide_selected_controls()
-
-						_display_selected_tooltip()
-
-						_set_current_mouse_pos()
-
-;~ 						$oCtrls.grippies.hide()
-
-						$oCtrls.mode = $mode_init_move
-					EndIf
-;~ 					_setLvSelected($oSelected.getFirst())
-			EndSwitch
-
-		Case $mode_move
-			ConsoleWrite("** PrimaryDown: move **" & @CRLF)
-			Switch GUIGetCursorInfo($hGUI)[4]
-				Case $background
-					_set_default_mode()
-
-					_set_current_mouse_pos()
-
-					$oCtrls.mode = $mode_init_selection
-
-				Case Else
-					If $oCtrls.exists($ctrl_hwnd) Then
-						ConsoleWrite("  control exists" & @CRLF)
-						Local $oCtrl = $oCtrls.get($ctrl_hwnd)
-						If $oSelected.count > 1 Then
-							_add_to_selected($oCtrl, False)
-						Else
-							_add_to_selected($oCtrl)
-						EndIf
-
-						_populate_control_properties_gui($oCtrl)
-
-						$oCtrls.mode = $mode_default
-					EndIf
-
-					If $oSelected.count <= 1 Then
-						_setLvSelected($oSelected.getFirst())
-					EndIf
-			EndSwitch
-
 		Case $mode_default
 			ConsoleWrite("** PrimaryDown: default **" & @CRLF)
 			Switch $ctrl_hwnd
@@ -963,7 +912,8 @@ Func _onMousePrimaryDown()
 					Local $oCtrl = $oCtrls.get($ctrl_hwnd)
 					ConsoleWrite("  " & $oCtrl.Type & @CRLF)
 
-					Switch _IsPressed("11") ; ctrl
+					;if ctrl is pressed, add/remove form selection
+					Switch _IsPressed("11")
 						Case False ; single select
 							If Not $oSelected.exists($ctrl_hwnd) Then
 								_add_to_selected($oCtrl)
@@ -979,10 +929,12 @@ Func _onMousePrimaryDown()
 									GUICtrlSetCursor($oCtrl.Hwnd, $SIZE_ALL)
 
 								Case False
-									_add_to_selected($oCtrl, False)
-									ConsoleWrite($oSelected.count & @CRLF)
-
-									_set_current_mouse_pos()
+									If Not $oSelected.exists($ctrl_hwnd) Then
+										_add_to_selected($oCtrl, False)
+										_set_current_mouse_pos()
+									Else
+										_remove_from_selected($oCtrl)
+									EndIf
 							EndSwitch
 					EndSwitch
 
@@ -1000,19 +952,6 @@ Func _onMousePrimaryUp()
 	Local $ctrl_hwnd, $oCtrl
 
 	Switch $oCtrls.mode
-		Case $mode_move
-			ConsoleWrite("** PrimaryUp: move **" & @CRLF)
-			ToolTip('')
-
-			;we don't care what was dragged, we just want to populate based on latest selection
-			;to prevent mouse 'falling off' of control when dropped
-			$oCtrl = $oSelected.getLast()
-			If IsObj($oCtrl) Then
-				_populate_control_properties_gui($oCtrl)
-			EndIf
-
-			_refreshGenerateCode()
-
 		Case $mode_init_move
 			ConsoleWrite("** PrimaryUp: init_move **" & @CRLF)
 			_set_default_mode()
@@ -1023,13 +962,7 @@ Func _onMousePrimaryUp()
 
 			_recall_overlay()
 
-			If $oSelected.count > 0 Then
-				$oCtrls.mode = $mode_selection
-
-			Else
-				$oCtrls.mode = $mode_default
-
-			EndIf
+			$oCtrls.mode = $mode_default
 
 		Case $resize_nw, $resize_n, $resize_ne, $resize_e, $resize_se, $resize_s, $resize_sw, $resize_w
 			ConsoleWrite("** PrimaryUp: Resize **" & @CRLF)
@@ -1080,15 +1013,16 @@ Func _onMousePrimaryUp()
 
 		Case Else    ;select single control
 			ConsoleWrite("** PrimaryUp: Else **" & @CRLF)
-			$ctrl_hwnd = GUIGetCursorInfo($hGUI)[4]
-			$oCtrl = $oCtrls.get($ctrl_hwnd)
+			ToolTip('')
 
-			If IsObj($oCtrl) Then    ;if not an object, then probably a menu
-;~ 				_add_to_selected($oCtrl)
+			;we don't care what was dragged, we just want to populate based on latest selection
+			;to prevent mouse 'falling off' of control when dropped
+			$oCtrl = $oSelected.getLast()
+			If IsObj($oCtrl) Then
 				_populate_control_properties_gui($oCtrl)
 			EndIf
 
-;~ 			_setLvSelected($oSelected.getFirst())
+			_refreshGenerateCode()
 
 	EndSwitch
 EndFunc   ;==>_onMousePrimaryUp
@@ -1142,7 +1076,7 @@ EndFunc   ;==>_onMouseSecondaryUp
 
 Func _onMouseMove()
 	Switch $oCtrls.mode
-		Case $mode_init_move, $mode_move, $mode_default
+		Case $mode_init_move, $mode_default
 			Local Const $mouse_pos = _mouse_snap_pos()
 
 			Local Const $delta_x = $oMouse.X - $mouse_pos[0]
@@ -1170,7 +1104,7 @@ Func _onMouseMove()
 
 			ToolTip(StringTrimRight($tooltip, 2))
 
-			$oCtrls.mode = $mode_move
+			$oCtrls.mode = $mode_default
 
 		Case $mode_init_selection
 			Local Const $oRect = _rect_from_points($oMouse.X, $oMouse.Y, MouseGetPos(0), MouseGetPos(1))

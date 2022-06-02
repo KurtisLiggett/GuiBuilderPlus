@@ -645,7 +645,7 @@ Func _selectAll()
 	Next
 	_SendMessage($hGUI, $WM_SETREDRAW, True)
 	_WinAPI_RedrawWindow($hGUI)
-	$oCtrls.mode = $mode_selection
+	$oCtrls.mode = $mode_default
 EndFunc   ;==>_selectAll
 #EndRegion ; selection
 
