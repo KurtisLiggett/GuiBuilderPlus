@@ -81,34 +81,6 @@ Func _formMain()
 	GUICtrlSetOnEvent($overlay_contextmenutab_newtab, "_new_tab")
 	GUICtrlSetOnEvent($overlay_contextmenutab_deletetab, "_delete_tab")
 
-
-;~ 	;create the grippies  <-- grippies also known as "handles" to show selection and drag resizing
-;~ 	$NorthWest_Grippy = GUICtrlCreateLabel('', -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	$North_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	$NorthEast_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	$West_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	$East_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	$SouthWest_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	$South_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	$SouthEast_Grippy = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	;grippy mouse cursor
-;~ 	GUICtrlSetCursor($NorthWest_Grippy, $SIZENWSE)
-;~ 	GUICtrlSetCursor($North_Grippy, $SIZENS)
-;~ 	GUICtrlSetCursor($NorthEast_Grippy, $SIZENESW)
-;~ 	GUICtrlSetCursor($East_Grippy, $SIZEWS)
-;~ 	GUICtrlSetCursor($SouthEast_Grippy, $SIZENWSE)
-;~ 	GUICtrlSetCursor($South_Grippy, $SIZENS)
-;~ 	GUICtrlSetCursor($SouthWest_Grippy, $SIZENESW)
-;~ 	GUICtrlSetCursor($West_Grippy, $SIZEWS)
-;~ 	;grippy events
-;~ 	GUICtrlSetOnEvent($NorthWest_Grippy, _set_resize_mode)
-;~ 	GUICtrlSetOnEvent($North_Grippy, _set_resize_mode)
-;~ 	GUICtrlSetOnEvent($NorthEast_Grippy, _set_resize_mode)
-;~ 	GUICtrlSetOnEvent($West_Grippy, _set_resize_mode)
-;~ 	GUICtrlSetOnEvent($East_Grippy, _set_resize_mode)
-;~ 	GUICtrlSetOnEvent($SouthWest_Grippy, _set_resize_mode)
-;~ 	GUICtrlSetOnEvent($South_Grippy, _set_resize_mode)
-;~ 	GUICtrlSetOnEvent($SouthEast_Grippy, _set_resize_mode)
 EndFunc   ;==>_formMain
 
 
@@ -435,7 +407,6 @@ Func _show_grid(ByRef $grid_ctrl, Const $width, Const $height)
 	;clear the current grid by deleting the graphic and creating a new empty graphic
 	GUICtrlDelete($grid_ctrl)
 	$grid_ctrl = GUICtrlCreateGraphic(0, 0, $width, $height)
-
 
 	;draw the lines on the new graphic
 	_display_grid($grid_ctrl, $width, $height)
@@ -855,7 +826,6 @@ Func _onMousePrimaryDown()
 	Switch $oCtrls.mode
 		Case $mode_draw
 			ConsoleWrite("** PrimaryDown: draw **" & @CRLF)
-;~ 			GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 			$initDraw = True
 
 			Local $oCtrl = _create_ctrl()
@@ -891,7 +861,6 @@ Func _onMousePrimaryDown()
 				GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 				_set_default_mode()
 				$oCtrls.mode = $mode_default
-;~ 				$oCtrls.mode = $resize_se
 			EndIf
 
 		Case $mode_default
@@ -1041,8 +1010,6 @@ Func _onMouseSecondaryDown()
 			If $oCtrls.exists($ctrl_hwnd) Then
 				_add_to_selected($oCtrl)
 
-;~ 				$oCtrl.grippies.show()
-
 				_setLvSelected($oSelected.getFirst())
 			EndIf
 	EndSwitch
@@ -1096,7 +1063,6 @@ Func _onMouseMove()
 			For $oCtrl In $oSelected.ctrls
 
 				_change_ctrl_size_pos($oCtrl, $oCtrl.Left - $delta_x, $oCtrl.Top - $delta_y, $oCtrl.Width, $oCtrl.Height)
-;~ 				$oCtrlSelect.grippies.moving($oCtrl.Left - $delta_x, $oCtrl.Top - $delta_y)
 				$oCtrl.grippies.show()
 
 				$tooltip &= $oCtrl.Name & ": X:" & $oCtrl.Left & ", Y:" & $oCtrl.Top & ", W:" & $oCtrl.Width & ", H:" & $oCtrl.Height & @CRLF
@@ -1186,7 +1152,6 @@ Func _onTestGUI()
 	EndIf
 
 	Local $code = _code_generation()
-;~ 	MsgBox(0,"",$code)
 
 	;create temporary file
 	$testFileName = _TempFile()
@@ -1293,159 +1258,7 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 	Else
 		$oProperties_Ctrls.Color.value = ""
 	EndIf
-
-;~ 	Switch $oCtrl.Type
-;~ 		Case "Edit", "Group", "Date"
-;~ 			GUICtrlSetState($h_form_fittowidth, $GUI_DISABLE + $GUI_HIDE)
-
-;~ 		Case Else
-;~ 			GUICtrlSetState($h_form_fittowidth, $GUI_ENABLE + $GUI_SHOW)
-;~ 	EndSwitch
-
-;~ 	Switch $oCtrl.Visible
-;~ 		Case True
-;~ 			GUICtrlSetState($h_form_visible, $GUI_CHECKED)
-
-;~ 		Case False
-;~ 			GUICtrlSetState($h_form_visible, $GUI_UNCHECKED)
-;~ 	EndSwitch
-
-;~ 	Switch $oCtrl.Enabled
-;~ 		Case True
-;~ 			GUICtrlSetState($h_form_enabled, $GUI_CHECKED)
-
-;~ 		Case False
-;~ 			GUICtrlSetState($h_form_enabled, $GUI_UNCHECKED)
-;~ 	EndSwitch
-
-;~ 	Switch $oCtrl.OnTop
-;~ 		Case True
-;~ 			GUICtrlSetState($h_form_ontop, $GUI_CHECKED)
-
-;~ 		Case False
-;~ 			GUICtrlSetState($h_form_ontop, $GUI_UNCHECKED)
-;~ 	EndSwitch
-
-;~ 	Switch $oCtrl.StyleTop
-;~ 		Case True
-;~ 			GUICtrlSetState($h_form_style_top, $GUI_CHECKED)
-
-;~ 		Case False
-;~ 			GUICtrlSetState($h_form_style_top, $GUI_UNCHECKED)
-;~ 	EndSwitch
-
-	;_enable_control_properties_gui()
 EndFunc   ;==>_populate_control_properties_gui
-
-
-;~ Func _clear_control_properties_gui()
-;~ 	GUICtrlSetData($h_form_text, '')
-
-;~ 	GUICtrlSetData($h_form_name, '')
-
-;~ 	GUICtrlSetData($h_form_left, '')
-;~ 	GUICtrlSetData($h_form_top, '')
-;~ 	GUICtrlSetData($h_form_width, '')
-;~ 	GUICtrlSetData($h_form_height, '')
-;~ 	GUICtrlSetData($h_form_bkColor, '')
-;~ 	GUICtrlSetData($h_form_Color, '')
-
-;~ 	GUICtrlSetState($h_form_visible, $GUI_UNCHECKED)
-
-;~ 	GUICtrlSetState($h_form_ontop, $GUI_UNCHECKED)
-
-;~ 	GUICtrlSetState($h_form_style_top, $GUI_UNCHECKED)
-
-;~ 	;_disable_control_properties_gui()
-;~ EndFunc   ;==>_clear_control_properties_gui
-
-
-;~ Func _disable_control_properties_gui()
-;~ 	GUICtrlSetState($h_form_text, $GUI_DISABLE)
-;~ 	GUICtrlSetState($h_form_name, $GUI_DISABLE)
-;~ 	GUICtrlSetState($h_form_left, $GUI_DISABLE)
-;~ 	GUICtrlSetState($h_form_top, $GUI_DISABLE)
-;~ 	GUICtrlSetState($h_form_width, $GUI_DISABLE)
-;~ 	GUICtrlSetState($h_form_height, $GUI_DISABLE)
-;~ 	GUICtrlSetState($h_form_bkColor, $GUI_DISABLE)
-;~ 	GUICtrlSetState($h_form_Color, $GUI_DISABLE)
-
-;~ 	GUICtrlSetState($h_form_visible, $GUI_DISABLE)
-;~ 	GUICtrlSetState($h_form_enabled, $GUI_DISABLE)
-;~ 	GUICtrlSetState($h_form_ontop, $GUI_DISABLE)
-;~ 	GUICtrlSetState($h_form_dropaccepted, $GUI_DISABLE)
-;~ 	GUICtrlSetState($h_form_focus, $GUI_DISABLE)
-
-;~ 	GUICtrlSetState($h_form_style_top, $GUI_DISABLE)
-;~ 	GUICtrlSetState($h_form_style_autocheckbox, $GUI_DISABLE)
-;~ EndFunc   ;==>_disable_control_properties_gui
-
-
-;~ Func _enable_control_properties_gui()
-;~ 	GUICtrlSetState($h_form_text, $GUI_ENABLE)
-;~ 	GUICtrlSetState($h_form_name, $GUI_ENABLE)
-;~ 	GUICtrlSetState($h_form_left, $GUI_ENABLE)
-;~ 	GUICtrlSetState($h_form_top, $GUI_ENABLE)
-;~ 	GUICtrlSetState($h_form_width, $GUI_ENABLE)
-;~ 	GUICtrlSetState($h_form_height, $GUI_ENABLE)
-;~ 	If IsObj($oSelected) And IsObj($oSelected.getFirst()) Then
-;~ 		If $oSelected.getFirst().Type = "Label" Then
-;~ 			GUICtrlSetState($h_form_Color, $GUI_ENABLE)
-;~ 			GUICtrlSetState($h_form_bkColor, $GUI_ENABLE)
-;~ 		EndIf
-;~ 	EndIf
-
-;~ 	GUICtrlSetState($h_form_visible, $GUI_ENABLE)
-;~ 	GUICtrlSetState($h_form_enabled, $GUI_ENABLE)
-;~ 	GUICtrlSetState($h_form_ontop, $GUI_ENABLE)
-;~ 	GUICtrlSetState($h_form_dropaccepted, $GUI_ENABLE)
-;~ 	GUICtrlSetState($h_form_focus, $GUI_ENABLE)
-
-;~ 	GUICtrlSetState($h_form_style_top, $GUI_ENABLE)
-;~ 	GUICtrlSetState($h_form_style_autocheckbox, $GUI_ENABLE)
-
-;~ EndFunc   ;==>_enable_control_properties_gui
-
-
-;~ Func _ctrl_fit_to_width()
-;~ 	Local $n
-;~ 	Local $oCtrlSelectedFirst = $oSelected.getFirst()
-
-;~ 	Switch $oCtrlSelectedFirst.Type
-;~ 		Case "Input"
-;~ 			$n = _StringSize($oCtrlSelectedFirst.Text, 10) + 10
-
-;~ 		Case "Button", "Checkbox"
-;~ 			$n = _StringSize($oCtrlSelectedFirst.Text, 10) + 16
-
-;~ 		Case "Radio"
-;~ 			$n = _StringSize($oCtrlSelectedFirst.Text, 10) + 18
-
-;~ 		Case "Combo"
-;~ 			$n = _StringSize($oCtrlSelectedFirst.Text, 10) + 30
-
-;~ 		Case "Label"
-;~ 			$n = _StringSize($oCtrlSelectedFirst.Text, 10)
-
-;~ 		Case "Edit", "Group", "Date"
-;~ 			Return
-
-;~ 		Case Else
-;~ 			Return
-;~ 	EndSwitch
-
-;~ 	Local Const $new_width = Ceiling($n / $grid_ticks) * $grid_ticks
-
-;~ 	GUICtrlSetPos($oCtrlSelectedFirst.Hwnd, $oCtrlSelectedFirst.Left, $oCtrlSelectedFirst.Top, $new_width, $oCtrlSelectedFirst.Height)
-
-;~ 	$oCtrlSelectedFirst.Width = $new_width
-
-;~ 	_show_grippies($oCtrlSelectedFirst)
-
-;~ 	GUICtrlSetData($h_form_width, $new_width)
-
-;~ 	_refreshGenerateCode()
-;~ EndFunc   ;==>_ctrl_fit_to_width
 
 
 #Region change-properties-main
@@ -1487,7 +1300,6 @@ EndFunc   ;==>_main_change_top
 Func _main_change_width()
 	Local Const $newValue = $oProperties_Main.Width.value
 
-;~ 	_getGuiFrameSize()
 	WinMove($hGUI, "", Default, Default, $newValue + $iGuiFrameW, Default)
 
 	Local $aWinPos = WinGetClientSize($hGUI)
@@ -1506,7 +1318,6 @@ EndFunc   ;==>_main_change_width
 Func _main_change_height()
 	Local Const $newValue = $oProperties_Main.Height.value
 
-;~ 	_getGuiFrameSize()
 	WinMove($hGUI, "", Default, Default, Default, $newValue + $iGuiFrameH)
 
 	Local $aWinPos = WinGetClientSize($hGUI)
@@ -1976,15 +1787,10 @@ EndFunc   ;==>_cursor_out_of_bounds
 ;					- Clear and disable properties panel
 ;------------------------------------------------------------------------------
 Func _set_default_mode()
-;~ 	_hide_grippies()
-
 	_recall_overlay()
 
 	_remove_all_from_selected()
 
-;~ 	_clear_control_properties_gui()
-
-;~ 	_disable_control_properties_gui()
 	_showProperties($props_Main)
 
 	;clear listview selections
@@ -2213,8 +2019,6 @@ Func _menu_show_hidden()
 
 			_recall_overlay()
 
-;~ 			_hide_grippies()
-
 		Case False
 			GUICtrlSetState($menu_show_hidden, $GUI_CHECKED)
 
@@ -2228,6 +2032,7 @@ Func _menu_show_hidden()
 					GUICtrlSetState($oCtrl.Hwnd, $GUI_SHOW)
 				EndIf
 			Next
+
 	EndSwitch
 EndFunc   ;==>_menu_show_hidden
 

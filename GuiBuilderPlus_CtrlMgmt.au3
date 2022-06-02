@@ -257,8 +257,6 @@ Func _create_ctrl($oCtrl = '', $bUseName = False)
 
 			$oCtrls.add($oNewControl)
 
-			;resize the GUI for menu
-;~ 			WinMove($hGUI, "", Default, Default, Default, $oMain.Height + $iGuiFrameH + _WinAPI_GetSystemMetrics($SM_CYMENU))
 	EndSwitch
 
 	If $incTypeCount Then
@@ -675,16 +673,9 @@ Func _add_remove_selected_control(Const $oRect)
 							Case True
 								_populate_control_properties_gui($oSelected.getLast())
 
-;~ 								$oSelected.getLast().grippies.show()
-
 							Case False
-;~ 								_clear_control_properties_gui()
-
-;~ 								_disable_control_properties_gui()
 								_showProperties($props_Main)
 
-;~ 								_hide_grippies()
-;~ 								$oCtrl.grippies.hide()
 						EndSwitch
 
 						_display_selected_tooltip()
@@ -695,10 +686,6 @@ EndFunc   ;==>_add_remove_selected_control
 
 Func _remove_all_from_selected()
 	$oSelected.removeAll()
-
-;~ 	_hide_grippies()
-
-;~ 	_disable_control_properties_gui()
 	_showProperties($props_Main)
 
 	Return True
@@ -709,12 +696,9 @@ Func _delete_selected_controls()
 
 	Switch $sel_count >= 1
 		Case True
-;~ 			_clear_control_properties_gui()
 			For $oCtrl In $oSelected.ctrls
 				_delete_ctrl($oCtrl)
 			Next
-
-;~ 			_hide_grippies()
 
 			_recall_overlay()
 
@@ -757,7 +741,6 @@ Func _remove_from_selected(Const $oCtrl)
 
 	$oCtrl.grippies.hide()
 
-;~ 	_enable_control_properties_gui()
 	If $oSelected.count > 0 Then
 		_showProperties($props_Ctrls)
 	Else
@@ -809,157 +792,6 @@ Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, 
 	$oCtrl.Height = $height
 EndFunc   ;==>_change_ctrl_size_pos
 
-
-#Region ; grippies
-;~ Func _set_resize_mode()
-;~ 	Switch @GUI_CtrlId
-;~ 		Case $SouthEast_Grippy
-;~ 			$oCtrls.mode = $resize_se
-
-;~ 		Case $NorthWest_Grippy
-;~ 			$oCtrls.mode = $resize_nw
-
-;~ 		Case $North_Grippy
-;~ 			$oCtrls.mode = $resize_n
-
-;~ 		Case $NorthEast_Grippy
-;~ 			$oCtrls.mode = $resize_ne
-
-;~ 		Case $East_Grippy
-;~ 			$oCtrls.mode = $resize_e
-
-;~ 		Case $SouthEast_Grippy
-;~ 			$oCtrls.mode = $resize_se
-
-;~ 		Case $South_Grippy
-;~ 			$oCtrls.mode = $resize_s
-
-;~ 		Case $SouthWest_Grippy
-;~ 			$oCtrls.mode = $resize_sw
-
-;~ 		Case $West_Grippy
-;~ 			$oCtrls.mode = $resize_w
-;~ 	EndSwitch
-
-;~ 	$initResize = True
-;~ 	_hide_selected_controls()
-;~ EndFunc   ;==>_set_resize_mode
-
-;~ Func _handle_grippy(ByRef $oCtrl, Const $left, Const $top, Const $right, Const $bottom)
-;~ 	_set_current_mouse_pos()
-
-;~ 	Switch $oCtrl.Type
-;~ 		Case "Slider"
-;~ 			GUICtrlSendMsg($oCtrl.Hwnd, 27 + 0x0400, $oCtrl.Height - 20, 0) ; TBS_SETTHUMBLENGTH
-;~ 	EndSwitch
-
-;~ 	_change_ctrl_size_pos($oCtrl, $left, $top, $right, $bottom)
-
-;~ 	_show_grippies($oCtrl)
-
-;~ 	Local $oSelectedCtrl = $oSelected.getLast()
-;~ 	ToolTip($oSelectedCtrl.Name & ": X:" & $oSelectedCtrl.Left & ", Y:" & $oSelectedCtrl.Top & ", W:" & $oSelectedCtrl.Width & ", H:" & $oSelectedCtrl.Height)
-;~ EndFunc   ;==>_handle_grippy
-
-;~ Func _handle_nw_grippy($oCtrl)
-;~ 	Local Const $right = ($oCtrl.Width + $oCtrl.Left) - $oMouse.X
-
-;~ 	Local Const $bottom = ($oCtrl.Height + $oCtrl.Top) - $oMouse.Y
-
-;~ 	_handle_grippy($oCtrl, $oMouse.X, $oMouse.Y, $right, $bottom)
-;~ EndFunc   ;==>_handle_nw_grippy
-
-;~ Func _handle_n_grippy($oCtrl)
-;~ 	Local Const $bottom = ($oCtrl.Top + $oCtrl.Height) - $oMouse.Y
-
-;~ 	_handle_grippy($oCtrl, $oCtrl.Left, $oMouse.Y, $oCtrl.Width, $bottom)
-;~ EndFunc   ;==>_handle_n_grippy
-
-;~ Func _handle_ne_grippy($oCtrl)
-;~ 	Local Const $bottom = ($oCtrl.Top + $oCtrl.Height) - $oMouse.Y
-
-;~ 	_handle_grippy($oCtrl, $oCtrl.Left, $oMouse.Y, $oMouse.X - $oCtrl.Left, $bottom)
-;~ EndFunc   ;==>_handle_ne_grippy
-
-;~ Func _handle_w_grippy($oCtrl)
-;~ 	Local Const $right = $oCtrl.Left + $oCtrl.Width
-
-;~ 	_handle_grippy($oCtrl, $oMouse.X, $oCtrl.Top, $right - $oMouse.X, $oCtrl.Height)
-;~ EndFunc   ;==>_handle_w_grippy
-
-;~ Func _handle_e_grippy($oCtrl)
-;~ 	_handle_grippy($oCtrl, $oCtrl.Left, $oCtrl.Top, $oMouse.X - $oCtrl.Left, $oCtrl.Height)
-;~ EndFunc   ;==>_handle_e_grippy
-
-;~ Func _handle_sw_grippy($oCtrl)
-;~ 	Local Const $right = ($oCtrl.Left + $oCtrl.Width) - $oMouse.X
-
-;~ 	_handle_grippy($oCtrl, $oMouse.X, $oCtrl.Top, $right, $oMouse.Y - $oCtrl.Top)
-;~ EndFunc   ;==>_handle_sw_grippy
-
-;~ Func _handle_s_grippy($oCtrl)
-;~ 	_handle_grippy($oCtrl, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oMouse.Y - $oCtrl.Top)
-;~ EndFunc   ;==>_handle_s_grippy
-
-;~ Func _handle_se_grippy($oCtrl)
-;~ 	_handle_grippy($oCtrl, $oCtrl.Left, $oCtrl.Top, $oMouse.X - $oCtrl.Left, $oMouse.Y - $oCtrl.Top)
-;~ EndFunc   ;==>_handle_se_grippy
-
-;~ Func _show_grippies(Const $oCtrl)
-;~ 	If Not IsObj($oCtrl) Then
-;~ 		Return
-;~ 	EndIf
-
-;~ 	Local Const $l = $oCtrl.Left
-;~ 	Local Const $t = $oCtrl.Top
-;~ 	Local Const $w = $oCtrl.Width
-;~ 	Local Const $h = $oCtrl.Height
-
-;~ 	Local Const $nw_left = $l - $grippy_size
-;~ 	Local Const $nw_top = $t - $grippy_size
-;~ 	Local Const $n_left = $l + ($w - $grippy_size) / 2
-;~ 	Local Const $n_top = $nw_top
-;~ 	Local Const $ne_left = $l + $w
-;~ 	Local Const $ne_top = $nw_top
-;~ 	Local Const $e_left = $ne_left
-;~ 	Local Const $e_top = $t + ($h - $grippy_size) / 2
-;~ 	Local Const $se_left = $ne_left
-;~ 	Local Const $se_top = $t + $h
-;~ 	Local Const $s_left = $n_left
-;~ 	Local Const $s_top = $se_top
-;~ 	Local Const $sw_left = $nw_left
-;~ 	Local Const $sw_top = $se_top
-;~ 	Local Const $w_left = $nw_left
-;~ 	Local Const $w_top = $e_top
-
-;~ 	Switch $oCtrl.Type
-;~ 		Case "Combo", "Checkbox", "Radio"
-;~ 			GUICtrlSetPos($East_Grippy, $e_left, $e_top, $grippy_size, $grippy_size)
-;~ 			GUICtrlSetPos($West_Grippy, $w_left, $w_top, $grippy_size, $grippy_size)
-
-;~ 		Case Else
-;~ 			GUICtrlSetPos($NorthWest_Grippy, $nw_left, $nw_top, $grippy_size, $grippy_size)
-;~ 			GUICtrlSetPos($North_Grippy, $n_left, $n_top, $grippy_size, $grippy_size)
-;~ 			GUICtrlSetPos($NorthEast_Grippy, $ne_left, $ne_top, $grippy_size, $grippy_size)
-;~ 			GUICtrlSetPos($East_Grippy, $e_left, $e_top, $grippy_size, $grippy_size)
-;~ 			GUICtrlSetPos($SouthEast_Grippy, $se_left, $se_top, $grippy_size, $grippy_size)
-;~ 			GUICtrlSetPos($South_Grippy, $s_left, $s_top, $grippy_size, $grippy_size)
-;~ 			GUICtrlSetPos($SouthWest_Grippy, $sw_left, $sw_top, $grippy_size, $grippy_size)
-;~ 			GUICtrlSetPos($West_Grippy, $w_left, $w_top, $grippy_size, $grippy_size)
-;~ 	EndSwitch
-;~ EndFunc   ;==>_show_grippies
-
-;~ Func _hide_grippies()
-;~ 	GUICtrlSetPos($NorthWest_Grippy, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($North_Grippy, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($NorthEast_Grippy, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($East_Grippy, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($SouthEast_Grippy, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($South_Grippy, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($SouthWest_Grippy, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($West_Grippy, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-
-;~ EndFunc   ;==>_hide_grippies
 
 Func _move_mouse_to_grippy(Const $x, Const $y)
 	Local Const $mouse_coord_mode = Opt("MouseCoordMode", 2)

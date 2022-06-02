@@ -648,6 +648,7 @@ EndFunc
 ;------------------------------------------------------------------------------
 Func _objGrippies_show($oSelf)
 ;~ 	ConsoleWrite("show grippies" & @CRLF)
+
 	GUICtrlSetState($oSelf.NW, $GUI_SHOW + $GUI_ONTOP )
 	GUICtrlSetState($oSelf.N, $GUI_SHOW + $GUI_ONTOP )
 	GUICtrlSetState($oSelf.NE, $GUI_SHOW + $GUI_ONTOP )
@@ -714,15 +715,6 @@ EndFunc
 ;------------------------------------------------------------------------------
 Func _objGrippies_hide($oSelf)
 ;~ 	ConsoleWrite("hide grippies" & @CRLF)
-;~ 	Local Const $grippy_size = $oSelf.size
-;~ 	GUICtrlSetPos($oSelf.NW, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($oSelf.N, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($oSelf.NE, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($oSelf.East, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($oSelf.SE, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($oSelf.S, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($oSelf.SW, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($oSelf.W, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
 
 	GUICtrlSetState($oSelf.NW, $GUI_HIDE )
 	GUICtrlSetState($oSelf.N, $GUI_HIDE )
@@ -735,7 +727,8 @@ Func _objGrippies_hide($oSelf)
 EndFunc
 
 Func _objGrippies_delete($oSelf)
-	ConsoleWrite("delete grippies" & @CRLF)
+;~ 	ConsoleWrite("delete grippies" & @CRLF)
+
 	GUICtrlDelete($oSelf.NW)
 	GUICtrlDelete($oSelf.N)
 	GUICtrlDelete($oSelf.NE)
@@ -745,34 +738,3 @@ Func _objGrippies_delete($oSelf)
 	GUICtrlDelete($oSelf.SE)
 	GUICtrlDelete($oSelf.W)
 EndFunc
-
-
-;------------------------------------------------------------------------------
-; Title...........: _objGrippy
-; Description.....:	Grippy Control Item
-;------------------------------------------------------------------------------
-;~ Func _objGrippy()
-;~ 	Local $oObject = _AutoItObject_Create()
-
-;~ 	Local $NW = GUICtrlCreateLabel('', -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	Local $N = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	Local $NE = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	Local $W = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	Local $E = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	Local $SW = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	Local $S = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	Local $SE = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-
-;~ 	_AutoItObject_AddProperty($oObject, "NW", $ELSCOPE_PUBLIC)
-;~ 	_AutoItObject_AddProperty($oObject, "N", $ELSCOPE_PUBLIC)
-;~ 	_AutoItObject_AddProperty($oObject, "NE", $ELSCOPE_PUBLIC)
-;~ 	_AutoItObject_AddProperty($oObject, "SW", $ELSCOPE_PUBLIC, "")
-;~ 	_AutoItObject_AddProperty($oObject, "S", $ELSCOPE_PUBLIC, "")
-;~ 	_AutoItObject_AddProperty($oObject, "SE", $ELSCOPE_PUBLIC, 0)
-;~ 	_AutoItObject_AddProperty($oObject, "W", $ELSCOPE_PUBLIC, "")
-;~ 	_AutoItObject_AddProperty($oObject, "E", $ELSCOPE_PUBLIC, 0)
-
-;~ 	_AutoItObject_AddMethod($oObject, "mouseMove", "_objGrippies_mouseMove)
-
-;~ 	Return $oObject
-;~ EndFunc   ;==>_objCtrl
