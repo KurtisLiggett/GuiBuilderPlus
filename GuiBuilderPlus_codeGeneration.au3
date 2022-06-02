@@ -213,6 +213,11 @@ Func _generate_controls(Const $oCtrl, $sDpiScale)
 		Case "Menu"
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '")' & @CRLF
 
+			For $oMenuItem In $oCtrl.MenuItems
+				$mControls &= "Global $" & $oMenuItem.Name & " = "
+				$mControls &= 'GUICtrlCreateMenuItem("' & $oMenuItem.Text & '", $' & $oCtrl.Name & ')' & @CRLF
+			Next
+
 		Case Else
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & ")" & @CRLF
 	EndSwitch

@@ -116,7 +116,7 @@ Func _formToolbar()
 	Local $menu_exit = GUICtrlCreateMenuItem("Exit", $menu_file)
 
 	GUICtrlSetOnEvent($menu_save_definition, _save_gui_definition)
-	GUICtrlSetOnEvent($menu_load_definition, _load_gui_definition)
+	GUICtrlSetOnEvent($menu_load_definition, _onload_gui_definition)
 	GUICtrlSetOnEvent($menu_export_au3, "_onExportMenuItem")
 	GUICtrlSetOnEvent($menu_exit, "_onExit")
 
@@ -1079,7 +1079,7 @@ Func _onMouseMove()
 			_setLvSelected($oSelected.getFirst())
 
 		Case $resize_nw, $resize_n, $resize_ne, $resize_w, $resize_e, $resize_sw, $resize_s, $resize_se
-			For $oCtrlSelect in $oSelected.ctrls
+			For $oCtrlSelect In $oSelected.ctrls
 				$oCtrlSelect.grippies.resizing($oCtrls.mode)
 			Next
 
@@ -1345,7 +1345,7 @@ EndFunc   ;==>_main_pick_bkColor
 
 Func _main_change_background()
 	Local $colorInput = $oProperties_Main.Background.value
-	If $colorInput = "" Then
+	If $colorInput = "" Or $colorInput = -1 Then
 		$colorInput = $defaultGuiBkColor
 	Else
 		$colorInput = Dec(StringReplace($colorInput, "0x", ""))
@@ -1387,6 +1387,17 @@ Func _ctrl_change_text()
 					Else
 						$oCtrl.Text = $new_text
 					EndIf
+				ElseIf $oCtrl.Type = "Menu" Then
+					If $childSelected Then
+						Local $hSelected = _getLvSelectedHwnd()
+						Local $oCtrl = $oCtrls.get($hSelected)
+						If Not IsObj($oCtrl) Then Return -1
+						GUICtrlSetData($oCtrl.Hwnd, $new_text)
+						$oCtrl.Text = $new_text
+					Else
+						GUICtrlSetData($oCtrl.Hwnd, $new_text)
+						$oCtrl.Text = $new_text
+					EndIf
 				Else
 					GUICtrlSetData($oCtrl.Hwnd, $new_text)
 					$oCtrl.Text = $new_text
@@ -1418,6 +1429,15 @@ Func _ctrl_change_name()
 				Else
 					$oCtrl.Name = $new_name
 				EndIf
+			Else
+				$oCtrl.Name = $new_name
+			EndIf
+		ElseIf $oCtrl.Type = "Menu" Then
+			If $childSelected Then
+				Local $hSelected = _getLvSelectedHwnd()
+				Local $oCtrl = $oCtrls.get($hSelected)
+				If Not IsObj($oCtrl) Then Return -1
+				$oCtrl.Name = $new_name
 			Else
 				$oCtrl.Name = $new_name
 			EndIf
