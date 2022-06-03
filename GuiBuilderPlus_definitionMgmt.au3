@@ -286,6 +286,7 @@ Func _load_gui_definition($AgdInfile = '')
 				Next
 			EndIf
 		EndIf
+
 	Next
 
 	_formObjectExplorer_updateList()

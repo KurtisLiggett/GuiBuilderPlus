@@ -264,6 +264,12 @@ Func _create_ctrl($oCtrl = '', $bUseName = False)
 ;~ 			WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $aWinPos[0] & ", " & $aWinPos[1] & ")")
 			$oMain.Height = $aWinPos[1]
 
+		Case "IP"
+			$oNewControl.Text = ""
+			$oNewControl.Hwnd = _GUICtrlIpAddress_Create($hGUI, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			$oCtrls.add($oNewControl)
+			_GUICtrlIpAddress_Set($oNewControl.Hwnd, $oNewControl.Text)
+
 	EndSwitch
 
 	If $incTypeCount Then
@@ -361,6 +367,12 @@ Func _delete_tab()
 	_formObjectExplorer_updateList()
 EndFunc   ;==>_delete_tab
 
+Func _updateIP($oCtrl)
+	_GUICtrlIpAddress_Destroy(HWnd($oCtrl.Hwnd))
+	$oCtrl.Hwnd = _GUICtrlIpAddress_Create($hGUI, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
+	_GUICtrlIpAddress_Set($oCtrl.Hwnd, $oCtrl.Text)
+EndFunc   ;==>_updateIP
+
 
 Func _new_menuItem()
 	_new_menuItemCreate()
@@ -446,6 +458,9 @@ Func _delete_ctrl(Const $oCtrl)
 		Case "Updown"
 			GUICtrlDelete($oCtrl.Hwnd1)
 			GUICtrlDelete($oCtrl.Hwnd2)
+
+		Case "IP"
+			_GUICtrlIpAddress_Destroy(HWnd($oCtrl.Hwnd))
 
 		Case Else
 			GUICtrlDelete($oCtrl.Hwnd)
@@ -851,6 +866,10 @@ Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, 
 	Switch $oCtrl.Type
 		Case "Updown"
 			GUICtrlSetPos($oCtrl.Hwnd1, $left, $top, $width, $height)
+
+;~ 		Case "IP"
+;~ 			ConsoleWrite($oCtrl.Hwnd & @CRLF)
+;~ 			WinMove($oCtrl.Hwnd, "", $left, $top, $width, $height)
 
 		Case Else
 			GUICtrlSetPos($oCtrl.Hwnd, $left, $top, $width, $height)

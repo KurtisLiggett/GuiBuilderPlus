@@ -17,6 +17,8 @@ Func _objCtrls($isSelection = False)
 	_AutoItObject_AddProperty($oObject, "CurrentType", $ELSCOPE_PUBLIC, "")
 	_AutoItObject_AddProperty($oObject, "menuCount", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "hasMenu", $ELSCOPE_PUBLIC, False)
+	_AutoItObject_AddProperty($oObject, "IPCount", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "hasIP", $ELSCOPE_PUBLIC, False)
 	_AutoItObject_AddProperty($oObject, "isSelection", $ELSCOPE_PUBLIC, $isSelection)
 	;actual list of controls
 	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, LinkedList())
@@ -82,6 +84,11 @@ Func _objCtrls_add($oSelf, $objCtrl)
 		$oSelf.hasMenu = True
 	EndIf
 
+	If $objCtrl.Type = "IP" Then
+		$oSelf.IPCount = $oSelf.IPCount + 1
+		$oSelf.hasIP = True
+	EndIf
+
 	Return $oSelf.count
 EndFunc   ;==>_objCtrls_add
 
@@ -104,6 +111,14 @@ Func _objCtrls_remove($oSelf, $Hwnd)
 				$oSelf.hasMenu = True
 			Else
 				$oSelf.hasMenu = False
+			EndIf
+		EndIf
+		If $oSelf.ctrls.at($i).Type = "IP" Then
+			$oSelf.IPCount = $oSelf.IPCount - 1
+			If $oSelf.IPCount >= 1 Then
+				$oSelf.hasIP = True
+			Else
+				$oSelf.hasIP = False
 			EndIf
 		EndIf
 		Local $thisCtrl = $oSelf.ctrls.at($i)
