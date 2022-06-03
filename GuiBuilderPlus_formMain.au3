@@ -1288,6 +1288,9 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 	Else
 		$oProperties_Ctrls.Color.value = ""
 	EndIf
+
+
+	$oProperties_Ctrls.Global.value = $oCtrl.Global
 EndFunc   ;==>_populate_control_properties_gui
 
 
@@ -1669,6 +1672,23 @@ Func _ctrl_change_bkColor()
 
 	_refreshGenerateCode()
 EndFunc   ;==>_ctrl_change_bkColor
+
+
+Func _ctrl_change_global()
+	Local $new_data = $oProperties_Ctrls.Global.value
+
+	Local Const $sel_count = $oSelected.count
+
+	Switch $sel_count >= 1
+		Case True
+			For $oCtrl In $oSelected.ctrls
+				;update the property
+				$oCtrl.Global = $new_data
+			Next
+	EndSwitch
+
+	_refreshGenerateCode()
+EndFunc   ;==>_ctrl_change_global
 
 
 Func _ctrl_pick_Color()

@@ -21,6 +21,7 @@ Func _objProperties()
 	_AutoItObject_AddProperty($oObject, "Height", $ELSCOPE_PUBLIC, _objProperty("Height"))
 	_AutoItObject_AddProperty($oObject, "Color", $ELSCOPE_PUBLIC, _objProperty("Color"))
 	_AutoItObject_AddProperty($oObject, "Background", $ELSCOPE_PUBLIC, _objProperty("Background"))
+	_AutoItObject_AddProperty($oObject, "Global", $ELSCOPE_PUBLIC, _objProperty("Global"))
 
 	Return $oObject
 EndFunc   ;==>_objCtrls
@@ -37,8 +38,18 @@ EndFunc   ;==>_objCreateMouse
 
 Func _objProperty_value($oSelf, $vNewValue = "")
    If @NumParams = 2 Then
-        GUICtrlSetData($oSelf.Hwnd, $vNewValue)
-    Else
-        Return GUICtrlRead($oSelf.Hwnd)
+		Switch $oSelf.Name
+			Case "Global"
+				_setCheckedState($oSelf.Hwnd, $vNewValue)
+			Case Else
+				GUICtrlSetData($oSelf.Hwnd, $vNewValue)
+		EndSwitch
+   Else
+		Switch $oSelf.Name
+			Case "Global"
+				Return BitAND(GUICtrlRead($oSelf.Hwnd), $GUI_CHECKED) = $GUI_CHECKED
+			Case Else
+				Return GUICtrlRead($oSelf.Hwnd)
+		EndSwitch
     EndIf
 EndFunc

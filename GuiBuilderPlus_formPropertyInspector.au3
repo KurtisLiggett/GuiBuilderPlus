@@ -83,6 +83,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	$oProperties_Ctrls.Height.Hwnd = _formPropertyInspector_newitem("Height", $typeNumber)
 	$oProperties_Ctrls.Color.Hwnd = _formPropertyInspector_newitem("Font Color", $typeColor, -1, -1, -1, -1, "_ctrl_pick_Color")
 	$oProperties_Ctrls.Background.Hwnd = _formPropertyInspector_newitem("Background", $typeColor, -1, -1, -1, -1, "_ctrl_pick_bkColor")
+	$oProperties_Ctrls.Global.Hwnd = _formPropertyInspector_newitem("Global", $typeCheck, -1, -1, -1, -1)
 
 	;vertical line
 	Local $itemsHeight = _formPropertyInspector_newitem("", $getHeight)
@@ -97,6 +98,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	GUICtrlSetOnEvent($oProperties_Ctrls.Height.Hwnd, _ctrl_change_height)
 	GUICtrlSetOnEvent($oProperties_Ctrls.Color.Hwnd, _ctrl_change_Color)
 	GUICtrlSetOnEvent($oProperties_Ctrls.Background.Hwnd, _ctrl_change_bkColor)
+	GUICtrlSetOnEvent($oProperties_Ctrls.Global.Hwnd, _ctrl_change_global)
 	#EndRegion properties-tab-controls
 
 

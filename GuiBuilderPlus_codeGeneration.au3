@@ -44,7 +44,7 @@ Func _code_generation()
 	Local $globalsIndex = 1
 	For $oCtrl In $oCtrls.ctrls
 		;generate globals for controls
-		If $oCtrl.Name <> "" Then
+		If $oCtrl.Name <> "" And $oCtrl.Global Then
 			If StringLen($globals[$globalsIndex]) > 100 Then
 				$globals[$globalsIndex] = StringTrimRight($globals[$globalsIndex], 2) & @CRLF
 				$globalsIndex += 1
@@ -225,9 +225,12 @@ Func _generate_controls(Const $oCtrl, $sDpiScale)
 	; but some controls do not use this.... Avi, Icon, Menu, Menuitem, Progress, Tabitem, TreeViewitem, updown
 	Local $mControls
 
+	Local $scopeString = "Global"
+	If Not $oCtrl.Global Then $scopeString = "Local"
+
 	Switch StringStripWS($oCtrl.Name, $STR_STRIPALL) <> ''
 		Case True
-			$mControls = "Global $" & $oCtrl.Name & " = "
+			$mControls = $scopeString & " $" & $oCtrl.Name & " = "
 	EndSwitch
 
 	Switch $oCtrl.Type
@@ -241,7 +244,7 @@ Func _generate_controls(Const $oCtrl, $sDpiScale)
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '(' & $ltwh & ')' & @CRLF
 
 			For $oTab In $oCtrl.Tabs
-				$mControls &= "Global $" & $oTab.Name & " = "
+				$mControls &= $scopeString & " $" & $oTab.Name & " = "
 				$mControls &= 'GUICtrlCreateTabItem("' & $oTab.Text & '")' & @CRLF
 				$mControls &= 'GUICtrlCreateTabItem("")' & @CRLF
 			Next
@@ -258,7 +261,7 @@ Func _generate_controls(Const $oCtrl, $sDpiScale)
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '")' & @CRLF
 
 			For $oMenuItem In $oCtrl.MenuItems
-				$mControls &= "Global $" & $oMenuItem.Name & " = "
+				$mControls &= $scopeString & " $" & $oMenuItem.Name & " = "
 				$mControls &= 'GUICtrlCreateMenuItem("' & $oMenuItem.Text & '", $' & $oCtrl.Name & ')' & @CRLF
 			Next
 

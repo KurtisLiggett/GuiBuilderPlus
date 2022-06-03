@@ -94,6 +94,7 @@ Func _save_gui_definition()
 		IniWrite($AgdOutFile, $Key, "Top", $oCtrl.Top)
 		IniWrite($AgdOutFile, $Key, "Width", $oCtrl.Width)
 		IniWrite($AgdOutFile, $Key, "Height", $oCtrl.Height)
+		IniWrite($AgdOutFile, $Key, "Global", $oCtrl.Global)
 		If $oCtrl.Color = -1 Then
 			IniWrite($AgdOutFile, $Key, "Color", -1)
 		Else
@@ -246,6 +247,7 @@ Func _load_gui_definition($AgdInfile = '')
 		$oCtrl.Top = IniRead($AgdInfile, $Key, "Top", -1)
 		$oCtrl.Width = IniRead($AgdInfile, $Key, "Width", -1)
 		$oCtrl.Height = IniRead($AgdInfile, $Key, "Height", -1)
+		$oCtrl.Global = (IniRead($AgdInfile, $Key, "Global", False) = "True") ? True : False
 		$oCtrl.Color = IniRead($AgdInfile, $Key, "Color", -1)
 		If $oCtrl.Color <> -1 Then
 			$oCtrl.Color = Dec(StringReplace($oCtrl.Color, "0x", ""))

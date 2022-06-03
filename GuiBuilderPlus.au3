@@ -13,6 +13,7 @@
 ;
 ; Revisions
 ;  06/03/2022 ...: 	- ADDED:	Setting to create GUI as a function
+;					- ADDED:	Property to declare control as Global or Local
 ;					- ADDED:	Listview control
 ;					- ADDED:	IP Address control
 ;
