@@ -113,7 +113,7 @@ Func _create_ctrl($oCtrl = '', $bUseName = False)
 		Case "Edit"
 			$oNewControl.Hwnd = GUICtrlCreateEdit('', $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
-			GUICtrlSetState($oNewControl.Hwnd, $GUI_DISABLE)
+;~ 			GUICtrlSetState($oNewControl.Hwnd, $GUI_DISABLE)
 
 			$oCtrls.add($oNewControl)
 
@@ -124,7 +124,7 @@ Func _create_ctrl($oCtrl = '', $bUseName = False)
 		Case "Input"
 			$oNewControl.Hwnd = GUICtrlCreateInput($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
-			GUICtrlSetState($oNewControl.Hwnd, $GUI_DISABLE)
+;~ 			GUICtrlSetState($oNewControl.Hwnd, $GUI_DISABLE)
 
 			$oCtrls.add($oNewControl)
 
@@ -144,7 +144,7 @@ Func _create_ctrl($oCtrl = '', $bUseName = False)
 		Case "List"
 			$oNewControl.Hwnd = GUICtrlCreateList($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
-			GUICtrlSetState($oNewControl.Hwnd, $GUI_DISABLE)
+;~ 			GUICtrlSetState($oNewControl.Hwnd, $GUI_DISABLE)
 
 			$oCtrls.add($oNewControl)
 
@@ -269,6 +269,13 @@ Func _create_ctrl($oCtrl = '', $bUseName = False)
 			$oNewControl.Hwnd = _GUICtrlIpAddress_Create($hGUI, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 			$oCtrls.add($oNewControl)
 			_GUICtrlIpAddress_Set($oNewControl.Hwnd, $oNewControl.Text)
+
+		Case "ListView"
+			$oNewControl.Hwnd = GUICtrlCreateListView($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+
+;~ 			GUICtrlSetState($oNewControl.Hwnd, $GUI_DISABLE)
+
+			$oCtrls.add($oNewControl)
 
 	EndSwitch
 

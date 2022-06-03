@@ -311,6 +311,11 @@ Func _formToolbar()
 	GUICtrlSetImage(-1, $iconset & "\Icon 22.ico")
 	GUICtrlSetTip(-1, "IP Address")
 	GUICtrlSetOnEvent(-1, _control_type)
+
+	GUICtrlCreateRadio("ListView", 85, 165, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	GUICtrlSetImage(-1, $iconset & "\Icon 23.ico")
+	GUICtrlSetTip(-1, "ListView")
+	GUICtrlSetOnEvent(-1, _control_type)
 	#EndRegion control-creation
 
 
