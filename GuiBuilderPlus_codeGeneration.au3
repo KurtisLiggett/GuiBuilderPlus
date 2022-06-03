@@ -10,11 +10,12 @@
 ; Return..........: code as string
 ;------------------------------------------------------------------------------
 Func _code_generation()
-	Local $controls, $globals
+	Local $controls, $globals[2]
 
 	;get options
 	Local $bAddDpiScale = $setting_dpi_scaling
 	Local $bOnEventMode = $setting_onEvent_mode
+	Local $bGuiFunction = $setting_gui_function
 
 	Local $sDpiScale = ""
 	If $bAddDpiScale Then
@@ -34,9 +35,24 @@ Func _code_generation()
 		$includes &= @CRLF & "#include <GDIPlus.au3>"
 	EndIf
 
+	If $oMain.Name <> "" Then
+		$globals[0] = "Global $" & $oMain.Name & @CRLF
+	Else
+		$globals[0] = ""
+	EndIf
+	$globals[1] = "Global "
+	Local $globalsIndex = 1
 	For $oCtrl In $oCtrls.ctrls
 		;generate globals for controls
-;~ 		$globals &= "," & $oCtrl.Name
+		If $oCtrl.Name <> "" Then
+			If StringLen($globals[$globalsIndex]) > 100 Then
+				$globals[$globalsIndex] = StringTrimRight($globals[$globalsIndex], 2) & @CRLF
+				$globalsIndex += 1
+				ReDim $globals[$globalsIndex+1]
+				$globals[$globalsIndex] = "Global "
+			EndIf
+			$globals[$globalsIndex] &= "$" & $oCtrl.Name & ", "
+		EndIf
 
 		;generate includes
 		$includes &= _generate_includes($oCtrl, $includes)
@@ -44,8 +60,13 @@ Func _code_generation()
 		;generate controls
 		$controls &= _generate_controls($oCtrl, $sDpiScale)
 	Next
+	If $globals[$globalsIndex] = "Global " Then
+		$globals[$globalsIndex] = ""
+	Else
+		$globals[$globalsIndex] = StringTrimRight($globals[$globalsIndex], 2) & @CRLF
+	EndIf
 
-	Local $FuncMain = _getFuncMain($bOnEventMode)
+	Local $FuncMain = _getFuncMain($bOnEventMode, $bGuiFunction)
 	Local $FuncOnEventMode = _getFuncOnExit()
 	Local $FuncDpiScaling = _getFuncDpiScaling()
 
@@ -91,7 +112,6 @@ Func _code_generation()
 	EndIf
 
 
-	; Mod by TheSaint
 	Local $code = ""
 	If $bAddDpiScale Then
 		$code &= "#AutoIt3Wrapper_Res_HiDpi=y" & @CRLF & @CRLF
@@ -106,18 +126,44 @@ Func _code_generation()
 		$code &= "Global $fDpiFactor = _GDIPlus_GraphicsGetDPIRatio()" & @CRLF & @CRLF
 	EndIf
 	$code &= $regionStart & @CRLF
-;~ 			"Global $MainStyle = BitOR($WS_OVERLAPPED, $WS_CAPTION, $WS_SYSMENU, $WS_VISIBLE, $WS_CLIPSIBLINGS, $WS_MINIMIZEBOX)" & @CRLF
-	If $oMain.Name = "" Then
-		$code &= 'GUICreate("' & $gdtitle & '", ' & $w & ", " & $h & ", " & $x & ", " & $y & ")" & @CRLF
-	Else
-		$code &= "Global $" & $oMain.Name & ' = GUICreate("' & $gdtitle & '", ' & $w & ", " & $h & ", " & $x & ", " & $y & ")" & @CRLF
+
+	If $bGuiFunction Then
+		For $line in $globals
+			$code &= $line
+		Next
+		$code &= @CRLF
+
+		Local $mDocData[]
+		$mDocData.name = "_guiCreate"
+		$mDocData.description = "Create the main GUI"
+		$code &= _functionDoc($mDocData) & @CRLF
+
+		$code &= "Func _guiCreate()" & @CRLF
 	EndIf
 
-	$code &= $setOnEvent & _
-			$background & _
-			@CRLF & $controls & _
-			$regionEnd & @CRLF & @CRLF & _
-			$FuncMain & @CRLF & @CRLF
+	Local $guiBodyCode = ""
+
+;~ 			"Global $MainStyle = BitOR($WS_OVERLAPPED, $WS_CAPTION, $WS_SYSMENU, $WS_VISIBLE, $WS_CLIPSIBLINGS, $WS_MINIMIZEBOX)" & @CRLF
+	If $oMain.Name = "" Then
+		$guiBodyCode &= 'GUICreate("' & $gdtitle & '", ' & $w & ", " & $h & ", " & $x & ", " & $y & ")" & @CRLF
+	Else
+		$guiBodyCode &= "Global $" & $oMain.Name & ' = GUICreate("' & $gdtitle & '", ' & $w & ", " & $h & ", " & $x & ", " & $y & ")" & @CRLF
+	EndIf
+
+	$guiBodyCode &= $setOnEvent & _
+		$background & _
+		@CRLF & $controls
+
+	If $bGuiFunction Then
+		$guiBodyCode = StringReplace($guiBodyCode, "Global ", "")
+		$guiBodyCode = @TAB & StringReplace($guiBodyCode, @CRLF, @CRLF & @TAB)
+		$guiBodyCode = StringTrimRight($guiBodyCode, 1)
+		$guiBodyCode &= "EndFunc   ;==>_guiCreate" & @CRLF
+	EndIf
+
+	$code &= $guiBodyCode & _
+		$regionEnd & @CRLF & @CRLF & _
+		$FuncMain & @CRLF & @CRLF
 
 	If $bOnEventMode Then
 		$code &= @CRLF & $FuncOnEventMode
@@ -331,7 +377,7 @@ Func _copy_code_to_output(Const $code)
 	EndSwitch
 EndFunc   ;==>_copy_code_to_output
 
-Func _getFuncMain($bOnEventMode)
+Func _getFuncMain($bOnEventMode, $bGuiFunction)
 	;function documentation template
 	Local $mDocData[]
 	$mDocData.name = "_main"
@@ -341,8 +387,11 @@ Func _getFuncMain($bOnEventMode)
 	Local $code = '' & _
 			"_main()" & @CRLF & @CRLF & _
 			$FuncDoc & _
-			"Func _main()" & @CRLF & _
-			@TAB & "GUISetState(@SW_SHOWNORMAL)" & @CRLF & @CRLF & _
+			"Func _main()" & @CRLF
+			If $bGuiFunction Then
+				$code &= @TAB & "_guiCreate()" & @CRLF
+			EndIf
+			$code &= @TAB & "GUISetState(@SW_SHOWNORMAL)" & @CRLF & @CRLF & _
 			@TAB & "While 1" & @CRLF
 	If Not $bOnEventMode Then
 		$code &= '' & _

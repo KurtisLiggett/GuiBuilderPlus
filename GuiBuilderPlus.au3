@@ -12,7 +12,8 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  06/03/2022 ...: 	- ADDED:	Listview control
+;  06/03/2022 ...: 	- ADDED:	Setting to create GUI as a function
+;					- ADDED:	Listview control
 ;					- ADDED:	IP Address control
 ;
 ;  06/02/2022 ...: 	- FIXED:	Array subscript error when closing tool windows.
@@ -127,19 +128,15 @@
 ;					- Removed/updated some antiquated references and functions
 ;					- Updated to latest StringSize UDF
 ;
-; Roadmap .......:	- Add option to make GUI in separate function
-;					- Add options for declaring controls as global or local
+; Roadmap .......:	- Add options for declaring controls as global or local
 ;					- Support for Msg or OnEvent mode attached to controls
-;					- Add IP control
 ;					- Add control alignment buttons (left, right, top, bottom)
 ;					- Finish control properties tabs
 ;					- creating controls on top of TAB will place them inside the tab
 ;					- creating controls on top of GROUP will place them inside the group
 ;					- Undo / Redo functionality
-;					- Finish menu controls
 ;
 ; Known Issues ..:	- State, style, and ex style properties not implemented yet
-;					- Menu control not implemented yet
 ; ===============================================================================================================================
 
 #Region project-settings
@@ -471,7 +468,7 @@ Func _initialize_settings()
 	_setCheckedState($menu_ObjectExplorer, $bShowObjectExplorer)
 	_setCheckedState($menu_dpi_scaling, $bDpiScaling)
 	_setCheckedState($menu_onEvent_mode, $bOnEventMode)
-;~ 	_setCheckedState($menu_gui_function, $bGuiFunction)
+	_setCheckedState($menu_gui_function, $bGuiFunction)
 
 	$setting_paste_pos = $bPastePos
 	$setting_snap_grid = $bGridSnap
