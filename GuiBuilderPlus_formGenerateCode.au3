@@ -46,11 +46,13 @@ Func _formGenerateCode()
 	GUICtrlSetBkColor(-1, 0xFFFFFF)
 	GUICtrlSetResizing(-1, $GUI_DOCKBORDERS)
 
-	$editCodeGeneration = GUICtrlCreateEdit("", 10, 10, $w - 20, $h - $titleBarHeight - 53)
+;~ 	$editCodeGeneration = GUICtrlCreateEdit("", 10, 10, $w - 20, $h - $titleBarHeight - 53)
+	$editCodeGeneration = _GUICtrlRichEdit_Create($hFormGenerateCode, "", 10, 10, $w - 20, $h - $titleBarHeight - 53, BitOR($ES_MULTILINE, $WS_VSCROLL, $WS_HSCROLL, $ES_AUTOVSCROLL))
 	GUICtrlSetResizing(-1, $GUI_DOCKBORDERS)
-	GUICtrlSetFont(-1, 9, -1, -1, "Courier New")
-	_GUICtrlEdit_SetTabStops($editCodeGeneration, 4)
-	GUICtrlSetData($editCodeGeneration, _code_generation())
+;~ 	GUICtrlSetFont(-1, 9, -1, -1, "Courier New")
+;~ 	_GUICtrlEdit_SetTabStops($editCodeGeneration, 4)
+	_GUICtrlRichEdit_SetText($editCodeGeneration, _code_generation())
+	_RESH_SyntaxHighlight($editCodeGeneration)
 
 
 	GUICtrlCreateButton("Copy", $w - 20 - 75 * 2 - 5 * 1, $h - 27 - $titleBarHeight, 75, 22)
@@ -61,7 +63,7 @@ Func _formGenerateCode()
 	GUICtrlSetResizing(-1, $GUI_DOCKRIGHT + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
 
 	GUISetState(@SW_SHOW, $hFormGenerateCode)
-	_GUICtrlEdit_SetSel($editCodeGeneration, 0, 0)
+	_GUICtrlRichEdit_SetSel($editCodeGeneration, 0, -1)
 
 	GUISwitch($hGUI)
 EndFunc   ;==>_formGenerateCode
@@ -75,7 +77,8 @@ EndFunc   ;==>_formGenerateCode
 ; Events..........: Refresh button in code generation dialog
 ;------------------------------------------------------------------------------
 Func _onCodeRefresh()
-	GUICtrlSetData($editCodeGeneration, _code_generation())
+	_GUICtrlRichEdit_SetText($editCodeGeneration, _code_generation())
+	_RESH_SyntaxHighlight($editCodeGeneration)
 EndFunc   ;==>_onCodeRefresh
 
 
@@ -125,6 +128,24 @@ EndFunc   ;==>_onExitGenerateCode
 ;------------------------------------------------------------------------------
 Func _refreshGenerateCode()
 	If IsHWnd($hFormGenerateCode) Then
-		GUICtrlSetData($editCodeGeneration, _code_generation())
+		Local $iStart = _GUICtrlRichEdit_GetFirstCharPosOnLine($editCodeGeneration)
+		Local $aScroll = _GUICtrlRichEdit_GetScrollPos($editCodeGeneration)
+
+		Local $sCode = _code_generation()
+		_GUICtrlRichEdit_PauseRedraw($editCodeGeneration)
+		_GUICtrlRichEdit_SetSel($editCodeGeneration, 0, -1, True)
+		_GUICtrlRichEdit_ReplaceText($editCodeGeneration, '')
+
+		_GUICtrlRichEdit_SetFont($editCodeGeneration, 9, 'Courier New')
+
+		_GUICtrlRichEdit_SetLimitOnText($editCodeGeneration, Round(StringLen($sCode) * 1.5))
+		_GUICtrlRichEdit_AppendText($editCodeGeneration, $sCode)
+
+;~ 		_GUICtrlRichEdit_SetText($editCodeGeneration, _code_generation())
+		_RESH_SyntaxHighlight($editCodeGeneration)
+
+		_GUICtrlRichEdit_GotoCharPos($editCodeGeneration, $iStart)
+		_GUICtrlRichEdit_SetScrollPos($editCodeGeneration, $aScroll[0], $aScroll[1])
+		_GUICtrlRichEdit_ResumeRedraw($editCodeGeneration)
 	EndIf
 EndFunc   ;==>_refreshGenerateCode

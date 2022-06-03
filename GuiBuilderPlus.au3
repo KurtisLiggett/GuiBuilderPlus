@@ -16,6 +16,7 @@
 ;					- ADDED:	Property to declare control as Global or Local
 ;					- ADDED:	Listview control
 ;					- ADDED:	IP Address control
+;					- ADDED:	Changed code generation preview to Rich Text with syntax highlighting using Beege's UDF
 ;
 ;  06/02/2022 ...: 	- FIXED:	Array subscript error when closing tool windows.
 ;					- FIXED:	Multiple selection while holding Ctrl key now works properly.
@@ -129,15 +130,13 @@
 ;					- Removed/updated some antiquated references and functions
 ;					- Updated to latest StringSize UDF
 ;
-; Roadmap .......:	- Add options for declaring controls as global or local
-;					- Support for Msg or OnEvent mode attached to controls
+; Roadmap .......:	- Support for Msg or OnEvent mode attached to controls
 ;					- Add control alignment buttons (left, right, top, bottom)
 ;					- Finish control properties tabs
 ;					- creating controls on top of TAB will place them inside the tab
 ;					- creating controls on top of GROUP will place them inside the group
 ;					- Undo / Redo functionality
 ;
-; Known Issues ..:	- State, style, and ex style properties not implemented yet
 ; ===============================================================================================================================
 
 #Region project-settings
@@ -223,6 +222,7 @@ _AutoItObject_StartUp()
 #include <GuiTab.au3>
 #include <GuiListView.au3>
 #include <GuiIPAddress.au3>
+#include <GuiRichEdit.au3>
 #include <Misc.au3>
 #include <MsgBoxConstants.au3>
 #include <StringConstants.au3>
@@ -241,6 +241,7 @@ _AutoItObject_StartUp()
 #include <GuiTreeView.au3>
 #include "UDFS\GUIScrollbars_Ex.au3"
 #include "UDFs\StringSize.au3"
+#include "UDFs\RESH.au3"
 #include "GuiBuilderPlus_objCtrl.au3"
 #include "GuiBuilderPlus_objProperties.au3"
 #include "GuiBuilderPlus_CtrlMgmt.au3"
