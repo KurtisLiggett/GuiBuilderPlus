@@ -12,7 +12,8 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  06/03/2022 ...: 	- ADDED:	IP Address control
+;  06/03/2022 ...: 	- ADDED:	Listview control
+;					- ADDED:	IP Address control
 ;
 ;  06/02/2022 ...: 	- FIXED:	Array subscript error when closing tool windows.
 ;					- FIXED:	Multiple selection while holding Ctrl key now works properly.
@@ -145,8 +146,8 @@
 #AutoIt3Wrapper_Res_HiDpi=y
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.25.exe
-#AutoIt3Wrapper_Res_Fileversion=0.25.0.0
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.26.exe
+#AutoIt3Wrapper_Res_Fileversion=0.26.0.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 
 Opt("WinTitleMatchMode", 4) ; advanced
@@ -271,7 +272,7 @@ Func _main()
 	$oClipboard = _objCtrls()
 	$oMain = _objMain()
 	$oMain.AppName = "GuiBuilderPlus"
-	$oMain.AppVersion = "0.25"
+	$oMain.AppVersion = "0.26"
 	$oMain.Title = StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1)
 	$oMain.Name = "hGUI"
 	$oMain.Width = 400
