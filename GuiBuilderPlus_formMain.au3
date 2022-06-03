@@ -733,7 +733,6 @@ Func _nudgeSelected($x = 0, $y = 0)
 			EndIf
 		EndIf
 		_change_ctrl_size_pos($oCtrl, $oCtrl.Left + $x * ($nudgeAmount + $adjustmentX), $oCtrl.Top + $y * ($nudgeAmount + $adjustmentY), $oCtrl.Width, $oCtrl.Height)
-		$oCtrl.grippies.show()
 
 	Next
 
@@ -1062,8 +1061,7 @@ Func _onMouseMove()
 
 			For $oCtrl In $oSelected.ctrls
 
-				_change_ctrl_size_pos($oCtrl, $oCtrl.Left - $delta_x, $oCtrl.Top - $delta_y, $oCtrl.Width, $oCtrl.Height)
-				$oCtrl.grippies.show()
+				_change_ctrl_size_pos($oCtrl, $oCtrl.Left - $delta_x, $oCtrl.Top - $delta_y, Default, Default)
 
 				$tooltip &= $oCtrl.Name & ": X:" & $oCtrl.Left & ", Y:" & $oCtrl.Top & ", W:" & $oCtrl.Width & ", H:" & $oCtrl.Height & @CRLF
 			Next

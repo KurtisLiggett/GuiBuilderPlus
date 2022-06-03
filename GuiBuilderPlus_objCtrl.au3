@@ -629,6 +629,7 @@ EndFunc   ;==>_objGrippies_resizing
 Func _objGrippies_show($oSelf)
 ;~ 	ConsoleWrite("show grippies" & @CRLF)
 
+	;show
 	GUICtrlSetState($oSelf.NW, $GUI_SHOW + $GUI_ONTOP)
 	GUICtrlSetState($oSelf.N, $GUI_SHOW + $GUI_ONTOP)
 	GUICtrlSetState($oSelf.NE, $GUI_SHOW + $GUI_ONTOP)
@@ -638,6 +639,7 @@ Func _objGrippies_show($oSelf)
 	GUICtrlSetState($oSelf.SW, $GUI_SHOW + $GUI_ONTOP)
 	GUICtrlSetState($oSelf.W, $GUI_SHOW + $GUI_ONTOP)
 
+	;set on top
 	_WinAPI_SetWindowPos(GUICtrlGetHandle($oSelf.NW), $HWND_TOP, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
 	_WinAPI_SetWindowPos(GUICtrlGetHandle($oSelf.N), $HWND_TOP, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
 	_WinAPI_SetWindowPos(GUICtrlGetHandle($oSelf.NE), $HWND_TOP, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
@@ -673,18 +675,18 @@ Func _objGrippies_show($oSelf)
 
 	Switch $oSelf.parent.Type
 		Case "Combo", "Checkbox", "Radio"
-			GUICtrlSetPos($oSelf.East, $e_left, $e_top, $grippy_size, $grippy_size)
-			GUICtrlSetPos($oSelf.W, $w_left, $w_top, $grippy_size, $grippy_size)
+			GUICtrlSetPos($oSelf.East, $e_left, $e_top, Default, Default)
+			GUICtrlSetPos($oSelf.W, $w_left, $w_top, Default, Default)
 
 		Case Else
-			GUICtrlSetPos($oSelf.NW, $nw_left, $nw_top, $grippy_size, $grippy_size)
-			GUICtrlSetPos($oSelf.N, $n_left, $n_top, $grippy_size, $grippy_size)
-			GUICtrlSetPos($oSelf.NE, $ne_left, $ne_top, $grippy_size, $grippy_size)
-			GUICtrlSetPos($oSelf.East, $e_left, $e_top, $grippy_size, $grippy_size)
-			GUICtrlSetPos($oSelf.SE, $se_left, $se_top, $grippy_size, $grippy_size)
-			GUICtrlSetPos($oSelf.S, $s_left, $s_top, $grippy_size, $grippy_size)
-			GUICtrlSetPos($oSelf.SW, $sw_left, $sw_top, $grippy_size, $grippy_size)
-			GUICtrlSetPos($oSelf.W, $w_left, $w_top, $grippy_size, $grippy_size)
+			GUICtrlSetPos($oSelf.NW, $nw_left, $nw_top, Default, Default)
+			GUICtrlSetPos($oSelf.N, $n_left, $n_top, Default, Default)
+			GUICtrlSetPos($oSelf.NE, $ne_left, $ne_top, Default, Default)
+			GUICtrlSetPos($oSelf.East, $e_left, $e_top, Default, Default)
+			GUICtrlSetPos($oSelf.SE, $se_left, $se_top, Default, Default)
+			GUICtrlSetPos($oSelf.S, $s_left, $s_top, Default, Default)
+			GUICtrlSetPos($oSelf.SW, $sw_left, $sw_top, Default, Default)
+			GUICtrlSetPos($oSelf.W, $w_left, $w_top, Default, Default)
 	EndSwitch
 EndFunc   ;==>_objGrippies_show
 

@@ -852,10 +852,12 @@ Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, 
 			GUICtrlSetPos($oCtrl.Hwnd, $left, $top, $width, $height)
 	EndSwitch
 
-	$oCtrl.Left = $left
-	$oCtrl.Top = $top
-	$oCtrl.Width = $width
-	$oCtrl.Height = $height
+	If $left <> Default Then $oCtrl.Left = $left
+	If $top <> Default Then $oCtrl.Top = $top
+	If $width <> Default Then $oCtrl.Width = $width
+	If $height <> Default Then $oCtrl.Height = $height
+
+	$oCtrl.grippies.show()
 EndFunc   ;==>_change_ctrl_size_pos
 
 

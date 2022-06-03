@@ -14,10 +14,10 @@
 ; Revisions
 ;  06/02/2022 ...: 	- FIXED:	Array subscript error when closing tool windows.
 ;					- FIXED:	Multiple selection while holding Ctrl key now works properly.
-;					- ADDED:	Show grippies on each selected control!
+;					- ADDED:	Show grippies on each selected control! Each control object now has a built-in crippy object
+;					- ADDED:	Menu items can not be added and removed from the object explorer only
 ;					- UPDATED:	modified the About dialog text for a more detailed naming history
 ;					- MAINT:	cleaned up more global variables
-;					- MAINT:	created grippy objects built into each control object
 ;					- MAINT:	made control selection much more robust and consistent
 ;
 ;  05/23/2022 ...: 	- ADDED:	Now you can set properties for the main GUI!
