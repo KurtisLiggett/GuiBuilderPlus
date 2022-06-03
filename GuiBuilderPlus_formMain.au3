@@ -2145,15 +2145,6 @@ EndFunc   ;==>_menu_gui_function
 ; Description.....: Display popup with program description
 ;------------------------------------------------------------------------------
 Func _menu_about()
-;~ 	MsgBox(0, "About " & $oMain.AppName, $oMain.AppVersion & @CRLF & _
-;~ 			"Originally created by CyberSlug (as AutoBuilder)," & @CRLF & _
-;~ 			"and modified by Roy, TheSaint, and others (as GuiBuilder)," & @CRLF & _
-;~ 			"and Jaberwacky (as GuiBuilderNxt)," & @CRLF & _
-;~ 			"with additional modifications by kurtykurtyboy (as GuiBuilderPlus)." & @CRLF & @CRLF & _
-;~ 			"Program Information" & @CRLF & _
-;~ 			"When you exit " & $oMain.AppName & ", you will be prompted" & @CRLF & _
-;~ 			"to save what you may have created as an au3 file.")
-
 	$w = 350
 	$h = 290
 
