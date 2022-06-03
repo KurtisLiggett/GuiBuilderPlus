@@ -12,6 +12,8 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
+;  06/03/2022 ...: 	- ADDED:	IP Address control
+;
 ;  06/02/2022 ...: 	- FIXED:	Array subscript error when closing tool windows.
 ;					- FIXED:	Multiple selection while holding Ctrl key now works properly.
 ;					- FIXED:	Save/load GUI height with menus
@@ -221,6 +223,7 @@ _AutoItObject_StartUp()
 #include <GuiConstantsEx.au3>
 #include <GuiTab.au3>
 #include <GuiListView.au3>
+#include <GuiIPAddress.au3>
 #include <Misc.au3>
 #include <MsgBoxConstants.au3>
 #include <StringConstants.au3>

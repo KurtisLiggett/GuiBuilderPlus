@@ -292,7 +292,6 @@ Func _formToolbar()
 	GUICtrlSetImage(-1, $iconset & "\Icon 19.ico")
 	GUICtrlSetTip(-1, "Menu")
 	GUICtrlSetOnEvent(-1, _control_type)
-;~ 	GUICtrlSetState(-1, $GUI_DISABLE)
 
 	GUICtrlCreateRadio("ContextMenu", 165, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
 	GUICtrlSetImage(-1, $iconset & "\Icon 20.ico")
@@ -306,6 +305,11 @@ Func _formToolbar()
 	GUICtrlCreateRadio("Slider", 5, 165, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
 	GUICtrlSetImage(-1, $iconset & "\Icon 21.ico")
 	GUICtrlSetTip(-1, "Slider")
+	GUICtrlSetOnEvent(-1, _control_type)
+
+	GUICtrlCreateRadio("IP", 45, 165, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	GUICtrlSetImage(-1, $iconset & "\Icon 22.ico")
+	GUICtrlSetTip(-1, "IP Address")
 	GUICtrlSetOnEvent(-1, _control_type)
 	#EndRegion control-creation
 
@@ -797,7 +801,21 @@ Func _onMousePrimaryDown()
 	$left_click = True
 
 	Local $aDrawStartPos = GUIGetCursorInfo($hGUI)
-	Local Const $ctrl_hwnd = $aDrawStartPos[4]
+	Local $ctrl_hwnd = $aDrawStartPos[4]
+
+	Local $aMousePos = MouseGetPos()
+	;check if over an IP control as it has no ID
+	If $ctrl_hwnd = 0 And $oCtrls.hasIP Then
+		For $oThisCtrl In $oCtrls.ctrls
+			If $oThisCtrl.Type = "IP" Then
+				If $aDrawStartPos[0] > $oThisCtrl.Left And $aDrawStartPos[0] < $oThisCtrl.Left + $oThisCtrl.Width And $aDrawStartPos[1] > $oThisCtrl.Top And $aDrawStartPos[1] < $oThisCtrl.Top + $oThisCtrl.Height Then
+					$ctrl_hwnd = $oThisCtrl.Hwnd
+					ExitLoop
+				EndIf
+			EndIf
+		Next
+	EndIf
+
 
 	Local $pos
 
@@ -993,6 +1011,15 @@ Func _onMousePrimaryUp()
 			_refreshGenerateCode()
 
 	EndSwitch
+
+	If $oSelected.hasIP Then
+		For $oCtrl In $oSelected.ctrls
+			If $oCtrl.Type = "IP" Then
+				_updateIP($oCtrl)
+			EndIf
+		Next
+		_formObjectExplorer_updateList()
+	EndIf
 EndFunc   ;==>_onMousePrimaryUp
 
 
@@ -1396,6 +1423,9 @@ Func _ctrl_change_text()
 						GUICtrlSetData($oCtrl.Hwnd, $new_text)
 						$oCtrl.Text = $new_text
 					EndIf
+				ElseIf $oCtrl.Type = "IP" Then
+					_GUICtrlIpAddress_Set($oCtrl.Hwnd, $new_text)
+					$oCtrl.Text = $new_text
 				Else
 					GUICtrlSetData($oCtrl.Hwnd, $new_text)
 					$oCtrl.Text = $new_text
@@ -1467,6 +1497,15 @@ Func _ctrl_change_left()
 				;update the selected property
 				$oCtrl.Left = $new_data
 
+				If $oSelected.hasIP Then
+					For $oCtrl In $oSelected.ctrls
+						If $oCtrl.Type = "IP" Then
+							_updateIP($oCtrl)
+						EndIf
+					Next
+					_formObjectExplorer_updateList()
+				EndIf
+
 				$oCtrl.grippies.show()
 
 			Next
@@ -1494,6 +1533,15 @@ Func _ctrl_change_top()
 				;update the selected property
 				$oCtrl.Top = $new_data
 
+				If $oSelected.hasIP Then
+					For $oCtrl In $oSelected.ctrls
+						If $oCtrl.Type = "IP" Then
+							_updateIP($oCtrl)
+						EndIf
+					Next
+					_formObjectExplorer_updateList()
+				EndIf
+
 				$oCtrl.grippies.show()
 			Next
 	EndSwitch
@@ -1520,6 +1568,15 @@ Func _ctrl_change_width()
 				;update the selected property
 				$oCtrl.Width = $new_data
 
+				If $oSelected.hasIP Then
+					For $oCtrl In $oSelected.ctrls
+						If $oCtrl.Type = "IP" Then
+							_updateIP($oCtrl)
+						EndIf
+					Next
+					_formObjectExplorer_updateList()
+				EndIf
+
 				$oCtrl.grippies.show()
 			Next
 	EndSwitch
@@ -1545,6 +1602,15 @@ Func _ctrl_change_height()
 				GUICtrlSetPos($oCtrl.Hwnd, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $new_data)
 				;update the selected property
 				$oCtrl.Height = $new_data
+
+				If $oSelected.hasIP Then
+					For $oCtrl In $oSelected.ctrls
+						If $oCtrl.Type = "IP" Then
+							_updateIP($oCtrl)
+						EndIf
+					Next
+					_formObjectExplorer_updateList()
+				EndIf
 
 				$oCtrl.grippies.show()
 			Next
@@ -1707,18 +1773,11 @@ Func _wipe_current_gui()
 
 	For $oCtrl In $oCtrls.ctrls
 
-		Switch $oCtrl.Type
-			Case "Updown"
-				GUICtrlDelete($oCtrl.Hwnd1)
+		_delete_ctrl($oCtrl)
 
-				GUICtrlDelete($oCtrl.Hwnd2)
-
-			Case Else
-				GUICtrlDelete($oCtrl.Hwnd)
-		EndSwitch
 	Next
 
-	$oCtrls.removeAll()
+;~ 	$oCtrls.removeAll()
 
 	_set_default_mode()
 
@@ -2160,7 +2219,7 @@ Func _menu_about()
 	GUICtrlCreateLabel("", 0, $h - 32, $w, 1)
 	GUICtrlSetBkColor(-1, 0x000000)
 
-	GUICtrlCreateLabel($oMain.AppName, 10, 10, $w-15)
+	GUICtrlCreateLabel($oMain.AppName, 10, 10, $w - 15)
 	GUICtrlSetFont(-1, 13, 800)
 
 	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
@@ -2175,12 +2234,12 @@ Func _menu_about()
 	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
 
 	$desc = "GuiBuilderPlus is a small, easy to use GUI designer for AutoIt." & @CRLF & @CRLF & _
-		"Originally created as AutoBuilder by the user CyberSlug," & @CRLF & _
-		"enhanced as GuiBuilder by TheSaint," & @CRLF & _
-		"and further enhanced and expanded as GuiBuilderNxt by jaberwacky," & @CRLF & _
-		"with additional modifications by kurtykurtyboy as GuiBuilderPlus," & @CRLF & @CRLF & _
-		"GuiBuilderPlus is a continuation of the great work started by others," & @CRLF & _
-		"with a focus on increased stability and usability followed by new features."
+			"Originally created as AutoBuilder by the user CyberSlug," & @CRLF & _
+			"enhanced as GuiBuilder by TheSaint," & @CRLF & _
+			"and further enhanced and expanded as GuiBuilderNxt by jaberwacky," & @CRLF & _
+			"with additional modifications by kurtykurtyboy as GuiBuilderPlus," & @CRLF & @CRLF & _
+			"GuiBuilderPlus is a continuation of the great work started by others," & @CRLF & _
+			"with a focus on increased stability and usability followed by new features."
 	GUICtrlCreateLabel($desc, 10, 90, $w - 16, 135)
 	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
 
@@ -2207,7 +2266,7 @@ Func _onExitAbout()
 	GUIDelete($hAbout)
 	GUISetState(@SW_ENABLE, $hGUI)
 	GUISwitch($hGUI)
-EndFunc
+EndFunc   ;==>_onExitAbout
 
 Func _menu_vals()
 	Local Const $ctrl_count = $oCtrls.count

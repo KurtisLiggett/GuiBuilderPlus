@@ -216,6 +216,11 @@ Func _generate_controls(Const $oCtrl, $sDpiScale)
 				$mControls &= 'GUICtrlCreateMenuItem("' & $oMenuItem.Text & '", $' & $oCtrl.Name & ')' & @CRLF
 			Next
 
+		Case "IP"
+;~ 			_GUICtrlIpAddress_Create($hGUI, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			$mControls &= "_GUICtrlIpAddress_Create" & '($' & $oMain.Name & ', ' & $ltwh & ")" & @CRLF
+			$mControls &= "_GUICtrlIpAddress_Set($" & $oCtrl.Name & ', "' & $oCtrl.Text & '")' & @CRLF
+
 		Case Else
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & ")" & @CRLF
 	EndSwitch
@@ -270,6 +275,11 @@ Func _generate_includes(Const $oCtrl, Const $includes)
 		Case "Progress", "Slider", "TreeView", "Combo"
 			If Not StringInStr($includes, '<' & $oCtrl.Type & "Constants.au3>") Then
 				Return @CRLF & "#include <" & $oCtrl.Type & "Constants.au3>"
+			EndIf
+
+		Case "IP"
+			If Not StringInStr($includes, "<GuiIPAddress.au3>") Then
+				Return @CRLF & "#include <GuiIPAddress.au3>"
 			EndIf
 	EndSwitch
 
