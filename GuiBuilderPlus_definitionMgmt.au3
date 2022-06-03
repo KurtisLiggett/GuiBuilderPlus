@@ -61,10 +61,15 @@ Func _save_gui_definition()
 		Return
 	EndIf
 
+	Local $mainHeight = $oMain.Height
+	If $oCtrls.hasMenu Then
+		$mainHeight += _WinAPI_GetSystemMetrics($SM_CYMENU)
+	EndIf
+
 	IniWrite($AgdOutFile, "Main", "Left", $oMain.Left)
 	IniWrite($AgdOutFile, "Main", "Top", $oMain.Top)
 	IniWrite($AgdOutFile, "Main", "Width", $oMain.Width)
-	IniWrite($AgdOutFile, "Main", "Height", $oMain.Height)
+	IniWrite($AgdOutFile, "Main", "Height", $mainHeight)
 	IniWrite($AgdOutFile, "Main", "Name", $oMain.Name)
 	IniWrite($AgdOutFile, "Main", "Title", $oMain.Title)
 	IniWrite($AgdOutFile, "Main", "Background", $oMain.Background)

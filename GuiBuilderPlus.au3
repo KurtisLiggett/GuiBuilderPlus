@@ -14,8 +14,10 @@
 ; Revisions
 ;  06/02/2022 ...: 	- FIXED:	Array subscript error when closing tool windows.
 ;					- FIXED:	Multiple selection while holding Ctrl key now works properly.
+;					- FIXED:	Save/load GUI height with menus
 ;					- ADDED:	Show grippies on each selected control! Each control object now has a built-in crippy object
 ;					- ADDED:	Menu items can not be added and removed from the object explorer only
+;					- REMOVED:	Prompt to save to au3 file. User can always use File menu to save/export
 ;					- UPDATED:	modified the About dialog text for a more detailed naming history
 ;					- MAINT:	cleaned up more global variables
 ;					- MAINT:	made control selection much more robust and consistent

@@ -50,10 +50,8 @@ Func _code_generation()
 	Local $FuncDpiScaling = _getFuncDpiScaling()
 
 	Local $gdtitle = _get_script_title()
-	If $oMain.Title = "" Then
-		$oMain.Title = $gdtitle
-	ElseIf $oMain.Title <> $gdtitle Then
-		$oMain.Title = """" & $oMain.Title & """"
+	If $oMain.Title <> "" Then
+		$gdtitle = $oMain.Title
 	EndIf
 
 	;apply the DPI scaling factor
@@ -110,9 +108,9 @@ Func _code_generation()
 	$code &= $regionStart & @CRLF
 ;~ 			"Global $MainStyle = BitOR($WS_OVERLAPPED, $WS_CAPTION, $WS_SYSMENU, $WS_VISIBLE, $WS_CLIPSIBLINGS, $WS_MINIMIZEBOX)" & @CRLF
 	If $oMain.Name = "" Then
-		$code &= "GUICreate(" & $oMain.Title & ", " & $w & ", " & $h & ", " & $x & ", " & $y & ")" & @CRLF
+		$code &= 'GUICreate("' & $gdtitle & '", ' & $w & ", " & $h & ", " & $x & ", " & $y & ")" & @CRLF
 	Else
-		$code &= "Global $" & $oMain.Name & " = GUICreate(" & $oMain.Title & ", " & $w & ", " & $h & ", " & $x & ", " & $y & ")" & @CRLF
+		$code &= "Global $" & $oMain.Name & ' = GUICreate("' & $gdtitle & '", ' & $w & ", " & $h & ", " & $x & ", " & $y & ")" & @CRLF
 	EndIf
 
 	$code &= $setOnEvent & _

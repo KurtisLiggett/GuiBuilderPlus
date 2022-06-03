@@ -408,7 +408,7 @@ Func _objMain()
 	Local $oObject = _AutoItObject_Create()
 
 	_AutoItObject_AddProperty($oObject, "Hwnd", $ELSCOPE_PUBLIC)
-	_AutoItObject_AddProperty($oObject, "Title", $ELSCOPE_PUBLIC)
+	_AutoItObject_AddProperty($oObject, "Title", $ELSCOPE_PUBLIC, "")
 	_AutoItObject_AddProperty($oObject, "Name", $ELSCOPE_PUBLIC, "")
 	_AutoItObject_AddProperty($oObject, "Text", $ELSCOPE_PUBLIC, "")
 	_AutoItObject_AddProperty($oObject, "Left", $ELSCOPE_PUBLIC, -1)

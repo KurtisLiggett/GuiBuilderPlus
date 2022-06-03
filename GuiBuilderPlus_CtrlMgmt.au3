@@ -260,6 +260,10 @@ Func _create_ctrl($oCtrl = '', $bUseName = False)
 			Local $cmenu = GUICtrlCreateContextMenu($oNewControl.Hwnd)
 			GUICtrlCreateMenuItem("test Item", $cmenu)
 
+			Local $aWinPos = WinGetClientSize($hGUI)
+;~ 			WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $aWinPos[0] & ", " & $aWinPos[1] & ")")
+			$oMain.Height = $aWinPos[1]
+
 	EndSwitch
 
 	If $incTypeCount Then

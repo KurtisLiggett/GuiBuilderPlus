@@ -456,16 +456,16 @@ EndFunc   ;==>_display_grid
 ; Event...........: close button [X]
 ;------------------------------------------------------------------------------
 Func _onExit()
-	If $oCtrls.count > 0 Then
-		; mod by: TheSaint
-		Switch MsgBox($MB_SYSTEMMODAL + $MB_YESNOCANCEL, "Quit?", "Do you want to save the GUI?")
-			Case $IDYES
-				_save_code()
+;~ 	If $oCtrls.count > 0 Then
+;~ 		; mod by: TheSaint
+;~ 		Switch MsgBox($MB_SYSTEMMODAL + $MB_YESNOCANCEL, "Quit?", "Do you want to save the GUI?")
+;~ 			Case $IDYES
+;~ 				_save_code()
 
-			Case $IDCANCEL
-				Return
-		EndSwitch
-	EndIf
+;~ 			Case $IDCANCEL
+;~ 				Return
+;~ 		EndSwitch
+;~ 	EndIf
 
 	; save window positions in ini file
 	_saveWinPositions()
