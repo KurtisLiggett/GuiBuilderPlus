@@ -2145,15 +2145,78 @@ EndFunc   ;==>_menu_gui_function
 ; Description.....: Display popup with program description
 ;------------------------------------------------------------------------------
 Func _menu_about()
-	MsgBox(0, "About " & $oMain.AppName, $oMain.AppVersion & @CRLF & _
-			"Originally created by CyberSlug (as AutoBuilder)," & @CRLF & _
-			"and modified by Roy, TheSaint, and others (as GuiBuilder)," & @CRLF & _
-			"and Jaberwacky (as GuiBuilderNxt)," & @CRLF & _
-			"with additional modifications by kurtykurtyboy (as GuiBuilderPlus)." & @CRLF & @CRLF & _
-			"Program Information" & @CRLF & _
-			"When you exit " & $oMain.AppName & ", you will be prompted" & @CRLF & _
-			"to save what you may have created as an au3 file.")
+;~ 	MsgBox(0, "About " & $oMain.AppName, $oMain.AppVersion & @CRLF & _
+;~ 			"Originally created by CyberSlug (as AutoBuilder)," & @CRLF & _
+;~ 			"and modified by Roy, TheSaint, and others (as GuiBuilder)," & @CRLF & _
+;~ 			"and Jaberwacky (as GuiBuilderNxt)," & @CRLF & _
+;~ 			"with additional modifications by kurtykurtyboy (as GuiBuilderPlus)." & @CRLF & @CRLF & _
+;~ 			"Program Information" & @CRLF & _
+;~ 			"When you exit " & $oMain.AppName & ", you will be prompted" & @CRLF & _
+;~ 			"to save what you may have created as an au3 file.")
+
+	$w = 350
+	$h = 290
+
+	$hAbout = GUICreate("About " & $oMain.AppName, $w, $h, Default, Default, $WS_CAPTION, -1, $hGUI)
+	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExitChild")
+
+	; top section
+
+	GUICtrlCreateLabel("", 0, 0, $w, $h - 32)
+	GUICtrlSetBkColor(-1, 0xFFFFFF)
+	GUICtrlSetState(-1, $GUI_DISABLE)
+
+	GUICtrlCreateLabel("", 0, $h - 32, $w, 1)
+	GUICtrlSetBkColor(-1, 0x000000)
+
+	GUICtrlCreateLabel($oMain.AppName, 10, 10, $w-15)
+	GUICtrlSetFont(-1, 13, 800)
+
+	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
+	GUICtrlCreateLabel("Version:", 5, 38, 60, -1, $SS_RIGHT)
+	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
+	GUICtrlCreateLabel($oMain.AppVersion, 70, 38, 65, -1)
+	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
+
+	GUICtrlCreateLabel("License:", 5, 55, 60, -1, $SS_RIGHT)
+	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
+	GUICtrlCreateLabel("GNU GPL v3", 70, 55, 65, -1)
+	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
+
+	$desc = "GuiBuilderPlus is a small, easy to use GUI designer for AutoIt." & @CRLF & @CRLF & _
+		"Originally created as AutoBuilder by the user CyberSlug," & @CRLF & _
+		"enhanced as GuiBuilder by TheSaint," & @CRLF & _
+		"and further enhanced and expanded as GuiBuilderNxt by jaberwacky," & @CRLF & _
+		"with additional modifications by kurtykurtyboy as GuiBuilderPlus," & @CRLF & @CRLF & _
+		"GuiBuilderPlus is a continuation of the great work started by others," & @CRLF & _
+		"with a focus on increased stability and usability followed by new features."
+	GUICtrlCreateLabel($desc, 10, 90, $w - 16, 135)
+	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
+
+;~ 	$desc = "Originally created as AutoBuilder by the user CyberSlug," & @CRLF & _
+;~ 		"enhanced as GuiBuilder by TheSaint," & @CRLF & _
+;~ 		"and further enhanced and expanded as GuiBuilderNxt by jaberwacky," & @CRLF & _
+;~ 		"with additional modifications by kurtykurtyboy as GuiBuilderPlus," & @CRLF & _
+;~ 		"GuiBuilderPlus is a continuation of the great work started by others," & @CRLF & _
+;~ 		"with a focus on increased stability and usability followed by new features."
+;~ 	GUICtrlCreateLabel($desc, 10, 115, $w - 16, 100)
+;~ 	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
+
+	; bottom section
+
+	$bt_AboutOk = GUICtrlCreateButton("OK", $w - 55, $h - 27, 50, 22)
+	GUICtrlSetOnEvent(-1, "_onExitAbout")
+
+	GUISetState(@SW_DISABLE, $hGUI)
+	GUISetState(@SW_SHOW, $hAbout)
+
 EndFunc   ;==>_menu_about
+
+Func _onExitAbout()
+	GUIDelete($hAbout)
+	GUISetState(@SW_ENABLE, $hGUI)
+	GUISwitch($hGUI)
+EndFunc
 
 Func _menu_vals()
 	Local Const $ctrl_count = $oCtrls.count
