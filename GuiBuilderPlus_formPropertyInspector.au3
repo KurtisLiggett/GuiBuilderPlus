@@ -17,15 +17,15 @@ Func _formPropertyInspector($x, $y, $w, $h)
 
 	#Region properties-tab-main
 	;create the child gui for controls properties
-	Local $guiHandle = GUICreate("", $w, $h-2, $x, $y+1, $WS_POPUP, $WS_EX_MDICHILD, $hToolbar)
+	Local $guiHandle = GUICreate("", $w, $h - 2, $x, $y + 1, $WS_POPUP, $WS_EX_MDICHILD, $hToolbar)
 	GUISetBkColor(0xFFFFFF)
-	Local $ret = _GUIScrollbars_Generate($guiHandle, $w - 2, $h+20)
+	Local $ret = _GUIScrollbars_Generate($guiHandle, $w - 2, $h + 20)
 	$oProperties_Main.Hwnd = $guiHandle
 
 	Local $iScrollbarWidth = $__g_aSB_WindowInfo[0][5]
 
 	;End line
-	Local $labelLine = GUICtrlCreateLabel("", $w - $iScrollbarWidth - 1, 0, 1, $h+20)
+	Local $labelLine = GUICtrlCreateLabel("", $w - $iScrollbarWidth - 1, 0, 1, $h + 20)
 	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
 	;items
@@ -65,13 +65,13 @@ Func _formPropertyInspector($x, $y, $w, $h)
 
 	#Region properties-tab-controls
 	;create the child gui for controls properties
-	$guiHandle = GUICreate("", $w, $h-1, $x, $y+1, $WS_POPUP, $WS_EX_MDICHILD, $hToolbar)
+	$guiHandle = GUICreate("", $w, $h - 1, $x, $y + 1, $WS_POPUP, $WS_EX_MDICHILD, $hToolbar)
 	GUISetBkColor(0xFFFFFF)
 	_GUIScrollbars_Generate($guiHandle, $w - 2, $h)
 	$oProperties_Ctrls.Hwnd = $guiHandle
 
 	;End line
-	Local $labelLine = GUICtrlCreateLabel("", $w - $iScrollbarWidth - 1, 0, 1, $h+20)
+	Local $labelLine = GUICtrlCreateLabel("", $w - $iScrollbarWidth - 1, 0, 1, $h + 20)
 	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
 	;items
@@ -212,6 +212,18 @@ Func _showProperties($props = $props_Main)
 ;~ 			_GUIScrollbars_Generate($oProperties_Main.Hwnd, $w - 2, $h)
 
 		Case $props_Ctrls
+;~ 			If _containsMenus() Then
+;~ 				GUICtrlSetState($oProperties_Ctrls.Left.Hwnd, $GUI_DISABLE)
+;~ 				GUICtrlSetState($oProperties_Ctrls.Top.Hwnd, $GUI_DISABLE)
+;~ 				GUICtrlSetState($oProperties_Ctrls.Width.Hwnd, $GUI_DISABLE)
+;~ 				GUICtrlSetState($oProperties_Ctrls.Height.Hwnd, $GUI_DISABLE)
+;~ 			Else
+;~ 				GUICtrlSetState($oProperties_Ctrls.Left.Hwnd, $GUI_ENABLE)
+;~ 				GUICtrlSetState($oProperties_Ctrls.Top.Hwnd, $GUI_ENABLE)
+;~ 				GUICtrlSetState($oProperties_Ctrls.Width.Hwnd, $GUI_ENABLE)
+;~ 				GUICtrlSetState($oProperties_Ctrls.Height.Hwnd, $GUI_ENABLE)
+;~ 			EndIf
+
 			If _isAllLabels() Then
 				GUICtrlSetState($oProperties_Ctrls.Color.Hwnd, $GUI_ENABLE)
 				GUICtrlSetState($oProperties_Ctrls.Background.Hwnd, $GUI_ENABLE)
@@ -219,6 +231,7 @@ Func _showProperties($props = $props_Main)
 				GUICtrlSetState($oProperties_Ctrls.Color.Hwnd, $GUI_DISABLE)
 				GUICtrlSetState($oProperties_Ctrls.Background.Hwnd, $GUI_DISABLE)
 			EndIf
+
 			GUISetState(@SW_HIDE, $oProperties_Main.Hwnd)
 			GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Ctrls.Hwnd)
 ;~ 			_GUIScrollbars_Generate($oProperties_Ctrls.Hwnd, $w - 2, $h)
@@ -230,11 +243,11 @@ Func _showProperties($props = $props_Main)
 	EndSwitch
 
 	GUISwitch($hGUI)
-EndFunc
+EndFunc   ;==>_showProperties
 
 Func _isAllLabels()
 	If $oSelected.count > 0 Then
-		For $oCtrl in $oSelected.ctrls
+		For $oCtrl In $oSelected.ctrls
 			If $oCtrl.Type <> "Label" Then
 				Return False
 			EndIf
@@ -242,4 +255,16 @@ Func _isAllLabels()
 	EndIf
 
 	Return True
-EndFunc
+EndFunc   ;==>_isAllLabels
+
+Func _containsMenus()
+	If $oSelected.count > 0 Then
+		For $oCtrl In $oSelected.ctrls
+			If $oCtrl.Type <> "Menu" Then
+				Return True
+			EndIf
+		Next
+	EndIf
+
+	Return False
+EndFunc   ;==>_containsMenus

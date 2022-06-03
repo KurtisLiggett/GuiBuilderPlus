@@ -9,7 +9,7 @@
 ; Description.....:	Main container for all controls, a wrapper for linked list
 ;					with additional properties and methods
 ;------------------------------------------------------------------------------
-Func _objCtrls($isSelection=False)
+Func _objCtrls($isSelection = False)
 	Local $oObject = _AutoItObject_Create()
 
 	_AutoItObject_AddProperty($oObject, "count", $ELSCOPE_PUBLIC, 0)
@@ -34,6 +34,7 @@ Func _objCtrls($isSelection=False)
 	$oTypeCountList.add(_CreateListItem("Date", 0))
 	$oTypeCountList.add(_CreateListItem("Slider", 0))
 	$oTypeCountList.add(_CreateListItem("Tab", 0))
+	$oTypeCountList.add(_CreateListItem("Menu", 0))
 	$oTypeCountList.add(_CreateListItem("TreeView", 0))
 	$oTypeCountList.add(_CreateListItem("Updown", 0))
 	$oTypeCountList.add(_CreateListItem("Progress", 0))
@@ -145,6 +146,13 @@ Func _objCtrls_get($oSelf, $Hwnd)
 		If $oItem.Hwnd = $Hwnd Then
 			Return $oItem
 		EndIf
+		If $oItem.Type = "Menu" Then
+			For $oMenuItem In $oItem.MenuItems
+				If $oMenuItem.Hwnd = $Hwnd Then
+					Return $oMenuItem
+				EndIf
+			Next
+		EndIf
 	Next
 
 	Return -1
@@ -187,6 +195,13 @@ Func _objCtrls_exists($oSelf, $Hwnd)
 	For $oItem In $oSelf.ctrls
 		If $oItem.Hwnd = $Hwnd Then
 			Return True
+		EndIf
+		If $oItem.Type = "Menu" Then
+			For $oMenuItem In $oItem.MenuItems
+				If $oMenuItem.Hwnd = $Hwnd Then
+					Return True
+				EndIf
+			Next
 		EndIf
 	Next
 
@@ -353,45 +368,10 @@ Func _objCtrl($oParent)
 	_AutoItObject_AddProperty($oObject, "Background", $ELSCOPE_PUBLIC, -1)
 	_AutoItObject_AddProperty($oObject, "TabCount", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "Tabs", $ELSCOPE_PUBLIC, LinkedList())
-;~ 	If $oParent.isSelection Then
-;~ 		_AutoItObject_AddProperty($oObject, "grippies", $ELSCOPE_PUBLIC, _objGrippies($oObject))
-;~ 	EndIf
-
-	Local $aKeys[21] = _
-			[ _
-			"Hwnd", _
-			"Hwnd1", _
-			"Hwnd2", _
-			"Name", _
-			"Text", _
-			"HwndCount", _
-			"Type", _
-			"Left", _
-			"Top", _
-			"Widt", _
-			"Height", _
-			"Visible", _
-			"Enabled", _
-			"Focus", _
-			"OnTop", _
-			"DropAccepted", _
-			"DefButton", _
-			"Color", _
-			"Background", _
-			"TabCount", _
-			"Tabs" _
-			]
-	_AutoItObject_AddProperty($oObject, "keys", $ELSCOPE_PUBLIC, $aKeys)
-
-	_AutoItObject_AddMethod($oObject, "getKeys", "_objCtrl_getKeys")
+	_AutoItObject_AddProperty($oObject, "MenuItems", $ELSCOPE_PUBLIC, LinkedList())
 
 	Return $oObject
 EndFunc   ;==>_objCtrl
-
-Func _objCtrl_getKeys($oSelf)
-	#forceref $oSelf
-	Return $oSelf.keys
-EndFunc   ;==>_objCtrl_getKeys
 
 
 Func _objCreateRect()
@@ -509,7 +489,7 @@ Func _objGrippies($oParent)
 	_objGrippies_mouseClickEvent($oObject)
 
 	Return $oObject
-EndFunc   ;==>_objCtrl
+EndFunc   ;==>_objGrippies
 
 
 ;------------------------------------------------------------------------------
@@ -519,7 +499,7 @@ EndFunc   ;==>_objCtrl
 ; Credits.........: IsDeclared technique by TheDcoder
 ; Link............: https://www.autoitscript.com/forum/topic/139260-autoit-snippets/?do=findComment&comment=1373669
 ;------------------------------------------------------------------------------
-Func _objGrippies_mouseClickEvent($oObject=0)
+Func _objGrippies_mouseClickEvent($oObject = 0)
 	Static $oGrippiesObject
 	Local $isEvent = IsDeclared("oObject") = $DECLARED_LOCAL
 
@@ -529,10 +509,10 @@ Func _objGrippies_mouseClickEvent($oObject=0)
 		If IsObj($oGrippiesObject) Then
 			$oGrippiesObject.mouseClick(@GUI_CtrlId)
 		Else
-			return -1
+			Return -1
 		EndIf
 	EndIf
-EndFunc
+EndFunc   ;==>_objGrippies_mouseClickEvent
 
 ;------------------------------------------------------------------------------
 ; Title...........: _objGrippies_mouseClick
@@ -569,7 +549,7 @@ Func _objGrippies_mouseClick($oSelf, $CtrlID)
 	$initResize = True
 	_hide_selected_controls()
 
-EndFunc
+EndFunc   ;==>_objGrippies_mouseClick
 
 
 Func _objGrippies_resizing($oSelf, $mode)
@@ -639,7 +619,7 @@ Func _objGrippies_resizing($oSelf, $mode)
 	_change_ctrl_size_pos($oCtrl, $left, $top, $right, $bottom)
 	$oCtrl.grippies.show()
 	ToolTip($oCtrl.Name & ": X:" & $oCtrl.Left & ", Y:" & $oCtrl.Top & ", W:" & $oCtrl.Width & ", H:" & $oCtrl.Height)
-EndFunc
+EndFunc   ;==>_objGrippies_resizing
 
 
 ;------------------------------------------------------------------------------
@@ -648,16 +628,19 @@ EndFunc
 ;------------------------------------------------------------------------------
 Func _objGrippies_show($oSelf)
 ;~ 	ConsoleWrite("show grippies" & @CRLF)
-	GUICtrlSetState($oSelf.NW, $GUI_SHOW + $GUI_ONTOP )
-	GUICtrlSetState($oSelf.N, $GUI_SHOW + $GUI_ONTOP )
-	GUICtrlSetState($oSelf.NE, $GUI_SHOW + $GUI_ONTOP )
-	GUICtrlSetState($oSelf.East, $GUI_SHOW + $GUI_ONTOP )
-	GUICtrlSetState($oSelf.SE, $GUI_SHOW + $GUI_ONTOP )
-	GUICtrlSetState($oSelf.S, $GUI_SHOW + $GUI_ONTOP )
-	GUICtrlSetState($oSelf.SW, $GUI_SHOW + $GUI_ONTOP )
-	GUICtrlSetState($oSelf.W, $GUI_SHOW + $GUI_ONTOP )
 
-    _WinAPI_SetWindowPos(GUICtrlGetHandle($oSelf.NW), $HWND_TOP, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
+	;show
+	GUICtrlSetState($oSelf.NW, $GUI_SHOW + $GUI_ONTOP)
+	GUICtrlSetState($oSelf.N, $GUI_SHOW + $GUI_ONTOP)
+	GUICtrlSetState($oSelf.NE, $GUI_SHOW + $GUI_ONTOP)
+	GUICtrlSetState($oSelf.East, $GUI_SHOW + $GUI_ONTOP)
+	GUICtrlSetState($oSelf.SE, $GUI_SHOW + $GUI_ONTOP)
+	GUICtrlSetState($oSelf.S, $GUI_SHOW + $GUI_ONTOP)
+	GUICtrlSetState($oSelf.SW, $GUI_SHOW + $GUI_ONTOP)
+	GUICtrlSetState($oSelf.W, $GUI_SHOW + $GUI_ONTOP)
+
+	;set on top
+	_WinAPI_SetWindowPos(GUICtrlGetHandle($oSelf.NW), $HWND_TOP, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
 	_WinAPI_SetWindowPos(GUICtrlGetHandle($oSelf.N), $HWND_TOP, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
 	_WinAPI_SetWindowPos(GUICtrlGetHandle($oSelf.NE), $HWND_TOP, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
 	_WinAPI_SetWindowPos(GUICtrlGetHandle($oSelf.W), $HWND_TOP, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
@@ -670,14 +653,14 @@ Func _objGrippies_show($oSelf)
 
 	Local Const $l = $oSelf.parent.Left
 	Local Const $t = $oSelf.parent.Top
-	Local Const $w = $oSelf.parent.Width
+	Local Const $W = $oSelf.parent.Width
 	Local Const $h = $oSelf.parent.Height
 
 	Local Const $nw_left = $l - $grippy_size
 	Local Const $nw_top = $t - $grippy_size
-	Local Const $n_left = $l + ($w - $grippy_size) / 2
+	Local Const $n_left = $l + ($W - $grippy_size) / 2
 	Local Const $n_top = $nw_top
-	Local Const $ne_left = $l + $w
+	Local Const $ne_left = $l + $W
 	Local Const $ne_top = $nw_top
 	Local Const $e_left = $ne_left
 	Local Const $e_top = $t + ($h - $grippy_size) / 2
@@ -692,20 +675,20 @@ Func _objGrippies_show($oSelf)
 
 	Switch $oSelf.parent.Type
 		Case "Combo", "Checkbox", "Radio"
-			GUICtrlSetPos($oSelf.East, $e_left, $e_top, $grippy_size, $grippy_size)
-			GUICtrlSetPos($oSelf.W, $w_left, $w_top, $grippy_size, $grippy_size)
+			GUICtrlSetPos($oSelf.East, $e_left, $e_top, Default, Default)
+			GUICtrlSetPos($oSelf.W, $w_left, $w_top, Default, Default)
 
 		Case Else
-			GUICtrlSetPos($oSelf.NW, $nw_left, $nw_top, $grippy_size, $grippy_size)
-			GUICtrlSetPos($oSelf.N, $n_left, $n_top, $grippy_size, $grippy_size)
-			GUICtrlSetPos($oSelf.NE, $ne_left, $ne_top, $grippy_size, $grippy_size)
-			GUICtrlSetPos($oSelf.East, $e_left, $e_top, $grippy_size, $grippy_size)
-			GUICtrlSetPos($oSelf.SE, $se_left, $se_top, $grippy_size, $grippy_size)
-			GUICtrlSetPos($oSelf.S, $s_left, $s_top, $grippy_size, $grippy_size)
-			GUICtrlSetPos($oSelf.SW, $sw_left, $sw_top, $grippy_size, $grippy_size)
-			GUICtrlSetPos($oSelf.W, $w_left, $w_top, $grippy_size, $grippy_size)
+			GUICtrlSetPos($oSelf.NW, $nw_left, $nw_top, Default, Default)
+			GUICtrlSetPos($oSelf.N, $n_left, $n_top, Default, Default)
+			GUICtrlSetPos($oSelf.NE, $ne_left, $ne_top, Default, Default)
+			GUICtrlSetPos($oSelf.East, $e_left, $e_top, Default, Default)
+			GUICtrlSetPos($oSelf.SE, $se_left, $se_top, Default, Default)
+			GUICtrlSetPos($oSelf.S, $s_left, $s_top, Default, Default)
+			GUICtrlSetPos($oSelf.SW, $sw_left, $sw_top, Default, Default)
+			GUICtrlSetPos($oSelf.W, $w_left, $w_top, Default, Default)
 	EndSwitch
-EndFunc
+EndFunc   ;==>_objGrippies_show
 
 
 ;------------------------------------------------------------------------------
@@ -714,28 +697,20 @@ EndFunc
 ;------------------------------------------------------------------------------
 Func _objGrippies_hide($oSelf)
 ;~ 	ConsoleWrite("hide grippies" & @CRLF)
-;~ 	Local Const $grippy_size = $oSelf.size
-;~ 	GUICtrlSetPos($oSelf.NW, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($oSelf.N, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($oSelf.NE, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($oSelf.East, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($oSelf.SE, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($oSelf.S, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($oSelf.SW, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
-;~ 	GUICtrlSetPos($oSelf.W, -$grippy_size, -$grippy_size, $grippy_size, $grippy_size)
 
-	GUICtrlSetState($oSelf.NW, $GUI_HIDE )
-	GUICtrlSetState($oSelf.N, $GUI_HIDE )
-	GUICtrlSetState($oSelf.NE, $GUI_HIDE )
-	GUICtrlSetState($oSelf.East, $GUI_HIDE )
-	GUICtrlSetState($oSelf.SE, $GUI_HIDE )
-	GUICtrlSetState($oSelf.S, $GUI_HIDE )
-	GUICtrlSetState($oSelf.SW, $GUI_HIDE )
-	GUICtrlSetState($oSelf.W, $GUI_HIDE )
-EndFunc
+	GUICtrlSetState($oSelf.NW, $GUI_HIDE)
+	GUICtrlSetState($oSelf.N, $GUI_HIDE)
+	GUICtrlSetState($oSelf.NE, $GUI_HIDE)
+	GUICtrlSetState($oSelf.East, $GUI_HIDE)
+	GUICtrlSetState($oSelf.SE, $GUI_HIDE)
+	GUICtrlSetState($oSelf.S, $GUI_HIDE)
+	GUICtrlSetState($oSelf.SW, $GUI_HIDE)
+	GUICtrlSetState($oSelf.W, $GUI_HIDE)
+EndFunc   ;==>_objGrippies_hide
 
 Func _objGrippies_delete($oSelf)
-	ConsoleWrite("delete grippies" & @CRLF)
+;~ 	ConsoleWrite("delete grippies" & @CRLF)
+
 	GUICtrlDelete($oSelf.NW)
 	GUICtrlDelete($oSelf.N)
 	GUICtrlDelete($oSelf.NE)
@@ -744,35 +719,4 @@ Func _objGrippies_delete($oSelf)
 	GUICtrlDelete($oSelf.S)
 	GUICtrlDelete($oSelf.SE)
 	GUICtrlDelete($oSelf.W)
-EndFunc
-
-
-;------------------------------------------------------------------------------
-; Title...........: _objGrippy
-; Description.....:	Grippy Control Item
-;------------------------------------------------------------------------------
-;~ Func _objGrippy()
-;~ 	Local $oObject = _AutoItObject_Create()
-
-;~ 	Local $NW = GUICtrlCreateLabel('', -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	Local $N = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	Local $NE = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	Local $W = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	Local $E = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	Local $SW = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	Local $S = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-;~ 	Local $SE = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-
-;~ 	_AutoItObject_AddProperty($oObject, "NW", $ELSCOPE_PUBLIC)
-;~ 	_AutoItObject_AddProperty($oObject, "N", $ELSCOPE_PUBLIC)
-;~ 	_AutoItObject_AddProperty($oObject, "NE", $ELSCOPE_PUBLIC)
-;~ 	_AutoItObject_AddProperty($oObject, "SW", $ELSCOPE_PUBLIC, "")
-;~ 	_AutoItObject_AddProperty($oObject, "S", $ELSCOPE_PUBLIC, "")
-;~ 	_AutoItObject_AddProperty($oObject, "SE", $ELSCOPE_PUBLIC, 0)
-;~ 	_AutoItObject_AddProperty($oObject, "W", $ELSCOPE_PUBLIC, "")
-;~ 	_AutoItObject_AddProperty($oObject, "E", $ELSCOPE_PUBLIC, 0)
-
-;~ 	_AutoItObject_AddMethod($oObject, "mouseMove", "_objGrippies_mouseMove)
-
-;~ 	Return $oObject
-;~ EndFunc   ;==>_objCtrl
+EndFunc   ;==>_objGrippies_delete

@@ -139,6 +139,10 @@ Func _onLvObjectsItem()
 					Next
 					_add_to_selected($oParentCtrl)
 					_populate_control_properties_gui($oParentCtrl, Dec($textHwnd))
+				ElseIf $oParentCtrl.Type = "Menu" Then
+					$childSelected = True
+;~ 					_add_to_selected($oParentCtrl)
+					_populate_control_properties_gui($oCtrl, Dec($textHwnd))
 				EndIf
 			Else
 				If $first Then    ;select first item
@@ -263,7 +267,7 @@ Func _getLvSelected()
 		$iIndex += 1
 	Until $hItem = 0
 
-	Return 0
+	Return -1
 EndFunc   ;==>_getLvSelected
 
 
@@ -308,6 +312,68 @@ Func _setLvSelected($oCtrlSelect, $bSelect = False)
 EndFunc   ;==>_setLvSelected
 
 
+Func _getLvSelectedHwnd()
+	Local $count = _GUICtrlTreeView_GetCount($lvObjects)
+	Local $aItems[$count]
+	Local $iIndex = 0, $first = True
+	Local $hItem = _GUICtrlTreeView_GetFirstItem($lvObjects)
+	If $hItem = 0 Then Return -1
+	Do
+		If _GUICtrlTreeView_GetSelected($lvObjects, $hItem) Then
+			Local $aText = _GUICtrlTreeView_GetText($lvObjects, $hItem)
+			Local $aStrings = StringSplit($aText, @TAB)
+			Local $textHwnd = StringTrimRight(StringTrimLeft($aStrings[2], 7), 1)
+			$oCtrl = $oCtrls.get(Dec($textHwnd))
+
+			Return Dec($textHwnd)
+		EndIf
+
+		$hItem = _GUICtrlTreeView_GetNext($lvObjects, $hItem)
+		$iIndex += 1
+	Until $hItem = 0
+
+	Return -1
+EndFunc   ;==>_getLvSelectedHwnd
+
+
+Func _setLvSelectedHwnd($hwnd, $bSelect = False)
+	Local $i = 0
+	Local $hItem = _GUICtrlTreeView_GetFirstItem($lvObjects)
+	If $hItem = 0 Then Return -1
+
+	;first, loop through and deselect all items
+	Do
+		_GUICtrlTreeView_SetSelected($lvObjects, $hItem, False)
+		$hItem = _GUICtrlTreeView_GetNext($lvObjects, $hItem)
+	Until $hItem = 0
+
+	$i = 0
+	$hItem = _GUICtrlTreeView_GetFirstItem($lvObjects)
+	If $hItem = 0 Then Return -1
+
+	;loop through and select only the passed in control(s)
+	Do
+		Local $aText = _GUICtrlTreeView_GetText($lvObjects, $hItem)
+		Local $aStrings = StringSplit($aText, @TAB)
+		Local $textHwnd = StringTrimRight(StringTrimLeft($aStrings[2], 7), 1)
+
+		If Dec($textHwnd) = $hwnd Then
+			_GUICtrlTreeView_SetSelected($lvObjects, $hItem, True)
+			;if set, trigger the selection event
+			If $bSelect Then
+				_GUICtrlTreeView_SelectItem($lvObjects, $hItem, $TVGN_CARET)
+			EndIf
+			Return 0
+		EndIf
+
+		$hItem = _GUICtrlTreeView_GetNext($lvObjects, $hItem)
+		$i += 1
+	Until $hItem = 0
+
+	Return -1
+EndFunc   ;==>_setLvSelectedHwnd
+
+
 ;------------------------------------------------------------------------------
 ; Title...........: _formObjectExplorer_updateList
 ; Description.....: update list of objects
@@ -315,10 +381,13 @@ EndFunc   ;==>_setLvSelected
 Func _formObjectExplorer_updateList()
 	If Not IsHWnd($hFormObjectExplorer) Then Return
 
+	Local $prevSelected = _getLvSelectedHwnd()
+
 	Local $count = $oCtrls.count
 	Local $aList[$count]
 
 	Local $lvItem, $lvMenu, $lvMenuDelete, $childItem, $tabMenu, $tabMenuDelete, $lvMenuNewTab, $lvMenuDeleteTab, $sName
+	Local $lvMenuNewMenuItem, $menuItemMenu
 	_GUICtrlTreeView_DeleteAll($lvObjects)
 	For $oCtrl In $oCtrls.ctrls
 		$sName = $oCtrl.Name
@@ -349,9 +418,27 @@ Func _formObjectExplorer_updateList()
 
 				_GUICtrlTreeView_Expand($lvObjects, $lvItem)
 			Next
+		ElseIf $oCtrl.Type = "Menu" Then
+			$lvMenuNewMenuItem = GUICtrlCreateMenuItem("New menu item", $lvMenu)
+			GUICtrlSetOnEvent($lvMenuNewMenuItem, "_new_menuItem")
+
+			For $oMenuItem In $oCtrl.MenuItems
+				$childItem = GUICtrlCreateTreeViewItem($oMenuItem.Name & "       " & @TAB & "(HWND: " & Hex($oMenuItem.Hwnd) & ")", $lvItem)
+				GUICtrlSetOnEvent(-1, "_onLvObjectsItem")
+
+				$menuItemMenu = GUICtrlCreateContextMenu($childItem)
+				$menuItemMenuDelete = GUICtrlCreateMenuItem("Delete menu item", $menuItemMenu)
+				GUICtrlSetOnEvent($menuItemMenuDelete, "_delete_menuItem")
+
+				_GUICtrlTreeView_Expand($lvObjects, $lvItem)
+			Next
 		EndIf
 	Next
 
 	If StringStripWS($count, $STR_STRIPALL) = "" Then $count = 0
 	GUICtrlSetData($labelObjectCount, "Object Count: " & $count)
+
+	If $prevSelected <> -1 Then
+		_setLvSelectedHwnd($prevSelected)
+	EndIf
 EndFunc   ;==>_formObjectExplorer_updateList

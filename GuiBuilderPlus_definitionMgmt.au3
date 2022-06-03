@@ -94,7 +94,7 @@ Func _save_gui_definition()
 		Else
 			IniWrite($AgdOutFile, $Key, "Color", "0x" & Hex($oCtrl.Color, 6))
 		EndIf
-		If $oCtrl.Background = -1 Then
+		If $oCtrl.Background = -1 Or $oCtrl.Background = "" Then
 			IniWrite($AgdOutFile, $Key, "Background", -1)
 		Else
 			IniWrite($AgdOutFile, $Key, "Background", "0x" & Hex($oCtrl.Background, 6))
@@ -116,12 +116,32 @@ Func _save_gui_definition()
 				Next
 			EndIf
 		EndIf
+
+		If $oCtrl.Type = "Menu" Then
+			IniWrite($AgdOutFile, $Key, "MenuItemCount", $oCtrl.Menuitems.count)
+
+			Local $menuCount = $oCtrl.Menuitems.count
+
+			If $menuCount > 0 Then
+				Local $j = 1
+				For $oMenuItem In $oCtrl.MenuItems
+					IniWrite($AgdOutFile, $Key, "MenuItem" & $j & "_Name", $oMenuItem.Name)
+					IniWrite($AgdOutFile, $Key, "MenuItem" & $j & "_Text", $oMenuItem.Text)
+					$j += 1
+				Next
+			EndIf
+		EndIf
 		$i += 1
 	Next
 
 	$bStatusNewMessage = True
 	_GUICtrlStatusBar_SetText($hStatusbar, "Definition saved to file")
 EndFunc   ;==>_save_gui_definition
+
+
+Func _onload_gui_definition()
+	_load_gui_definition()
+EndFunc   ;==>_onload_gui_definition
 
 
 ;------------------------------------------------------------------------------
@@ -160,13 +180,13 @@ Func _load_gui_definition($AgdInfile = '')
 	$AgdOutFile = $AgdInfile
 
 	;only wipe if GUI exists already
-	If Not $firstLoad OR Not $CmdLine[0] Then
+	If Not $firstLoad Or Not $CmdLine[0] Then
 		_wipe_current_gui()
 	EndIf
-	If $firstLoad then $firstLoad = False
+	If $firstLoad Then $firstLoad = False
 
 	$oMain.Name = IniRead($AgdInfile, "Main", "Name", "hGUI")
-	$oMain.Title = IniRead($AgdInfile, "Main", "Title", StringTrimRight(StringTrimLeft(_get_script_title(), 1),1))
+	$oMain.Title = IniRead($AgdInfile, "Main", "Title", StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1))
 	$oMain.Left = IniRead($AgdInfile, "Main", "Left", -1)
 	$oMain.Top = IniRead($AgdInfile, "Main", "Top", -1)
 	$oMain.Width = IniRead($AgdInfile, "Main", "Width", 400)
@@ -188,7 +208,7 @@ Func _load_gui_definition($AgdInfile = '')
 	EndIf
 	$oMain.Background = IniRead($AgdInfile, "Main", "Background", -1)
 	$oProperties_Main.Background.value = $oMain.Background
-	If $oMain.Background <> -1 Then
+	If $oMain.Background <> -1 And $oMain.Background <> "" Then
 		$oMain.Background = Dec(StringReplace($oMain.Background, "0x", ""))
 		GUISetBkColor($oMain.Background, $hGUI)
 	Else
@@ -244,6 +264,20 @@ Func _load_gui_definition($AgdInfile = '')
 					$oCtrl.Tabs.at($j - 1).Name = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Name", "tempName")
 					$oCtrl.Tabs.at($j - 1).Text = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Text", "tempText")
 					_GUICtrlTab_SetItemText($oCtrl.Hwnd, $j - 1, $oCtrl.Tabs.at($j - 1).Text)
+				Next
+			EndIf
+		EndIf
+
+		If $oCtrl.Type = "Menu" Then
+			Local $MenuItemCount = IniRead($AgdInfile, $Key, "MenuItemCount", 0)
+
+			If $MenuItemCount > 0 Then
+				For $j = 1 To $MenuItemCount
+					_new_menuItemCreate($oCtrl)
+
+					$oCtrl.MenuItems.at($j - 1).Name = IniRead($AgdInfile, $Key, "MenuItem" & $j & "_Name", "tempName")
+					$oCtrl.MenuItems.at($j - 1).Text = IniRead($AgdInfile, $Key, "MenuItem" & $j & "_Text", "tempText")
+					GUICtrlSetData($oCtrl.MenuItems.at($j - 1).Hwnd, $oCtrl.MenuItems.at($j - 1).Text)
 				Next
 			EndIf
 		EndIf
