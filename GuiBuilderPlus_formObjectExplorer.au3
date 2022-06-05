@@ -12,20 +12,19 @@
 Func _formObjectExplorer()
 	Local $w = 250
 	Local $h = 500
-	Local $x, $y
 
-	Local $sPos = IniRead($sIniPath, "Settings", "posObjectExplorer", "")
-	If $sPos <> "" Then
-		Local $aPos = StringSplit($sPos, ",")
+	Local $currentWinPos = WinGetPos($hGUI)
+	Local $x = $currentWinPos[0] + $currentWinPos[2]
+	Local $y = $currentWinPos[1]
+
+	Local $sPos = IniRead($sIniPath, "Settings", "posObjectExplorer", $x & "," & $y)
+	Local $aPos = StringSplit($sPos, ",")
+	If Not @error Then
 		$x = $aPos[1]
 		$y = $aPos[2]
-	Else
-		Local $currentWinPos = WinGetPos($hGUI)
-		$x = $currentWinPos[0] + $currentWinPos[2]
-		$y = $currentWinPos[1]
 	EndIf
 
-	;make sure $x is not set off screen
+	;make sure not set off screen
 	Local $ixCoordMin = _WinAPI_GetSystemMetrics(76)
 	Local $iyCoordMin = _WinAPI_GetSystemMetrics(77)
 	Local $iFullDesktopWidth = _WinAPI_GetSystemMetrics(78)
@@ -34,6 +33,11 @@ Func _formObjectExplorer()
 		$x = $iFullDesktopWidth - $w
 	ElseIf $x < $ixCoordMin Then
 		$x = 1
+	EndIf
+	If ($y + $h) > ($iyCoordMin + $iFullDesktopHeight) Then
+		$y = $iFullDesktopHeight - $h
+	ElseIf $y < $iyCoordMin Then
+		$y = 1
 	EndIf
 
 	$hFormObjectExplorer = GUICreate("Object Explorer", $w, $h, $x, $y, $WS_SIZEBOX, -1, $hGUI)

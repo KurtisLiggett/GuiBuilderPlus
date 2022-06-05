@@ -12,11 +12,12 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  06/03/2022 ...: 	- ADDED:	Setting to create GUI as a function
+;  06/04/2022 ...: 	- FIXED:	Window position bugs when no INI file. Also better handling of off-screen situations
+;					- ADDED:	Setting to create GUI as a function
 ;					- ADDED:	Property to declare control as Global or Local
 ;					- ADDED:	Listview control
 ;					- ADDED:	IP Address control
-;					- ADDED:	Changed code generation preview to Rich Text with syntax highlighting using Beege's UDF
+;					- ADDED:	Changed code generation preview to Rich Text with syntax highlighting using UDF by Beege
 ;
 ;  06/02/2022 ...: 	- FIXED:	Array subscript error when closing tool windows.
 ;					- FIXED:	Multiple selection while holding Ctrl key now works properly.

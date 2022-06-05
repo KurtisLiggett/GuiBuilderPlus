@@ -9,19 +9,34 @@
 ; Description.....: Create the blank form designer GUI
 ;------------------------------------------------------------------------------
 Func _formMain()
-	Local $main_left, $main_top
+	Local $main_left = (@DesktopWidth / 2) - ($oMain.Width / 2)
+	Local $main_top = (@DesktopHeight / 2) - ($oMain.Height / 2)
 
 	;create the GUI
-	Local $sPos = IniRead($sIniPath, "Settings", "posMain", "")
-	If $sPos <> "" Then
-		Local $aPos = StringSplit($sPos, ",")
+	Local $sPos = IniRead($sIniPath, "Settings", "posMain", $main_left & "," & $main_top)
+	Local $aPos = StringSplit($sPos, ",")
+	If Not @error Then
 		$main_left = $aPos[1]
 		$main_top = $aPos[2]
-	Else
-		$main_left = (@DesktopWidth / 2) - ($oMain.Width / 2)
-		$main_top = (@DesktopHeight / 2) - ($oMain.Height / 2)
 	EndIf
 
+	Local $ixCoordMin = _WinAPI_GetSystemMetrics(76)
+	Local $iyCoordMin = _WinAPI_GetSystemMetrics(77)
+	Local $iFullDesktopWidth = _WinAPI_GetSystemMetrics(78)
+	Local $iFullDesktopHeight = _WinAPI_GetSystemMetrics(79)
+	If ($main_left + $oMain.Width) > ($ixCoordMin + $iFullDesktopWidth) Then
+		$main_left = $iFullDesktopWidth - $oMain.Width
+	ElseIf $main_left < $ixCoordMin Then
+		$main_left = 0
+	EndIf
+	If ($main_top + $oMain.Height) > ($iyCoordMin + $iFullDesktopHeight) Then
+		$main_top = $iFullDesktopHeight - $oMain.Height
+	ElseIf $main_top < $iyCoordMin Then
+		$main_top = 0
+	EndIf
+
+	$oMain.Left = $main_left
+	$oMain.Top = $main_top
 	$hGUI = GUICreate($oMain.AppName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ')', $oMain.Width, $oMain.Height, $main_left, $main_top, BitOR($WS_SIZEBOX, $WS_SYSMENU, $WS_MINIMIZEBOX), $WS_EX_ACCEPTFILES)
 
 	_getGuiFrameSize()
@@ -89,18 +104,32 @@ EndFunc   ;==>_formMain
 ; Description.....: Create the toolbar/properties GUI
 ;------------------------------------------------------------------------------
 Func _formToolbar()
-	Local $toolbar_left, $toolbar_top
 	Local Const $toolbar_width = 215
 	Local Const $toolbar_height = 480
-	;create the GUI
-	Local $sPos = IniRead($sIniPath, "Settings", "posToolbar", "")
-	If $sPos <> "" Then
-		Local $aPos = StringSplit($sPos, ",")
+
+	Local $toolbar_left = $oMain.Left - ($toolbar_width + 5)
+	Local $toolbar_top = $oMain.Top
+
+	Local $sPos = IniRead($sIniPath, "Settings", "posToolbar", $toolbar_left & "," & $toolbar_top)
+	Local $aPos = StringSplit($sPos, ",")
+	If Not @error Then
 		$toolbar_left = $aPos[1]
 		$toolbar_top = $aPos[2]
-	Else
-		$toolbar_left = $oMain.Left - ($toolbar_width + 5)
-		$toolbar_top = $oMain.Top
+	EndIf
+
+	Local $ixCoordMin = _WinAPI_GetSystemMetrics(76)
+	Local $iyCoordMin = _WinAPI_GetSystemMetrics(77)
+	Local $iFullDesktopWidth = _WinAPI_GetSystemMetrics(78)
+	Local $iFullDesktopHeight = _WinAPI_GetSystemMetrics(79)
+	If ($toolbar_left + $toolbar_width) > ($ixCoordMin + $iFullDesktopWidth) Then
+		$toolbar_left = $iFullDesktopWidth - $toolbar_width
+	ElseIf $toolbar_left < $ixCoordMin Then
+		$toolbar_left = 0
+	EndIf
+	If ($toolbar_top + $toolbar_height) > ($iyCoordMin + $iFullDesktopHeight) Then
+		$toolbar_top = $iFullDesktopHeight - $toolbar_height
+	ElseIf $toolbar_top < $iyCoordMin Then
+		$toolbar_top = 0
 	EndIf
 
 	$hToolbar = GUICreate("Choose Control Type", $toolbar_width, $toolbar_height, $toolbar_left, $toolbar_top, $WS_CAPTION, -1, $hGUI)

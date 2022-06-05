@@ -12,21 +12,19 @@
 Func _formGenerateCode()
 	Local $w = 450
 	Local $h = 550
-	Local $x, $y
 
-	Local $sPos = IniRead($sIniPath, "Settings", "posGenerateCode", "")
-	If $sPos <> "" Then
-		Local $aPos = StringSplit($sPos, ",")
+	Local $currentWinPos = WinGetPos($hToolbar)
+	Local $x = $currentWinPos[0] + 100
+		$y = $currentWinPos[1] - 50
+
+	Local $sPos = IniRead($sIniPath, "Settings", "posGenerateCode", $x & "," & $y)
+	Local $aPos = StringSplit($sPos, ",")
+	If Not @error Then
 		$x = $aPos[1]
 		$y = $aPos[2]
-	Else
-		Local $currentWinPos = WinGetPos($hToolbar)
-		$x = $currentWinPos[0] + 100
-		$y = $currentWinPos[1] - 50
 	EndIf
 
-
-	;make sure $x is not set off screen
+	;make sure not set off screen
 	Local $ixCoordMin = _WinAPI_GetSystemMetrics(76)
 	Local $iyCoordMin = _WinAPI_GetSystemMetrics(77)
 	Local $iFullDesktopWidth = _WinAPI_GetSystemMetrics(78)
@@ -35,6 +33,11 @@ Func _formGenerateCode()
 		$x = $iFullDesktopWidth - $w
 	ElseIf $x < $ixCoordMin Then
 		$x = 1
+	EndIf
+	If ($y + $h) > ($iyCoordMin + $iFullDesktopHeight) Then
+		$y = $iFullDesktopHeight - $h
+	ElseIf $y < $iyCoordMin Then
+		$y = 1
 	EndIf
 
 	$hFormGenerateCode = GUICreate("Live Generated Code", $w, $h, $x, $y, $WS_SIZEBOX, -1, $hGUI)
