@@ -31,6 +31,7 @@ Help & Support
 * To view currently open bug reports, [click here](https://github.com/KurtisLiggett/GuiBuilderPlus/issues)
 * To view or submit neww feature requests, visit the [discussions](https://github.com/KurtisLiggett/GuiBuilderPlus/discussions/categories/ideas) page and look for the _Ideas_ category.
 * Have a question? Visit the [discussions](https://github.com/KurtisLiggett/GuiBuilderPlus/discussions/categories/q-a) page and look for the _Q&A_ category.
+* The AutoIt forum topic can be found [here](https://www.autoitscript.com/forum/topic/208102-guibuilderplus/)
 
 License
 ---
