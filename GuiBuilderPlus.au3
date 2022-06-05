@@ -13,6 +13,7 @@
 ;
 ; Revisions
 ;  06/04/2022 ...: 	- FIXED:	Window position bugs when no INI file. Also better handling of off-screen situations
+;					- FIXED:	Primary and secondary mouse clicks not detected outside default area if GUI is resized
 ;					- ADDED:	Setting to create GUI as a function
 ;					- ADDED:	Property to declare control as Global or Local
 ;					- ADDED:	Listview control

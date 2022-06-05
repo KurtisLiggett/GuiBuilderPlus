@@ -482,6 +482,9 @@ Func _display_grid(Const $grid_ctrl, Const $width, Const $height)
 
 	;refresh the graphic display
 	GUICtrlSetGraphic($grid_ctrl, $GUI_GR_REFRESH)
+
+	;resize the control for click detection
+	GUICtrlSetPos($grid_ctrl, Default, Default, $width, $height)
 EndFunc   ;==>_display_grid
 #EndRegion grid management
 
