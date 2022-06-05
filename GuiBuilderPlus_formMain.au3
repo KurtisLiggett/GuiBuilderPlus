@@ -157,7 +157,6 @@ Func _formToolbar()
 	Local $menu_selectall = GUICtrlCreateMenuItem("Select All" & @TAB & "Ctrl+A", $menu_edit)
 	GUICtrlCreateMenuItem("", $menu_edit)
 	$menu_wipe = GUICtrlCreateMenuItem("Clear All Controls", $menu_edit)
-	Local $menu_about = GUICtrlCreateMenuItem("About", $menu_edit)         ; added by: TheSaint
 
 	GUICtrlSetState($menu_wipe, $GUI_DISABLE)
 
@@ -166,7 +165,6 @@ Func _formToolbar()
 	GUICtrlSetOnEvent($menu_duplicate, "_onDuplicate")
 	GUICtrlSetOnEvent($menu_selectall, "_onMenuSelectAll")
 	GUICtrlSetOnEvent($menu_wipe, _wipe_current_gui)
-	GUICtrlSetOnEvent($menu_about, _menu_about)
 
 	;create the View menu
 	Local $menu_view = GUICtrlCreateMenu("View")
@@ -184,7 +182,7 @@ Func _formToolbar()
 	GUICtrlSetOnEvent($menu_testForm, "_onTestGUI")
 
 	;create the Settings menu
-	Local $menu_settings = GUICtrlCreateMenu("Settings")
+	Local $menu_settings = GUICtrlCreateMenu("Settings", $menu_tools)
 	$menu_show_grid = GUICtrlCreateMenuItem("Show grid" & @TAB & "F7", $menu_settings)
 	$menu_grid_snap = GUICtrlCreateMenuItem("Snap to grid" & @TAB & "F3", $menu_settings)
 	$menu_paste_pos = GUICtrlCreateMenuItem("Paste at mouse position", $menu_settings)
@@ -209,6 +207,13 @@ Func _formToolbar()
 	GUICtrlSetState($menu_show_ctrl, $GUI_CHECKED)
 	GUICtrlSetState($menu_show_hidden, $GUI_UNCHECKED)
 	GUICtrlSetState($menu_dpi_scaling, $GUI_UNCHECKED)
+
+	Local $menu_help = GUICtrlCreateMenu("Help")
+	Local $menu_github = GUICtrlCreateMenuItem("Github Repository", $menu_help)
+	Local $menu_about = GUICtrlCreateMenuItem("About", $menu_help)         ; added by: TheSaint
+
+	GUICtrlSetOnEvent($menu_about, _menu_about)
+	GUICtrlSetOnEvent($menu_github, _onGithubItem)
 
 	#EndRegion create-menu
 
@@ -2255,6 +2260,13 @@ Func _menu_gui_function()
 EndFunc   ;==>_menu_gui_function
 
 
+;------------------------------------------------------------------------------
+; Title...........: _onGithubItem
+; Description.....: Open browser and go to GitHub page
+;------------------------------------------------------------------------------
+Func _onGithubItem()
+	ShellExecute('https://github.com/KurtisLiggett/GuiBuilderPlus')
+EndFunc
 
 ;------------------------------------------------------------------------------
 ; Title...........: _menu_about

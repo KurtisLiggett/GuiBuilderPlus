@@ -19,6 +19,8 @@
 ;					- ADDED:	Listview control
 ;					- ADDED:	IP Address control
 ;					- ADDED:	Changed code generation preview to Rich Text with syntax highlighting using UDF by Beege
+;					- UPDATED:	Updated menu layout - settings under tools, About under help, added online support
+;					- UPDATED:	Added Sleep(100) to generated code While loop
 ;
 ;  06/02/2022 ...: 	- FIXED:	Array subscript error when closing tool windows.
 ;					- FIXED:	Multiple selection while holding Ctrl key now works properly.

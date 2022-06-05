@@ -49,11 +49,8 @@ Func _formGenerateCode()
 	GUICtrlSetBkColor(-1, 0xFFFFFF)
 	GUICtrlSetResizing(-1, $GUI_DOCKBORDERS)
 
-;~ 	$editCodeGeneration = GUICtrlCreateEdit("", 10, 10, $w - 20, $h - $titleBarHeight - 53)
 	$editCodeGeneration = _GUICtrlRichEdit_Create($hFormGenerateCode, "", 10, 10, $w - 20, $h - $titleBarHeight - 53, BitOR($ES_MULTILINE, $WS_VSCROLL, $WS_HSCROLL, $ES_AUTOVSCROLL))
 	GUICtrlSetResizing(-1, $GUI_DOCKBORDERS)
-;~ 	GUICtrlSetFont(-1, 9, -1, -1, "Courier New")
-;~ 	_GUICtrlEdit_SetTabStops($editCodeGeneration, 4)
 	_GUICtrlRichEdit_SetText($editCodeGeneration, _code_generation())
 	_RESH_SyntaxHighlight($editCodeGeneration)
 
@@ -91,7 +88,7 @@ EndFunc   ;==>_onCodeRefresh
 ; Events..........: Save button in code generation dialog
 ;------------------------------------------------------------------------------
 Func _onCodeSave()
-	_copy_code_to_output(GUICtrlRead($editCodeGeneration))
+	_copy_code_to_output(_GUICtrlRichEdit_GetText($editCodeGeneration))
 EndFunc   ;==>_onCodeSave
 
 
@@ -101,7 +98,7 @@ EndFunc   ;==>_onCodeSave
 ; Events..........: Copy button in code generation dialog
 ;------------------------------------------------------------------------------
 Func _onCodeCopy()
-	ClipPut(GUICtrlRead($editCodeGeneration))
+	ClipPut(_GUICtrlRichEdit_GetText($editCodeGeneration))
 EndFunc   ;==>_onCodeCopy
 
 

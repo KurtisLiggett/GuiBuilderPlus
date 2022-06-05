@@ -405,6 +405,7 @@ Func _getFuncMain($bOnEventMode, $bGuiFunction)
 				@TAB & @TAB & @TAB & @TAB & ";" & @CRLF & _
 				@TAB & @TAB & "EndSwitch" & @CRLF
 	Else
+		$code &= @TAB & @TAB & "Sleep(100)" & @CRLF
 		$code &= @TAB & @TAB & ";" & @CRLF
 	EndIf
 	$code &= '' & _
@@ -424,6 +425,7 @@ Func _getFuncOnExit()
 	Local $code = '' & _
 			$FuncDoc & _
 			'Func _onExitMain()' & @CRLF & _
+			@TAB & 'GUIDelete()' & @CRLF & _
 			@TAB & 'Exit' & @CRLF & _
 			'EndFunc   ;==>_onExitMain' & @CRLF
 
