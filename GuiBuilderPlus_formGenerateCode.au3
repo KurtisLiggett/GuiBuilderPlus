@@ -42,6 +42,7 @@ Func _formGenerateCode()
 
 	$hFormGenerateCode = GUICreate("Live Generated Code", $w, $h, $x, $y, $WS_SIZEBOX, -1, $hGUI)
 	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExitGenerateCode")
+
 	Local $titleBarHeight = _WinAPI_GetSystemMetrics($SM_CYCAPTION) + 3
 
 	GUICtrlCreateLabel("", 0, 0, $w, $h - $titleBarHeight - 32)
@@ -49,10 +50,11 @@ Func _formGenerateCode()
 	GUICtrlSetBkColor(-1, 0xFFFFFF)
 	GUICtrlSetResizing(-1, $GUI_DOCKBORDERS)
 
-	$editCodeGeneration = _GUICtrlRichEdit_Create($hFormGenerateCode, "", 10, 10, $w - 20, $h - $titleBarHeight - 53, BitOR($ES_MULTILINE, $WS_VSCROLL, $WS_HSCROLL, $ES_AUTOVSCROLL))
+	$editCodeGeneration = GUICtrlCreateEdit("", 10, 10, $w - 20, $h - $titleBarHeight - 53)
 	GUICtrlSetResizing(-1, $GUI_DOCKBORDERS)
-	_GUICtrlRichEdit_SetText($editCodeGeneration, _code_generation())
-	_RESH_SyntaxHighlight($editCodeGeneration)
+	GUICtrlSetFont(-1, 9, -1, -1, "Courier New")
+	_GUICtrlEdit_SetTabStops($editCodeGeneration, 4)
+	GUICtrlSetData($editCodeGeneration, _code_generation())
 
 
 	GUICtrlCreateButton("Copy", $w - 20 - 75 * 2 - 5 * 1, $h - 27 - $titleBarHeight, 75, 22)
@@ -63,7 +65,7 @@ Func _formGenerateCode()
 	GUICtrlSetResizing(-1, $GUI_DOCKRIGHT + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
 
 	GUISetState(@SW_SHOW, $hFormGenerateCode)
-	_GUICtrlRichEdit_SetSel($editCodeGeneration, 0, -1)
+	_GUICtrlEdit_SetSel($editCodeGeneration, 0, 0)
 
 	GUISwitch($hGUI)
 EndFunc   ;==>_formGenerateCode
@@ -77,8 +79,7 @@ EndFunc   ;==>_formGenerateCode
 ; Events..........: Refresh button in code generation dialog
 ;------------------------------------------------------------------------------
 Func _onCodeRefresh()
-	_GUICtrlRichEdit_SetText($editCodeGeneration, _code_generation())
-	_RESH_SyntaxHighlight($editCodeGeneration)
+	GUICtrlSetData($editCodeGeneration, _code_generation())
 EndFunc   ;==>_onCodeRefresh
 
 
@@ -88,7 +89,7 @@ EndFunc   ;==>_onCodeRefresh
 ; Events..........: Save button in code generation dialog
 ;------------------------------------------------------------------------------
 Func _onCodeSave()
-	_copy_code_to_output(_GUICtrlRichEdit_GetText($editCodeGeneration))
+	_copy_code_to_output(GUICtrlRead($editCodeGeneration))
 EndFunc   ;==>_onCodeSave
 
 
@@ -98,7 +99,7 @@ EndFunc   ;==>_onCodeSave
 ; Events..........: Copy button in code generation dialog
 ;------------------------------------------------------------------------------
 Func _onCodeCopy()
-	ClipPut(_GUICtrlRichEdit_GetText($editCodeGeneration))
+	ClipPut(GUICtrlRead($editCodeGeneration))
 EndFunc   ;==>_onCodeCopy
 
 
@@ -128,24 +129,6 @@ EndFunc   ;==>_onExitGenerateCode
 ;------------------------------------------------------------------------------
 Func _refreshGenerateCode()
 	If IsHWnd($hFormGenerateCode) Then
-		Local $iStart = _GUICtrlRichEdit_GetFirstCharPosOnLine($editCodeGeneration)
-		Local $aScroll = _GUICtrlRichEdit_GetScrollPos($editCodeGeneration)
-
-		Local $sCode = _code_generation()
-		_GUICtrlRichEdit_PauseRedraw($editCodeGeneration)
-		_GUICtrlRichEdit_SetSel($editCodeGeneration, 0, -1, True)
-		_GUICtrlRichEdit_ReplaceText($editCodeGeneration, '')
-
-		_GUICtrlRichEdit_SetFont($editCodeGeneration, 9, 'Courier New')
-
-		_GUICtrlRichEdit_SetLimitOnText($editCodeGeneration, Round(StringLen($sCode) * 1.5))
-		_GUICtrlRichEdit_AppendText($editCodeGeneration, $sCode)
-
-;~ 		_GUICtrlRichEdit_SetText($editCodeGeneration, _code_generation())
-		_RESH_SyntaxHighlight($editCodeGeneration)
-
-		_GUICtrlRichEdit_GotoCharPos($editCodeGeneration, $iStart)
-		_GUICtrlRichEdit_SetScrollPos($editCodeGeneration, $aScroll[0], $aScroll[1])
-		_GUICtrlRichEdit_ResumeRedraw($editCodeGeneration)
+		GUICtrlSetData($editCodeGeneration, _code_generation())
 	EndIf
 EndFunc   ;==>_refreshGenerateCode

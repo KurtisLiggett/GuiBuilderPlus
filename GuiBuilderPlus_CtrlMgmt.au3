@@ -379,6 +379,7 @@ Func _updateIP($oCtrl)
 	_GUICtrlIpAddress_Destroy(HWnd($oCtrl.Hwnd))
 	$oCtrl.Hwnd = _GUICtrlIpAddress_Create($hGUI, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
 	_GUICtrlIpAddress_Set($oCtrl.Hwnd, $oCtrl.Text)
+;~ 	_WinAPI_SetWindowPos($oCtrl.Hwnd, $HWND_TOP, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height, $SWP_SHOWWINDOW)
 EndFunc   ;==>_updateIP
 
 

@@ -12,20 +12,23 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
+;  06/05/2022 ...: 	- FIXED:	Code generation missing sleep in Msg mode
+;					- UPDATED:	Reverted back to standard edit box for code preview due to more issues with rich edit than it was worth
+;
 ;  06/04/2022 ...: 	- FIXED:	Window position bugs when no INI file. Also better handling of off-screen situations
 ;					- FIXED:	Primary and secondary mouse clicks not detected outside default area if GUI is resized
 ;					- ADDED:	Setting to create GUI as a function
 ;					- ADDED:	Property to declare control as Global or Local
 ;					- ADDED:	Listview control
 ;					- ADDED:	IP Address control
-;					- ADDED:	Changed code generation preview to Rich Text with syntax highlighting using UDF by Beege
+;					- ADDED:	Changed code generation preview to Rich Text with syntax highlighting using RESH UDF by Beege
 ;					- UPDATED:	Updated menu layout - settings under tools, About under help, added online support
 ;					- UPDATED:	Added Sleep(100) to generated code While loop
 ;
 ;  06/02/2022 ...: 	- FIXED:	Array subscript error when closing tool windows.
 ;					- FIXED:	Multiple selection while holding Ctrl key now works properly.
 ;					- FIXED:	Save/load GUI height with menus
-;					- ADDED:	Show grippies on each selected control! Each control object now has a built-in crippy object
+;					- ADDED:	Show grippies on each selected control! Each control object now has a built-in grippy object
 ;					- ADDED:	Menu items can not be added and removed from the object explorer only
 ;					- REMOVED:	Prompt to save to au3 file. User can always use File menu to save/export
 ;					- UPDATED:	modified the About dialog text for a more detailed description and naming history
@@ -147,8 +150,8 @@
 #AutoIt3Wrapper_Res_HiDpi=y
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.26.exe
-#AutoIt3Wrapper_Res_Fileversion=0.26.0.0
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.27.exe
+#AutoIt3Wrapper_Res_Fileversion=0.27.0.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 
 Opt("WinTitleMatchMode", 4) ; advanced
@@ -226,7 +229,6 @@ _AutoItObject_StartUp()
 #include <GuiTab.au3>
 #include <GuiListView.au3>
 #include <GuiIPAddress.au3>
-#include <GuiRichEdit.au3>
 #include <Misc.au3>
 #include <MsgBoxConstants.au3>
 #include <StringConstants.au3>
@@ -275,7 +277,7 @@ Func _main()
 	$oClipboard = _objCtrls()
 	$oMain = _objMain()
 	$oMain.AppName = "GuiBuilderPlus"
-	$oMain.AppVersion = "0.26"
+	$oMain.AppVersion = "0.27"
 	$oMain.Title = StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1)
 	$oMain.Name = "hGUI"
 	$oMain.Width = 400
