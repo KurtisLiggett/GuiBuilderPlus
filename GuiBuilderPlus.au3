@@ -15,6 +15,7 @@
 ;  06/05/2022 ...: 	- FIXED:	Code generation missing sleep in Msg mode
 ;					- FIXED:	Lots of handling of copy+paste scenarios
 ;					- FIXED:	Tooltip when resizing multiple controls
+;					- FIXED:	Changed the selection rectangle so controls don't bounce around during right-to-left selection anymore
 ;					- UPDATED:	Reverted back to standard edit box for code preview due to more issues with rich edit than it was worth
 ;					- UPDATED:	When pasting, control will follow mouse waiting to be placed by single click
 ;					- ADDED:	New menu item, shortcut key Ctrl+X, and context menu item to 'Cut' selected controls
@@ -185,7 +186,7 @@ Global $menu_show_grid, $menu_grid_snap, $menu_paste_pos, $menu_show_ctrl, $menu
 Global $menu_generateCode, $menu_ObjectExplorer
 ;Background
 Global $background, $background_contextmenu, $background_contextmenu_paste
-Global $overlay, $overlay_contextmenu, $overlay_contextmenutab
+Global $overlay = -1, $overlay_contextmenu, $overlay_contextmenutab
 ;grippys
 ;~ Global $NorthWest_Grippy, $North_Grippy, $NorthEast_Grippy, $West_Grippy, $East_Grippy, $SouthWest_Grippy, $South_Grippy, $SouthEast_Grippy
 ;code generation popup
@@ -255,6 +256,7 @@ _AutoItObject_StartUp()
 #include <WinAPISys.au3>
 #include <WindowsConstants.au3>
 #include <WinAPIvkeysConstants.au3>
+#include <GDIPlus.au3>
 #include <GuiMenu.au3>
 #include <GuiEdit.au3>
 #include <GuiTreeView.au3>
@@ -286,6 +288,8 @@ _main()
 ;------------------------------------------------------------------------------
 Func _main()
 	_log("Startup")
+	_GDIPlus_Startup()
+
 	;create the main program data objects
 	$oMouse = _objCreateMouse()
 	$oCtrls = _objCtrls()

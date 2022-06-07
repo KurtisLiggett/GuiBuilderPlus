@@ -75,11 +75,6 @@ Func _formMain()
 	;menu events
 	GUICtrlSetOnEvent($background_contextmenu_paste, "_onPasteSelected")
 
-
-	;create the overlay and context menu  <-- overlay used to show control selection
-	$overlay = GUICtrlCreateLabel('', -1, -1, 1, 1, $SS_BLACKFRAME, $WS_EX_TOPMOST)
-	GUICtrlSetState(-1, $GUI_DISABLE)
-
 	$overlay_contextmenu = GUICtrlCreateContextMenu(GUICtrlCreateDummy())
 	Local $overlay_contextmenu_cut = GUICtrlCreateMenuItem("Cut", $overlay_contextmenu)
 	Local $overlay_contextmenu_copy = GUICtrlCreateMenuItem("Copy", $overlay_contextmenu)
@@ -1165,7 +1160,7 @@ Func _onMouseMove()
 			Local Const $oRect = _rect_from_points($oMouse.X, $oMouse.Y, MouseGetPos(0), MouseGetPos(1))
 			_display_selection_rect($oRect)
 			_add_remove_selected_control($oRect)
-			_setLvSelected($oSelected.getFirst())
+;~ 			_setLvSelected($oSelected.getFirst())
 
 		Case $resize_nw, $resize_n, $resize_ne, $resize_w, $resize_e, $resize_sw, $resize_s, $resize_se
 			Local $tooltip

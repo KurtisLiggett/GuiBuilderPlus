@@ -786,7 +786,7 @@ Func _add_remove_selected_control(Const $oRect)
 			Case True
 				Switch _add_to_selected($oCtrl, False)
 					Case True
-						_populate_control_properties_gui($oCtrl)
+;~ 						_populate_control_properties_gui($oCtrl)
 
 						_display_selected_tooltip()
 				EndSwitch
@@ -800,8 +800,8 @@ Func _add_remove_selected_control(Const $oRect)
 							Case True
 								_populate_control_properties_gui($oSelected.getLast())
 
-							Case False
-								_showProperties($props_Main)
+;~ 							Case False
+;~ 								_showProperties($props_Main)
 
 						EndSwitch
 
@@ -882,7 +882,18 @@ EndFunc   ;==>_remove_from_selected
 
 
 Func _display_selection_rect(Const $oRect)
-	GUICtrlSetPos($overlay, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
+	_log("create rect")
+
+	GUISwitch($hGUI)
+	If GUICtrlGetHandle($overlay) <> -1 Then
+		GUICtrlDelete($overlay)
+		$overlay = -1
+	EndIf
+	$overlay = GUICtrlCreateGraphic($oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
+	GUICtrlSetState(-1, $GUI_DISABLE)
+	GUICtrlSetGraphic($overlay, $GUI_GR_RECT, 0, 0, $oRect.Width, $oRect.Height)
+	GUICtrlSetGraphic($overlay, $GUI_GR_REFRESH)
+	GUISwitch($hGUI)
 EndFunc   ;==>_display_selection_rect
 
 Func _hide_selected_controls()
@@ -940,5 +951,10 @@ EndFunc   ;==>_move_mouse_to_grippy
 
 
 Func _recall_overlay()
-	GUICtrlSetPos($overlay, -1, -1, 1, 1)
+	GUISwitch($hGUI)
+	If $overlay <> -1 Then
+		GUICtrlDelete($overlay)
+		$overlay = -1
+	EndIf
+	GUISwitch($hGUI)
 EndFunc   ;==>_recall_overlay

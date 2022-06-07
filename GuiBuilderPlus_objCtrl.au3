@@ -667,6 +667,7 @@ EndFunc   ;==>_objGrippies_resizing
 ; Description.....:	show the grippies
 ;------------------------------------------------------------------------------
 Func _objGrippies_show($oSelf)
+;~ 	_log("show grippies for " & $oSelf.parent.Name)
 	;show
 	GUICtrlSetState($oSelf.NW, $GUI_SHOW + $GUI_ONTOP)
 	GUICtrlSetState($oSelf.N, $GUI_SHOW + $GUI_ONTOP)
