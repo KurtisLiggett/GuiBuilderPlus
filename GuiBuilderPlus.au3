@@ -21,6 +21,9 @@
 ;					- ADDED:	Cut/Copy/Paste will now maintain relative positions and spacing
 ;					- ADDED:	Resizing multiple-selected controls will resize proportionally as a group
 ;					- ADDED:	Resize using any of the selected grippies, not just the last selected
+;					- ADDED:	Status messages for changing some settings (F3, F7)
+;					- UPDATED:	Better startup loading, so windows open at the same time
+;					- UPDATED:	Switched to better versioning scheme
 ;
 ;  06/04/2022 ...: 	- FIXED:	Window position bugs when no INI file. Also better handling of off-screen situations
 ;					- FIXED:	Primary and secondary mouse clicks not detected outside default area if GUI is resized
@@ -157,8 +160,8 @@
 #AutoIt3Wrapper_Res_HiDpi=y
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.27.exe
-#AutoIt3Wrapper_Res_Fileversion=0.27.0.0
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.3.exe
+#AutoIt3Wrapper_Res_Fileversion=0.3.0.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 
 Opt("WinTitleMatchMode", 4) ; advanced
@@ -284,7 +287,7 @@ Func _main()
 	$oClipboard = _objCtrls()
 	$oMain = _objMain()
 	$oMain.AppName = "GuiBuilderPlus"
-	$oMain.AppVersion = "0.27"
+	$oMain.AppVersion = "0.3"
 	$oMain.Title = StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1)
 	$oMain.Name = "hGUI"
 	$oMain.Width = 400
@@ -310,11 +313,6 @@ Func _main()
 
 	_initialize_settings()
 
-	GUISetState(@SW_SHOWNORMAL, $hToolbar)
-	GUISetState(@SW_SHOWNORMAL, $oProperties_Main.Hwnd)
-	GUISwitch($hGUI)
-	GUISetState(@SW_SHOWNORMAL, $hGUI)
-	$bResizedFlag = 0
 
 	;load the extra toolbars
 	If BitAND(GUICtrlRead($menu_ObjectExplorer), $GUI_CHECKED) = $GUI_CHECKED Then
@@ -325,6 +323,14 @@ Func _main()
 		_formGenerateCode()
 	EndIf
 
+	GUISetState(@SW_SHOWNORMAL, $hToolbar)
+	GUISetState(@SW_SHOWNORMAL, $oProperties_Main.Hwnd)
+	GUISwitch($hGUI)
+	GUISetState(@SW_SHOWNORMAL, $hGUI)
+	$bResizedFlag = 0
+	GUISetState(@SW_SHOWNOACTIVATE, $hFormObjectExplorer)
+	GUISetState(@SW_SHOWNOACTIVATE, $hFormGenerateCode)
+	GUISwitch($hGUI)
 
 	Local $statusDelay = 3000
 	Static $startTimer = False

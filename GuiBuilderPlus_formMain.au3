@@ -1190,6 +1190,8 @@ Func _onGenerateCode()
 	If Not IsHWnd($hFormGenerateCode) Then
 		GUICtrlSetState($menu_generateCode, $GUI_CHECKED)
 		_formGenerateCode()
+		GUISetState(@SW_SHOWNOACTIVATE, $hFormGenerateCode)
+		GUISwitch($hGUI)
 	Else
 		_onExitGenerateCode()
 ;~ 		GUICtrlSetData($editCodeGeneration, _code_generation())
@@ -1216,6 +1218,8 @@ Func _onShowObjectExplorer()
 	If Not IsHWnd($hFormObjectExplorer) Then
 		GUICtrlSetState($menu_ObjectExplorer, $GUI_CHECKED)
 		_formObjectExplorer()
+		GUISetState(@SW_SHOWNOACTIVATE, $hFormObjectExplorer)
+		GUISwitch($hGUI)
 	Else
 		_onExitObjectExplorer()
 	EndIf
@@ -2077,6 +2081,7 @@ EndFunc   ;==>ShowMenu
 ;------------------------------------------------------------------------------
 Func _showgrid()
 	Local Const $show_grid_data = GUICtrlRead($menu_show_grid)
+	Local $message = "Grid: "
 
 	Select
 		Case BitAND($show_grid_data, $GUI_CHECKED) = $GUI_CHECKED
@@ -2085,6 +2090,7 @@ Func _showgrid()
 			_hide_grid($background)
 
 			IniWrite($sIniPath, "Settings", "ShowGrid", 0)
+			$message &= "OFF"
 
 		Case BitAND($show_grid_data, $GUI_UNCHECKED) = $GUI_UNCHECKED
 			GUICtrlSetState($menu_show_grid, $GUI_CHECKED)
@@ -2092,7 +2098,11 @@ Func _showgrid()
 			_show_grid($background, $oMain.Width, $oMain.Height)
 
 			IniWrite($sIniPath, "Settings", "ShowGrid", 1)
+			$message &= "ON"
 	EndSelect
+
+	$bStatusNewMessage = True
+	_GUICtrlStatusBar_SetText($hStatusbar, $message)
 EndFunc   ;==>_showgrid
 
 
@@ -2122,17 +2132,23 @@ EndFunc   ;==>_pastepos
 ; Events..........: settings menu item select
 ;------------------------------------------------------------------------------
 Func _gridsnap()
+	Local $message = "Grid snap: "
 	If BitAND(GUICtrlRead($menu_grid_snap), $GUI_CHECKED) = $GUI_CHECKED Then
 		GUICtrlSetState($menu_grid_snap, $GUI_UNCHECKED)
 
 		IniWrite($sIniPath, "Settings", "GridSnap", 0)
+		$message &= "OFF"
 	Else
 		GUICtrlSetState($menu_grid_snap, $GUI_CHECKED)
 
 		IniWrite($sIniPath, "Settings", "GridSnap", 1)
+		$message &= "ON"
 	EndIf
 
 	$setting_snap_grid = Not $setting_snap_grid
+
+	$bStatusNewMessage = True
+	_GUICtrlStatusBar_SetText($hStatusbar, $message)
 EndFunc   ;==>_gridsnap
 
 

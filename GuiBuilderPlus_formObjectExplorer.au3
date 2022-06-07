@@ -75,9 +75,6 @@ Func _formObjectExplorer()
 	GUISetAccelerators($accelerators, $hFormObjectExplorer)
 	GUICtrlSetOnEvent($accel_delete, "_onLvObjectsDelete")
 
-
-	GUISetState(@SW_SHOW, $hFormObjectExplorer)
-
 	GUISwitch($hGUI)
 EndFunc   ;==>_formObjectExplorer
 #EndRegion _formObjectExplorer

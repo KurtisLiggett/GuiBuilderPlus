@@ -64,7 +64,6 @@ Func _formGenerateCode()
 	GUICtrlSetOnEvent(-1, "_onCodeSave")
 	GUICtrlSetResizing(-1, $GUI_DOCKRIGHT + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
 
-	GUISetState(@SW_SHOW, $hFormGenerateCode)
 	_GUICtrlEdit_SetSel($editCodeGeneration, 0, 0)
 
 	GUISwitch($hGUI)
