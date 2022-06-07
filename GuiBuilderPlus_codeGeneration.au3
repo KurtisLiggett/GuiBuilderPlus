@@ -13,7 +13,8 @@ Func _code_generation()
 	Local $controls, $globals[2]
 
 	;get options
-	Local $bAddDpiScale = $setting_dpi_scaling
+;~ 	Local $bAddDpiScale = $setting_dpi_scaling
+	Local $bAddDpiScale = False
 	Local $bOnEventMode = $setting_onEvent_mode
 	Local $bGuiFunction = $setting_gui_function
 
@@ -354,9 +355,9 @@ EndFunc   ;==>_save_code
 Func _copy_code_to_output(Const $code)
 	Switch StringInStr($CmdLineRaw, "/StdOut")
 		Case True
-			ConsoleWrite("#region ; --- " & $oMain.AppName & " generated code Start ---" & @CRLF & _
+			_log("#region ; --- " & $oMain.AppName & " generated code Start ---" & @CRLF & _
 					StringReplace($code, @CRLF, @LF) & @CRLF & _
-					"#endregion ; --- " & $oMain.AppName & " generated code End ---" & @CRLF)
+					"#endregion ; --- " & $oMain.AppName & " generated code End ---")
 
 		Case False
 			If $mygui = "" Then

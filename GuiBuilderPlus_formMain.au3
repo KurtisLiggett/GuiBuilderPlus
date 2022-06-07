@@ -78,6 +78,7 @@ Func _formMain()
 
 	;create the overlay and context menu  <-- overlay used to show control selection
 	$overlay = GUICtrlCreateLabel('', -1, -1, 1, 1, $SS_BLACKFRAME, $WS_EX_TOPMOST)
+	GUICtrlSetState(-1, $GUI_DISABLE)
 
 	$overlay_contextmenu = GUICtrlCreateContextMenu(GUICtrlCreateDummy())
 	Local $overlay_contextmenu_cut = GUICtrlCreateMenuItem("Cut", $overlay_contextmenu)
@@ -194,7 +195,7 @@ Func _formToolbar()
 	$menu_show_hidden = GUICtrlCreateMenuItem("Show hidden controls", $menu_settings)
 	$menu_gui_function = GUICtrlCreateMenuItem("Create GUI in a function", $menu_settings)
 	$menu_onEvent_mode = GUICtrlCreateMenuItem("Enable OnEvent mode", $menu_settings)
-	$menu_dpi_scaling = GUICtrlCreateMenuItem("Apply DPI scaling factor", $menu_settings)
+;~ 	$menu_dpi_scaling = GUICtrlCreateMenuItem("Apply DPI scaling factor", $menu_settings)
 
 	GUICtrlSetOnEvent($menu_show_grid, _showgrid)
 	GUICtrlSetOnEvent($menu_grid_snap, _gridsnap)
@@ -203,14 +204,14 @@ Func _formToolbar()
 	GUICtrlSetOnEvent($menu_show_hidden, _menu_show_hidden)
 	GUICtrlSetOnEvent($menu_gui_function, "_menu_gui_function")
 	GUICtrlSetOnEvent($menu_onEvent_mode, "_menu_onEvent_mode")
-	GUICtrlSetOnEvent($menu_dpi_scaling, "_menu_dpi_scaling")
+;~ 	GUICtrlSetOnEvent($menu_dpi_scaling, "_menu_dpi_scaling")
 
 	GUICtrlSetState($menu_show_grid, $GUI_CHECKED)
 	GUICtrlSetState($menu_grid_snap, $GUI_CHECKED)
 	GUICtrlSetState($menu_paste_pos, $GUI_CHECKED)
 	GUICtrlSetState($menu_show_ctrl, $GUI_CHECKED)
 	GUICtrlSetState($menu_show_hidden, $GUI_UNCHECKED)
-	GUICtrlSetState($menu_dpi_scaling, $GUI_UNCHECKED)
+;~ 	GUICtrlSetState($menu_dpi_scaling, $GUI_UNCHECKED)
 
 	Local $menu_help = GUICtrlCreateMenu("Help")
 	Local $menu_github = GUICtrlCreateMenuItem("Github Repository", $menu_help)
@@ -842,8 +843,6 @@ EndFunc   ;==>_onMenuSelectAll
 
 #Region mouse events
 Func _onMousePrimaryDown()
-	ConsoleWrite("Ctrls mode: " & $oCtrls.mode & @CRLF)
-
 	;if main window was resized or moved, then don't process mouse down event
 	If $bResizedFlag Then
 		$bResizedFlag = 0
@@ -894,7 +893,7 @@ Func _onMousePrimaryDown()
 
 	Switch $oCtrls.mode
 		Case $mode_draw
-			ConsoleWrite("** PrimaryDown: draw **" & @CRLF)
+			_log("** PrimaryDown: draw **")
 			$initDraw = True
 
 			Local $oCtrl = _create_ctrl()
@@ -934,10 +933,10 @@ Func _onMousePrimaryDown()
 			EndIf
 
 		Case $mode_default
-			ConsoleWrite("** PrimaryDown: default **" & @CRLF)
+			_log("** PrimaryDown: default **")
 			Switch $ctrl_hwnd
 				Case $background
-					ConsoleWrite("  background" & @CRLF)
+					_log("  background")
 					_set_default_mode()
 
 					_set_current_mouse_pos()
@@ -946,10 +945,10 @@ Func _onMousePrimaryDown()
 
 				Case Else
 					If Not $oCtrls.exists($ctrl_hwnd) Then Return
-					ConsoleWrite("  control exists" & @CRLF)
+					_log("  control exists")
 
 					Local $oCtrl = $oCtrls.get($ctrl_hwnd)
-					ConsoleWrite("  " & $oCtrl.Type & @CRLF)
+					_log("  " & $oCtrl.Type)
 
 					;if ctrl is pressed, add/remove form selection
 					Switch _IsPressed("11")
@@ -998,11 +997,11 @@ Func _onMousePrimaryUp()
 
 	Switch $oCtrls.mode
 		Case $mode_init_move
-			ConsoleWrite("** PrimaryUp: init_move **" & @CRLF)
+			_log("** PrimaryUp: init_move **")
 			_set_default_mode()
 
 		Case $mode_init_selection
-			ConsoleWrite("** PrimaryUp: init_selection **" & @CRLF)
+			_log("** PrimaryUp: init_selection **")
 			ToolTip('')
 
 			_recall_overlay()
@@ -1010,7 +1009,7 @@ Func _onMousePrimaryUp()
 			$oCtrls.mode = $mode_default
 
 		Case $resize_nw, $resize_n, $resize_ne, $resize_e, $resize_se, $resize_s, $resize_sw, $resize_w
-			ConsoleWrite("** PrimaryUp: Resize **" & @CRLF)
+			_log("** PrimaryUp: Resize **")
 			ToolTip('')
 
 			For $oCtrl In $oSelected.ctrls
@@ -1019,7 +1018,7 @@ Func _onMousePrimaryUp()
 
 			$oCtrlSelectedFirst = $oSelected.getFirst()
 			If $initDraw Then    ;if we just started drawing, check to see if drawing or just clicking away from control
-				ConsoleWrite("  init draw" & @CRLF)
+				_log("  init draw")
 				$initDraw = False
 				;clicking empty space (background), cancel drawing and delete the new control
 				Local $tolerance = 5
@@ -1031,7 +1030,7 @@ Func _onMousePrimaryUp()
 						$tolerance = 5
 				EndSwitch
 				If $oCtrlSelectedFirst.Width < $tolerance And $oCtrlSelectedFirst.Height < $tolerance Then
-					ConsoleWrite("  click away" & @CRLF)
+					_log("  click away")
 					GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 					_delete_selected_controls()
 					_set_default_mode()
@@ -1061,7 +1060,7 @@ Func _onMousePrimaryUp()
 			_setLvSelected($oSelected.getFirst())
 
 		Case Else    ;select single control
-			ConsoleWrite("** PrimaryUp: Else **" & @CRLF)
+			_log("** PrimaryUp: Else **")
 			ToolTip('')
 
 			;we don't care what was dragged, we just want to populate based on latest selection
@@ -1241,7 +1240,6 @@ EndFunc   ;==>_onShowObjectExplorer
 ; Events..........:	Tools menu item
 ;------------------------------------------------------------------------------
 Func _onTestGUI()
-	ConsoleWrite("test" & @CRLF)
 	If ProcessExists($TestFilePID) Then
 		WinClose(_WinGetByPID($TestFilePID))
 		$bReTest = 1
@@ -1460,9 +1458,9 @@ EndFunc   ;==>_main_change_background
 
 
 #Region change-properties-ctrls
-Func _onPropertyChange($sPropertyName, $value)
-	ConsoleWrite($sPropertyName & " " & $value & @CRLF)
-EndFunc   ;==>_onPropertyChange
+;~ Func _onPropertyChange($sPropertyName, $value)
+;~ 	ConsoleWrite($sPropertyName & " " & $value & @CRLF)
+;~ EndFunc   ;==>_onPropertyChange
 
 Func _ctrl_change_text()
 	Local Const $new_text = $oProperties_Ctrls.Text.value
@@ -1513,7 +1511,7 @@ EndFunc   ;==>_ctrl_change_text
 
 
 Func _ctrl_change_name()
-	ConsoleWrite("change name" & @CRLF)
+	_log("change name")
 	Local $new_name = $oProperties_Ctrls.Name.value
 	$new_name = StringReplace($new_name, " ", "_")
 	$oProperties_Ctrls.Name.value = $new_name

@@ -285,9 +285,6 @@ Func _objCtrls_moveUp($oSelf, $oCtrlStart)
 		$i += 1
 	Next
 
-;~ 	ConsoleWrite("Start " & $iStart & " end " & $iEnd & @CRLF)
-;~ 	Return
-
 	If $iStart = -1 Or $iEnd > $oSelf.count - 1 Or $iEnd < 0 Then Return 1
 
 	Local $oCtrlsTemp = LinkedList()
@@ -329,9 +326,6 @@ Func _objCtrls_moveDown($oSelf, $oCtrlStart)
 
 		$i += 1
 	Next
-
-;~ 	ConsoleWrite("Start " & $iStart & " end " & $iEnd & @CRLF)
-;~ 	Return
 
 	If $iStart = -1 Or $iEnd > $oSelf.count - 1 Or $iEnd < 0 Then Return 1
 
@@ -560,7 +554,6 @@ EndFunc   ;==>_objGrippies_mouseClickEvent
 ; Description.....:	when a grippy is clicked, set the flag
 ;------------------------------------------------------------------------------
 Func _objGrippies_mouseClick($oSelf, $CtrlID)
-	ConsoleWrite("click " & $CtrlID & @CRLF)
 	Switch $CtrlID
 		Case $oSelf.NW
 			$oSelf.parent.parent.mode = $resize_nw
@@ -674,8 +667,6 @@ EndFunc   ;==>_objGrippies_resizing
 ; Description.....:	show the grippies
 ;------------------------------------------------------------------------------
 Func _objGrippies_show($oSelf)
-;~ 	ConsoleWrite("show grippies" & @CRLF)
-
 	;show
 	GUICtrlSetState($oSelf.NW, $GUI_SHOW + $GUI_ONTOP)
 	GUICtrlSetState($oSelf.N, $GUI_SHOW + $GUI_ONTOP)
@@ -743,8 +734,6 @@ EndFunc   ;==>_objGrippies_show
 ; Description.....:	hide the grippies
 ;------------------------------------------------------------------------------
 Func _objGrippies_hide($oSelf)
-;~ 	ConsoleWrite("hide grippies" & @CRLF)
-
 	GUICtrlSetState($oSelf.NW, $GUI_HIDE)
 	GUICtrlSetState($oSelf.N, $GUI_HIDE)
 	GUICtrlSetState($oSelf.NE, $GUI_HIDE)
@@ -756,8 +745,6 @@ Func _objGrippies_hide($oSelf)
 EndFunc   ;==>_objGrippies_hide
 
 Func _objGrippies_delete($oSelf)
-;~ 	ConsoleWrite("delete grippies" & @CRLF)
-
 	GUICtrlDelete($oSelf.NW)
 	GUICtrlDelete($oSelf.N)
 	GUICtrlDelete($oSelf.NE)

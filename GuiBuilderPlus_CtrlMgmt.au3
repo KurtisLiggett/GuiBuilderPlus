@@ -449,7 +449,6 @@ EndFunc   ;==>_delete_menuItem
 
 Func _control_type()
 	$oCtrls.CurrentType = GUICtrlRead(@GUI_CtrlId, 1)
-	ConsoleWrite("tool selected: " & $oCtrls.CurrentType & @CRLF)
 
 	$oCtrls.mode = $mode_draw
 EndFunc   ;==>_control_type
@@ -510,8 +509,6 @@ Func _left_top_union_rect($oObjCtrls=0)
 	$smallest.Top = $oObjCtrls.getFirst().Top
 
 	For $oCtrl In $oObjCtrls.ctrls
-
-		;ConsoleWrite('- ' & $sel_ctrl.Left & @TAB & $smallest.Left & @CRLF)
 
 		If Int($oCtrl.Left) < Int($smallest.Left) Then
 			$smallest.Left = $oCtrl.Left
@@ -616,7 +613,7 @@ Func _PasteSelected($bDuplicate = False)
 			For $oCtrl In $oClipboard.ctrls
 				;create a copy, so we don't overwrite the original!
 				$oNewCtrl = $oClipboard.getCopy($oCtrl.Hwnd)
-;~ 				ConsoleWrite("mouseX " & $oMouse.X & " clip " & $oCtrl.Left & " new " & $oNewCtrl.Left & @CRLF)
+
 				If $bDuplicate Then
 					$oNewCtrl.Left += 20
 					$oNewCtrl.Top += 20
@@ -624,7 +621,6 @@ Func _PasteSelected($bDuplicate = False)
 					$oNewCtrl.Left = ($oMouse.X - $topLeftRect.Left) + $oNewCtrl.Left
 					$oNewCtrl.Top = ($oMouse.Y - $topLeftRect.Top) + $oNewCtrl.Top
 				EndIf
-;~ 				ConsoleWrite("clip " & $oCtrl.Left & " new " & $oNewCtrl.Left & @CRLF)
 
 				$aNewCtrls[$i] = _create_ctrl($oNewCtrl)
 
@@ -943,17 +939,6 @@ EndFunc   ;==>_move_mouse_to_grippy
 #EndRegion ; moving & resizing
 
 
-#Region ; overlay management
-;~ Func _dispatch_overlay(Const $oCtrl)
-;~ 	; ConsoleWrite($oCtrl.Name & @CRLF)
-
-;~ 	GUICtrlSetPos($overlay, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
-
-;~ 	GUICtrlSetState($overlay, $GUI_ONTOP)
-;~ EndFunc   ;==>_dispatch_overlay
-
 Func _recall_overlay()
 	GUICtrlSetPos($overlay, -1, -1, 1, 1)
 EndFunc   ;==>_recall_overlay
-#EndRegion ; overlay management
-

@@ -24,6 +24,7 @@
 ;					- ADDED:	Status messages for changing some settings (F3, F7)
 ;					- UPDATED:	Better startup loading, so windows open at the same time
 ;					- UPDATED:	Switched to better versioning scheme
+;					- MAINT:	Added logging function and debug flag for testing/development
 ;
 ;  06/04/2022 ...: 	- FIXED:	Window position bugs when no INI file. Also better handling of off-screen situations
 ;					- FIXED:	Primary and secondary mouse clicks not detected outside default area if GUI is resized
@@ -171,6 +172,8 @@ Opt("GuiEventOptions", 1)
 #EndRegion project-settings
 
 Global $grippy_size = 5
+Global $debug = True
+
 #Region ; globals
 ;GUI components
 Global $hGUI, $hToolbar, $hFormGenerateCode, $hFormObjectExplorer, $hStatusbar, $hAbout
@@ -270,6 +273,9 @@ _AutoItObject_StartUp()
 #EndRegion ; includes
 
 
+;start up the logger
+_log("", True)
+
 ;run the main loop
 _main()
 
@@ -279,6 +285,7 @@ _main()
 ; Description.....: Create the main GUI and run the main program loop.
 ;------------------------------------------------------------------------------
 Func _main()
+	_log("Startup")
 	;create the main program data objects
 	$oMouse = _objCreateMouse()
 	$oCtrls = _objCtrls()
@@ -330,6 +337,7 @@ Func _main()
 	$bResizedFlag = 0
 	GUISetState(@SW_SHOWNOACTIVATE, $hFormObjectExplorer)
 	GUISetState(@SW_SHOWNOACTIVATE, $hFormGenerateCode)
+	_GUICtrlEdit_SetSel($editCodeGeneration, 0, 0)
 	GUISwitch($hGUI)
 
 	Local $statusDelay = 3000
@@ -527,3 +535,19 @@ Func _objCreateMouse()
 
 	Return $oSelf
 EndFunc   ;==>_objCreateMouse
+
+
+Func _log($sMessage, $startup = False)
+	Static $tTimer = TimerInit()
+
+	If $startup or Not $debug Then Return
+
+	Local $iTime = Floor(TimerDiff($tTimer))
+	Local $sTime = StringFormat("%d:%.2d:%06.3f", (Floor($iTime / 3600000)), (Floor(Mod($iTime, 3600000) / 60000)), (Mod(Mod($iTime, 3600000), 60000) / 1000))
+
+	If $sMessage == "" Then
+		ConsoleWrite(@CRLF)
+	Else
+		ConsoleWrite($sTime & ":  " & $sMessage & @CRLF)
+	EndIf
+EndFunc

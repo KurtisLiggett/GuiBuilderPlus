@@ -200,15 +200,12 @@ Func _onLvMoveUp()
 	Local $oCtrlMove = _getLvSelected()
 
 	If IsObj($oCtrlMove) Then
-		ConsoleWrite($oCtrlMove.Name & @CRLF)
 		$oCtrls.moveUp($oCtrlMove)
 
 		_refreshGenerateCode()
 		_formObjectExplorer_updateList()
 
 		_setLvSelected($oCtrlMove)
-	Else
-		ConsoleWrite($oCtrlMove & @CRLF)
 	EndIf
 
 EndFunc   ;==>_onLvMoveUp
@@ -223,15 +220,12 @@ Func _onLvMoveDown()
 	Local $oCtrlMove = _getLvSelected()
 
 	If IsObj($oCtrlMove) Then
-		ConsoleWrite($oCtrlMove.Name & @CRLF)
 		$oCtrls.moveDown($oCtrlMove)
 
 		_refreshGenerateCode()
 		_formObjectExplorer_updateList()
 
 		_setLvSelected($oCtrlMove)
-	Else
-		ConsoleWrite($oCtrlMove & @CRLF)
 	EndIf
 
 EndFunc   ;==>_onLvMoveDown

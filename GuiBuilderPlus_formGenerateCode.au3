@@ -64,8 +64,6 @@ Func _formGenerateCode()
 	GUICtrlSetOnEvent(-1, "_onCodeSave")
 	GUICtrlSetResizing(-1, $GUI_DOCKRIGHT + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
 
-	_GUICtrlEdit_SetSel($editCodeGeneration, 0, 0)
-
 	GUISwitch($hGUI)
 EndFunc   ;==>_formGenerateCode
 #EndRegion formGenerateCode
@@ -79,6 +77,7 @@ EndFunc   ;==>_formGenerateCode
 ;------------------------------------------------------------------------------
 Func _onCodeRefresh()
 	GUICtrlSetData($editCodeGeneration, _code_generation())
+	_GUICtrlEdit_SetSel($editCodeGeneration, 0, 0)
 EndFunc   ;==>_onCodeRefresh
 
 
