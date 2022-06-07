@@ -497,15 +497,19 @@ EndFunc   ;==>_vector_magnitude
 ; Title...........: _left_top_union_rect
 ; Description.....: gets the xy coords of the union of the selected controls rectangles
 ;------------------------------------------------------------------------------
-Func _left_top_union_rect()
+Func _left_top_union_rect($oObjCtrls=0)
+	If Not IsObj($oObjCtrls) Then
+		$oObjCtrls = $oSelected
+	EndIf
+
 	Local $sel_ctrl
 
 	Local $smallest[]
 
-	$smallest.Left = $oCtrls.getFirst().Left
-	$smallest.Top = $oCtrls.getFirst().Top
+	$smallest.Left = $oObjCtrls.getFirst().Left
+	$smallest.Top = $oObjCtrls.getFirst().Top
 
-	For $oCtrl In $oSelected.ctrls
+	For $oCtrl In $oObjCtrls.ctrls
 
 		;ConsoleWrite('- ' & $sel_ctrl.Left & @TAB & $smallest.Left & @CRLF)
 
@@ -531,6 +535,9 @@ EndFunc   ;==>_left_top_union_rect
 Func _copy_selected()
 	Local Const $sel_count = $oSelected.count
 
+	GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
+	$oCtrls.mode = $mode_default
+
 	Switch $sel_count >= 1
 		Case True
 			$oClipboard.removeAll()
@@ -547,6 +554,16 @@ EndFunc   ;==>_copy_selected
 
 
 ;------------------------------------------------------------------------------
+; Title...........: _cut_selected
+; Description.....: copy selected, then delete
+;------------------------------------------------------------------------------
+Func _cut_selected()
+	_copy_selected()
+	_delete_selected_controls()
+EndFunc   ;==>_copy_selected
+
+
+;------------------------------------------------------------------------------
 ; Title...........: _selected_to_array
 ; Description.....: put all selected controls into an array, (necessary?)
 ;------------------------------------------------------------------------------
@@ -555,6 +572,7 @@ Func _selected_to_array(Const $sel_count, Const $smallest)
 
 	Local $i = 0
 	For $oCtrl In $oSelected.ctrls
+		;create a copy, so we don't later accidentally overwrite the original!
 		$selected[$i][0] = $oCtrl
 		$selected[$i][1] = _vector_magnitude($smallest.Left, $smallest.Top, $oCtrl.Left, $oCtrl.Top)
 		$i += 1
@@ -572,7 +590,7 @@ Func _selected_to_clipboard(Const $selected, Const $sel_count)
 	$oClipboard.removeAll()
 	Local $i = 0
 	For $oCtrl In $oSelected.ctrls
-		$oClipboard.add($selected[$i][0])
+		$oClipboard.add($oSelected.getCopy($oCtrl.Hwnd))
 		$i += 1
 	Next
 EndFunc   ;==>_selected_to_clipboard
@@ -583,8 +601,13 @@ EndFunc   ;==>_selected_to_clipboard
 ; Description.....: paste selected controls
 ;------------------------------------------------------------------------------
 Func _PasteSelected($bDuplicate = False)
+	GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
+
 	Local Const $clipboard_count = $oClipboard.count
 	Local $aNewCtrls[$clipboard_count]
+
+	;get the top left point
+	Local $topLeftRect = _left_top_union_rect($oClipboard)
 
 	Switch $clipboard_count >= 1
 		Case True
@@ -593,32 +616,46 @@ Func _PasteSelected($bDuplicate = False)
 			For $oCtrl In $oClipboard.ctrls
 				;create a copy, so we don't overwrite the original!
 				$oNewCtrl = $oClipboard.getCopy($oCtrl.Hwnd)
-
+;~ 				ConsoleWrite("mouseX " & $oMouse.X & " clip " & $oCtrl.Left & " new " & $oNewCtrl.Left & @CRLF)
 				If $bDuplicate Then
 					$oNewCtrl.Left += 20
 					$oNewCtrl.Top += 20
 				Else
-					$oNewCtrl.Left = $oMouse.X
-					$oNewCtrl.Top = $oMouse.Y
+					$oNewCtrl.Left = ($oMouse.X - $topLeftRect.Left) + $oNewCtrl.Left
+					$oNewCtrl.Top = ($oMouse.Y - $topLeftRect.Top) + $oNewCtrl.Top
 				EndIf
+;~ 				ConsoleWrite("clip " & $oCtrl.Left & " new " & $oNewCtrl.Left & @CRLF)
 
 				$aNewCtrls[$i] = _create_ctrl($oNewCtrl)
+
+				;select the new controls
+				If $i = 0 Then    ;select first item
+					_add_to_selected($oNewCtrl)
+					_populate_control_properties_gui($oNewCtrl)
+				Else    ;add to selection
+					_add_to_selected($oNewCtrl, False)
+				EndIf
+
 				$i += 1
 			Next
 	EndSwitch
 
-	If $bDuplicate Then
-		For $i = 0 To UBound($aNewCtrls) - 1
-			$oNewCtrl = $aNewCtrls[$i]
-
-			If $i = 0 Then    ;select first item
-				_add_to_selected($oNewCtrl)
-				_populate_control_properties_gui($oNewCtrl)
-			Else    ;add to selection
-				_add_to_selected($oNewCtrl, False)
-			EndIf
-		Next
+	If Not $bDuplicate And $oSelected.count > 0 Then
+		$oCtrls.mode = $mode_paste
 	EndIf
+
+;~ 	If $bDuplicate Then
+;~ 		For $i = 0 To UBound($aNewCtrls) - 1
+;~ 			$oNewCtrl = $aNewCtrls[$i]
+
+;~ 			If $i = 0 Then    ;select first item
+;~ 				_add_to_selected($oNewCtrl)
+;~ 				_populate_control_properties_gui($oNewCtrl)
+;~ 			Else    ;add to selection
+;~ 				_add_to_selected($oNewCtrl, False)
+;~ 			EndIf
+;~ 		Next
+;~ 	EndIf
 
 	_refreshGenerateCode()
 	_formObjectExplorer_updateList()
@@ -786,6 +823,9 @@ Func _remove_all_from_selected()
 EndFunc   ;==>_remove_all_from_selected
 
 Func _delete_selected_controls()
+	GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
+	$oCtrls.mode = $mode_default
+
 	Local Const $sel_count = $oSelected.count
 
 	Switch $sel_count >= 1
@@ -904,13 +944,13 @@ EndFunc   ;==>_move_mouse_to_grippy
 
 
 #Region ; overlay management
-Func _dispatch_overlay(Const $oCtrl)
-	; ConsoleWrite($oCtrl.Name & @CRLF)
+;~ Func _dispatch_overlay(Const $oCtrl)
+;~ 	; ConsoleWrite($oCtrl.Name & @CRLF)
 
-	GUICtrlSetPos($overlay, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
+;~ 	GUICtrlSetPos($overlay, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
 
-	GUICtrlSetState($overlay, $GUI_ONTOP)
-EndFunc   ;==>_dispatch_overlay
+;~ 	GUICtrlSetState($overlay, $GUI_ONTOP)
+;~ EndFunc   ;==>_dispatch_overlay
 
 Func _recall_overlay()
 	GUICtrlSetPos($overlay, -1, -1, 1, 1)

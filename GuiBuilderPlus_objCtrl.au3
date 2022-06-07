@@ -14,6 +14,8 @@ Func _objCtrls($isSelection = False)
 
 	_AutoItObject_AddProperty($oObject, "count", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "mode", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "resizeStartLeft", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "resizeStartTop", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "CurrentType", $ELSCOPE_PUBLIC, "")
 	_AutoItObject_AddProperty($oObject, "menuCount", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "hasMenu", $ELSCOPE_PUBLIC, False)
@@ -61,6 +63,7 @@ Func _objCtrls($isSelection = False)
 	_AutoItObject_AddMethod($oObject, "getTypeCount", "_objCtrls_getTypeCount")
 	_AutoItObject_AddMethod($oObject, "moveUp", "_objCtrls_moveUp")
 	_AutoItObject_AddMethod($oObject, "moveDown", "_objCtrls_moveDown")
+	_AutoItObject_AddMethod($oObject, "startResizing", "_objCtrls_startResizing")
 
 	Return $oObject
 EndFunc   ;==>_objCtrls
@@ -356,6 +359,17 @@ Func _objCtrls_moveDown($oSelf, $oCtrlStart)
 EndFunc   ;==>_objCtrls_moveDown
 
 
+Func _objCtrls_startResizing($oSelf)
+	#forceref $oSelf
+
+	Local $mouse_pos = _mouse_snap_pos()
+	For $oCtrl In $oSelf.ctrls
+		$oCtrl.resizePrevLeft = $mouse_pos[0]
+		$oCtrl.resizePrevTop = $mouse_pos[1]
+	Next
+EndFunc   ;==>_objCtrls_moveDown
+
+
 ;------------------------------------------------------------------------------
 ; Title...........: _objCtrl
 ; Description.....:	Ctrl object
@@ -364,6 +378,9 @@ Func _objCtrl($oParent)
 	Local $oObject = _AutoItObject_Create()
 
 	_AutoItObject_AddProperty($oObject, "parent", $ELSCOPE_PUBLIC, $oParent)
+	_AutoItObject_AddProperty($oObject, "isResizeMaster", $ELSCOPE_PUBLIC, False)
+	_AutoItObject_AddProperty($oObject, "resizePrevLeft", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "resizePrevTop", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "Hwnd", $ELSCOPE_PUBLIC)
 	_AutoItObject_AddProperty($oObject, "Hwnd1", $ELSCOPE_PUBLIC)
 	_AutoItObject_AddProperty($oObject, "Hwnd2", $ELSCOPE_PUBLIC)
@@ -504,7 +521,7 @@ Func _objGrippies($oParent)
 	_AutoItObject_AddMethod($oObject, "resizing", "_objGrippies_resizing")
 
 	;set the event handler to reference this object
-	_objGrippies_mouseClickEvent($oObject)
+	_objGrippies_mouseClickEvent($oObject.parent.parent)
 
 	Return $oObject
 EndFunc   ;==>_objGrippies
@@ -518,18 +535,24 @@ EndFunc   ;==>_objGrippies
 ; Link............: https://www.autoitscript.com/forum/topic/139260-autoit-snippets/?do=findComment&comment=1373669
 ;------------------------------------------------------------------------------
 Func _objGrippies_mouseClickEvent($oObject = 0)
-	Static $oGrippiesObject
+	Static $oParentObject
 	Local $isEvent = IsDeclared("oObject") = $DECLARED_LOCAL
 
 	If $isEvent Then
-		$oGrippiesObject = $oObject
+		$oParentObject = $oObject
 	Else
-		If IsObj($oGrippiesObject) Then
-			$oGrippiesObject.mouseClick(@GUI_CtrlId)
+		If IsObj($oParentObject) Then
+			For $oCtrl in $oParentObject.ctrls
+				Switch @GUI_CtrlId
+					Case $oCtrl.grippies.NW, $oCtrl.grippies.N, $oCtrl.grippies.NE, $oCtrl.grippies.SE, $oCtrl.grippies.S, $oCtrl.grippies.SW, $oCtrl.grippies.W, $oCtrl.grippies.East
+						$oCtrl.grippies.mouseClick(@GUI_CtrlId)
+				EndSwitch
+			Next
 		Else
 			Return -1
 		EndIf
 	EndIf
+
 EndFunc   ;==>_objGrippies_mouseClickEvent
 
 ;------------------------------------------------------------------------------
@@ -537,6 +560,7 @@ EndFunc   ;==>_objGrippies_mouseClickEvent
 ; Description.....:	when a grippy is clicked, set the flag
 ;------------------------------------------------------------------------------
 Func _objGrippies_mouseClick($oSelf, $CtrlID)
+	ConsoleWrite("click " & $CtrlID & @CRLF)
 	Switch $CtrlID
 		Case $oSelf.NW
 			$oSelf.parent.parent.mode = $resize_nw
@@ -564,6 +588,9 @@ Func _objGrippies_mouseClick($oSelf, $CtrlID)
 
 	EndSwitch
 
+	$oSelf.parent.isResizeMaster = True
+	$oSelf.parent.parent.StartResizing()
+
 	$initResize = True
 	_hide_selected_controls()
 
@@ -576,55 +603,57 @@ Func _objGrippies_resizing($oSelf, $mode)
 
 	Switch $mode
 		Case $resize_nw
-			$left = $oMouse.X
-			$top = $oMouse.Y
-			$right = ($oCtrl.Width + $oCtrl.Left) - $oMouse.X
-			$bottom = ($oCtrl.Height + $oCtrl.Top) - $oMouse.Y
+			$left = $oCtrl.Left + ($oMouse.X - $oCtrl.resizePrevLeft)
+			$top = $oCtrl.Top + ($oMouse.Y - $oCtrl.resizePrevTop)
+			$right = $oCtrl.Width + ($oCtrl.resizePrevLeft - $oMouse.X)
+			$bottom = $oCtrl.Height + ($oCtrl.resizePrevTop - $oMouse.Y)
 
 		Case $resize_n
 			$left = $oCtrl.Left
-			$top = $oMouse.Y
+			$top = $oCtrl.Top + ($oMouse.Y - $oCtrl.resizePrevTop)
 			$right = $oCtrl.Width
-			$bottom = ($oCtrl.Top + $oCtrl.Height) - $oMouse.Y
+			$bottom = $oCtrl.Height + ($oCtrl.resizePrevTop - $oMouse.Y)
 
 		Case $resize_ne
 			$left = $oCtrl.Left
-			$top = $oMouse.Y
-			$right = $oMouse.X - $oCtrl.Left
-			$bottom = ($oCtrl.Top + $oCtrl.Height) - $oMouse.Y
+			$top = $oCtrl.Top + ($oMouse.Y - $oCtrl.resizePrevTop)
+			$right = $oCtrl.Width + ($oMouse.X - $oCtrl.resizePrevLeft)
+			$bottom = $oCtrl.Height + ($oCtrl.resizePrevTop - $oMouse.Y)
 
 		Case $resize_w
-			$left = $oMouse.X
+			$left = $oCtrl.Left + ($oMouse.X - $oCtrl.resizePrevLeft)
 			$top = $oCtrl.Top
-			$right = ($oCtrl.Width + $oCtrl.Left) - $oMouse.X
+			$right = $oCtrl.Width + ($oCtrl.resizePrevLeft - $oMouse.X)
 			$bottom = $oCtrl.Height
 
 		Case $resize_e
 			$left = $oCtrl.Left
 			$top = $oCtrl.Top
-			$right = $oMouse.X - $oCtrl.Left
+			$right = $oCtrl.Width + ($oMouse.X - $oCtrl.resizePrevLeft)
 			$bottom = $oCtrl.Height
 
 		Case $resize_sw
-			$left = $oMouse.X
+			$left = $oCtrl.Left + ($oMouse.X - $oCtrl.resizePrevLeft)
 			$top = $oCtrl.Top
-			$right = ($oCtrl.Left + $oCtrl.Width) - $oMouse.X
-			$bottom = $oMouse.Y - $oCtrl.Top
+			$right = $oCtrl.Width + ($oCtrl.resizePrevLeft - $oMouse.X)
+			$bottom = $oCtrl.Height + ($oMouse.Y - $oCtrl.resizePrevTop)
 
 		Case $resize_s
 			$left = $oCtrl.Left
 			$top = $oCtrl.Top
 			$right = $oCtrl.Width
-			$bottom = $oMouse.Y - $oCtrl.Top
+			$bottom = $oCtrl.Height + ($oMouse.Y - $oCtrl.resizePrevTop)
 
 		Case $resize_se
 			$left = $oCtrl.Left
 			$top = $oCtrl.Top
-			$right = $oMouse.X - $oCtrl.Left
-			$bottom = $oMouse.Y - $oCtrl.Top
+			$right = $oCtrl.Width + ($oMouse.X - $oCtrl.resizePrevLeft)
+			$bottom = $oCtrl.Height + ($oMouse.Y - $oCtrl.resizePrevTop)
 
 	EndSwitch
 
+	$oCtrl.resizePrevLeft = $oMouse.X
+	$oCtrl.resizePrevTop = $oMouse.Y
 
 	_set_current_mouse_pos()
 
@@ -636,7 +665,7 @@ Func _objGrippies_resizing($oSelf, $mode)
 
 	_change_ctrl_size_pos($oCtrl, $left, $top, $right, $bottom)
 	$oCtrl.grippies.show()
-	ToolTip($oCtrl.Name & ": X:" & $oCtrl.Left & ", Y:" & $oCtrl.Top & ", W:" & $oCtrl.Width & ", H:" & $oCtrl.Height)
+;~ 	ToolTip($oCtrl.Name & ": X:" & $oCtrl.Left & ", Y:" & $oCtrl.Top & ", W:" & $oCtrl.Width & ", H:" & $oCtrl.Height)
 EndFunc   ;==>_objGrippies_resizing
 
 
@@ -738,3 +767,4 @@ Func _objGrippies_delete($oSelf)
 	GUICtrlDelete($oSelf.SE)
 	GUICtrlDelete($oSelf.W)
 EndFunc   ;==>_objGrippies_delete
+

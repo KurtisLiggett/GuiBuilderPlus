@@ -80,9 +80,11 @@ Func _formMain()
 	$overlay = GUICtrlCreateLabel('', -1, -1, 1, 1, $SS_BLACKFRAME, $WS_EX_TOPMOST)
 
 	$overlay_contextmenu = GUICtrlCreateContextMenu(GUICtrlCreateDummy())
+	Local $overlay_contextmenu_cut = GUICtrlCreateMenuItem("Cut", $overlay_contextmenu)
 	Local $overlay_contextmenu_copy = GUICtrlCreateMenuItem("Copy", $overlay_contextmenu)
 	Local $overlay_contextmenu_delete = GUICtrlCreateMenuItem("Delete", $overlay_contextmenu)
 	;menu events
+	GUICtrlSetOnEvent($overlay_contextmenu_cut, _cut_selected)
 	GUICtrlSetOnEvent($overlay_contextmenu_copy, _copy_selected)
 	GUICtrlSetOnEvent($overlay_contextmenu_delete, _delete_selected_controls)
 
@@ -151,6 +153,7 @@ Func _formToolbar()
 
 	;create the Edit menu
 	Local $menu_edit = GUICtrlCreateMenu("Edit")
+	Local $menu_cut = GUICtrlCreateMenuItem("Cut" & @TAB & "Ctrl+X", $menu_edit)
 	Local $menu_copy = GUICtrlCreateMenuItem("Copy" & @TAB & "Ctrl+C", $menu_edit)
 	Local $menu_paste = GUICtrlCreateMenuItem("Paste" & @TAB & "Ctrl+V", $menu_edit)
 	Local $menu_duplicate = GUICtrlCreateMenuItem("Duplicate" & @TAB & "Ctrl+D", $menu_edit)
@@ -160,6 +163,7 @@ Func _formToolbar()
 
 	GUICtrlSetState($menu_wipe, $GUI_DISABLE)
 
+	GUICtrlSetOnEvent($menu_cut, "_cut_selected")
 	GUICtrlSetOnEvent($menu_copy, "_copy_selected")
 	GUICtrlSetOnEvent($menu_paste, "_onMenuPasteSelected")
 	GUICtrlSetOnEvent($menu_duplicate, "_onDuplicate")
@@ -368,6 +372,7 @@ EndFunc   ;==>_formToolbar
 ;------------------------------------------------------------------------------
 Func _set_accelerators()
 	Local Const $accel_delete = GUICtrlCreateDummy()
+	Local Const $accel_x = GUICtrlCreateDummy()
 	Local Const $accel_c = GUICtrlCreateDummy()
 	Local Const $accel_v = GUICtrlCreateDummy()
 	Local Const $accel_d = GUICtrlCreateDummy()
@@ -384,9 +389,10 @@ Func _set_accelerators()
 	Local Const $accel_o = GUICtrlCreateDummy()
 	Local Const $accel_F5 = GUICtrlCreateDummy()
 
-	Local Const $accelerators[18][2] = _
+	Local Const $accelerators[19][2] = _
 			[ _
 			["{Delete}", $accel_delete], _
+			["^x", $accel_x], _
 			["^c", $accel_c], _
 			["^v", $accel_v], _
 			["^d", $accel_d], _
@@ -408,6 +414,7 @@ Func _set_accelerators()
 	GUISetAccelerators($accelerators, $hGUI)
 
 	GUICtrlSetOnEvent($accel_delete, _delete_selected_controls)
+	GUICtrlSetOnEvent($accel_x, _cut_selected)
 	GUICtrlSetOnEvent($accel_c, _copy_selected)
 	GUICtrlSetOnEvent($accel_v, "_onPasteSelected")
 	GUICtrlSetOnEvent($accel_d, "_onDuplicate")
@@ -756,6 +763,9 @@ EndFunc   ;==>_onKeyCtrlRight
 ; Description.....: nudge control 1 space
 ;------------------------------------------------------------------------------
 Func _nudgeSelected($x = 0, $y = 0)
+	GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
+	$oCtrls.mode = $mode_default
+
 ;~ 	Local $nudgeAmount = ($setting_snap_grid) ? $grid_ticks : 1
 	Local $nudgeAmount = 1
 	Local $adjustmentX = 0, $adjustmentX = 0
@@ -910,6 +920,7 @@ Func _onMousePrimaryDown()
 					Case Else
 						$pos = ControlGetPos($hGUI, '', $oCtrl.grippies.SE)
 
+						$oSelected.StartResizing()
 						$oCtrls.mode = $resize_se
 
 						_move_mouse_to_grippy($pos[0], $pos[1])
@@ -970,6 +981,12 @@ Func _onMousePrimaryDown()
 						_setLvSelected($oSelected.getFirst())
 					EndIf
 			EndSwitch
+
+		Case $mode_paste
+			$left_click = False
+			ToolTip('')
+			_recall_overlay()
+			$oCtrls.mode = $mode_default
 	EndSwitch
 
 EndFunc   ;==>_onMousePrimaryDown
@@ -995,6 +1012,10 @@ Func _onMousePrimaryUp()
 		Case $resize_nw, $resize_n, $resize_ne, $resize_e, $resize_se, $resize_s, $resize_sw, $resize_w
 			ConsoleWrite("** PrimaryUp: Resize **" & @CRLF)
 			ToolTip('')
+
+			For $oCtrl In $oSelected.ctrls
+				$oCtrl.isResizeMaster = False
+			Next
 
 			$oCtrlSelectedFirst = $oSelected.getFirst()
 			If $initDraw Then    ;if we just started drawing, check to see if drawing or just clicking away from control
@@ -1111,7 +1132,7 @@ EndFunc   ;==>_onMouseSecondaryUp
 
 Func _onMouseMove()
 	Switch $oCtrls.mode
-		Case $mode_init_move, $mode_default
+		Case $mode_init_move, $mode_default, $mode_paste
 			Local Const $mouse_pos = _mouse_snap_pos()
 
 			Local Const $delta_x = $oMouse.X - $mouse_pos[0]
@@ -1122,22 +1143,24 @@ Func _onMouseMove()
 
 			$oMouse.Y = $mouse_pos[1]
 
-			If Not $left_click Then Return
+			If Not $left_click And Not $oCtrls.mode = $mode_paste Then
+				Return
+			EndIf
 
 			Local $tooltip
 
 			Local $count = $oSelected.count
 
 			For $oCtrl In $oSelected.ctrls
-
 				_change_ctrl_size_pos($oCtrl, $oCtrl.Left - $delta_x, $oCtrl.Top - $delta_y, Default, Default)
-
 				$tooltip &= $oCtrl.Name & ": X:" & $oCtrl.Left & ", Y:" & $oCtrl.Top & ", W:" & $oCtrl.Width & ", H:" & $oCtrl.Height & @CRLF
 			Next
 
 			ToolTip(StringTrimRight($tooltip, 2))
 
-			$oCtrls.mode = $mode_default
+			If Not $oCtrls.mode = $mode_paste Then
+				$oCtrls.mode = $mode_default
+			EndIf
 
 		Case $mode_init_selection
 			Local Const $oRect = _rect_from_points($oMouse.X, $oMouse.Y, MouseGetPos(0), MouseGetPos(1))
@@ -1146,9 +1169,12 @@ Func _onMouseMove()
 			_setLvSelected($oSelected.getFirst())
 
 		Case $resize_nw, $resize_n, $resize_ne, $resize_w, $resize_e, $resize_sw, $resize_s, $resize_se
+			Local $tooltip
 			For $oCtrlSelect In $oSelected.ctrls
 				$oCtrlSelect.grippies.resizing($oCtrls.mode)
+				$tooltip &= $oCtrlSelect.Name & ": X:" & $oCtrlSelect.Left & ", Y:" & $oCtrlSelect.Top & ", W:" & $oCtrlSelect.Width & ", H:" & $oCtrlSelect.Height & @CRLF
 			Next
+			ToolTip(StringTrimRight($tooltip, 2))
 
 	EndSwitch
 EndFunc   ;==>_onMouseMove

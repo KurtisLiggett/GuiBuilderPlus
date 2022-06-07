@@ -13,7 +13,14 @@
 ;
 ; Revisions
 ;  06/05/2022 ...: 	- FIXED:	Code generation missing sleep in Msg mode
+;					- FIXED:	Lots of handling of copy+paste scenarios
+;					- FIXED:	Tooltip when resizing multiple controls
 ;					- UPDATED:	Reverted back to standard edit box for code preview due to more issues with rich edit than it was worth
+;					- UPDATED:	When pasting, control will follow mouse waiting to be placed by single click
+;					- ADDED:	New menu item, shortcut key Ctrl+X, and context menu item to 'Cut' selected controls
+;					- ADDED:	Cut/Copy/Paste will now maintain relative positions and spacing
+;					- ADDED:	Resizing multiple-selected controls will resize proportionally as a group
+;					- ADDED:	Resize using any of the selected grippies, not just the last selected
 ;
 ;  06/04/2022 ...: 	- FIXED:	Window position bugs when no INI file. Also better handling of off-screen situations
 ;					- FIXED:	Primary and secondary mouse clicks not detected outside default area if GUI is resized
@@ -186,7 +193,7 @@ Global $oProperties_Main, $oProperties_Ctrls
 ;GUI Constants
 Global Const $grid_ticks = 10
 Global Const $iconset = @ScriptDir & "\resources\Icons\" ; Added by: TheSaint
-Global Enum $mode_default, $mode_draw, $mode_init_move, $mode_init_selection, _
+Global Enum $mode_default, $mode_draw, $mode_init_move, $mode_init_selection, $mode_paste, _
 		$resize_nw, $resize_n, $resize_ne, $resize_e, $resize_se, $resize_s, $resize_sw, $resize_w
 Global Enum $props_Main, $props_Ctrls
 ; Cursor Consts - added by: Jaberwacky
