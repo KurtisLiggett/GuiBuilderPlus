@@ -24,6 +24,8 @@
 ;					- ADDED:	Resize using any of the selected grippies, not just the last selected
 ;					- ADDED:	Status messages for changing some settings (F3, F7)
 ;					- ADDED:	Tool button icons now built into the exe, so resources folder is not necessary to run
+;					- ADDED:	Left-to-right selection requires entire control to be in the rectangle
+;								Right-to-left selection selects anything that crosses the rectangle
 ;					- UPDATED:	Better startup loading, so windows open at the same time
 ;					- UPDATED:	Switched to better versioning scheme
 ;					- MAINT:	Added logging function and debug flag for testing/development
@@ -557,6 +559,9 @@ Func _objCreateMouse()
 
 	_AutoItObject_AddProperty($oSelf, "X", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oSelf, "Y", $ELSCOPE_PUBLIC, 0)
+
+	_AutoItObject_AddProperty($oSelf, "StartX", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oSelf, "StartY", $ELSCOPE_PUBLIC, 0)
 
 	Return $oSelf
 EndFunc   ;==>_objCreateMouse

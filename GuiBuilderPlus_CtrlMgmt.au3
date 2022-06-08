@@ -687,11 +687,13 @@ Func _display_selected_tooltip()
 EndFunc   ;==>_display_selected_tooltip
 
 Func _control_intersection(Const $oCtrl, Const $oRect)
-	If __WinAPI_PtInRectEx($oCtrl.Left, $oCtrl.Top, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height) Then
-		Return True
-	EndIf
+	Local $aMousePos = MouseGetPos()
 
-	Return False
+	If $aMousePos[0] < $oMouse.StartX Then	;right-to-left
+		Return _CtrlCrossRect($oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
+	Else	;left-to-right
+		Return _CtrlInRect($oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
+	EndIf
 EndFunc   ;==>_control_intersection
 
 Func _group_select(Const $oCtrl)
@@ -882,7 +884,7 @@ EndFunc   ;==>_remove_from_selected
 
 
 Func _display_selection_rect(Const $oRect)
-	_log("create rect")
+;~ 	_log("create rect")
 
 	GUISwitch($hGUI)
 	If GUICtrlGetHandle($overlay) <> -1 Then

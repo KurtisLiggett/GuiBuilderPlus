@@ -940,6 +940,10 @@ Func _onMousePrimaryDown()
 
 					$oCtrls.mode = $mode_init_selection
 
+					Local $aMousePos = MouseGetPos()
+					$oMouse.StartX = $aMousePos[0]
+					$oMouse.StartY = $aMousePos[1]
+
 				Case Else
 					If Not $oCtrls.exists($ctrl_hwnd) Then Return
 					_log("  control exists")
@@ -2011,6 +2015,28 @@ Func __WinAPI_PtInRectEx(Const $x, Const $y, Const $left, Const $top, Const $wid
 	Local Const $aRet = _WinAPI_PtInRect($tRECT, $tPoint)
 
 	Return @error ? SetError(@error, @extended, False) : $aRet
+EndFunc   ;==>__WinAPI_PtInRectEx
+
+Func _CtrlInRect(Const $x, Const $y, Const $w, Const $h, Const $left, Const $top, Const $width, Const $height)
+	; Author.........: kurtykurtyboy
+
+	If $x > $left And $y > $top And $x + $w < $left + $width And $y + $h < $top + $height Then
+		Return True
+	Else
+		Return False
+	EndIf
+
+EndFunc   ;==>__WinAPI_PtInRectEx
+
+Func _CtrlCrossRect(Const $x, Const $y, Const $w, Const $h, Const $left, Const $top, Const $width, Const $height)
+	; Author.........: kurtykurtyboy
+
+	If ($left < ($x + $w) And $top < ($y + $h)) And (($left + $width) > $x And ($top + $height) > $y) Then
+		Return True
+	Else
+		Return False
+	EndIf
+
 EndFunc   ;==>__WinAPI_PtInRectEx
 
 Func _rect_from_points(Const $a1, Const $a2, Const $b1, Const $b2)
