@@ -1,6 +1,6 @@
 ; #HEADER# ======================================================================================================================
 ; Title .........: GUIBuilderPlus
-; AutoIt Version : 3.3.16.0
+; AutoIt Version : 3.3.14.0
 ; Description ...: Build GUI with GUI based heavily on GuiBuilderNxt
 ;
 ; Remarks .......:
@@ -27,6 +27,7 @@
 ;					- UPDATED:	Better startup loading, so windows open at the same time
 ;					- UPDATED:	Switched to better versioning scheme
 ;					- MAINT:	Added logging function and debug flag for testing/development
+;					- MAINT:	Downgraded to AutoIT v3.3.14.0 for personal reasons (removed maps)
 ;
 ;  06/04/2022 ...: 	- FIXED:	Window position bugs when no INI file. Also better handling of off-screen situations
 ;					- FIXED:	Primary and secondary mouse clicks not detected outside default area if GUI is resized

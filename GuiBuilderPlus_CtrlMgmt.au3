@@ -503,7 +503,7 @@ Func _left_top_union_rect($oObjCtrls=0)
 
 	Local $sel_ctrl
 
-	Local $smallest[]
+	Local $smallest = _objCreateRect()
 
 	$smallest.Left = $oObjCtrls.getFirst().Left
 	$smallest.Top = $oObjCtrls.getFirst().Top
