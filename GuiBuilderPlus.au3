@@ -23,6 +23,7 @@
 ;					- ADDED:	Resizing multiple-selected controls will resize proportionally as a group
 ;					- ADDED:	Resize using any of the selected grippies, not just the last selected
 ;					- ADDED:	Status messages for changing some settings (F3, F7)
+;					- ADDED:	Tool button icons now built into the exe, so resources folder is not necessary to run
 ;					- UPDATED:	Better startup loading, so windows open at the same time
 ;					- UPDATED:	Switched to better versioning scheme
 ;					- MAINT:	Added logging function and debug flag for testing/development
@@ -165,6 +166,28 @@
 #AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.3.exe
 #AutoIt3Wrapper_Res_Fileversion=0.3.0.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 1.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 2.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 3.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 4.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 5.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 6.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 7.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 8.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 9.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 10.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 11.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 12.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 13.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 14.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 15.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 16.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 17.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 18.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 19.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 20.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 21.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 22.ico
 
 Opt("WinTitleMatchMode", 4) ; advanced
 Opt("MouseCoordMode", 2)
@@ -256,13 +279,11 @@ _AutoItObject_StartUp()
 #include <WinAPISys.au3>
 #include <WindowsConstants.au3>
 #include <WinAPIvkeysConstants.au3>
-#include <GDIPlus.au3>
 #include <GuiMenu.au3>
 #include <GuiEdit.au3>
 #include <GuiTreeView.au3>
 #include "UDFS\GUIScrollbars_Ex.au3"
 #include "UDFs\StringSize.au3"
-#include "UDFs\RESH.au3"
 #include "GuiBuilderPlus_objCtrl.au3"
 #include "GuiBuilderPlus_objProperties.au3"
 #include "GuiBuilderPlus_CtrlMgmt.au3"
@@ -288,7 +309,6 @@ _main()
 ;------------------------------------------------------------------------------
 Func _main()
 	_log("Startup")
-	_GDIPlus_Startup()
 
 	;create the main program data objects
 	$oMouse = _objCreateMouse()

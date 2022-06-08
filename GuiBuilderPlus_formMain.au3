@@ -222,113 +222,115 @@ Func _formToolbar()
 	Local Const $contype_btn_h = 40
 
 	;create 1st row of buttons
-	$oMain.DefaultCursor = GUICtrlCreateRadio('', 5, 5, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 1.ico")
+	Local $toolButton
+	$toolButton = GUICtrlCreateRadio('', 5, 5, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 1.ico", 201)
 	GUICtrlSetTip(-1, "Cursor")
 	GUICtrlSetState(-1, $GUI_CHECKED) ; initial selection
 	GUICtrlSetOnEvent(-1, _set_default_mode)
+	$oMain.DefaultCursor = $toolButton
 
-	GUICtrlCreateRadio("Tab", 45, 5, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 2.ico")
+	$toolButton = GUICtrlCreateRadio("Tab", 45, 5, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 2.ico", 202)
 	GUICtrlSetTip(-1, "Tab")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	GUICtrlCreateRadio("Group", 85, 5, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 3.ico")
+	$toolButton = GUICtrlCreateRadio("Group", 85, 5, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 3.ico", 203)
 	GUICtrlSetTip(-1, "Group")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	GUICtrlCreateRadio("Button", 125, 5, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 4.ico")
+	$toolButton = GUICtrlCreateRadio("Button", 125, 5, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 4.ico", 204)
 	GUICtrlSetTip(-1, "Button")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	GUICtrlCreateRadio("Checkbox", 165, 5, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 5.ico")
+	$toolButton = GUICtrlCreateRadio("Checkbox", 165, 5, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 5.ico", 205)
 	GUICtrlSetTip(-1, "Checkbox")
 	GUICtrlSetOnEvent(-1, _control_type)
 
 	; -----------------------------------------------------------------------------------------------------------
 
 	;create 2nd row of buttons
-	GUICtrlCreateRadio("Radio", 5, 45, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 6.ico")
+	$toolButton = GUICtrlCreateRadio("Radio", 5, 45, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 6.ico", 206)
 	GUICtrlSetTip(-1, "Radio")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	GUICtrlCreateRadio("Edit", 45, 45, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 7.ico")
+	$toolButton = GUICtrlCreateRadio("Edit", 45, 45, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 7.ico", 207)
 	GUICtrlSetTip(-1, "Edit")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	GUICtrlCreateRadio("Input", 85, 45, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 8.ico")
+	$toolButton = GUICtrlCreateRadio("Input", 85, 45, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 8.ico", 208)
 	GUICtrlSetTip(-1, "Input")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	GUICtrlCreateRadio("Label", 125, 45, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 9.ico")
+	$toolButton = GUICtrlCreateRadio("Label", 125, 45, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 9.ico", 209)
 	GUICtrlSetTip(-1, "Label")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	GUICtrlCreateRadio("Updown", 165, 45, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 10.ico")
+	$toolButton = GUICtrlCreateRadio("Updown", 165, 45, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 10.ico", 210)
 	GUICtrlSetTip(-1, "Updown")
 	GUICtrlSetOnEvent(-1, _control_type)
 
 	; -----------------------------------------------------------------------------------------------------------
 
 	;create 3rd row of buttons
-	GUICtrlCreateRadio("List", 5, 85, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 11.ico")
+	$toolButton = GUICtrlCreateRadio("List", 5, 85, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 11.ico", 211)
 	GUICtrlSetTip(-1, "List")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	GUICtrlCreateRadio("Combo", 45, 85, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 12.ico")
+	$toolButton = GUICtrlCreateRadio("Combo", 45, 85, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 12.ico", 212)
 	GUICtrlSetTip(-1, "Combo")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	GUICtrlCreateRadio("Date", 85, 85, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 13.ico")
+	$toolButton = GUICtrlCreateRadio("Date", 85, 85, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 13.ico", 213)
 	GUICtrlSetTip(-1, "Date")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	GUICtrlCreateRadio("TreeView", 125, 85, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 14.ico")
+	$toolButton = GUICtrlCreateRadio("TreeView", 125, 85, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 14.ico", 214)
 	GUICtrlSetTip(-1, "TreeView")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	GUICtrlCreateRadio("Progress", 165, 85, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 15.ico")
+	$toolButton = GUICtrlCreateRadio("Progress", 165, 85, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 15.ico", 215)
 	GUICtrlSetTip(-1, "Progress")
 	GUICtrlSetOnEvent(-1, _control_type)
 
 	; -----------------------------------------------------------------------------------------------------------
 
 	;create 4th row of buttons
-	GUICtrlCreateRadio("Avi", 5, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 16.ico")
+	$toolButton = GUICtrlCreateRadio("Avi", 5, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 16.ico", 216)
 	GUICtrlSetTip(-1, "Avi")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	GUICtrlCreateRadio("Icon", 45, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 17.ico")
+	$toolButton = GUICtrlCreateRadio("Icon", 45, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 17.ico", 217)
 	GUICtrlSetTip(-1, "Icon")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	GUICtrlCreateRadio("Pic", 85, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 18.ico")
+	$toolButton = GUICtrlCreateRadio("Pic", 85, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 18.ico", 218)
 	GUICtrlSetTip(-1, "Pic")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	GUICtrlCreateRadio("Menu", 125, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 19.ico")
+	$toolButton = GUICtrlCreateRadio("Menu", 125, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 19.ico", 219)
 	GUICtrlSetTip(-1, "Menu")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	GUICtrlCreateRadio("ContextMenu", 165, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 20.ico")
+	$toolButton = GUICtrlCreateRadio("ContextMenu", 165, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 20.ico", 220)
 	GUICtrlSetTip(-1, "Context Menu")
 	GUICtrlSetOnEvent(-1, _control_type)
 	GUICtrlSetState(-1, $GUI_DISABLE)
@@ -336,18 +338,18 @@ Func _formToolbar()
 	; -----------------------------------------------------------------------------------------------------------
 
 	;create 5th row of buttons
-	GUICtrlCreateRadio("Slider", 5, 165, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 21.ico")
+	$toolButton = GUICtrlCreateRadio("Slider", 5, 165, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 21.ico", 221)
 	GUICtrlSetTip(-1, "Slider")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	GUICtrlCreateRadio("IP", 45, 165, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 22.ico")
+	$toolButton = GUICtrlCreateRadio("IP", 45, 165, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 22.ico", 222)
 	GUICtrlSetTip(-1, "IP Address")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	GUICtrlCreateRadio("ListView", 85, 165, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	GUICtrlSetImage(-1, $iconset & "\Icon 23.ico")
+	$toolButton = GUICtrlCreateRadio("ListView", 85, 165, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 23.ico", 223)
 	GUICtrlSetTip(-1, "ListView")
 	GUICtrlSetOnEvent(-1, _control_type)
 	#EndRegion control-creation
@@ -2435,3 +2437,12 @@ Func _saveWinPositions()
 		EndIf
 	EndIf
 EndFunc   ;==>_saveWinPositions
+
+
+Func _setIconFromResource($ctrlID, $sIconName, $iIcon)
+	If @Compiled = 1 Then
+		GUICtrlSetImage($ctrlID, @ScriptFullPath, $iIcon)
+	Else
+		GUICtrlSetImage($ctrlID, $iconset & "\" & $sIconName)
+	EndIf
+EndFunc

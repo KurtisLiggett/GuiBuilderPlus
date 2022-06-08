@@ -134,7 +134,7 @@ Func _code_generation()
 		Next
 		$code &= @CRLF
 
-		Local $mDocData[]
+		Local $mDocData = _objDocData()
 		$mDocData.name = "_guiCreate"
 		$mDocData.description = "Create the main GUI"
 		$code &= _functionDoc($mDocData) & @CRLF
@@ -182,7 +182,7 @@ EndFunc   ;==>_code_generation
 ; Description.....: generate the function doc based on template
 ;------------------------------------------------------------------------------
 Func _functionDoc($mDocData)
-	If Not IsMap($mDocData) Then Return ""
+	If Not IsObj($mDocData) Then Return ""
 
 	Local $sFileData = FileRead(@ScriptDir & "\storage\templateFunctionDoc.au3")
 	If @error Then Return ""
@@ -383,7 +383,7 @@ EndFunc   ;==>_copy_code_to_output
 
 Func _getFuncMain($bOnEventMode, $bGuiFunction)
 	;function documentation template
-	Local $mDocData[]
+	Local $mDocData = _objDocData()
 	$mDocData.name = "_main"
 	$mDocData.description = "run the main program loop"
 	Local $FuncDoc = _functionDoc($mDocData) & @CRLF
@@ -416,7 +416,7 @@ EndFunc   ;==>_getFuncMain
 
 Func _getFuncOnExit()
 	;function documentation template
-	Local $mDocData[]
+	Local $mDocData = _objDocData()
 	$mDocData.name = "_onExitMain"
 	$mDocData.description = "Clean up and exit the program"
 	Local $FuncDoc = _functionDoc($mDocData) & @CRLF
@@ -463,3 +463,13 @@ Func _getFuncDpiScaling()
 
 	Return $code
 EndFunc   ;==>_getFuncDpiScaling
+
+
+Func _objDocData()
+	Local $oObject = _AutoItObject_Create()
+
+	_AutoItObject_AddProperty($oObject, "name", $ELSCOPE_PUBLIC, "")
+	_AutoItObject_AddProperty($oObject, "description", $ELSCOPE_PUBLIC, "")
+
+	Return $oObject
+EndFunc
