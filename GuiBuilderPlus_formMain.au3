@@ -69,7 +69,7 @@ Func _formMain()
 
 	;create the background and context menu
 	$background = GUICtrlCreateGraphic(0, 0, $oMain.Width, $oMain.Height) ; used to show a grid --- GUICtrlCreatePic($blank_bmp, 0, 0, 0, 0) ; used to show a grid
-;~ 	GUICtrlSetState($background, $GUI_DISABLE)
+	GUICtrlSetState($background, $GUI_DISABLE)
 	$background_contextmenu = GUICtrlCreateContextMenu(GUICtrlCreateDummy())
 	$background_contextmenu_paste = GUICtrlCreateMenuItem("Paste", $background_contextmenu)
 	;menu events
