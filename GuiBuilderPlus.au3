@@ -12,25 +12,27 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  06/05/2022 ...: 	- FIXED:	Code generation missing sleep in Msg mode
+;  06/08/2022 ...: 	- FIXED:	Code generation missing sleep in Msg mode
 ;					- FIXED:	Lots of handling of copy+paste scenarios
 ;					- FIXED:	Tooltip when resizing multiple controls
 ;					- FIXED:	Changed the selection rectangle so controls don't bounce around during right-to-left selection anymore
-;					- UPDATED:	Reverted back to standard edit box for code preview due to more issues with rich edit than it was worth
-;					- UPDATED:	When pasting, control will follow mouse waiting to be placed by single click
+;					- FIXED:	Right-click when multiple controls are selected
 ;					- ADDED:	New menu item, shortcut key Ctrl+X, and context menu item to 'Cut' selected controls
 ;					- ADDED:	Cut/Copy/Paste will now maintain relative positions and spacing
+;					- ADDED:	When pasting, control will follow mouse waiting to be placed by single click
 ;					- ADDED:	Resizing multiple-selected controls will resize proportionally as a group
 ;					- ADDED:	Resize using any of the selected grippies, not just the last selected
 ;					- ADDED:	Status messages for changing some settings (F3, F7)
 ;					- ADDED:	Tool button icons now built into the exe, so resources folder is not necessary to run
-;					- ADDED:	Improved selection detection.
+;					- ADDED:	Improved selection detection
 ;									Left-to-right selection requires entire control to be in the rectangle
 ;									Right-to-left selection selects anything that crosses the rectangle
-;					- UPDATED:	Better startup loading, so windows open at the same time
-;					- UPDATED:	Switched to better versioning scheme
+;					- ADDED:	Right-click menu items: Align-> left, center, right, top, middle, bottom, etc...
+;					- MAINT:	Resetting versioning scheme starting at 0.3
 ;					- MAINT:	Added logging function and debug flag for testing/development
 ;					- MAINT:	Downgraded to AutoIT v3.3.14.0 for personal reasons (removed maps)
+;					- UPDATED:	Better startup loading, so windows open at the same time
+;					- UPDATED:	Reverted back to standard edit box for code preview due to more issues with rich edit than it was worth
 ;
 ;  06/04/2022 ...: 	- FIXED:	Window position bugs when no INI file. Also better handling of off-screen situations
 ;					- FIXED:	Primary and secondary mouse clicks not detected outside default area if GUI is resized

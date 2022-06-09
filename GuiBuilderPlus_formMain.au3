@@ -79,10 +79,33 @@ Func _formMain()
 	Local $overlay_contextmenu_cut = GUICtrlCreateMenuItem("Cut", $overlay_contextmenu)
 	Local $overlay_contextmenu_copy = GUICtrlCreateMenuItem("Copy", $overlay_contextmenu)
 	Local $overlay_contextmenu_delete = GUICtrlCreateMenuItem("Delete", $overlay_contextmenu)
+	GUICtrlCreateMenuItem("", $overlay_contextmenu)
+	Local $contextmenu_align = GUICtrlCreateMenu("Align", $overlay_contextmenu)
+	Local $contextmenu_align_left = GUICtrlCreateMenuItem("Left", $contextmenu_align)
+	Local $contextmenu_align_center = GUICtrlCreateMenuItem("Center", $contextmenu_align)
+	Local $contextmenu_align_right = GUICtrlCreateMenuItem("Right", $contextmenu_align)
+	GUICtrlCreateMenuItem("", $contextmenu_align)
+	Local $contextmenu_align_top = GUICtrlCreateMenuItem("Top", $contextmenu_align)
+	Local $contextmenu_align_middle = GUICtrlCreateMenuItem("Middle", $contextmenu_align)
+	Local $contextmenu_align_bottom = GUICtrlCreateMenuItem("Bottom", $contextmenu_align)
+	GUICtrlCreateMenuItem("", $contextmenu_align)
+	Local $contextmenu_align_centerPoints = GUICtrlCreateMenuItem("Center Points", $contextmenu_align)
+	GUICtrlCreateMenuItem("", $contextmenu_align)
+	Local $contextmenu_align_spaceVertical = GUICtrlCreateMenuItem("Space Vertical", $contextmenu_align)
+	Local $contextmenu_align_spaceHorizontal = GUICtrlCreateMenuItem("Space Horizontal", $contextmenu_align)
 	;menu events
 	GUICtrlSetOnEvent($overlay_contextmenu_cut, _cut_selected)
 	GUICtrlSetOnEvent($overlay_contextmenu_copy, _copy_selected)
 	GUICtrlSetOnEvent($overlay_contextmenu_delete, _delete_selected_controls)
+	GUICtrlSetOnEvent($contextmenu_align_left, "_onAlignMenu_Left")
+	GUICtrlSetOnEvent($contextmenu_align_center, "_onAlignMenu_Center")
+	GUICtrlSetOnEvent($contextmenu_align_right, "_onAlignMenu_Right")
+	GUICtrlSetOnEvent($contextmenu_align_top, "_onAlignMenu_Top")
+	GUICtrlSetOnEvent($contextmenu_align_middle, "_onAlignMenu_Middle")
+	GUICtrlSetOnEvent($contextmenu_align_bottom, "_onAlignMenu_Bottom")
+	GUICtrlSetOnEvent($contextmenu_align_centerPoints, "_onAlignMenu_CenterPoints")
+	GUICtrlSetOnEvent($contextmenu_align_spaceVertical, "_onAlignMenu_SpaceVertical")
+	GUICtrlSetOnEvent($contextmenu_align_spaceHorizontal, "_onAlignMenu_SpaceHorizontal")
 
 	;special menu for tab control
 	$overlay_contextmenutab = GUICtrlCreateContextMenu(GUICtrlCreateDummy())
@@ -799,6 +822,134 @@ EndFunc   ;==>_nudgeSelected
 
 
 ;------------------------------------------------------------------------------
+; Title...........: _onAlignMenu_Left
+; Description.....: Align selected items
+; Events..........: Context menu item
+;------------------------------------------------------------------------------
+Func _onAlignMenu_Left()
+	Local $value = $oSelected.getFirst().Left
+	For $oCtrl In $oSelected.ctrls
+		_change_ctrl_size_pos($oCtrl, $value, Default, Default, Default)
+	Next
+EndFunc
+
+Func _onAlignMenu_Center()
+	Local $oCtrlValue = $oSelected.getFirst()
+	Local $value = $oCtrlValue.Left + $oCtrlValue.Width / 2
+	For $oCtrl In $oSelected.ctrls
+		_change_ctrl_size_pos($oCtrl, $value - $oCtrl.Width / 2, Default, Default, Default)
+	Next
+EndFunc
+
+Func _onAlignMenu_Right()
+	Local $oCtrlValue = $oSelected.getFirst()
+	Local $value = $oCtrlValue.Left + $oCtrlValue.Width
+	For $oCtrl In $oSelected.ctrls
+		_change_ctrl_size_pos($oCtrl, $value - $oCtrl.Width, Default, Default, Default)
+	Next
+EndFunc
+
+Func _onAlignMenu_Top()
+	Local $value = $oSelected.getFirst().Top
+	For $oCtrl In $oSelected.ctrls
+		_change_ctrl_size_pos($oCtrl, Default, $value, Default, Default)
+	Next
+EndFunc
+
+Func _onAlignMenu_Middle()
+	Local $oCtrlValue = $oSelected.getFirst()
+	Local $value = $oCtrlValue.Top + $oCtrlValue.Height / 2
+	For $oCtrl In $oSelected.ctrls
+		_change_ctrl_size_pos($oCtrl, Default, $value - $oCtrl.Height / 2, Default, Default)
+	Next
+EndFunc
+
+Func _onAlignMenu_Bottom()
+	Local $oCtrlValue = $oSelected.getFirst()
+	Local $value = $oCtrlValue.Top + $oCtrlValue.Height
+	For $oCtrl In $oSelected.ctrls
+		_change_ctrl_size_pos($oCtrl, Default, $value - $oCtrl.Height, Default, Default)
+	Next
+EndFunc
+
+Func _onAlignMenu_CenterPoints()
+	Local $oCtrlValue = $oSelected.getFirst()
+	Local $valueCenter = $oCtrlValue.Left + $oCtrlValue.Width / 2
+	Local $valueMiddle = $oCtrlValue.Top + $oCtrlValue.Height / 2
+	For $oCtrl In $oSelected.ctrls
+		_change_ctrl_size_pos($oCtrl, $valueCenter - $oCtrl.Width / 2, $valueMiddle - $oCtrl.Height / 2, Default, Default)
+	Next
+EndFunc
+
+Func _onAlignMenu_SpaceVertical()
+	Local $oCtrlFirst, $oCtrlLast
+	Local $aCtrls[1], $firstObj = True
+
+	;first find the order
+	For $oCtrl In $oSelected.ctrls
+		For $i=0 To UBound($aCtrls)-1
+			If $firstObj Then
+				$aCtrls[0] = $oCtrl
+				$firstObj = False
+				ExitLoop
+			ElseIf $oCtrl.Top < $aCtrls[$i].Top Then
+				_ArrayInsert($aCtrls, $i, $oCtrl)
+				ExitLoop
+			ElseIf $i = UBound($aCtrls)-1 Then
+				_ArrayAdd($aCtrls, $oCtrl, 0, "|", @CRLF, $ARRAYFILL_FORCE_SINGLEITEM)
+			EndIf
+		Next
+	Next
+
+	;calculate the spacing
+	Local $posTop = $aCtrls[0].Top + $aCtrls[0].Height / 2
+	Local $posBottom = $aCtrls[$oSelected.count-1].Top + $aCtrls[$oSelected.count-1].Height / 2
+	Local $spacing = ( $posBottom - $posTop ) / ($oSelected.count - 1)
+
+	;set the new positions
+	Local $pos = $aCtrls[0].Top + $aCtrls[0].Height / 2
+	For $oCtrl In $aCtrls
+		_change_ctrl_size_pos($oCtrl, Default, $pos - $oCtrl.Height / 2, Default, Default)
+		$pos += $spacing
+	Next
+
+EndFunc
+
+Func _onAlignMenu_SpaceHorizontal()
+	Local $oCtrlFirst, $oCtrlLast
+	Local $aCtrls[1], $firstObj = True
+
+	;first find the order
+	For $oCtrl In $oSelected.ctrls
+		For $i=0 To UBound($aCtrls)-1
+			If $firstObj Then
+				$aCtrls[0] = $oCtrl
+				$firstObj = False
+				ExitLoop
+			ElseIf $oCtrl.Left < $aCtrls[$i].Left Then
+				_ArrayInsert($aCtrls, $i, $oCtrl)
+				ExitLoop
+			ElseIf $i = UBound($aCtrls)-1 Then
+				_ArrayAdd($aCtrls, $oCtrl, 0, "|", @CRLF, $ARRAYFILL_FORCE_SINGLEITEM)
+			EndIf
+		Next
+	Next
+
+	;calculate the spacing
+	Local $posLeft = $aCtrls[0].Left + $aCtrls[0].Width / 2
+	Local $posRight = $aCtrls[$oSelected.count-1].Left + $aCtrls[$oSelected.count-1].Width / 2
+	Local $spacing = ( $posRight - $posLeft ) / ($oSelected.count - 1)
+
+	;set the new positions
+	Local $pos = $aCtrls[0].Left + $aCtrls[0].Width / 2
+	For $oCtrl In $aCtrls
+		_change_ctrl_size_pos($oCtrl, $pos - $oCtrl.Width / 2, Default, Default, Default)
+		$pos += $spacing
+	Next
+EndFunc
+
+
+;------------------------------------------------------------------------------
 ; Title...........: _onPasteSelected
 ; Description.....: Call the paste selected function
 ; Events..........: Context menu item, accel key Ctrl+V
@@ -1091,13 +1242,17 @@ Func _onMouseSecondaryDown()
 
 	Switch $ctrl_hwnd
 		Case $background
+			_log("** SecondaryDown: background **")
 			_set_current_mouse_pos()
 
 		Case Else
+			_log("** SecondaryDown: control **")
 			Local $oCtrl = $oCtrls.get($ctrl_hwnd)
 
 			If $oCtrls.exists($ctrl_hwnd) Then
-				_add_to_selected($oCtrl)
+				If Not $oSelected.exists($ctrl_hwnd) Then
+					_add_to_selected($oCtrl)
+				EndIf
 
 				_setLvSelected($oSelected.getFirst())
 			EndIf
@@ -1112,9 +1267,11 @@ Func _onMouseSecondaryUp()
 
 	Switch $ctrl_hwnd
 		Case $background
+			_log("** SecondaryUp: background **")
 			ShowMenu($background_contextmenu, $oMouse.X, $oMouse.Y)
 
 		Case Else
+			_log("** SecondaryUp: control **")
 			Local $oCtrl = $oCtrls.get($ctrl_hwnd)
 
 			If $oCtrls.exists($ctrl_hwnd) Then
