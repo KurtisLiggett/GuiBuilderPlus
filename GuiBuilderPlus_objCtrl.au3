@@ -22,10 +22,6 @@ Func _objCtrls($isSelection = False)
 	_AutoItObject_AddProperty($oObject, "IPCount", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "hasIP", $ELSCOPE_PUBLIC, False)
 	_AutoItObject_AddProperty($oObject, "isSelection", $ELSCOPE_PUBLIC, $isSelection)
-	_AutoItObject_AddProperty($oObject, "alignLeft", $ELSCOPE_PUBLIC, 0)
-	_AutoItObject_AddProperty($oObject, "alignRight", $ELSCOPE_PUBLIC, 0)
-	_AutoItObject_AddProperty($oObject, "alignTop", $ELSCOPE_PUBLIC, 0)
-	_AutoItObject_AddProperty($oObject, "alignBottom", $ELSCOPE_PUBLIC, 0)
 	;actual list of controls
 	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, LinkedList())
 
@@ -100,11 +96,6 @@ Func _objCtrls_add($oSelf, $objCtrl)
 
 	Return $oSelf.count
 
-
-	If $objCtrl.Left < $oSelf.alignLeft Then $oSelf.alignLeft = $objCtrl.Left
-	If $objCtrl.Left + $objCtrl.Width > $oSelf.alignRight Then $oSelf.alignRight = $objCtrl.Left + $objCtrl.Width
-	If $objCtrl.Top < $oSelf.alignTop Then $oSelf.alignTop = $objCtrl.Top
-	If $objCtrl.Top + $objCtrl.Height > $oSelf.alignBottom Then $oSelf.alignBottom = $objCtrl.Top + $objCtrl.Height
 EndFunc   ;==>_objCtrls_add
 
 Func _objCtrls_remove($oSelf, $Hwnd)
@@ -458,6 +449,7 @@ Func _objMain()
 	_AutoItObject_AddProperty($oObject, "AppName", $ELSCOPE_PUBLIC, "")
 	_AutoItObject_AddProperty($oObject, "AppVersion", $ELSCOPE_PUBLIC, "")
 	_AutoItObject_AddProperty($oObject, "DefaultCursor", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "hasChanged", $ELSCOPE_PUBLIC, False)
 
 	Return $oObject
 EndFunc   ;==>_objMain

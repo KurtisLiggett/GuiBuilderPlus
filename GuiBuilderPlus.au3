@@ -28,6 +28,7 @@
 ;									Left-to-right selection requires entire control to be in the rectangle
 ;									Right-to-left selection selects anything that crosses the rectangle
 ;					- ADDED:	Right-click menu items: Align-> left, center, right, top, middle, bottom, etc...
+;					- ADDED:	Ask to save (definition) dialog when closing, only when a change was detected since the last save
 ;					- MAINT:	Resetting versioning scheme starting at 0.3
 ;					- MAINT:	Added logging function and debug flag for testing/development
 ;					- MAINT:	Downgraded to AutoIT v3.3.14.0 for personal reasons (removed maps)

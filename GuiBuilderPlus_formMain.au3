@@ -530,16 +530,17 @@ EndFunc   ;==>_display_grid
 ; Event...........: close button [X]
 ;------------------------------------------------------------------------------
 Func _onExit()
-;~ 	If $oCtrls.count > 0 Then
-;~ 		; mod by: TheSaint
-;~ 		Switch MsgBox($MB_SYSTEMMODAL + $MB_YESNOCANCEL, "Quit?", "Do you want to save the GUI?")
-;~ 			Case $IDYES
+	If $oMain.hasChanged Then
+		; mod by: TheSaint
+		Switch MsgBox($MB_SYSTEMMODAL + $MB_YESNOCANCEL, "Quit?", "Do you want to save the GUI?")
+			Case $IDYES
 ;~ 				_save_code()
+				_save_gui_definition()
 
-;~ 			Case $IDCANCEL
-;~ 				Return
-;~ 		EndSwitch
-;~ 	EndIf
+			Case $IDCANCEL
+				Return
+		EndSwitch
+	EndIf
 
 	; save window positions in ini file
 	_saveWinPositions()
@@ -1332,6 +1333,7 @@ Func _onMouseMove()
 				$tooltip &= $oCtrlSelect.Name & ": X:" & $oCtrlSelect.Left & ", Y:" & $oCtrlSelect.Top & ", W:" & $oCtrlSelect.Width & ", H:" & $oCtrlSelect.Height & @CRLF
 			Next
 			ToolTip(StringTrimRight($tooltip, 2))
+			$oMain.hasChanged = True
 
 	EndSwitch
 EndFunc   ;==>_onMouseMove
@@ -1523,6 +1525,7 @@ Func _main_change_title()
 	$oMain.Title = $new_text
 
 	_refreshGenerateCode()
+	$oMain.hasChanged = True
 EndFunc   ;==>_main_change_title
 
 
@@ -1534,6 +1537,7 @@ Func _main_change_name()
 
 	_refreshGenerateCode()
 	_formObjectExplorer_updateList()
+	$oMain.hasChanged = True
 EndFunc   ;==>_main_change_name
 
 
@@ -1542,6 +1546,7 @@ Func _main_change_left()
 	$oMain.Left = $new_text
 
 	_refreshGenerateCode()
+	$oMain.hasChanged = True
 EndFunc   ;==>_main_change_left
 
 
@@ -1550,6 +1555,7 @@ Func _main_change_top()
 	$oMain.Top = $new_text
 
 	_refreshGenerateCode()
+	$oMain.hasChanged = True
 EndFunc   ;==>_main_change_top
 
 
@@ -1568,6 +1574,7 @@ Func _main_change_width()
 	EndIf
 
 	_refreshGenerateCode()
+	$oMain.hasChanged = True
 EndFunc   ;==>_main_change_width
 
 
@@ -1586,6 +1593,7 @@ Func _main_change_height()
 	EndIf
 
 	_refreshGenerateCode()
+	$oMain.hasChanged = True
 EndFunc   ;==>_main_change_height
 
 
@@ -1596,6 +1604,7 @@ Func _main_pick_bkColor()
 	$oProperties_Main.Background.value = $color
 
 	_main_change_background()
+	$oMain.hasChanged = True
 EndFunc   ;==>_main_pick_bkColor
 
 
@@ -1611,6 +1620,7 @@ Func _main_change_background()
 	GUISetBkColor($colorInput, $hGUI)
 
 	_refreshGenerateCode()
+	$oMain.hasChanged = True
 EndFunc   ;==>_main_change_background
 #EndRegion change-properties-main
 
@@ -1665,6 +1675,7 @@ Func _ctrl_change_text()
 	EndSwitch
 
 	_refreshGenerateCode()
+	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_text
 
 
@@ -1707,6 +1718,7 @@ Func _ctrl_change_name()
 
 	_refreshGenerateCode()
 	_formObjectExplorer_updateList()
+	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_name
 
 
@@ -1724,7 +1736,7 @@ Func _ctrl_change_left()
 			For $oCtrl In $oSelected.ctrls
 
 				;move the selected control
-				GUICtrlSetPos($oCtrl.Hwnd, $new_data, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
+				_change_ctrl_size_pos($oCtrl, $new_data, Default, Default, Default)
 				;update the selected property
 				$oCtrl.Left = $new_data
 
@@ -1760,7 +1772,7 @@ Func _ctrl_change_top()
 			For $oCtrl In $oSelected.ctrls
 
 				;move the selected control
-				GUICtrlSetPos($oCtrl.Hwnd, $oCtrl.Left, $new_data, $oCtrl.Width, $oCtrl.Height)
+				_change_ctrl_size_pos($oCtrl, Default, $new_data, Default, Default)
 				;update the selected property
 				$oCtrl.Top = $new_data
 
@@ -1795,7 +1807,7 @@ Func _ctrl_change_width()
 			For $oCtrl In $oSelected.ctrls
 
 				;move the selected control
-				GUICtrlSetPos($oCtrl.Hwnd, $oCtrl.Left, $oCtrl.Top, $new_data, $oCtrl.Height)
+				_change_ctrl_size_pos($oCtrl, Default, Default, $new_data, Default)
 				;update the selected property
 				$oCtrl.Width = $new_data
 
@@ -1830,7 +1842,7 @@ Func _ctrl_change_height()
 			For $oCtrl In $oSelected.ctrls
 
 				;move the selected control
-				GUICtrlSetPos($oCtrl.Hwnd, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $new_data)
+				_change_ctrl_size_pos($oCtrl, Default, Default, Default, $new_data)
 				;update the selected property
 				$oCtrl.Height = $new_data
 
@@ -1858,6 +1870,7 @@ Func _ctrl_pick_bkColor()
 	$oProperties_Ctrls.Background.value = $color
 
 	_ctrl_change_bkColor()
+	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_pick_bkColor
 
 
@@ -1894,6 +1907,7 @@ Func _ctrl_change_bkColor()
 	EndSwitch
 
 	_refreshGenerateCode()
+	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_bkColor
 
 
@@ -1911,6 +1925,7 @@ Func _ctrl_change_global()
 	EndSwitch
 
 	_refreshGenerateCode()
+	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_global
 
 
@@ -1956,6 +1971,7 @@ Func _ctrl_change_Color()
 	EndSwitch
 
 	_refreshGenerateCode()
+	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_Color
 
 

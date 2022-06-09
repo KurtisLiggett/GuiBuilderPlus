@@ -280,6 +280,8 @@ Func _create_ctrl($oCtrl = '', $bUseName = False)
 
 	EndSwitch
 
+	$oMain.hasChanged = True
+
 	If $incTypeCount Then
 		$oCtrls.incTypeCount($oNewControl.Type)
 
@@ -479,6 +481,8 @@ Func _delete_ctrl(Const $oCtrl)
 	$oSelected.remove($oCtrl.Hwnd)
 
 	_formObjectExplorer_updateList()
+
+	$oMain.hasChanged = True
 EndFunc   ;==>_delete_ctrl
 
 
@@ -939,6 +943,7 @@ Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, 
 	If $height <> Default Then $oCtrl.Height = $height
 
 	$oCtrl.grippies.show()
+	$oMain.hasChanged = True
 EndFunc   ;==>_change_ctrl_size_pos
 
 

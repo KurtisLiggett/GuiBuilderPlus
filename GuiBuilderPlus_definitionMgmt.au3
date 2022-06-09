@@ -142,6 +142,8 @@ Func _save_gui_definition()
 
 	$bStatusNewMessage = True
 	_GUICtrlStatusBar_SetText($hStatusbar, "Definition saved to file")
+
+	$oMain.hasChanged = False
 EndFunc   ;==>_save_gui_definition
 
 
@@ -296,4 +298,6 @@ Func _load_gui_definition($AgdInfile = '')
 
 	$bStatusNewMessage = True
 	_GUICtrlStatusBar_SetText($hStatusbar, "Loaded successfully")
+
+	$oMain.hasChanged = False
 EndFunc   ;==>_load_gui_definition
