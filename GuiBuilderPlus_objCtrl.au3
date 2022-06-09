@@ -671,14 +671,14 @@ EndFunc   ;==>_objGrippies_resizing
 Func _objGrippies_show($oSelf)
 ;~ 	_log("show grippies for " & $oSelf.parent.Name)
 	;show
-	GUICtrlSetState($oSelf.NW, $GUI_SHOW + $GUI_ONTOP)
-	GUICtrlSetState($oSelf.N, $GUI_SHOW + $GUI_ONTOP)
-	GUICtrlSetState($oSelf.NE, $GUI_SHOW + $GUI_ONTOP)
-	GUICtrlSetState($oSelf.East, $GUI_SHOW + $GUI_ONTOP)
-	GUICtrlSetState($oSelf.SE, $GUI_SHOW + $GUI_ONTOP)
-	GUICtrlSetState($oSelf.S, $GUI_SHOW + $GUI_ONTOP)
-	GUICtrlSetState($oSelf.SW, $GUI_SHOW + $GUI_ONTOP)
-	GUICtrlSetState($oSelf.W, $GUI_SHOW + $GUI_ONTOP)
+	GUICtrlSetState($oSelf.NW, $GUI_SHOW)
+	GUICtrlSetState($oSelf.N, $GUI_SHOW)
+	GUICtrlSetState($oSelf.NE, $GUI_SHOW)
+	GUICtrlSetState($oSelf.East, $GUI_SHOW)
+	GUICtrlSetState($oSelf.SE, $GUI_SHOW)
+	GUICtrlSetState($oSelf.S, $GUI_SHOW)
+	GUICtrlSetState($oSelf.SW, $GUI_SHOW)
+	GUICtrlSetState($oSelf.W, $GUI_SHOW)
 
 	;set on top
 	_WinAPI_SetWindowPos(GUICtrlGetHandle($oSelf.NW), $HWND_TOP, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)

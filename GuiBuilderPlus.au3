@@ -12,14 +12,14 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  06/08/2022 ...: 	- FIXED:	Code generation missing sleep in Msg mode
-;					- FIXED:	Lots of handling of copy+paste scenarios
+;  06/08/2022 ...: 	- FIXED:	Lots of handling of copy+paste scenarios
 ;					- FIXED:	Tooltip when resizing multiple controls
 ;					- FIXED:	Changed the selection rectangle so controls don't bounce around during right-to-left selection anymore
 ;					- FIXED:	Right-click when multiple controls are selected
 ;					- ADDED:	New menu item, shortcut key Ctrl+X, and context menu item to 'Cut' selected controls
 ;					- ADDED:	Cut/Copy/Paste will now maintain relative positions and spacing
-;					- ADDED:	When pasting, control will follow mouse waiting to be placed by single click
+;					- ADDED:	When pasting with Ctrl+V, control will follow mouse waiting to be placed by single click
+;								When pasting with menu or right-click, control will be placed at mouse position
 ;					- ADDED:	Resizing multiple-selected controls will resize proportionally as a group
 ;					- ADDED:	Resize using any of the selected grippies, not just the last selected
 ;					- ADDED:	Status messages for changing some settings (F3, F7)
@@ -27,7 +27,7 @@
 ;					- ADDED:	Improved selection detection
 ;									Left-to-right selection requires entire control to be in the rectangle
 ;									Right-to-left selection selects anything that crosses the rectangle
-;					- ADDED:	Right-click menu items: Align-> left, center, right, top, middle, bottom, etc...
+;					- ADDED:	Right-click menu items: Arrange-> Align left/center/right, top/middle/bottom, space vertical/horizontal
 ;					- ADDED:	Ask to save (definition) dialog when closing, only when a change was detected since the last save
 ;					- MAINT:	Resetting versioning scheme starting at 0.3
 ;					- MAINT:	Added logging function and debug flag for testing/development

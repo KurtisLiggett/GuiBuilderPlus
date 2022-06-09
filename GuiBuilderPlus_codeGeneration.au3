@@ -405,9 +405,11 @@ Func _getFuncMain($bOnEventMode, $bGuiFunction)
 				@TAB & @TAB & @TAB & "Case Else" & @CRLF & _
 				@TAB & @TAB & @TAB & @TAB & ";" & @CRLF & _
 				@TAB & @TAB & "EndSwitch" & @CRLF
+	Else
+		$code &= '' & _
+				@TAB & @TAB & "Sleep(100)" & @CRLF
 	EndIf
 	$code &= '' & _
-			@TAB & @TAB & "Sleep(100)" & @CRLF & _
 			@TAB & "WEnd" & @CRLF & _
 			"EndFunc   ;==>_main"
 

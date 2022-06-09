@@ -601,7 +601,7 @@ EndFunc   ;==>_selected_to_clipboard
 ; Title...........: _PasteSelected
 ; Description.....: paste selected controls
 ;------------------------------------------------------------------------------
-Func _PasteSelected($bDuplicate = False)
+Func _PasteSelected($bDuplicate = False, $bAtMouse = False)
 	GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 
 	Local Const $clipboard_count = $oClipboard.count
@@ -621,6 +621,9 @@ Func _PasteSelected($bDuplicate = False)
 				If $bDuplicate Then
 					$oNewCtrl.Left += 20
 					$oNewCtrl.Top += 20
+				ElseIf $bAtMouse Then
+					$oNewCtrl.Left = $oMouse.StartX
+					$oNewCtrl.Top = $oMouse.StartY
 				Else
 					$oNewCtrl.Left = ($oMouse.X - $topLeftRect.Left) + $oNewCtrl.Left
 					$oNewCtrl.Top = ($oMouse.Y - $topLeftRect.Top) + $oNewCtrl.Top
@@ -640,7 +643,7 @@ Func _PasteSelected($bDuplicate = False)
 			Next
 	EndSwitch
 
-	If Not $bDuplicate And $oSelected.count > 0 Then
+	If Not $bDuplicate And Not $bAtMouse And $oSelected.count > 0 Then
 		$oCtrls.mode = $mode_paste
 	EndIf
 

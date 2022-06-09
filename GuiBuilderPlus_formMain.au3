@@ -73,39 +73,44 @@ Func _formMain()
 	$background_contextmenu = GUICtrlCreateContextMenu(GUICtrlCreateDummy())
 	$background_contextmenu_paste = GUICtrlCreateMenuItem("Paste", $background_contextmenu)
 	;menu events
-	GUICtrlSetOnEvent($background_contextmenu_paste, "_onPasteSelected")
+	GUICtrlSetOnEvent($background_contextmenu_paste, "_onContextMenuPasteSelected")
 
 	$overlay_contextmenu = GUICtrlCreateContextMenu(GUICtrlCreateDummy())
 	Local $overlay_contextmenu_cut = GUICtrlCreateMenuItem("Cut", $overlay_contextmenu)
 	Local $overlay_contextmenu_copy = GUICtrlCreateMenuItem("Copy", $overlay_contextmenu)
 	Local $overlay_contextmenu_delete = GUICtrlCreateMenuItem("Delete", $overlay_contextmenu)
 	GUICtrlCreateMenuItem("", $overlay_contextmenu)
-	Local $contextmenu_align = GUICtrlCreateMenu("Align", $overlay_contextmenu)
-	Local $contextmenu_align_left = GUICtrlCreateMenuItem("Left", $contextmenu_align)
-	Local $contextmenu_align_center = GUICtrlCreateMenuItem("Center", $contextmenu_align)
-	Local $contextmenu_align_right = GUICtrlCreateMenuItem("Right", $contextmenu_align)
-	GUICtrlCreateMenuItem("", $contextmenu_align)
-	Local $contextmenu_align_top = GUICtrlCreateMenuItem("Top", $contextmenu_align)
-	Local $contextmenu_align_middle = GUICtrlCreateMenuItem("Middle", $contextmenu_align)
-	Local $contextmenu_align_bottom = GUICtrlCreateMenuItem("Bottom", $contextmenu_align)
-	GUICtrlCreateMenuItem("", $contextmenu_align)
-	Local $contextmenu_align_centerPoints = GUICtrlCreateMenuItem("Center Points", $contextmenu_align)
-	GUICtrlCreateMenuItem("", $contextmenu_align)
-	Local $contextmenu_align_spaceVertical = GUICtrlCreateMenuItem("Space Vertical", $contextmenu_align)
-	Local $contextmenu_align_spaceHorizontal = GUICtrlCreateMenuItem("Space Horizontal", $contextmenu_align)
+	Local $contextmenu_arrange = GUICtrlCreateMenu("Arrange", $overlay_contextmenu)
+;~ 	Local $contextmenu_arrange_back = GUICtrlCreateMenuItem("Send to Back", $contextmenu_arrange)
+;~ 	Local $contextmenu_arrange_front = GUICtrlCreateMenuItem("Bring to Front", $contextmenu_arrange)
+;~ 	GUICtrlCreateMenuItem("", $contextmenu_arrange)
+	Local $contextmenu_arrange_left = GUICtrlCreateMenuItem("Align Left", $contextmenu_arrange)
+	Local $contextmenu_arrange_center = GUICtrlCreateMenuItem("Align Center", $contextmenu_arrange)
+	Local $contextmenu_arrange_right = GUICtrlCreateMenuItem("Align Right", $contextmenu_arrange)
+	GUICtrlCreateMenuItem("", $contextmenu_arrange)
+	Local $contextmenu_arrange_top = GUICtrlCreateMenuItem("Align Top", $contextmenu_arrange)
+	Local $contextmenu_arrange_middle = GUICtrlCreateMenuItem("Align Middle", $contextmenu_arrange)
+	Local $contextmenu_arrange_bottom = GUICtrlCreateMenuItem("Align Bottom", $contextmenu_arrange)
+	GUICtrlCreateMenuItem("", $contextmenu_arrange)
+	Local $contextmenu_arrange_centerPoints = GUICtrlCreateMenuItem("Align Center Points", $contextmenu_arrange)
+	GUICtrlCreateMenuItem("", $contextmenu_arrange)
+	Local $contextmenu_arrange_spaceVertical = GUICtrlCreateMenuItem("Space Vertical", $contextmenu_arrange)
+	Local $contextmenu_arrange_spaceHorizontal = GUICtrlCreateMenuItem("Space Horizontal", $contextmenu_arrange)
 	;menu events
 	GUICtrlSetOnEvent($overlay_contextmenu_cut, _cut_selected)
 	GUICtrlSetOnEvent($overlay_contextmenu_copy, _copy_selected)
 	GUICtrlSetOnEvent($overlay_contextmenu_delete, _delete_selected_controls)
-	GUICtrlSetOnEvent($contextmenu_align_left, "_onAlignMenu_Left")
-	GUICtrlSetOnEvent($contextmenu_align_center, "_onAlignMenu_Center")
-	GUICtrlSetOnEvent($contextmenu_align_right, "_onAlignMenu_Right")
-	GUICtrlSetOnEvent($contextmenu_align_top, "_onAlignMenu_Top")
-	GUICtrlSetOnEvent($contextmenu_align_middle, "_onAlignMenu_Middle")
-	GUICtrlSetOnEvent($contextmenu_align_bottom, "_onAlignMenu_Bottom")
-	GUICtrlSetOnEvent($contextmenu_align_centerPoints, "_onAlignMenu_CenterPoints")
-	GUICtrlSetOnEvent($contextmenu_align_spaceVertical, "_onAlignMenu_SpaceVertical")
-	GUICtrlSetOnEvent($contextmenu_align_spaceHorizontal, "_onAlignMenu_SpaceHorizontal")
+;~ 	GUICtrlSetOnEvent($contextmenu_arrange_back, "_onAlignMenu_Back")
+;~ 	GUICtrlSetOnEvent($contextmenu_arrange_front, "_onAlignMenu_Front")
+	GUICtrlSetOnEvent($contextmenu_arrange_left, "_onAlignMenu_Left")
+	GUICtrlSetOnEvent($contextmenu_arrange_center, "_onAlignMenu_Center")
+	GUICtrlSetOnEvent($contextmenu_arrange_right, "_onAlignMenu_Right")
+	GUICtrlSetOnEvent($contextmenu_arrange_top, "_onAlignMenu_Top")
+	GUICtrlSetOnEvent($contextmenu_arrange_middle, "_onAlignMenu_Middle")
+	GUICtrlSetOnEvent($contextmenu_arrange_bottom, "_onAlignMenu_Bottom")
+	GUICtrlSetOnEvent($contextmenu_arrange_centerPoints, "_onAlignMenu_CenterPoints")
+	GUICtrlSetOnEvent($contextmenu_arrange_spaceVertical, "_onAlignMenu_SpaceVertical")
+	GUICtrlSetOnEvent($contextmenu_arrange_spaceHorizontal, "_onAlignMenu_SpaceHorizontal")
 
 	;special menu for tab control
 	$overlay_contextmenutab = GUICtrlCreateContextMenu(GUICtrlCreateDummy())
@@ -949,6 +954,17 @@ Func _onAlignMenu_SpaceHorizontal()
 	Next
 EndFunc
 
+Func _onAlignMenu_Back()
+	For $oCtrl In $oSelected.ctrls
+		_WinAPI_SetWindowPos(GUICtrlGetHandle($oCtrl.Hwnd), $HWND_TOP, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
+	Next
+EndFunc
+
+Func _onAlignMenu_Front()
+	For $oCtrl In $oSelected.ctrls
+		_WinAPI_SetWindowPos(GUICtrlGetHandle($oCtrl.Hwnd), $HWND_BOTTOM, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
+	Next
+EndFunc
 
 ;------------------------------------------------------------------------------
 ; Title...........: _onPasteSelected
@@ -979,6 +995,9 @@ Func _onDuplicate()
 	_DuplicateSelected()
 EndFunc   ;==>_onDuplicate
 
+Func _onContextMenuPasteSelected()
+	_PasteSelected(False, True)
+EndFunc
 
 ;------------------------------------------------------------------------------
 ; Title...........: _onMenuSelectAll
@@ -992,6 +1011,8 @@ EndFunc   ;==>_onMenuSelectAll
 
 #Region mouse events
 Func _onMousePrimaryDown()
+;~ 	_WinAPI_Window($hGUI)
+
 	;if main window was resized or moved, then don't process mouse down event
 	If $bResizedFlag Then
 		$bResizedFlag = 0
@@ -1269,6 +1290,8 @@ Func _onMouseSecondaryUp()
 	Switch $ctrl_hwnd
 		Case $background
 			_log("** SecondaryUp: background **")
+			$oMouse.StartX = $oMouse.X
+			$oMouse.StartY = $oMouse.Y
 			ShowMenu($background_contextmenu, $oMouse.X, $oMouse.Y)
 
 		Case Else
