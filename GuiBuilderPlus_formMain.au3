@@ -194,6 +194,31 @@ Func _formToolbar()
 	GUICtrlSetOnEvent($menu_selectall, "_onMenuSelectAll")
 	GUICtrlSetOnEvent($menu_wipe, _wipe_current_gui)
 
+	GUICtrlCreateMenuItem("", $menu_edit)
+	Local $menu_arrange = GUICtrlCreateMenu("Arrange", $menu_edit)
+	Local $menu_arrange_left = GUICtrlCreateMenuItem("Align Left", $menu_arrange)
+	Local $menu_arrange_center = GUICtrlCreateMenuItem("Align Center", $menu_arrange)
+	Local $menu_arrange_right = GUICtrlCreateMenuItem("Align Right", $menu_arrange)
+	GUICtrlCreateMenuItem("", $menu_arrange)
+	Local $menu_arrange_top = GUICtrlCreateMenuItem("Align Top", $menu_arrange)
+	Local $menu_arrange_middle = GUICtrlCreateMenuItem("Align Middle", $menu_arrange)
+	Local $menu_arrange_bottom = GUICtrlCreateMenuItem("Align Bottom", $menu_arrange)
+	GUICtrlCreateMenuItem("", $menu_arrange)
+	Local $menu_arrange_centerPoints = GUICtrlCreateMenuItem("Align Center Points", $menu_arrange)
+	GUICtrlCreateMenuItem("", $menu_arrange)
+	Local $menu_arrange_spaceVertical = GUICtrlCreateMenuItem("Space Vertical", $menu_arrange)
+	Local $menu_arrange_spaceHorizontal = GUICtrlCreateMenuItem("Space Horizontal", $menu_arrange)
+
+	GUICtrlSetOnEvent($menu_arrange_left, "_onAlignMenu_Left")
+	GUICtrlSetOnEvent($menu_arrange_center, "_onAlignMenu_Center")
+	GUICtrlSetOnEvent($menu_arrange_right, "_onAlignMenu_Right")
+	GUICtrlSetOnEvent($menu_arrange_top, "_onAlignMenu_Top")
+	GUICtrlSetOnEvent($menu_arrange_middle, "_onAlignMenu_Middle")
+	GUICtrlSetOnEvent($menu_arrange_bottom, "_onAlignMenu_Bottom")
+	GUICtrlSetOnEvent($menu_arrange_centerPoints, "_onAlignMenu_CenterPoints")
+	GUICtrlSetOnEvent($menu_arrange_spaceVertical, "_onAlignMenu_SpaceVertical")
+	GUICtrlSetOnEvent($menu_arrange_spaceHorizontal, "_onAlignMenu_SpaceHorizontal")
+
 	;create the View menu
 	Local $menu_view = GUICtrlCreateMenu("View")
 	$menu_generateCode = GUICtrlCreateMenuItem("Live Generated Code", $menu_view)
@@ -833,6 +858,7 @@ EndFunc   ;==>_nudgeSelected
 ; Events..........: Context menu item
 ;------------------------------------------------------------------------------
 Func _onAlignMenu_Left()
+	If $oSelected.count = 0 Then Return 0
 	Local $value = $oSelected.getFirst().Left
 	For $oCtrl In $oSelected.ctrls
 		_change_ctrl_size_pos($oCtrl, $value, Default, Default, Default)
@@ -840,6 +866,7 @@ Func _onAlignMenu_Left()
 EndFunc
 
 Func _onAlignMenu_Center()
+	If $oSelected.count = 0 Then Return 0
 	Local $oCtrlValue = $oSelected.getFirst()
 	Local $value = $oCtrlValue.Left + $oCtrlValue.Width / 2
 	For $oCtrl In $oSelected.ctrls
@@ -848,6 +875,7 @@ Func _onAlignMenu_Center()
 EndFunc
 
 Func _onAlignMenu_Right()
+	If $oSelected.count = 0 Then Return 0
 	Local $oCtrlValue = $oSelected.getFirst()
 	Local $value = $oCtrlValue.Left + $oCtrlValue.Width
 	For $oCtrl In $oSelected.ctrls
@@ -856,6 +884,7 @@ Func _onAlignMenu_Right()
 EndFunc
 
 Func _onAlignMenu_Top()
+	If $oSelected.count = 0 Then Return 0
 	Local $value = $oSelected.getFirst().Top
 	For $oCtrl In $oSelected.ctrls
 		_change_ctrl_size_pos($oCtrl, Default, $value, Default, Default)
@@ -863,6 +892,7 @@ Func _onAlignMenu_Top()
 EndFunc
 
 Func _onAlignMenu_Middle()
+	If $oSelected.count = 0 Then Return 0
 	Local $oCtrlValue = $oSelected.getFirst()
 	Local $value = $oCtrlValue.Top + $oCtrlValue.Height / 2
 	For $oCtrl In $oSelected.ctrls
@@ -871,6 +901,7 @@ Func _onAlignMenu_Middle()
 EndFunc
 
 Func _onAlignMenu_Bottom()
+	If $oSelected.count = 0 Then Return 0
 	Local $oCtrlValue = $oSelected.getFirst()
 	Local $value = $oCtrlValue.Top + $oCtrlValue.Height
 	For $oCtrl In $oSelected.ctrls
@@ -879,6 +910,7 @@ Func _onAlignMenu_Bottom()
 EndFunc
 
 Func _onAlignMenu_CenterPoints()
+	If $oSelected.count = 0 Then Return 0
 	Local $oCtrlValue = $oSelected.getFirst()
 	Local $valueCenter = $oCtrlValue.Left + $oCtrlValue.Width / 2
 	Local $valueMiddle = $oCtrlValue.Top + $oCtrlValue.Height / 2
@@ -888,6 +920,7 @@ Func _onAlignMenu_CenterPoints()
 EndFunc
 
 Func _onAlignMenu_SpaceVertical()
+	If $oSelected.count = 0 Then Return 0
 	Local $oCtrlFirst, $oCtrlLast
 	Local $aCtrls[1], $firstObj = True
 
@@ -922,6 +955,7 @@ Func _onAlignMenu_SpaceVertical()
 EndFunc
 
 Func _onAlignMenu_SpaceHorizontal()
+	If $oSelected.count = 0 Then Return 0
 	Local $oCtrlFirst, $oCtrlLast
 	Local $aCtrls[1], $firstObj = True
 
@@ -955,12 +989,14 @@ Func _onAlignMenu_SpaceHorizontal()
 EndFunc
 
 Func _onAlignMenu_Back()
+	If $oSelected.count = 0 Then Return 0
 	For $oCtrl In $oSelected.ctrls
 		_WinAPI_SetWindowPos(GUICtrlGetHandle($oCtrl.Hwnd), $HWND_TOP, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
 	Next
 EndFunc
 
 Func _onAlignMenu_Front()
+	If $oSelected.count = 0 Then Return 0
 	For $oCtrl In $oSelected.ctrls
 		_WinAPI_SetWindowPos(GUICtrlGetHandle($oCtrl.Hwnd), $HWND_BOTTOM, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
 	Next
@@ -1037,16 +1073,17 @@ Func _onMousePrimaryDown()
 		Next
 	EndIf
 
-
 	Local $pos
 
 	;if tool is selected and clicking on an existing control (but not resizing), switch to selection
-	If Not $initResize And Not $oCtrls.mode = $mode_init_move Then
+	If (Not $initResize And Not $oCtrls.mode = $mode_init_move) OR $oCtrls.mode = $mode_draw Then
+		ConsoleWrite(" ---- selected ---- " & @CRLF)
 		If $oCtrls.exists($ctrl_hwnd) And $ctrl_hwnd <> $background Then
 			GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 			$oCtrls.mode = $mode_default
 		EndIf
 	EndIf
+
 
 	;if hold shift, copy the control
 	If _IsPressed("10") And $oCtrls.exists($ctrl_hwnd) Then
@@ -1312,6 +1349,12 @@ EndFunc   ;==>_onMouseSecondaryUp
 
 
 Func _onMouseMove()
+	Static $timeMove = TimerInit()
+
+	If TimerDiff($timeMove) < 20 Then
+		Return 0
+	EndIf
+
 	Switch $oCtrls.mode
 		Case $mode_init_move, $mode_default, $mode_paste
 			Local Const $mouse_pos = _mouse_snap_pos()
@@ -1332,12 +1375,18 @@ Func _onMouseMove()
 
 			Local $count = $oSelected.count
 
+			_SendMessage($hGUI, $WM_SETREDRAW, False)
 			For $oCtrl In $oSelected.ctrls
 				_change_ctrl_size_pos($oCtrl, $oCtrl.Left - $delta_x, $oCtrl.Top - $delta_y, Default, Default)
 				$tooltip &= $oCtrl.Name & ": X:" & $oCtrl.Left & ", Y:" & $oCtrl.Top & ", W:" & $oCtrl.Width & ", H:" & $oCtrl.Height & @CRLF
 			Next
+			_SendMessage($hGUI, $WM_SETREDRAW, True)
 
-			ToolTip(StringTrimRight($tooltip, 2))
+			If $oSelected.count < 5 Then
+				ToolTip(StringTrimRight($tooltip, 2))
+			Else
+				ToolTip("")
+			EndIf
 
 			If Not $oCtrls.mode = $mode_paste Then
 				$oCtrls.mode = $mode_default
@@ -1351,14 +1400,27 @@ Func _onMouseMove()
 
 		Case $resize_nw, $resize_n, $resize_ne, $resize_w, $resize_e, $resize_sw, $resize_s, $resize_se
 			Local $tooltip
+
+			_SendMessage($hGUI, $WM_SETREDRAW, False)
 			For $oCtrlSelect In $oSelected.ctrls
 				$oCtrlSelect.grippies.resizing($oCtrls.mode)
 				$tooltip &= $oCtrlSelect.Name & ": X:" & $oCtrlSelect.Left & ", Y:" & $oCtrlSelect.Top & ", W:" & $oCtrlSelect.Width & ", H:" & $oCtrlSelect.Height & @CRLF
 			Next
-			ToolTip(StringTrimRight($tooltip, 2))
+			_SendMessage($hGUI, $WM_SETREDRAW, True)
+
+			If $oSelected.count < 5 Then
+				ToolTip(StringTrimRight($tooltip, 2))
+			Else
+				ToolTip("")
+			EndIf
+
 			$oMain.hasChanged = True
 
 	EndSwitch
+
+	_WinAPI_RedrawWindow($hGUI)
+	$timeMove = TimerInit()
+
 EndFunc   ;==>_onMouseMove
 #EndRegion mouse events
 

@@ -835,6 +835,7 @@ Func _delete_selected_controls()
 
 	Switch $sel_count >= 1
 		Case True
+			_SendMessage($hGUI, $WM_SETREDRAW, False)
 			For $oCtrl In $oSelected.ctrls
 				_delete_ctrl($oCtrl)
 			Next
@@ -851,6 +852,9 @@ Func _delete_selected_controls()
 			Else
 				_showProperties($props_Main)
 			EndIf
+
+			_SendMessage($hGUI, $WM_SETREDRAW, True)
+			_WinAPI_RedrawWindow($hGUI)
 
 			Return True
 

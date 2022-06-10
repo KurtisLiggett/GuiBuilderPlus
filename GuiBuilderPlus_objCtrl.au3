@@ -587,7 +587,7 @@ Func _objGrippies_mouseClick($oSelf, $CtrlID)
 	$oSelf.parent.parent.StartResizing()
 
 	$initResize = True
-	_hide_selected_controls()
+;~ 	_hide_selected_controls()
 
 EndFunc   ;==>_objGrippies_mouseClick
 
@@ -659,7 +659,7 @@ Func _objGrippies_resizing($oSelf, $mode)
 
 
 	_change_ctrl_size_pos($oCtrl, $left, $top, $right, $bottom)
-	$oCtrl.grippies.show()
+;~ 	$oCtrl.grippies.show()
 ;~ 	ToolTip($oCtrl.Name & ": X:" & $oCtrl.Left & ", Y:" & $oCtrl.Top & ", W:" & $oCtrl.Width & ", H:" & $oCtrl.Height)
 EndFunc   ;==>_objGrippies_resizing
 

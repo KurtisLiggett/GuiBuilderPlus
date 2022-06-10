@@ -12,10 +12,13 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  06/08/2022 ...: 	- FIXED:	Lots of handling of copy+paste scenarios
+;  06/10/2022 ...: 	- FIXED:	Lots of handling of copy+paste scenarios
 ;					- FIXED:	Tooltip when resizing multiple controls
 ;					- FIXED:	Changed the selection rectangle so controls don't bounce around during right-to-left selection anymore
 ;					- FIXED:	Right-click when multiple controls are selected
+;					- FIXED:	Lagging when dragging many controls at once
+;					- FIXED:	Improved a lot of flickering when dragging things
+;					- FIXED:	Select a control after drawing (instead of drawing on top of it)
 ;					- ADDED:	New menu item, shortcut key Ctrl+X, and context menu item to 'Cut' selected controls
 ;					- ADDED:	Cut/Copy/Paste will now maintain relative positions and spacing
 ;					- ADDED:	When pasting with Ctrl+V, control will follow mouse waiting to be placed by single click
@@ -33,6 +36,7 @@
 ;					- MAINT:	Added logging function and debug flag for testing/development
 ;					- MAINT:	Downgraded to AutoIT v3.3.14.0 for personal reasons (removed maps)
 ;					- UPDATED:	Better startup loading, so windows open at the same time
+;					- UPDATED:	Better redrawing with working with multiple controls
 ;					- UPDATED:	Reverted back to standard edit box for code preview due to more issues with rich edit than it was worth
 ;
 ;  06/04/2022 ...: 	- FIXED:	Window position bugs when no INI file. Also better handling of off-screen situations
