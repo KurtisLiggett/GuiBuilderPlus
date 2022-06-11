@@ -32,7 +32,6 @@
 ;									Right-to-left selection selects anything that crosses the rectangle
 ;					- ADDED:	Right-click menu items: Arrange-> Align left/center/right, top/middle/bottom, space vertical/horizontal
 ;					- ADDED:	Ask to save (definition) dialog when closing, only when a change was detected since the last save
-;					- MAINT:	Resetting versioning scheme starting at 0.3
 ;					- MAINT:	Added logging function and debug flag for testing/development
 ;					- MAINT:	Downgraded to AutoIT v3.3.14.5 for personal reasons (removed maps)
 ;					- UPDATED:	Better startup loading, so windows open at the same time
@@ -175,8 +174,8 @@
 #AutoIt3Wrapper_Res_HiDpi=y
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.3.exe
-#AutoIt3Wrapper_Res_Fileversion=0.3.0.0
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.27.exe
+#AutoIt3Wrapper_Res_Fileversion=0.27.0.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 1.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 2.ico
@@ -330,7 +329,7 @@ Func _main()
 	$oClipboard = _objCtrls()
 	$oMain = _objMain()
 	$oMain.AppName = "GuiBuilderPlus"
-	$oMain.AppVersion = "0.3"
+	$oMain.AppVersion = "0.27"
 	$oMain.Title = StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1)
 	$oMain.Name = "hGUI"
 	$oMain.Width = 400
