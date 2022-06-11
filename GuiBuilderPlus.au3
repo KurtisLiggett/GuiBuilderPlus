@@ -1,6 +1,6 @@
 ; #HEADER# ======================================================================================================================
 ; Title .........: GUIBuilderPlus
-; AutoIt Version : 3.3.14.0
+; AutoIt Version : 3.3.14.5
 ; Description ...: Build GUI with GUI based heavily on GuiBuilderNxt
 ;
 ; Remarks .......:
@@ -34,7 +34,7 @@
 ;					- ADDED:	Ask to save (definition) dialog when closing, only when a change was detected since the last save
 ;					- MAINT:	Resetting versioning scheme starting at 0.3
 ;					- MAINT:	Added logging function and debug flag for testing/development
-;					- MAINT:	Downgraded to AutoIT v3.3.14.0 for personal reasons (removed maps)
+;					- MAINT:	Downgraded to AutoIT v3.3.14.5 for personal reasons (removed maps)
 ;					- UPDATED:	Better startup loading, so windows open at the same time
 ;					- UPDATED:	Better redrawing with working with multiple controls
 ;					- UPDATED:	Reverted back to standard edit box for code preview due to more issues with rich edit than it was worth
