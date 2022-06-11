@@ -38,6 +38,7 @@
 ;					- UPDATED:	Better startup loading, so windows open at the same time
 ;					- UPDATED:	Better redrawing with working with multiple controls
 ;					- UPDATED:	Reverted back to standard edit box for code preview due to more issues with rich edit than it was worth
+;					- REMOVED:	DPI scaling - not reliable enough to keep for now
 ;
 ;  06/04/2022 ...: 	- FIXED:	Window position bugs when no INI file. Also better handling of off-screen situations
 ;					- FIXED:	Primary and secondary mouse clicks not detected outside default area if GUI is resized
