@@ -21,6 +21,7 @@ Func _objCtrls($isSelection = False)
 	_AutoItObject_AddProperty($oObject, "hasMenu", $ELSCOPE_PUBLIC, False)
 	_AutoItObject_AddProperty($oObject, "IPCount", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "hasIP", $ELSCOPE_PUBLIC, False)
+	_AutoItObject_AddProperty($oObject, "hasTab", $ELSCOPE_PUBLIC, False)
 	_AutoItObject_AddProperty($oObject, "isSelection", $ELSCOPE_PUBLIC, $isSelection)
 	;actual list of controls
 	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, LinkedList())

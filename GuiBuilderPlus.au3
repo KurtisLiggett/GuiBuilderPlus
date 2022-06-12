@@ -13,6 +13,8 @@
 ;
 ; Revisions
 ;  06/11/2022 ...: 	- FIXED:	UpDown control shrinks when dragging
+;					- FIXED:	Fixed clicking away from certain controls
+;					- FIXED:	Multiple tab controls should not be allowed
 ;
 ;  06/10/2022 ...: 	- FIXED:	Lots of handling of copy+paste scenarios
 ;					- FIXED:	Tooltip when resizing multiple controls

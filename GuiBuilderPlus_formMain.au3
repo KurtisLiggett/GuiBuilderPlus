@@ -1133,6 +1133,8 @@ Func _onMousePrimaryDown()
 				EndSwitch
 
 				_set_current_mouse_pos()
+				$oMouse.StartX = $oMouse.X
+				$oMouse.StartY = $oMouse.Y
 			Else
 				GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 				_set_default_mode()
@@ -1234,13 +1236,11 @@ Func _onMousePrimaryUp()
 				;clicking empty space (background), cancel drawing and delete the new control
 				Local $tolerance = 5
 
-				Switch $oCtrlSelectedFirst.Type
-					Case 'Checkbox', 'Radio', 'Combo', 'Updown'
-						$tolerance = 25
-					Case Else
-						$tolerance = 5
-				EndSwitch
-				If $oCtrlSelectedFirst.Width < $tolerance And $oCtrlSelectedFirst.Height < $tolerance Then
+				If $oCtrlSelectedFirst.Type = "Tab" Then
+					GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
+				EndIf
+
+				If Abs($oMouse.X - $oMouse.StartX) < $tolerance And Abs($oMouse.Y - $oMouse.StartY) < $tolerance Then
 					_log("  click away")
 					GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 					_delete_selected_controls()

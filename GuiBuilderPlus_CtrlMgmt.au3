@@ -10,7 +10,14 @@
 ; Called by.......: Draw with mouse; Paste
 ;------------------------------------------------------------------------------
 Func _create_ctrl($oCtrl = '', $bUseName = False)
-	Local $oNewControl, $incTypeCount = True
+	;only allow 1 tab control
+	If $oCtrls.CurrentType = "Tab" Then
+		If $oCtrls.getTypeCount("Tab") > 0 Then
+			Return 0
+		EndIf
+	EndIf
+
+	Local $oNewControl
 	Local $isPaste = False
 
 	Switch IsObj($oCtrl)
@@ -175,17 +182,11 @@ Func _create_ctrl($oCtrl = '', $bUseName = False)
 			Return $oNewControl
 
 		Case "Tab"
-			If $oNewControl.TabCount = 1 Then
-				$incTypeCount = False
-			EndIf
+			;create main tab control
+			$oNewControl.Hwnd = GUICtrlCreateTab($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			GUICtrlSetOnEvent($oNewControl.Hwnd, "_onCtrlTabSwitch")
 
-			If $incTypeCount Then    ;create the main control
-				;create main tab control
-				$oNewControl.Hwnd = GUICtrlCreateTab($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
-				GUICtrlSetOnEvent($oNewControl.Hwnd, "_onCtrlTabSwitch")
-
-				$oCtrls.add($oNewControl)
-			EndIf
+			$oCtrls.add($oNewControl)
 
 			GUISwitch($hGUI)
 
@@ -282,23 +283,19 @@ Func _create_ctrl($oCtrl = '', $bUseName = False)
 
 	$oMain.hasChanged = True
 
-	If $incTypeCount Then
-		$oCtrls.incTypeCount($oNewControl.Type)
+	$oCtrls.incTypeCount($oNewControl.Type)
 
-		Switch IsObj($oCtrl)
-			Case True    ;paste from existing object
-				GUICtrlSetData($oNewControl.Hwnd, $oNewControl.Text)
+	Switch IsObj($oCtrl)
+		Case True    ;paste from existing object
+			GUICtrlSetData($oNewControl.Hwnd, $oNewControl.Text)
 
-			Case False    ;new object
-				$oNewControl.Text = $oNewControl.Text
-		EndSwitch
+		Case False    ;new object
+			$oNewControl.Text = $oNewControl.Text
+	EndSwitch
 
-		GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
+	GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
-		Return $oNewControl
-	Else
-		Return 0
-	EndIf
+	Return $oNewControl
 EndFunc   ;==>_create_ctrl
 
 
