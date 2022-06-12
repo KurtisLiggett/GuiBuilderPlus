@@ -283,8 +283,6 @@ Func _create_ctrl($oCtrl = '', $bUseName = False)
 
 	$oMain.hasChanged = True
 
-	$oCtrls.incTypeCount($oNewControl.Type)
-
 	Switch IsObj($oCtrl)
 		Case True    ;paste from existing object
 			GUICtrlSetData($oNewControl.Hwnd, $oNewControl.Text)
@@ -458,8 +456,6 @@ EndFunc   ;==>_control_type
 ; Description.....: delete control from GUI and remove the data object
 ;------------------------------------------------------------------------------
 Func _delete_ctrl(Const $oCtrl)
-	$oCtrls.decTypeCount($oCtrl.Type)
-
 	GUISwitch($hGUI)
 	Switch $oCtrl.Type
 		Case "Updown"

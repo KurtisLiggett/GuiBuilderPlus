@@ -95,6 +95,8 @@ Func _objCtrls_add($oSelf, $objCtrl)
 		$oSelf.hasIP = True
 	EndIf
 
+	$oSelf.incTypeCount($objCtrl.Type)
+
 	Return $oSelf.count
 
 EndFunc   ;==>_objCtrls_add
@@ -102,7 +104,7 @@ EndFunc   ;==>_objCtrls_add
 Func _objCtrls_remove($oSelf, $Hwnd)
 	#forceref $oSelf
 
-	Local $i, $bFoundItem = False
+	Local $i, $bFoundItem = False, $type
 	For $oItem In $oSelf.ctrls
 		If $oItem.Hwnd = $Hwnd Then
 			$bFoundItem = True
@@ -132,11 +134,13 @@ Func _objCtrls_remove($oSelf, $Hwnd)
 		If $oSelf.isSelection Then
 			$thisCtrl.grippies.delete()
 		EndIf
+		$type = $thisCtrl.Type
 		$oSelf.ctrls.remove($i)
 	EndIf
 
 	If Not @error Then
 		$oSelf.count = $oSelf.count - 1
+		$oSelf.decTypeCount($type)
 		Return $oSelf.count
 	Else
 		Return -1
