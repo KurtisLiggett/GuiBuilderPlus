@@ -12,6 +12,8 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
+;  06/11/2022 ...: 	- FIXED:	UpDown control shrinks when dragging
+;
 ;  06/10/2022 ...: 	- FIXED:	Lots of handling of copy+paste scenarios
 ;					- FIXED:	Tooltip when resizing multiple controls
 ;					- FIXED:	Changed the selection rectangle so controls don't bounce around during right-to-left selection anymore
@@ -174,8 +176,8 @@
 #AutoIt3Wrapper_Res_HiDpi=y
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.27.exe
-#AutoIt3Wrapper_Res_Fileversion=0.27.0.0
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.28.exe
+#AutoIt3Wrapper_Res_Fileversion=0.28.0.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 1.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 2.ico
@@ -199,6 +201,7 @@
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 20.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 21.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 22.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 23.ico
 
 Opt("WinTitleMatchMode", 4) ; advanced
 Opt("MouseCoordMode", 2)
@@ -329,7 +332,7 @@ Func _main()
 	$oClipboard = _objCtrls()
 	$oMain = _objMain()
 	$oMain.AppName = "GuiBuilderPlus"
-	$oMain.AppVersion = "0.27"
+	$oMain.AppVersion = "0.28"
 	$oMain.Title = StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1)
 	$oMain.Name = "hGUI"
 	$oMain.Width = 400

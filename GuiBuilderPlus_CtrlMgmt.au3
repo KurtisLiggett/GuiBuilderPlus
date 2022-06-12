@@ -934,7 +934,7 @@ Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, 
 
 	Switch $oCtrl.Type
 		Case "Updown"
-			GUICtrlSetPos($oCtrl.Hwnd1, $left, $top, $width, $height)
+			GUICtrlSetPos($oCtrl.Hwnd, $left, $top, $oCtrl.Width, $oCtrl.Height)
 
 ;~ 		Case "IP"
 ;~ 			ConsoleWrite($oCtrl.Hwnd & @CRLF)
