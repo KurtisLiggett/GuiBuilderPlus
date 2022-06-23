@@ -384,7 +384,7 @@ Func _formObjectExplorer_updateList()
 	Local $lvItem, $lvMenu, $lvMenuDelete, $childItem, $tabMenu, $tabMenuDelete, $lvMenuNewTab, $lvMenuDeleteTab, $sName
 	Local $lvMenuNewMenuItem, $menuItemMenu
 	_GUICtrlTreeView_DeleteAll($lvObjects)
-	For $oCtrl In $oCtrls.ctrls
+	For $oCtrl In $oCtrls.ctrls.Items()
 		$sName = $oCtrl.Name
 		If $sName = "" Then
 			$sName = $oCtrl.Type & "*"

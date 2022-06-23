@@ -6,13 +6,14 @@
 
 ;------------------------------------------------------------------------------
 ; Title...........: _objCtrls
-; Description.....:	Main container for all controls, a wrapper for linked list
+; Description.....:	Main container for all controls
 ;					with additional properties and methods
 ;------------------------------------------------------------------------------
 Func _objCtrls($isSelection = False)
 	Local $oObject = _AutoItObject_Create()
 
-	_AutoItObject_AddProperty($oObject, "count", $ELSCOPE_PUBLIC, 0)
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
 	_AutoItObject_AddProperty($oObject, "mode", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "resizeStartLeft", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "resizeStartTop", $ELSCOPE_PUBLIC, 0)
@@ -24,33 +25,34 @@ Func _objCtrls($isSelection = False)
 	_AutoItObject_AddProperty($oObject, "hasTab", $ELSCOPE_PUBLIC, False)
 	_AutoItObject_AddProperty($oObject, "isSelection", $ELSCOPE_PUBLIC, $isSelection)
 	;actual list of controls
-	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, LinkedList())
+	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, $oDict)
 
-	Local $oTypeCountList = LinkedList()
-	$oTypeCountList.add(_CreateListItem("Button", 0))
-	$oTypeCountList.add(_CreateListItem("Group", 0))
-	$oTypeCountList.add(_CreateListItem("Checkbox", 0))
-	$oTypeCountList.add(_CreateListItem("Radio", 0))
-	$oTypeCountList.add(_CreateListItem("Edit", 0))
-	$oTypeCountList.add(_CreateListItem("Input", 0))
-	$oTypeCountList.add(_CreateListItem("Label", 0))
-	$oTypeCountList.add(_CreateListItem("List", 0))
-	$oTypeCountList.add(_CreateListItem("Combo", 0))
-	$oTypeCountList.add(_CreateListItem("Date", 0))
-	$oTypeCountList.add(_CreateListItem("Slider", 0))
-	$oTypeCountList.add(_CreateListItem("Tab", 0))
-	$oTypeCountList.add(_CreateListItem("Menu", 0))
-	$oTypeCountList.add(_CreateListItem("TreeView", 0))
-	$oTypeCountList.add(_CreateListItem("Updown", 0))
-	$oTypeCountList.add(_CreateListItem("Progress", 0))
-	$oTypeCountList.add(_CreateListItem("Pic", 0))
-	$oTypeCountList.add(_CreateListItem("Avi", 0))
-	$oTypeCountList.add(_CreateListItem("Icon", 0))
-	$oTypeCountList.add(_CreateListItem("IP", 0))
-	$oTypeCountList.add(_CreateListItem("ListView", 0))
+	Local $oTypeCountList = ObjCreate("Scripting.Dictionary")
+	$oTypeCountList.Add("Button", 0)
+	$oTypeCountList.Add("Group", 0)
+	$oTypeCountList.Add("Checkbox", 0)
+	$oTypeCountList.Add("Radio", 0)
+	$oTypeCountList.Add("Edit", 0)
+	$oTypeCountList.Add("Input", 0)
+	$oTypeCountList.Add("Label", 0)
+	$oTypeCountList.Add("List", 0)
+	$oTypeCountList.Add("Combo", 0)
+	$oTypeCountList.Add("Date", 0)
+	$oTypeCountList.Add("Slider", 0)
+	$oTypeCountList.Add("Tab", 0)
+	$oTypeCountList.Add("Menu", 0)
+	$oTypeCountList.Add("TreeView", 0)
+	$oTypeCountList.Add("Updown", 0)
+	$oTypeCountList.Add("Progress", 0)
+	$oTypeCountList.Add("Pic", 0)
+	$oTypeCountList.Add("Avi", 0)
+	$oTypeCountList.Add("Icon", 0)
+	$oTypeCountList.Add("IP", 0)
+	$oTypeCountList.Add("ListView", 0)
 	_AutoItObject_AddProperty($oObject, "typeCounts", $ELSCOPE_PUBLIC, $oTypeCountList)
 
 	_AutoItObject_AddMethod($oObject, "createNew", "_objCtrls_createNew")
+	_AutoItObject_AddMethod($oObject, "count", "_objCtrls_count")
 	_AutoItObject_AddMethod($oObject, "add", "_objCtrls_add")
 	_AutoItObject_AddMethod($oObject, "remove", "_objCtrls_remove")
 	_AutoItObject_AddMethod($oObject, "removeAll", "_objCtrls_removeAll")
@@ -76,14 +78,17 @@ Func _objCtrls_createNew($oSelf)
 	Return $oObject
 EndFunc   ;==>_objCtrls_createNew
 
+Func _objCtrls_count($oSelf)
+	Return $oSelf.ctrls.Count
+EndFunc
+
 Func _objCtrls_add($oSelf, $objCtrl)
 	#forceref $oSelf
 
 	If $oSelf.isSelection Then
 		_AutoItObject_AddProperty($objCtrl, "grippies", $ELSCOPE_PUBLIC, _objGrippies($objCtrl))
 	EndIf
-	$oSelf.ctrls.add($objCtrl)
-	$oSelf.count = $oSelf.count + 1
+	$oSelf.ctrls.Add($objCtrl.Hwnd, $objCtrl)
 
 	If $objCtrl.Type = "Menu" Then
 		$oSelf.menuCount = $oSelf.menuCount + 1
@@ -104,25 +109,21 @@ EndFunc   ;==>_objCtrls_add
 Func _objCtrls_remove($oSelf, $Hwnd)
 	#forceref $oSelf
 
-	Local $i, $bFoundItem = False, $type
-	For $oItem In $oSelf.ctrls
-		If $oItem.Hwnd = $Hwnd Then
-			$bFoundItem = True
-			ExitLoop
-		EndIf
-		$i += 1
-	Next
+	Local $bFoundItem = $oSelf.ctrls.Exists($Hwnd)
+
+	Local $type
 
 	If $bFoundItem Then
-		If $oSelf.ctrls.at($i).Type = "Menu" Then
+		Local $thisCtrl = $oSelf.ctrls.Item($Hwnd)
+
+		If $thisCtrl.Type = "Menu" Then
 			$oSelf.menuCount = $oSelf.menuCount - 1
 			If $oSelf.menuCount >= 1 Then
 				$oSelf.hasMenu = True
 			Else
 				$oSelf.hasMenu = False
 			EndIf
-		EndIf
-		If $oSelf.ctrls.at($i).Type = "IP" Then
+		ElseIf $thisCtrl.Type = "IP" Then
 			$oSelf.IPCount = $oSelf.IPCount - 1
 			If $oSelf.IPCount >= 1 Then
 				$oSelf.hasIP = True
@@ -130,16 +131,15 @@ Func _objCtrls_remove($oSelf, $Hwnd)
 				$oSelf.hasIP = False
 			EndIf
 		EndIf
-		Local $thisCtrl = $oSelf.ctrls.at($i)
+
 		If $oSelf.isSelection Then
 			$thisCtrl.grippies.delete()
 		EndIf
 		$type = $thisCtrl.Type
-		$oSelf.ctrls.remove($i)
+		$oSelf.ctrls.Remove($Hwnd)
 	EndIf
 
 	If Not @error Then
-		$oSelf.count = $oSelf.count - 1
 		$oSelf.decTypeCount($type)
 		Return $oSelf.count
 	Else
@@ -152,15 +152,14 @@ Func _objCtrls_removeAll($oSelf)
 	#forceref $oSelf
 
 	;loop through and delete all the grippies
-	For $oItem In $oSelf.ctrls
+	For $oItem In $oSelf.ctrls.Items()
 		If $oSelf.isSelection Then
 			$oItem.grippies.delete()
 		EndIf
 	Next
 
 	$oSelf.ctrls = 0
-	$oSelf.ctrls = LinkedList()
-	$oSelf.count = 0
+	$oSelf.ctrls = ObjCreate("Scripting.Dictionary")
 	$oSelf.menuCount = 0
 	$oSelf.hasMenu = False
 EndFunc   ;==>_objCtrls_removeAll
@@ -168,27 +167,32 @@ EndFunc   ;==>_objCtrls_removeAll
 Func _objCtrls_get($oSelf, $Hwnd)
 	#forceref $oSelf
 
-	For $oItem In $oSelf.ctrls
-		If $oItem.Hwnd = $Hwnd Then
-			Return $oItem
-		EndIf
-		If $oItem.Type = "Menu" Then
-			For $oMenuItem In $oItem.MenuItems
-				If $oMenuItem.Hwnd = $Hwnd Then
-					Return $oMenuItem
-				EndIf
-			Next
-		EndIf
-	Next
+;~ 	For $oItem In $oSelf.ctrls
+;~ 		If $oItem.Hwnd = $Hwnd Then
+;~ 			Return $oItem
+;~ 		EndIf
+;~ 		If $oItem.Type = "Menu" Then
+;~ 			For $oMenuItem In $oItem.MenuItems
+;~ 				If $oMenuItem.Hwnd = $Hwnd Then
+;~ 					Return $oMenuItem
+;~ 				EndIf
+;~ 			Next
+;~ 		EndIf
+;~ 	Next
 
-	Return -1
+	If $oSelf.ctrls.Exists($Hwnd) Then
+		Return $oSelf.ctrls.Item($Hwnd)
+	Else
+		Return -1
+	EndIf
 EndFunc   ;==>_objCtrls_get
 
 Func _objCtrls_getFist($oSelf)
 	#forceref $oSelf
+	Local $aItems = $oSelf.ctrls.Items()
 
-	If $oSelf.count > 0 Then
-		Return $oSelf.ctrls.at(0)
+	If IsArray($aItems) And UBound($aItems) > 0 Then
+		Return	$aItems[0]
 	Else
 		Return -1
 	EndIf
@@ -197,8 +201,10 @@ EndFunc   ;==>_objCtrls_getFist
 Func _objCtrls_getLast($oSelf)
 	#forceref $oSelf
 
-	If $oSelf.count > 0 Then
-		Return $oSelf.ctrls.at($oSelf.count - 1)
+	Local $aItems = $oSelf.ctrls.Items()
+
+	If IsArray($aItems) And UBound($aItems) > 0  Then
+		Return	$aItems[$oSelf.ctrls.Count-1]
 	Else
 		Return -1
 	EndIf
@@ -218,61 +224,46 @@ EndFunc   ;==>_objCtrls_getCopy
 Func _objCtrls_exists($oSelf, $Hwnd)
 	#forceref $oSelf
 
-	For $oItem In $oSelf.ctrls
-		If $oItem.Hwnd = $Hwnd Then
-			Return True
-		EndIf
-		If $oItem.Type = "Menu" Then
-			For $oMenuItem In $oItem.MenuItems
-				If $oMenuItem.Hwnd = $Hwnd Then
-					Return True
-				EndIf
-			Next
-		EndIf
-	Next
+;~ 	For $oItem In $oSelf.ctrls
+;~ 		If $oItem.Hwnd = $Hwnd Then
+;~ 			Return True
+;~ 		EndIf
+;~ 		If $oItem.Type = "Menu" Then
+;~ 			For $oMenuItem In $oItem.MenuItems
+;~ 				If $oMenuItem.Hwnd = $Hwnd Then
+;~ 					Return True
+;~ 				EndIf
+;~ 			Next
+;~ 		EndIf
+;~ 	Next
 
-	Return False
+	If $oSelf.ctrls.Exists($Hwnd) Then
+		Return True
+	Else
+		Return False
+	EndIf
 EndFunc   ;==>_objCtrls_exists
 
 Func _objCtrls_incTypeCount($oSelf, $sType)
 	#forceref $oSelf
 
-	For $oItem In $oSelf.typeCounts
-		If $oItem.Name = $sType Then
-			$oItem.Value = $oItem.Value + 1
-			Return $oItem.Value
-		EndIf
-	Next
-
-	Return -1
+	Local $value = $oSelf.typeCounts.Item($sType)
+	$oSelf.typeCounts.Item($sType) = $value + 1
+	Return $oSelf.typeCounts.Item($sType)
 EndFunc   ;==>_objCtrls_incTypeCount
 
 Func _objCtrls_decTypeCount($oSelf, $sType)
 	#forceref $oSelf
 
-	For $oItem In $oSelf.typeCounts
-		If $oItem.Name = $sType Then
-			$oItem.Value = $oItem.Value - 1
-			If $oItem.Value < 0 Then
-				$oItem.Value = 0
-			EndIf
-			Return $oItem.Value
-		EndIf
-	Next
-
-	Return -1
+	Local $value = $oSelf.typeCounts.Item($sType)
+	$oSelf.typeCounts.Item($sType) = $value - 1
+	Return $oSelf.typeCounts.Item($sType)
 EndFunc   ;==>_objCtrls_decTypeCount
 
 Func _objCtrls_getTypeCount($oSelf, $sType)
 	#forceref $oSelf
 
-	For $oItem In $oSelf.typeCounts
-		If $oItem.Name = $sType Then
-			Return $oItem.Value
-		EndIf
-	Next
-
-	Return -1
+	Return $oSelf.typeCounts.Item($sType)
 EndFunc   ;==>_objCtrls_getTypeCount
 
 Func _objCtrls_moveUp($oSelf, $oCtrlStart)
@@ -281,7 +272,7 @@ Func _objCtrls_moveUp($oSelf, $oCtrlStart)
 	;find start and end index
 	Local $iStart = -1
 	Local $i = 0
-	For $oCtrl In $oSelf.ctrls
+	For $oCtrl In $oSelf.ctrls.Items()
 		If $oCtrl.Hwnd = $oCtrlStart.Hwnd Then
 			$iStart = $i
 			$iEnd = $iStart - 1
@@ -293,16 +284,16 @@ Func _objCtrls_moveUp($oSelf, $oCtrlStart)
 
 	If $iStart = -1 Or $iEnd > $oSelf.count - 1 Or $iEnd < 0 Then Return 1
 
-	Local $oCtrlsTemp = LinkedList()
+	Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")
 
 	;loop through items, creating new order in temp list
 	$i = 0
-	For $oCtrl In $oSelf.ctrls
+	For $oCtrl In $oSelf.ctrls.Items()
 		If $i <> $iStart Then
 			If $i = $iEnd Then
-				$oCtrlsTemp.add($oCtrlStart)
+				$oCtrlsTemp.Add($oCtrlStart.Hwnd, $oCtrlStart)
 			EndIf
-			$oCtrlsTemp.add($oCtrl)
+			$oCtrlsTemp.Add($oCtrl.Hwnd, $oCtrl)
 		EndIf
 		$i += 1
 	Next
@@ -323,7 +314,7 @@ Func _objCtrls_moveDown($oSelf, $oCtrlStart)
 	;find start and end index
 	Local $iStart = -1
 	Local $i = 0
-	For $oCtrl In $oSelf.ctrls
+	For $oCtrl In $oSelf.ctrls.Items()
 		If $oCtrl.Hwnd = $oCtrlStart.Hwnd Then
 			$iStart = $i
 			$iEnd = $iStart + 1
@@ -335,15 +326,15 @@ Func _objCtrls_moveDown($oSelf, $oCtrlStart)
 
 	If $iStart = -1 Or $iEnd > $oSelf.count - 1 Or $iEnd < 0 Then Return 1
 
-	Local $oCtrlsTemp = LinkedList()
+	Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")
 
 	;loop through items, creating new order in temp list
 	$i = 0
-	For $oCtrl In $oSelf.ctrls
+	For $oCtrl In $oSelf.ctrls.Items()
 		If $i <> $iStart Then
-			$oCtrlsTemp.add($oCtrl)
+			$oCtrlsTemp.Add($oCtrl.Hwnd, $oCtrl)
 			If $i = $iEnd Then
-				$oCtrlsTemp.add($oCtrlStart)
+				$oCtrlsTemp.Add($oCtrlStart.Hwnd, $oCtrlStart)
 			EndIf
 		EndIf
 		$i += 1
@@ -363,7 +354,7 @@ Func _objCtrls_startResizing($oSelf)
 	#forceref $oSelf
 
 	Local $mouse_pos = _mouse_snap_pos()
-	For $oCtrl In $oSelf.ctrls
+	For $oCtrl In $oSelf.ctrls.Items()
 		$oCtrl.resizePrevLeft = $mouse_pos[0]
 		$oCtrl.resizePrevTop = $mouse_pos[1]
 	Next
@@ -543,7 +534,7 @@ Func _objGrippies_mouseClickEvent($oObject = 0)
 		$oParentObject = $oObject
 	Else
 		If IsObj($oParentObject) Then
-			For $oCtrl in $oParentObject.ctrls
+			For $oCtrl in $oParentObject.ctrls.Items()
 				Switch @GUI_CtrlId
 					Case $oCtrl.grippies.NW, $oCtrl.grippies.N, $oCtrl.grippies.NE, $oCtrl.grippies.SE, $oCtrl.grippies.S, $oCtrl.grippies.SW, $oCtrl.grippies.W, $oCtrl.grippies.East
 						$oCtrl.grippies.mouseClick(@GUI_CtrlId)

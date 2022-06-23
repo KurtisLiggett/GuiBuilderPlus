@@ -254,6 +254,7 @@ Global $bResizedFlag
 Global $testFileName, $TestFilePID = 0, $bReTest = 0, $aTestGuiPos, $hTestGui
 Global $au3InstallPath = @ProgramFilesDir & "\AutoIt3\AutoIt3.exe"
 Global $initDraw, $initResize
+Global $hSelectionGraphic = -1
 
 ;Control Objects
 Global $oMain, $oCtrls, $oSelected, $oClipboard, $oMouse
@@ -283,6 +284,8 @@ _AutoItObject_StartUp()
 #include <GuiListView.au3>
 #include <GuiIPAddress.au3>
 #include <Misc.au3>
+#include <GDIPlus.au3>
+#include <WinAPIGdi.au3>
 #include <MsgBoxConstants.au3>
 #include <StringConstants.au3>
 #include <StaticConstants.au3>
@@ -325,6 +328,7 @@ _main()
 ;------------------------------------------------------------------------------
 Func _main()
 	_log("Startup")
+	_GDIPlus_Startup()
 
 	;create the main program data objects
 	$oMouse = _objCreateMouse()

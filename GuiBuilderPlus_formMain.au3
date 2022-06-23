@@ -575,6 +575,9 @@ Func _onExit()
 	; save window positions in ini file
 	_saveWinPositions()
 
+	If $hSelectionGraphic <> -1 Then
+		_GDIPlus_GraphicsDispose($hSelectionGraphic)
+	EndIf
 	GUIDelete($hToolbar)
 	GUIDelete($hGUI)
 
@@ -822,7 +825,7 @@ Func _nudgeSelected($x = 0, $y = 0)
 	Local $nudgeAmount = 1
 	Local $adjustmentX = 0, $adjustmentX = 0
 	Local $count = $oSelected.count
-	For $oCtrl In $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls.Items()
 
 		$adjustmentX = Mod($oCtrl.Left, $nudgeAmount)
 		If $adjustmentX > 0 Then
@@ -860,7 +863,7 @@ EndFunc   ;==>_nudgeSelected
 Func _onAlignMenu_Left()
 	If $oSelected.count = 0 Then Return 0
 	Local $value = $oSelected.getFirst().Left
-	For $oCtrl In $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, $value, Default, Default, Default)
 	Next
 EndFunc
@@ -869,7 +872,7 @@ Func _onAlignMenu_Center()
 	If $oSelected.count = 0 Then Return 0
 	Local $oCtrlValue = $oSelected.getFirst()
 	Local $value = $oCtrlValue.Left + $oCtrlValue.Width / 2
-	For $oCtrl In $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, $value - $oCtrl.Width / 2, Default, Default, Default)
 	Next
 EndFunc
@@ -878,7 +881,7 @@ Func _onAlignMenu_Right()
 	If $oSelected.count = 0 Then Return 0
 	Local $oCtrlValue = $oSelected.getFirst()
 	Local $value = $oCtrlValue.Left + $oCtrlValue.Width
-	For $oCtrl In $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, $value - $oCtrl.Width, Default, Default, Default)
 	Next
 EndFunc
@@ -886,7 +889,7 @@ EndFunc
 Func _onAlignMenu_Top()
 	If $oSelected.count = 0 Then Return 0
 	Local $value = $oSelected.getFirst().Top
-	For $oCtrl In $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, Default, $value, Default, Default)
 	Next
 EndFunc
@@ -895,7 +898,7 @@ Func _onAlignMenu_Middle()
 	If $oSelected.count = 0 Then Return 0
 	Local $oCtrlValue = $oSelected.getFirst()
 	Local $value = $oCtrlValue.Top + $oCtrlValue.Height / 2
-	For $oCtrl In $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, Default, $value - $oCtrl.Height / 2, Default, Default)
 	Next
 EndFunc
@@ -904,7 +907,7 @@ Func _onAlignMenu_Bottom()
 	If $oSelected.count = 0 Then Return 0
 	Local $oCtrlValue = $oSelected.getFirst()
 	Local $value = $oCtrlValue.Top + $oCtrlValue.Height
-	For $oCtrl In $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, Default, $value - $oCtrl.Height, Default, Default)
 	Next
 EndFunc
@@ -914,7 +917,7 @@ Func _onAlignMenu_CenterPoints()
 	Local $oCtrlValue = $oSelected.getFirst()
 	Local $valueCenter = $oCtrlValue.Left + $oCtrlValue.Width / 2
 	Local $valueMiddle = $oCtrlValue.Top + $oCtrlValue.Height / 2
-	For $oCtrl In $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, $valueCenter - $oCtrl.Width / 2, $valueMiddle - $oCtrl.Height / 2, Default, Default)
 	Next
 EndFunc
@@ -925,7 +928,7 @@ Func _onAlignMenu_SpaceVertical()
 	Local $aCtrls[1], $firstObj = True
 
 	;first find the order
-	For $oCtrl In $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls.Items()
 		For $i=0 To UBound($aCtrls)-1
 			If $firstObj Then
 				$aCtrls[0] = $oCtrl
@@ -960,7 +963,7 @@ Func _onAlignMenu_SpaceHorizontal()
 	Local $aCtrls[1], $firstObj = True
 
 	;first find the order
-	For $oCtrl In $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls.Items()
 		For $i=0 To UBound($aCtrls)-1
 			If $firstObj Then
 				$aCtrls[0] = $oCtrl
@@ -990,14 +993,14 @@ EndFunc
 
 Func _onAlignMenu_Back()
 	If $oSelected.count = 0 Then Return 0
-	For $oCtrl In $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls.Items()
 		_WinAPI_SetWindowPos(GUICtrlGetHandle($oCtrl.Hwnd), $HWND_TOP, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
 	Next
 EndFunc
 
 Func _onAlignMenu_Front()
 	If $oSelected.count = 0 Then Return 0
-	For $oCtrl In $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls.Items()
 		_WinAPI_SetWindowPos(GUICtrlGetHandle($oCtrl.Hwnd), $HWND_BOTTOM, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
 	Next
 EndFunc
@@ -1063,7 +1066,7 @@ Func _onMousePrimaryDown()
 	Local $aMousePos = MouseGetPos()
 	;check if over an IP control as it has no ID
 	If $ctrl_hwnd = 0 And $oCtrls.hasIP Then
-		For $oThisCtrl In $oCtrls.ctrls
+		For $oThisCtrl In $oCtrls.ctrls.Items()
 			If $oThisCtrl.Type = "IP" Then
 				If $aDrawStartPos[0] > $oThisCtrl.Left And $aDrawStartPos[0] < $oThisCtrl.Left + $oThisCtrl.Width And $aDrawStartPos[1] > $oThisCtrl.Top And $aDrawStartPos[1] < $oThisCtrl.Top + $oThisCtrl.Height Then
 					$ctrl_hwnd = $oThisCtrl.Hwnd
@@ -1221,11 +1224,14 @@ Func _onMousePrimaryUp()
 
 			$oCtrls.mode = $mode_default
 
+			_showProperties()
+			_populate_control_properties_gui($oCtrls.getLast())
+
 		Case $resize_nw, $resize_n, $resize_ne, $resize_e, $resize_se, $resize_s, $resize_sw, $resize_w
 			_log("** PrimaryUp: Resize **")
 			ToolTip('')
 
-			For $oCtrl In $oSelected.ctrls
+			For $oCtrl In $oSelected.ctrls.Items()
 				$oCtrl.isResizeMaster = False
 			Next
 
@@ -1286,7 +1292,7 @@ Func _onMousePrimaryUp()
 	EndSwitch
 
 	If $oSelected.hasIP Then
-		For $oCtrl In $oSelected.ctrls
+		For $oCtrl In $oSelected.ctrls.Items()
 			If $oCtrl.Type = "IP" Then
 				_updateIP($oCtrl)
 			EndIf
@@ -1376,7 +1382,7 @@ Func _onMouseMove()
 			Local $count = $oSelected.count
 
 			_SendMessage($hGUI, $WM_SETREDRAW, False)
-			For $oCtrl In $oSelected.ctrls
+			For $oCtrl In $oSelected.ctrls.Items()
 				_change_ctrl_size_pos($oCtrl, $oCtrl.Left - $delta_x, $oCtrl.Top - $delta_y, Default, Default)
 				$tooltip &= $oCtrl.Name & ": X:" & $oCtrl.Left & ", Y:" & $oCtrl.Top & ", W:" & $oCtrl.Width & ", H:" & $oCtrl.Height & @CRLF
 			Next
@@ -1397,12 +1403,13 @@ Func _onMouseMove()
 			_display_selection_rect($oRect)
 			_add_remove_selected_control($oRect)
 ;~ 			_setLvSelected($oSelected.getFirst())
+			Return
 
 		Case $resize_nw, $resize_n, $resize_ne, $resize_w, $resize_e, $resize_sw, $resize_s, $resize_se
 			Local $tooltip
 
 			_SendMessage($hGUI, $WM_SETREDRAW, False)
-			For $oCtrlSelect In $oSelected.ctrls
+			For $oCtrlSelect In $oSelected.ctrls.Items()
 				$oCtrlSelect.grippies.resizing($oCtrls.mode)
 				$tooltip &= $oCtrlSelect.Name & ": X:" & $oCtrlSelect.Left & ", Y:" & $oCtrlSelect.Top & ", W:" & $oCtrlSelect.Width & ", H:" & $oCtrlSelect.Height & @CRLF
 			Next
@@ -1553,6 +1560,7 @@ EndFunc   ;==>_onExitChild
 
 #Region ; control properties window
 Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
+	If Not IsObj($oCtrl) Then Return
 	If Not $oCtrls.exists($oCtrl.Hwnd) Then
 		Return
 	EndIf
@@ -1722,7 +1730,7 @@ Func _ctrl_change_text()
 
 	Switch $sel_count >= 1
 		Case True
-			For $oCtrl In $oSelected.ctrls
+			For $oCtrl In $oSelected.ctrls.Items()
 
 				If $oCtrl.Type = "Combo" Then
 					GUICtrlSetData($oCtrl.Hwnd, $new_text, $new_text)
@@ -1818,7 +1826,7 @@ Func _ctrl_change_left()
 
 	Switch $sel_count >= 1
 		Case True
-			For $oCtrl In $oSelected.ctrls
+			For $oCtrl In $oSelected.ctrls.Items()
 
 				;move the selected control
 				_change_ctrl_size_pos($oCtrl, $new_data, Default, Default, Default)
@@ -1826,7 +1834,7 @@ Func _ctrl_change_left()
 				$oCtrl.Left = $new_data
 
 				If $oSelected.hasIP Then
-					For $oCtrl In $oSelected.ctrls
+					For $oCtrl In $oSelected.ctrls.Items()
 						If $oCtrl.Type = "IP" Then
 							_updateIP($oCtrl)
 						EndIf
@@ -1854,7 +1862,7 @@ Func _ctrl_change_top()
 
 	Switch $sel_count >= 1
 		Case True
-			For $oCtrl In $oSelected.ctrls
+			For $oCtrl In $oSelected.ctrls.Items()
 
 				;move the selected control
 				_change_ctrl_size_pos($oCtrl, Default, $new_data, Default, Default)
@@ -1862,7 +1870,7 @@ Func _ctrl_change_top()
 				$oCtrl.Top = $new_data
 
 				If $oSelected.hasIP Then
-					For $oCtrl In $oSelected.ctrls
+					For $oCtrl In $oSelected.ctrls.Items()
 						If $oCtrl.Type = "IP" Then
 							_updateIP($oCtrl)
 						EndIf
@@ -1889,7 +1897,7 @@ Func _ctrl_change_width()
 
 	Switch $sel_count >= 1
 		Case True
-			For $oCtrl In $oSelected.ctrls
+			For $oCtrl In $oSelected.ctrls.Items()
 
 				;move the selected control
 				_change_ctrl_size_pos($oCtrl, Default, Default, $new_data, Default)
@@ -1897,7 +1905,7 @@ Func _ctrl_change_width()
 				$oCtrl.Width = $new_data
 
 				If $oSelected.hasIP Then
-					For $oCtrl In $oSelected.ctrls
+					For $oCtrl In $oSelected.ctrls.Items()
 						If $oCtrl.Type = "IP" Then
 							_updateIP($oCtrl)
 						EndIf
@@ -1924,7 +1932,7 @@ Func _ctrl_change_height()
 
 	Switch $sel_count >= 1
 		Case True
-			For $oCtrl In $oSelected.ctrls
+			For $oCtrl In $oSelected.ctrls.Items()
 
 				;move the selected control
 				_change_ctrl_size_pos($oCtrl, Default, Default, Default, $new_data)
@@ -1932,7 +1940,7 @@ Func _ctrl_change_height()
 				$oCtrl.Height = $new_data
 
 				If $oSelected.hasIP Then
-					For $oCtrl In $oSelected.ctrls
+					For $oCtrl In $oSelected.ctrls.Items()
 						If $oCtrl.Type = "IP" Then
 							_updateIP($oCtrl)
 						EndIf
@@ -1971,7 +1979,7 @@ Func _ctrl_change_bkColor()
 
 	Switch $sel_count >= 1
 		Case True
-			For $oCtrl In $oSelected.ctrls
+			For $oCtrl In $oSelected.ctrls.Items()
 
 				;convert string to color then apply
 				If $oCtrl.Type <> "Label" Then Return 0
@@ -2003,7 +2011,7 @@ Func _ctrl_change_global()
 
 	Switch $sel_count >= 1
 		Case True
-			For $oCtrl In $oSelected.ctrls
+			For $oCtrl In $oSelected.ctrls.Items()
 				;update the property
 				$oCtrl.Global = $new_data
 			Next
@@ -2036,7 +2044,7 @@ Func _ctrl_change_Color()
 
 	Switch $sel_count >= 1
 		Case True
-			For $oCtrl In $oSelected.ctrls
+			For $oCtrl In $oSelected.ctrls.Items()
 				;convert string to color then apply
 				If $oCtrl.Type <> "Label" Then Return 0
 
@@ -2120,7 +2128,7 @@ Func _wipe_current_gui()
 
 	Local Const $count = $oCtrls.count
 
-	For $oCtrl In $oCtrls.ctrls
+	For $oCtrl In $oCtrls.ctrls.Items()
 
 		_delete_ctrl($oCtrl)
 
@@ -2470,7 +2478,7 @@ Func _menu_show_hidden()
 
 			$setting_show_hidden = False
 
-			For $oCtrl In $oCtrls.ctrls
+			For $oCtrl In $oCtrls.ctrls.Items()
 
 				If Not $oCtrl.Visible Then
 					GUICtrlSetState($oCtrl.Hwnd, $GUI_HIDE)
@@ -2486,7 +2494,7 @@ Func _menu_show_hidden()
 
 			$setting_show_hidden = True
 
-			For $oCtrl In $oCtrls.ctrls
+			For $oCtrl In $oCtrls.ctrls.Items()
 
 				If Not $oCtrl.Visible Then
 					GUICtrlSetState($oCtrl.Hwnd, $GUI_SHOW)
@@ -2663,7 +2671,7 @@ Func _menu_vals()
 
 	Local $values = "Total Of Controls = " & $ctrl_count & @CRLF & @CRLF
 
-	For $oCtrl In $oCtrls.ctrls
+	For $oCtrl In $oCtrls.ctrls.Items()
 
 		$values &= "Handle = " & Hex($oCtrl.Hwnd) & @CRLF & _
 				"Type   = " & $oCtrl.Type & @CRLF & _
