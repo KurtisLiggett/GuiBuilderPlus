@@ -12,9 +12,11 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  06/11/2022 ...: 	- FIXED:	UpDown control shrinks when dragging
+;  06/23/2022 ...: 	- FIXED:	UpDown control shrinks when dragging
 ;					- FIXED:	Fixed clicking away from certain controls
 ;					- FIXED:	Multiple tab controls should not be allowed
+;					- FIXED:	Flickering when selecting and moving controls
+;					- MAINT:	General speed improvements
 ;
 ;  06/10/2022 ...: 	- FIXED:	Lots of handling of copy+paste scenarios
 ;					- FIXED:	Tooltip when resizing multiple controls
