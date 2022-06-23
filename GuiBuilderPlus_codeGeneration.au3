@@ -43,7 +43,7 @@ Func _code_generation()
 	EndIf
 	$globals[1] = "Global "
 	Local $globalsIndex = 1
-	For $oCtrl In $oCtrls.ctrls
+	For $oCtrl In $oCtrls.ctrls.Items()
 		;generate globals for controls
 		If $oCtrl.Name <> "" And $oCtrl.Global Then
 			If StringLen($globals[$globalsIndex]) > 100 Then

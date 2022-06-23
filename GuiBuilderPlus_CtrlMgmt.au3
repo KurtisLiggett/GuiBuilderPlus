@@ -10,7 +10,14 @@
 ; Called by.......: Draw with mouse; Paste
 ;------------------------------------------------------------------------------
 Func _create_ctrl($oCtrl = '', $bUseName = False)
-	Local $oNewControl, $incTypeCount = True
+	;only allow 1 tab control
+	If $oCtrls.CurrentType = "Tab" Then
+		If $oCtrls.getTypeCount("Tab") > 0 Then
+			Return 0
+		EndIf
+	EndIf
+
+	Local $oNewControl
 	Local $isPaste = False
 
 	Switch IsObj($oCtrl)
@@ -58,7 +65,7 @@ Func _create_ctrl($oCtrl = '', $bUseName = False)
 		$name = $oNewControl.Type & "_" & $j
 
 		If $count >= 1 Then
-			For $oCtrl In $oCtrls.ctrls
+			For $oCtrl In $oCtrls.ctrls.Items()
 
 				If $oCtrl.Name = $name Then
 					$found = True
@@ -175,17 +182,11 @@ Func _create_ctrl($oCtrl = '', $bUseName = False)
 			Return $oNewControl
 
 		Case "Tab"
-			If $oNewControl.TabCount = 1 Then
-				$incTypeCount = False
-			EndIf
+			;create main tab control
+			$oNewControl.Hwnd = GUICtrlCreateTab($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			GUICtrlSetOnEvent($oNewControl.Hwnd, "_onCtrlTabSwitch")
 
-			If $incTypeCount Then    ;create the main control
-				;create main tab control
-				$oNewControl.Hwnd = GUICtrlCreateTab($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
-				GUICtrlSetOnEvent($oNewControl.Hwnd, "_onCtrlTabSwitch")
-
-				$oCtrls.add($oNewControl)
-			EndIf
+			$oCtrls.add($oNewControl)
 
 			GUISwitch($hGUI)
 
@@ -282,23 +283,17 @@ Func _create_ctrl($oCtrl = '', $bUseName = False)
 
 	$oMain.hasChanged = True
 
-	If $incTypeCount Then
-		$oCtrls.incTypeCount($oNewControl.Type)
+	Switch IsObj($oCtrl)
+		Case True    ;paste from existing object
+			GUICtrlSetData($oNewControl.Hwnd, $oNewControl.Text)
 
-		Switch IsObj($oCtrl)
-			Case True    ;paste from existing object
-				GUICtrlSetData($oNewControl.Hwnd, $oNewControl.Text)
+		Case False    ;new object
+			$oNewControl.Text = $oNewControl.Text
+	EndSwitch
 
-			Case False    ;new object
-				$oNewControl.Text = $oNewControl.Text
-		EndSwitch
+	GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
-		GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
-
-		Return $oNewControl
-	Else
-		Return 0
-	EndIf
+	Return $oNewControl
 EndFunc   ;==>_create_ctrl
 
 
@@ -326,7 +321,7 @@ EndFunc   ;==>_GuiCtrlCreateSlider
 Func _new_tab()
 	Local $oCtrl
 
-	For $oCtrl In $oCtrls.ctrls
+	For $oCtrl In $oCtrls.ctrls.Items()
 		If $oCtrl.Type = "Tab" Then
 			ExitLoop
 		EndIf
@@ -355,7 +350,7 @@ EndFunc   ;==>_onCtrlTabSwitch
 Func _delete_tab()
 	Local $oCtrl
 
-	For $oCtrl In $oCtrls.ctrls
+	For $oCtrl In $oCtrls.ctrls.Items()
 		If $oCtrl.Type = "Tab" Then
 			ExitLoop
 		EndIf
@@ -420,7 +415,7 @@ Func _delete_menuItem()
 	If Not IsObj($oCtrl) Then Return -1
 
 	Local $oParent
-	For $oCtrl In $oCtrls.ctrls
+	For $oCtrl In $oCtrls.ctrls.Items()
 		If $oCtrl.Type = "Menu" Then
 			For $oMenuItem In $oCtrl.MenuItems
 				If $oMenuItem.Hwnd = $hSelected Then
@@ -461,8 +456,6 @@ EndFunc   ;==>_control_type
 ; Description.....: delete control from GUI and remove the data object
 ;------------------------------------------------------------------------------
 Func _delete_ctrl(Const $oCtrl)
-	$oCtrls.decTypeCount($oCtrl.Type)
-
 	GUISwitch($hGUI)
 	Switch $oCtrl.Type
 		Case "Updown"
@@ -512,7 +505,7 @@ Func _left_top_union_rect($oObjCtrls=0)
 	$smallest.Left = $oObjCtrls.getFirst().Left
 	$smallest.Top = $oObjCtrls.getFirst().Top
 
-	For $oCtrl In $oObjCtrls.ctrls
+	For $oCtrl In $oObjCtrls.ctrls.Items()
 
 		If Int($oCtrl.Left) < Int($smallest.Left) Then
 			$smallest.Left = $oCtrl.Left
@@ -572,7 +565,7 @@ Func _selected_to_array(Const $sel_count, Const $smallest)
 	Local $selected[$sel_count][2] ; second dimension is magnitude of the control's rectangle
 
 	Local $i = 0
-	For $oCtrl In $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls.Items()
 		;create a copy, so we don't later accidentally overwrite the original!
 		$selected[$i][0] = $oCtrl
 		$selected[$i][1] = _vector_magnitude($smallest.Left, $smallest.Top, $oCtrl.Left, $oCtrl.Top)
@@ -590,7 +583,7 @@ EndFunc   ;==>_selected_to_array
 Func _selected_to_clipboard(Const $selected, Const $sel_count)
 	$oClipboard.removeAll()
 	Local $i = 0
-	For $oCtrl In $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls.Items()
 		$oClipboard.add($oSelected.getCopy($oCtrl.Hwnd))
 		$i += 1
 	Next
@@ -614,7 +607,7 @@ Func _PasteSelected($bDuplicate = False, $bAtMouse = False)
 		Case True
 			Local $oNewCtrl, $i = 0
 
-			For $oCtrl In $oClipboard.ctrls
+			For $oCtrl In $oClipboard.ctrls.Items()
 				;create a copy, so we don't overwrite the original!
 				$oNewCtrl = $oClipboard.getCopy($oCtrl.Hwnd)
 
@@ -686,7 +679,7 @@ Func _display_selected_tooltip()
 
 	Local Const $count = $oSelected.count
 
-	For $oCtrl In $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls.Items()
 		$tooltip &= $oCtrl.Name & ": X:" & $oCtrl.Left & ", Y:" & $oCtrl.Top & ", W:" & $oCtrl.Width & ", H:" & $oCtrl.Height & @CRLF
 	Next
 
@@ -726,7 +719,7 @@ Func _select_control_group(Const $oGroup)
 	$oGroupRect.Height = $oGroup.Height
 
 	Local Const $count = $oCtrls.count
-	For $oCtrl In $oCtrls.ctrls
+	For $oCtrl In $oCtrls.ctrls.Items()
 
 		If _control_intersection($oCtrl, $oGroupRect) Then
 			_add_to_selected($oCtrl, False)
@@ -734,7 +727,7 @@ Func _select_control_group(Const $oGroup)
 	Next
 EndFunc   ;==>_select_control_group
 
-Func _add_to_selected(Const $oCtrl, Const $overwrite = True)
+Func _add_to_selected(Const $oCtrl, Const $overwrite = True, Const $updateProps = True)
 	If Not IsObj($oCtrl) Then
 		Return
 	EndIf
@@ -753,8 +746,11 @@ Func _add_to_selected(Const $oCtrl, Const $overwrite = True)
 	$oSelected.add($oCtrl)
 
 ;~ 	_enable_control_properties_gui()
-	_showProperties($props_Ctrls)
-	_populate_control_properties_gui($oCtrl)
+
+	If $updateProps Then
+		_showProperties($props_Ctrls)
+		_populate_control_properties_gui($oCtrl)
+	EndIf
 	$oCtrl.grippies.show()
 
 	Return True
@@ -769,14 +765,15 @@ Func _selectAll()
 	Local $first = True
 
 	_SendMessage($hGUI, $WM_SETREDRAW, False)
-	For $oCtrl In $oCtrls.ctrls
-		If $first Then
-			_add_to_selected($oCtrl)
-			$first = False
-		Else
-			_add_to_selected($oCtrl, False)
-		EndIf
+	_remove_all_from_selected()
+
+	For $oCtrl In $oCtrls.ctrls.Items()
+		$oSelected.add($oCtrl)
+		$oCtrl.grippies.show()
 	Next
+
+	_showProperties($props_Ctrls)
+	_populate_control_properties_gui($oCtrl)
 	_SendMessage($hGUI, $WM_SETREDRAW, True)
 	_WinAPI_RedrawWindow($hGUI)
 	$oCtrls.mode = $mode_default
@@ -790,10 +787,10 @@ EndFunc   ;==>_selectAll
 ;					as the rectangle intersects with the controls
 ;------------------------------------------------------------------------------
 Func _add_remove_selected_control(Const $oRect)
-	For $oCtrl In $oCtrls.ctrls
+	For $oCtrl In $oCtrls.ctrls.Items()
 		Switch _control_intersection($oCtrl, $oRect)
 			Case True
-				Switch _add_to_selected($oCtrl, False)
+				Switch _add_to_selected($oCtrl, False, False)
 					Case True
 ;~ 						_populate_control_properties_gui($oCtrl)
 
@@ -807,7 +804,7 @@ Func _add_remove_selected_control(Const $oRect)
 
 						Switch $sel_count >= 1
 							Case True
-								_populate_control_properties_gui($oSelected.getLast())
+;~ 								_populate_control_properties_gui($oSelected.getLast())
 
 ;~ 							Case False
 ;~ 								_showProperties($props_Main)
@@ -836,7 +833,7 @@ Func _delete_selected_controls()
 	Switch $sel_count >= 1
 		Case True
 			_SendMessage($hGUI, $WM_SETREDRAW, False)
-			For $oCtrl In $oSelected.ctrls
+			For $oCtrl In $oSelected.ctrls.Items()
 				_delete_ctrl($oCtrl)
 			Next
 
@@ -874,7 +871,7 @@ Func _remove_from_selected(Const $oCtrl)
 			Return SetError(1, 0, False)
 	EndSwitch
 
-	For $oThisCtrl In $oSelected.ctrls
+	For $oThisCtrl In $oSelected.ctrls.Items()
 		Switch $oCtrl.Hwnd
 			Case $oThisCtrl.Hwnd
 				$oSelected.remove($oThisCtrl.Hwnd)
@@ -896,21 +893,46 @@ EndFunc   ;==>_remove_from_selected
 
 Func _display_selection_rect(Const $oRect)
 ;~ 	_log("create rect")
+	Static $prevRect = 0
 
-	GUISwitch($hGUI)
-	If GUICtrlGetHandle($overlay) <> -1 Then
-		GUICtrlDelete($overlay)
-		$overlay = -1
+;~ 	GUISwitch($hGUI)
+;~ 	If GUICtrlGetHandle($overlay) <> -1 Then
+;~ 		GUICtrlDelete($overlay)
+;~ 		$overlay = -1
+;~ 	EndIf
+;~ 	$overlay = GUICtrlCreateGraphic($oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
+;~ 	GUICtrlSetState(-1, $GUI_DISABLE)
+;~ 	GUICtrlSetGraphic($overlay, $GUI_GR_RECT, 0, 0, $oRect.Width, $oRect.Height)
+;~ 	GUICtrlSetGraphic($overlay, $GUI_GR_REFRESH)
+;~ 	GUISwitch($hGUI)
+
+	;if this is the first time, create the hGraphic
+	If $hSelectionGraphic = -1 Then
+		$hSelectionGraphic = _GDIPlus_GraphicsCreateFromHWND($hGUI) ;create a graphics object from a window handle
+		_GDIPlus_GraphicsSetSmoothingMode($hSelectionGraphic, $GDIP_SMOOTHINGMODE_HIGHQUALITY) ;sets the graphics object rendering quality (antialiasing)
 	EndIf
-	$overlay = GUICtrlCreateGraphic($oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
-	GUICtrlSetState(-1, $GUI_DISABLE)
-	GUICtrlSetGraphic($overlay, $GUI_GR_RECT, 0, 0, $oRect.Width, $oRect.Height)
-	GUICtrlSetGraphic($overlay, $GUI_GR_REFRESH)
-	GUISwitch($hGUI)
+
+	;clear the previous drawing
+;~ 	_GDIPlus_GraphicsClear($hSelectionGraphic)
+;~ 	_WinAPI_InvalidateRect($hGUI)
+	If IsObj($prevRect) Then
+		Local $rgnOuter = _WinAPI_CreateRectRgn($prevRect.Left, $prevRect.Top, $prevRect.Left + $prevRect.Width+1, $prevRect.Top + $prevRect.Height+1)
+		Local $rgnInner = _WinAPI_CreateRectRgn($prevRect.Left+1, $prevRect.Top+1, $prevRect.Left + $prevRect.Width, $prevRect.Top + $prevRect.Height)
+		Local $rgnBox = _WinAPI_CreateRectRgn(0, 0, 0, 0)
+		_WinAPI_CombineRgn($rgnBox, $rgnOuter, $rgnInner, $RGN_XOR)
+		_WinAPI_InvalidateRgn($hGUI, $rgnBox)
+		_WinAPI_DeleteObject($rgnOuter)
+		_WinAPI_DeleteObject($rgnInner)
+		_WinAPI_DeleteObject($rgnBox)
+	EndIf
+	$prevRect = $oRect
+
+	;draw the updated rect
+    _GDIPlus_GraphicsDrawRect($hSelectionGraphic, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
 EndFunc   ;==>_display_selection_rect
 
 Func _hide_selected_controls()
-	For $oCtrl In $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls.Items()
 		If Not $setting_show_control Then
 			GUICtrlSetState($oCtrl.Hwnd, $GUI_HIDE)
 		EndIf
@@ -918,7 +940,7 @@ Func _hide_selected_controls()
 EndFunc   ;==>_hide_selected_controls
 
 Func _show_selected_controls()
-	For $oCtrl In $oSelected.ctrls
+	For $oCtrl In $oSelected.ctrls.Items()
 		If Not $setting_show_control Then
 			GUICtrlSetState($oCtrl.Hwnd, $GUI_SHOW)
 		EndIf
@@ -971,4 +993,11 @@ Func _recall_overlay()
 		$overlay = -1
 	EndIf
 	GUISwitch($hGUI)
+
+	If $hSelectionGraphic <> -1 Then
+		_GDIPlus_GraphicsClear($hSelectionGraphic)
+		_WinAPI_InvalidateRect($hGUI)
+		_GDIPlus_GraphicsDispose($hSelectionGraphic)
+		$hSelectionGraphic = -1
+	EndIf
 EndFunc   ;==>_recall_overlay

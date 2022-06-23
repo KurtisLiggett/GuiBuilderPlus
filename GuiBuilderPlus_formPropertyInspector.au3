@@ -207,6 +207,12 @@ EndFunc   ;==>_formPropertyInspector_newitem
 
 
 Func _showProperties($props = $props_Main)
+	If $oSelected.count > 0 Then
+		$props = $props_Ctrls
+	Else
+		$props = $props_Main
+	EndIf
+
 	Switch $props
 		Case $props_Main
 			GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Main.Hwnd)
@@ -249,7 +255,7 @@ EndFunc   ;==>_showProperties
 
 Func _isAllLabels()
 	If $oSelected.count > 0 Then
-		For $oCtrl In $oSelected.ctrls
+		For $oCtrl In $oSelected.ctrls.Items()
 			If $oCtrl.Type <> "Label" Then
 				Return False
 			EndIf
@@ -261,7 +267,7 @@ EndFunc   ;==>_isAllLabels
 
 Func _containsMenus()
 	If $oSelected.count > 0 Then
-		For $oCtrl In $oSelected.ctrls
+		For $oCtrl In $oSelected.ctrls.Items()
 			If $oCtrl.Type <> "Menu" Then
 				Return True
 			EndIf

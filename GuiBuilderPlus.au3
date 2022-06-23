@@ -12,7 +12,11 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  06/11/2022 ...: 	- FIXED:	UpDown control shrinks when dragging
+;  06/23/2022 ...: 	- FIXED:	UpDown control shrinks when dragging
+;					- FIXED:	Fixed clicking away from certain controls
+;					- FIXED:	Multiple tab controls should not be allowed
+;					- FIXED:	Flickering when selecting and moving controls
+;					- MAINT:	General speed improvements
 ;
 ;  06/10/2022 ...: 	- FIXED:	Lots of handling of copy+paste scenarios
 ;					- FIXED:	Tooltip when resizing multiple controls
@@ -252,6 +256,7 @@ Global $bResizedFlag
 Global $testFileName, $TestFilePID = 0, $bReTest = 0, $aTestGuiPos, $hTestGui
 Global $au3InstallPath = @ProgramFilesDir & "\AutoIt3\AutoIt3.exe"
 Global $initDraw, $initResize
+Global $hSelectionGraphic = -1
 
 ;Control Objects
 Global $oMain, $oCtrls, $oSelected, $oClipboard, $oMouse
@@ -281,6 +286,8 @@ _AutoItObject_StartUp()
 #include <GuiListView.au3>
 #include <GuiIPAddress.au3>
 #include <Misc.au3>
+#include <GDIPlus.au3>
+#include <WinAPIGdi.au3>
 #include <MsgBoxConstants.au3>
 #include <StringConstants.au3>
 #include <StaticConstants.au3>
@@ -323,6 +330,7 @@ _main()
 ;------------------------------------------------------------------------------
 Func _main()
 	_log("Startup")
+	_GDIPlus_Startup()
 
 	;create the main program data objects
 	$oMouse = _objCreateMouse()
