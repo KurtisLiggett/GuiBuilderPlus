@@ -14,9 +14,16 @@
 ; Revisions
 ;  06/23/2022 ...: 	- FIXED:	UpDown control shrinks when dragging
 ;					- FIXED:	Fixed clicking away from certain controls
+;					- FIXED:	Clicking a blank area should end the drawing, but did not work for some controls (combo, updown)
 ;					- FIXED:	Multiple tab controls should not be allowed
 ;					- FIXED:	Flickering when selecting and moving controls
-;					- MAINT:	General speed improvements
+;					- FIXED:	Selection rectangle should not snap to grid
+;					- FIXED:	Grid disappears in some situations when clicking with no controls on the form
+;					- ADDED:	Hide tooltip when selecting more than 4 items
+;					- ADDED:	Allow a select number of keyboard shortcuts from tool window (ex: Press F5 to test the GUI after adjusting properties)
+;					- MAINT:	Improved some of the behind-the-scenes object handling
+;					- MAINT:	Significant speed improvements with object explorer
+;					- MAINT:	Other general speed improvements
 ;
 ;  06/10/2022 ...: 	- FIXED:	Lots of handling of copy+paste scenarios
 ;					- FIXED:	Tooltip when resizing multiple controls
@@ -241,7 +248,7 @@ Global $oProperties_Main, $oProperties_Ctrls
 ;GUI Constants
 Global Const $grid_ticks = 10
 Global Const $iconset = @ScriptDir & "\resources\Icons\" ; Added by: TheSaint
-Global Enum $mode_default, $mode_draw, $mode_init_move, $mode_init_selection, $mode_paste, _
+Global Enum $mode_default, $mode_draw, $mode_drawing, $mode_init_move, $mode_init_selection, $mode_paste, _
 		$resize_nw, $resize_n, $resize_ne, $resize_e, $resize_se, $resize_s, $resize_sw, $resize_w
 Global Enum $props_Main, $props_Ctrls
 ; Cursor Consts - added by: Jaberwacky

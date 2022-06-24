@@ -464,6 +464,17 @@ Func _set_accelerators()
 			]
 	GUISetAccelerators($accelerators, $hGUI)
 
+	Local Const $acceleratorsToolbar[5][2] = _
+			[ _
+			["{F3}", $menu_grid_snap], _
+			["{F7}", $menu_show_grid], _
+			["{F5}", $accel_F5], _
+			["^s", $accel_s], _
+			["^o", $accel_o] _
+			]
+	GUISetAccelerators($accelerators, $hToolbar)
+	GUISetAccelerators($accelerators, $oProperties_Main.Hwnd)
+
 	GUICtrlSetOnEvent($accel_delete, _delete_selected_controls)
 	GUICtrlSetOnEvent($accel_x, _cut_selected)
 	GUICtrlSetOnEvent($accel_c, _copy_selected)
@@ -1105,44 +1116,11 @@ Func _onMousePrimaryDown()
 		Case $mode_draw
 			_log("** PrimaryDown: draw **")
 			$initDraw = True
+			_set_current_mouse_pos()
+			$oMouse.StartX = $oMouse.X
+			$oMouse.StartY = $oMouse.Y
 
-			Local $oCtrl = _create_ctrl()
-
-			If IsObj($oCtrl) Then
-				_add_to_selected($oCtrl)
-
-				Switch $oCtrl.Type
-					Case "Combo", "Checkbox", "Radio"
-						$pos = ControlGetPos($hGUI, '', $oCtrl.grippies.East)
-
-						$oCtrls.mode = $resize_e
-
-						_move_mouse_to_grippy($pos[0], $pos[1])
-
-					Case "Menu"
-						_set_default_mode()
-						$oCtrls.mode = $mode_default
-						_formObjectExplorer_updateList()
-						_refreshGenerateCode()
-						GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
-
-					Case Else
-						$pos = ControlGetPos($hGUI, '', $oCtrl.grippies.SE)
-
-						$oSelected.StartResizing()
-						$oCtrls.mode = $resize_se
-
-						_move_mouse_to_grippy($pos[0], $pos[1])
-				EndSwitch
-
-				_set_current_mouse_pos()
-				$oMouse.StartX = $oMouse.X
-				$oMouse.StartY = $oMouse.Y
-			Else
-				GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
-				_set_default_mode()
-				$oCtrls.mode = $mode_default
-			EndIf
+			$oCtrls.mode = $mode_drawing
 
 		Case $mode_default
 			_log("** PrimaryDown: default **")
@@ -1151,7 +1129,7 @@ Func _onMousePrimaryDown()
 					_log("  background")
 					_set_default_mode()
 
-					_set_current_mouse_pos()
+					_set_current_mouse_pos(1)
 
 					$oCtrls.mode = $mode_init_selection
 
@@ -1212,6 +1190,12 @@ Func _onMousePrimaryUp()
 	Local $ctrl_hwnd, $oCtrl
 
 	Switch $oCtrls.mode
+		Case $mode_drawing
+			_log("** PrimaryUp: draw **")
+			GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
+			_set_default_mode()
+			$initDraw = False
+
 		Case $mode_init_move
 			_log("** PrimaryUp: init_move **")
 			_set_default_mode()
@@ -1362,6 +1346,41 @@ Func _onMouseMove()
 	EndIf
 
 	Switch $oCtrls.mode
+		Case $mode_drawing
+			Local $oCtrl = _create_ctrl(0, 0, $oMouse.StartX, $oMouse.StartY)
+
+			If IsObj($oCtrl) Then
+				_add_to_selected($oCtrl)
+
+				Switch $oCtrl.Type
+					Case "Combo", "Checkbox", "Radio"
+						$pos = ControlGetPos($hGUI, '', $oCtrl.grippies.East)
+
+						$oCtrls.mode = $resize_e
+
+						_move_mouse_to_grippy($pos[0], $pos[1])
+
+					Case "Menu"
+						_set_default_mode()
+						$oCtrls.mode = $mode_default
+						_formObjectExplorer_updateList()
+						_refreshGenerateCode()
+						GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
+
+					Case Else
+						$pos = ControlGetPos($hGUI, '', $oCtrl.grippies.SE)
+
+						$oSelected.StartResizing()
+						$oCtrls.mode = $resize_se
+
+						_move_mouse_to_grippy($pos[0], $pos[1])
+				EndSwitch
+			Else
+				GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
+				_set_default_mode()
+				$oCtrls.mode = $mode_default
+			EndIf
+
 		Case $mode_init_move, $mode_default, $mode_paste
 			Local Const $mouse_pos = _mouse_snap_pos()
 
@@ -2134,6 +2153,8 @@ Func _wipe_current_gui()
 
 	Next
 
+	_formObjectExplorer_updateList()
+
 ;~ 	$oCtrls.removeAll()
 
 	_set_default_mode()
@@ -2195,8 +2216,13 @@ Func _snap_to_grid($coords)
 	Return $coords
 EndFunc   ;==>_snap_to_grid
 
-Func _set_current_mouse_pos()
-	Local Const $mouse_snap_pos = _mouse_snap_pos()
+Func _set_current_mouse_pos($noSnap = False)
+	Local $mouse_snap_pos
+	If $noSnap Then
+		$mouse_snap_pos = MouseGetPos()
+	Else
+		$mouse_snap_pos = _mouse_snap_pos()
+	EndIf
 
 	$oMouse.X = $mouse_snap_pos[0]
 	$oMouse.Y = $mouse_snap_pos[1]

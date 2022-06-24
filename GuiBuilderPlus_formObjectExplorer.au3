@@ -383,6 +383,7 @@ Func _formObjectExplorer_updateList()
 
 	Local $lvItem, $lvMenu, $lvMenuDelete, $childItem, $tabMenu, $tabMenuDelete, $lvMenuNewTab, $lvMenuDeleteTab, $sName
 	Local $lvMenuNewMenuItem, $menuItemMenu
+	_SendMessage($hFormObjectExplorer, $WM_SETREDRAW, False)
 	_GUICtrlTreeView_DeleteAll($lvObjects)
 	For $oCtrl In $oCtrls.ctrls.Items()
 		$sName = $oCtrl.Name
@@ -429,6 +430,9 @@ Func _formObjectExplorer_updateList()
 			Next
 		EndIf
 	Next
+
+	_SendMessage($hFormObjectExplorer, $WM_SETREDRAW, True)
+	_WinAPI_RedrawWindow($hFormObjectExplorer)
 
 	If StringStripWS($count, $STR_STRIPALL) = "" Then $count = 0
 	GUICtrlSetData($labelObjectCount, "Object Count: " & $count)

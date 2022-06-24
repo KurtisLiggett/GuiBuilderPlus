@@ -9,7 +9,7 @@
 ; Description.....: create new control and add it to the ctrls object
 ; Called by.......: Draw with mouse; Paste
 ;------------------------------------------------------------------------------
-Func _create_ctrl($oCtrl = '', $bUseName = False)
+Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1)
 	;only allow 1 tab control
 	If $oCtrls.CurrentType = "Tab" Then
 		If $oCtrls.getTypeCount("Tab") > 0 Then
@@ -27,6 +27,9 @@ Func _create_ctrl($oCtrl = '', $bUseName = False)
 
 		Case False
 			Local $cursor_pos = _mouse_snap_pos()
+
+			If $startX <> -1 Then $cursor_pos[0] = $startX
+			If $startY <> -1 Then $cursor_pos[1] = $startY
 
 			; control will be inserted at current mouse position UNLESS out-of-bounds mouse
 			Switch $setting_paste_pos
@@ -473,8 +476,6 @@ Func _delete_ctrl(Const $oCtrl)
 	$oCtrls.remove($oCtrl.Hwnd)
 	$oSelected.remove($oCtrl.Hwnd)
 
-	_formObjectExplorer_updateList()
-
 	$oMain.hasChanged = True
 EndFunc   ;==>_delete_ctrl
 
@@ -679,11 +680,16 @@ Func _display_selected_tooltip()
 
 	Local Const $count = $oSelected.count
 
-	For $oCtrl In $oSelected.ctrls.Items()
-		$tooltip &= $oCtrl.Name & ": X:" & $oCtrl.Left & ", Y:" & $oCtrl.Top & ", W:" & $oCtrl.Width & ", H:" & $oCtrl.Height & @CRLF
-	Next
+	If $oSelected.count < 5 Then
+		For $oCtrl In $oSelected.ctrls.Items()
+			$tooltip &= $oCtrl.Name & ": X:" & $oCtrl.Left & ", Y:" & $oCtrl.Top & ", W:" & $oCtrl.Width & ", H:" & $oCtrl.Height & @CRLF
+		Next
 
-	ToolTip(StringTrimRight($tooltip, 2))
+		ToolTip(StringTrimRight($tooltip, 2))
+	Else
+		ToolTip("")
+	EndIf
+
 EndFunc   ;==>_display_selected_tooltip
 
 Func _control_intersection(Const $oCtrl, Const $oRect)
@@ -836,6 +842,8 @@ Func _delete_selected_controls()
 			For $oCtrl In $oSelected.ctrls.Items()
 				_delete_ctrl($oCtrl)
 			Next
+
+			_formObjectExplorer_updateList()
 
 			_recall_overlay()
 
