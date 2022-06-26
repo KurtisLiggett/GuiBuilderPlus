@@ -1091,7 +1091,6 @@ Func _onMousePrimaryDown()
 
 	;if tool is selected and clicking on an existing control (but not resizing), switch to selection
 	If (Not $initResize And Not $oCtrls.mode = $mode_init_move) OR $oCtrls.mode = $mode_draw Then
-		ConsoleWrite(" ---- selected ---- " & @CRLF)
 		If $oCtrls.exists($ctrl_hwnd) And $ctrl_hwnd <> $background Then
 			GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 			$oCtrls.mode = $mode_default
@@ -1120,7 +1119,23 @@ Func _onMousePrimaryDown()
 			$oMouse.StartX = $oMouse.X
 			$oMouse.StartY = $oMouse.Y
 
-			$oCtrls.mode = $mode_drawing
+			If $oCtrls.CurrentType = "Menu" Then
+				Local $oCtrl = _create_ctrl(0, 0, $oMouse.StartX, $oMouse.StartY)
+
+				If IsObj($oCtrl) Then
+					_set_default_mode()
+					$oCtrls.mode = $mode_default
+					_formObjectExplorer_updateList()
+					_refreshGenerateCode()
+					GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
+				Else
+					GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
+					_set_default_mode()
+					$oCtrls.mode = $mode_default
+				EndIf
+			Else
+				$oCtrls.mode = $mode_drawing
+			EndIf
 
 		Case $mode_default
 			_log("** PrimaryDown: default **")
@@ -1187,7 +1202,7 @@ EndFunc   ;==>_onMousePrimaryDown
 
 Func _onMousePrimaryUp()
 	$left_click = False
-	Local $ctrl_hwnd, $oCtrl
+	Local $ctrl_hwnd, $oCtrl, $updateObjectExplorer
 
 	Switch $oCtrls.mode
 		Case $mode_drawing
@@ -1256,7 +1271,7 @@ Func _onMousePrimaryUp()
 			;clear graphics glitches (combobox, group)
 			_WinAPI_RedrawWindow($hGUI)
 
-			_formObjectExplorer_updateList()
+			$updateObjectExplorer = True
 
 			_setLvSelected($oSelected.getFirst())
 
@@ -1276,13 +1291,19 @@ Func _onMousePrimaryUp()
 	EndSwitch
 
 	If $oSelected.hasIP Then
-		For $oCtrl In $oSelected.ctrls.Items()
-			If $oCtrl.Type = "IP" Then
+		For $oCtrl In $oCtrls.ctrls.Items()
+			If $oCtrl.Type = "IP" And $oCtrl.Dirty Then
 				_updateIP($oCtrl)
+				$oCtrl.Dirty = False
 			EndIf
 		Next
+		$updateObjectExplorer = True
+	EndIf
+
+	If $updateObjectExplorer Then
 		_formObjectExplorer_updateList()
 	EndIf
+
 EndFunc   ;==>_onMousePrimaryUp
 
 
@@ -1404,6 +1425,10 @@ Func _onMouseMove()
 			For $oCtrl In $oSelected.ctrls.Items()
 				_change_ctrl_size_pos($oCtrl, $oCtrl.Left - $delta_x, $oCtrl.Top - $delta_y, Default, Default)
 				$tooltip &= $oCtrl.Name & ": X:" & $oCtrl.Left & ", Y:" & $oCtrl.Top & ", W:" & $oCtrl.Width & ", H:" & $oCtrl.Height & @CRLF
+
+				If $oCtrls.mode = $mode_init_move Then
+					$oCtrl.Dirty = True
+				EndIf
 			Next
 			_SendMessage($hGUI, $WM_SETREDRAW, True)
 
@@ -1431,6 +1456,10 @@ Func _onMouseMove()
 			For $oCtrlSelect In $oSelected.ctrls.Items()
 				$oCtrlSelect.grippies.resizing($oCtrls.mode)
 				$tooltip &= $oCtrlSelect.Name & ": X:" & $oCtrlSelect.Left & ", Y:" & $oCtrlSelect.Top & ", W:" & $oCtrlSelect.Width & ", H:" & $oCtrlSelect.Height & @CRLF
+
+				If $oCtrls.mode = $mode_init_move Then
+					$oCtrl.Dirty = True
+				EndIf
 			Next
 			_SendMessage($hGUI, $WM_SETREDRAW, True)
 

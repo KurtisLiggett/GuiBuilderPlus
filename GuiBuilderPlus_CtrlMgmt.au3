@@ -376,9 +376,11 @@ Func _delete_tab()
 EndFunc   ;==>_delete_tab
 
 Func _updateIP($oCtrl)
-	_GUICtrlIpAddress_Destroy(HWnd($oCtrl.Hwnd))
-	$oCtrl.Hwnd = _GUICtrlIpAddress_Create($hGUI, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
-	_GUICtrlIpAddress_Set($oCtrl.Hwnd, $oCtrl.Text)
+		Local $prevKey = $oCtrl.Hwnd
+		_GUICtrlIpAddress_Destroy(HWnd($oCtrl.Hwnd))
+		$oCtrl.Hwnd = _GUICtrlIpAddress_Create($hGUI, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
+		_GUICtrlIpAddress_Set($oCtrl.Hwnd, $oCtrl.Text)
+		$oCtrl.parent.ctrls.Key($prevKey) = $oCtrl.Hwnd
 ;~ 	_WinAPI_SetWindowPos($oCtrl.Hwnd, $HWND_TOP, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height, $SWP_SHOWWINDOW)
 EndFunc   ;==>_updateIP
 
@@ -962,22 +964,23 @@ Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, 
 		Return
 	EndIf
 
-	Switch $oCtrl.Type
-		Case "Updown"
-			GUICtrlSetPos($oCtrl.Hwnd, $left, $top, $oCtrl.Width, $oCtrl.Height)
-
-;~ 		Case "IP"
-;~ 			ConsoleWrite($oCtrl.Hwnd & @CRLF)
-;~ 			WinMove($oCtrl.Hwnd, "", $left, $top, $width, $height)
-
-		Case Else
-			GUICtrlSetPos($oCtrl.Hwnd, $left, $top, $width, $height)
-	EndSwitch
-
 	If $left <> Default Then $oCtrl.Left = $left
 	If $top <> Default Then $oCtrl.Top = $top
 	If $width <> Default Then $oCtrl.Width = $width
 	If $height <> Default Then $oCtrl.Height = $height
+
+	Switch $oCtrl.Type
+		Case "Updown"
+			GUICtrlSetPos($oCtrl.Hwnd, $left, $top, $oCtrl.Width, $oCtrl.Height)
+
+		Case "IP"
+;~ 			ConsoleWrite($oCtrl.Hwnd & @CRLF)
+;~ 			WinMove($oCtrl.Hwnd, "", $left, $top, $width, $height)
+			_updateIP($oCtrl)
+
+		Case Else
+			GUICtrlSetPos($oCtrl.Hwnd, $left, $top, $width, $height)
+	EndSwitch
 
 	$oCtrl.grippies.show()
 	$oMain.hasChanged = True

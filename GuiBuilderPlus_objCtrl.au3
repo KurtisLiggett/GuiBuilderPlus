@@ -237,9 +237,17 @@ Func _objCtrls_exists($oSelf, $Hwnd)
 ;~ 		EndIf
 ;~ 	Next
 
+;~ 	$aKeys = $oSelf.ctrls.Keys()
+;~ 	ConsoleWrite("---- keys" & @CRLF)
+;~ 	For $key in $aKeys
+;~ 		ConsoleWrite($key & @CRLF)
+;~ 	Next
+;~ 	ConsoleWrite(@CRLF)
 	If $oSelf.ctrls.Exists($Hwnd) Then
+;~ 		ConsoleWrite("yes " & $Hwnd & @CRLF)
 		Return True
 	Else
+;~ 		ConsoleWrite("no " & $Hwnd & @CRLF)
 		Return False
 	EndIf
 EndFunc   ;==>_objCtrls_exists
@@ -395,6 +403,7 @@ Func _objCtrl($oParent)
 	_AutoItObject_AddProperty($oObject, "TabCount", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "Tabs", $ELSCOPE_PUBLIC, LinkedList())
 	_AutoItObject_AddProperty($oObject, "MenuItems", $ELSCOPE_PUBLIC, LinkedList())
+	_AutoItObject_AddProperty($oObject, "Dirty", $ELSCOPE_PUBLIC, False)
 
 	Return $oObject
 EndFunc   ;==>_objCtrl
