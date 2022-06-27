@@ -227,6 +227,10 @@ Func _formToolbar()
 	$menu_ObjectExplorer = GUICtrlCreateMenuItem("Object Explorer", $menu_view)
 	GUICtrlSetOnEvent($menu_ObjectExplorer, "_onShowObjectExplorer")
 	GUICtrlSetState($menu_ObjectExplorer, $GUI_UNCHECKED)
+;~ 	GUICtrlCreateMenuItem("", $menu_view)
+;~ 	Local $menu_resetLayout = GUICtrlCreateMenuItem("Reset window layout", $menu_view)
+
+;~ 	GUICtrlSetOnEvent($menu_resetLayout, "_onResetLayout")
 
 	;create the Tools menu
 	Local $menu_tools = GUICtrlCreateMenu("Tools")
@@ -1531,6 +1535,55 @@ Func _onShowObjectExplorer()
 		Case False
 			IniWrite($sIniPath, "Settings", "ShowObjectExplorer", 0)
 	EndSwitch
+EndFunc   ;==>_onShowObjectExplorer
+
+
+;------------------------------------------------------------------------------
+; Title...........: _onResetLayout
+; Description.....: Set GUI windows to default positions
+; Events..........: view menu item
+;------------------------------------------------------------------------------
+Func _onResetLayout()
+	;form gui
+	$oMain.Width = 400
+	$oMain.Height = 300
+
+	$oMain.Left = (@DesktopWidth / 2) - ($oMain.Width / 2)
+	$oMain.Top = (@DesktopHeight / 2) - ($oMain.Height / 2)
+
+	WinMove($hGUI, "", $oMain.Left, $oMain.Top, $oMain.Width + $iGuiFrameW, $oMain.Height + $iGuiFrameH)
+	WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
+
+	;toolbar
+	Local Const $toolbar_width = 215
+	Local Const $toolbar_height = 480
+
+	Local $toolbar_left = $oMain.Left - ($toolbar_width + 5)
+	Local $toolbar_top = $oMain.Top
+
+	WinMove($hToolbar, "", $toolbar_left, $toolbar_top, $toolbar_width, $toolbar_height)
+
+	;object explorer
+	If IsHWnd($hFormObjectExplorer) Then
+		Local $w = 250
+		Local $h = 500
+
+		Local $x = $oMain.Left + ($oMain.Width	+ 5)
+		Local $y = $oMain.Top
+
+		WinMove($hFormObjectExplorer, "", $x, $y, $w, $h)
+	EndIf
+
+	;code preview
+	If IsHWnd($hFormGenerateCode) Then
+		Local $w = 450
+		Local $h = 550
+
+		Local $x = $oMain.Left + 100
+		Local $y = $oMain.Top - 50
+
+		WinMove($hFormGenerateCode, "", $x, $y, $w, $h)
+	EndIf
 EndFunc   ;==>_onShowObjectExplorer
 
 

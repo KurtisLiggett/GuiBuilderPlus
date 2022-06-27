@@ -606,6 +606,7 @@ Func _PasteSelected($bDuplicate = False, $bAtMouse = False)
 	;get the top left point
 	Local $topLeftRect = _left_top_union_rect($oClipboard)
 
+	_SendMessage($hGUI, $WM_SETREDRAW, False)
 	Switch $clipboard_count >= 1
 		Case True
 			Local $oNewCtrl, $i = 0
@@ -627,12 +628,13 @@ Func _PasteSelected($bDuplicate = False, $bAtMouse = False)
 
 				$aNewCtrls[$i] = _create_ctrl($oNewCtrl)
 
+
 				;select the new controls
 				If $i = 0 Then    ;select first item
-					_add_to_selected($oNewCtrl)
-					_populate_control_properties_gui($oNewCtrl)
+					_add_to_selected($oNewCtrl, True, True)
+;~ 					_populate_control_properties_gui($oNewCtrl)
 				Else    ;add to selection
-					_add_to_selected($oNewCtrl, False)
+					_add_to_selected($oNewCtrl, False, False)
 				EndIf
 
 				$i += 1
@@ -655,6 +657,9 @@ Func _PasteSelected($bDuplicate = False, $bAtMouse = False)
 ;~ 			EndIf
 ;~ 		Next
 ;~ 	EndIf
+
+	_SendMessage($hGUI, $WM_SETREDRAW, True)
+	_WinAPI_RedrawWindow($hGUI)
 
 	_refreshGenerateCode()
 	_formObjectExplorer_updateList()
@@ -826,8 +831,11 @@ Func _add_remove_selected_control(Const $oRect)
 EndFunc   ;==>_add_remove_selected_control
 
 Func _remove_all_from_selected()
+	_SendMessage($hGUI, $WM_SETREDRAW, False)
 	$oSelected.removeAll()
 	_showProperties($props_Main)
+	_SendMessage($hGUI, $WM_SETREDRAW, True)
+	_WinAPI_RedrawWindow($hGUI)
 
 	Return True
 EndFunc   ;==>_remove_all_from_selected

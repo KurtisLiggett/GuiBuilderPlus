@@ -12,7 +12,8 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  06/23/2022 ...: 	- FIXED:	UpDown control shrinks when dragging
+;  06/26/2022 ...: 	- FIXED:	UpDown control shrinks when dragging
+;					- FIXED:	Missing ListView icon in compiled app
 ;					- FIXED:	Fixed clicking away from certain controls
 ;					- FIXED:	Clicking a blank area should end the drawing, but did not work for some controls (combo, updown)
 ;					- FIXED:	Multiple tab controls should not be allowed
@@ -21,6 +22,8 @@
 ;					- FIXED:	Grid disappears in some situations when clicking with no controls on the form
 ;					- ADDED:	Hide tooltip when selecting more than 4 items
 ;					- ADDED:	Allow a select number of keyboard shortcuts from tool window (ex: Press F5 to test the GUI after adjusting properties)
+;					- ADDED:	Better handling of IP control
+;					- MAINT;	Improved selection rectangle (again)
 ;					- MAINT:	Improved some of the behind-the-scenes object handling
 ;					- MAINT:	Significant speed improvements with object explorer
 ;					- MAINT:	Other general speed improvements
