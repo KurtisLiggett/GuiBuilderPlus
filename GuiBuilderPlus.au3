@@ -12,6 +12,8 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
+;  06/27/2022 ...: 	- MAINT:	Convert definition file to json to prepare for future features
+;
 ;  06/26/2022 ...: 	- FIXED:	UpDown control shrinks when dragging
 ;					- FIXED:	Missing ListView icon in compiled app
 ;					- FIXED:	Fixed clicking away from certain controls
