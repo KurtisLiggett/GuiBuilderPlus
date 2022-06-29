@@ -1094,7 +1094,7 @@ Func _onMousePrimaryDown()
 	Local $pos
 
 	;if tool is selected and clicking on an existing control (but not resizing), switch to selection
-	If (Not $initResize And Not $oCtrls.mode = $mode_init_move) OR $oCtrls.mode = $mode_draw Then
+	If (Not $initResize And Not $oCtrls.mode = $mode_init_move) And Not $oCtrls.mode = $mode_draw Then
 		If $oCtrls.exists($ctrl_hwnd) And $ctrl_hwnd <> $background Then
 			GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 			$oCtrls.mode = $mode_default
@@ -2072,6 +2072,7 @@ Func _ctrl_change_bkColor()
 	Local $colorInput = $oProperties_Ctrls.Background.value
 	If $colorInput = "" Then
 		$colorInput = -1
+		$oProperties_Ctrls.Background.value = -1
 	Else
 		$colorInput = Dec(StringReplace($colorInput, "0x", ""))
 	EndIf
@@ -2083,20 +2084,26 @@ Func _ctrl_change_bkColor()
 			For $oCtrl In $oSelected.ctrls.Items()
 
 				;convert string to color then apply
-				If $oCtrl.Type <> "Label" Then Return 0
+				Switch $oCtrl.Type
+					Case "Label", "Checkbox", "Radio"
+						If $colorInput <> -1 Then
+							GUICtrlSetBkColor($oCtrl.Hwnd, $colorInput)
+						Else
+;~ 							GUICtrlDelete($oCtrl.Hwnd)
+;~ 							$oCtrl.Hwnd = GUICtrlCreateLabel($oCtrl.Text, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
+							GUICtrlSetBkColor($oCtrl.Hwnd, $defaultGuiBkColor)
+							$oCtrl.Background = -1
+;~ 							If $oCtrl.Color <> -1 Then
+;~ 								GUICtrlSetColor($oCtrl.Hwnd, $oCtrl.Color)
+;~ 							EndIf
+						EndIf
 
-				If $colorInput <> -1 Then
-					GUICtrlSetBkColor($oCtrl.Hwnd, $colorInput)
-				Else
-					GUICtrlDelete($oCtrl.Hwnd)
-					$oCtrl.Hwnd = GUICtrlCreateLabel($oCtrl.Text, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
-					$oCtrl.Background = -1
-					If $oCtrl.Color <> -1 Then
-						GUICtrlSetColor($oCtrl.Hwnd, $oCtrl.Color)
-					EndIf
-				EndIf
+						$oCtrl.Background = $colorInput
 
-				$oCtrl.Background = $colorInput
+					Case Else
+						ContinueLoop
+
+				EndSwitch
 			Next
 	EndSwitch
 
@@ -2137,6 +2144,7 @@ Func _ctrl_change_Color()
 	Local $colorInput = $oProperties_Ctrls.Color.value
 	If $colorInput = "" Then
 		$colorInput = -1
+		$oProperties_Ctrls.Color.value = -1
 	Else
 		$colorInput = Dec(StringReplace($colorInput, "0x", ""))
 	EndIf

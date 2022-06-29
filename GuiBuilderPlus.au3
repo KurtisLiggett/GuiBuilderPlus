@@ -12,6 +12,11 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
+;  06/27/2022 ...:	- FIXED:	Color and Background values of 0x000000 were saved as -1
+;					- FIXED:	Setting "Paste at mouse position" incorrect behavior when turned off
+;					- ADDED:	Change background color of checkbox and radio controls
+;					- CHANGED:	You can now draw "on top of" other controls (instead of switching to selection)
+;
 ;  06/26/2022 ...: 	- FIXED:	UpDown control shrinks when dragging
 ;					- FIXED:	Missing ListView icon in compiled app
 ;					- FIXED:	Fixed clicking away from certain controls

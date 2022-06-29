@@ -234,9 +234,13 @@ Func _showProperties($props = $props_Main)
 
 			If _isAllLabels() Then
 				GUICtrlSetState($oProperties_Ctrls.Color.Hwnd, $GUI_ENABLE)
-				GUICtrlSetState($oProperties_Ctrls.Background.Hwnd, $GUI_ENABLE)
 			Else
 				GUICtrlSetState($oProperties_Ctrls.Color.Hwnd, $GUI_DISABLE)
+			EndIf
+
+			If _hasBG() Then
+				GUICtrlSetState($oProperties_Ctrls.Background.Hwnd, $GUI_ENABLE)
+			Else
 				GUICtrlSetState($oProperties_Ctrls.Background.Hwnd, $GUI_DISABLE)
 			EndIf
 
@@ -264,6 +268,25 @@ Func _isAllLabels()
 
 	Return True
 EndFunc   ;==>_isAllLabels
+
+
+Func _hasBG()
+	If $oSelected.count > 0 Then
+		For $oCtrl In $oSelected.ctrls.Items()
+			Switch $oCtrl.Type
+				Case "Label", "Checkbox", "Radio"
+					ContinueLoop
+
+				Case Else
+					Return False
+
+			EndSwitch
+		Next
+	EndIf
+
+	Return True
+EndFunc
+
 
 Func _containsMenus()
 	If $oSelected.count > 0 Then

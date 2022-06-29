@@ -79,7 +79,7 @@ Func _save_gui_definition()
 	IniWrite($AgdOutFile, "Main", "numctrls", $ctrl_count)
 
 	$i = 1
-	For $oCtrl In $oCtrls.ctrls
+	For $oCtrl In $oCtrls.ctrls.Items()
 		Local $Key = "Control_" & $i
 
 		Local $handle = $oCtrl.Hwnd
@@ -100,10 +100,12 @@ Func _save_gui_definition()
 		Else
 			IniWrite($AgdOutFile, $Key, "Color", "0x" & Hex($oCtrl.Color, 6))
 		EndIf
-		If $oCtrl.Background = -1 Or $oCtrl.Background = "" Then
+		If $oCtrl.Background = -1 Then
 			IniWrite($AgdOutFile, $Key, "Background", -1)
+			ConsoleWrite("negative" & @CRLF)
 		Else
 			IniWrite($AgdOutFile, $Key, "Background", "0x" & Hex($oCtrl.Background, 6))
+			ConsoleWrite("0x" & Hex($oCtrl.Background, 6) & @CRLF)
 		EndIf
 
 		If $oCtrl.Type = "Tab" Then
