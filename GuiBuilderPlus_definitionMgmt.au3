@@ -102,10 +102,8 @@ Func _save_gui_definition()
 		EndIf
 		If $oCtrl.Background = -1 Then
 			IniWrite($AgdOutFile, $Key, "Background", -1)
-			ConsoleWrite("negative" & @CRLF)
 		Else
 			IniWrite($AgdOutFile, $Key, "Background", "0x" & Hex($oCtrl.Background, 6))
-			ConsoleWrite("0x" & Hex($oCtrl.Background, 6) & @CRLF)
 		EndIf
 
 		If $oCtrl.Type = "Tab" Then
