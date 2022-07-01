@@ -86,7 +86,7 @@ Func _objCtrls_add($oSelf, $objCtrl)
 	#forceref $oSelf
 
 	If $oSelf.isSelection Then
-		_AutoItObject_AddProperty($objCtrl, "grippies", $ELSCOPE_PUBLIC, _objGrippies($objCtrl))
+		_AutoItObject_AddProperty($objCtrl, "grippies", $ELSCOPE_PUBLIC, _objGrippies($objCtrl, $oSelf))
 	EndIf
 	$oSelf.ctrls.Add($objCtrl.Hwnd, $objCtrl)
 
@@ -466,7 +466,7 @@ EndFunc   ;==>_objMain
 ; Title...........: _objGrippies
 ; Description.....:	Grippies (selection handles) for a control
 ;------------------------------------------------------------------------------
-Func _objGrippies($oParent)
+Func _objGrippies($oParent, $oGrandParent)
 	Local $oObject = _AutoItObject_Create()
 
 	;add parent as property
@@ -522,7 +522,7 @@ Func _objGrippies($oParent)
 	_AutoItObject_AddMethod($oObject, "resizing", "_objGrippies_resizing")
 
 	;set the event handler to reference this object
-	_objGrippies_mouseClickEvent($oObject.parent.parent)
+	_objGrippies_mouseClickEvent($oGrandParent)
 
 	Return $oObject
 EndFunc   ;==>_objGrippies

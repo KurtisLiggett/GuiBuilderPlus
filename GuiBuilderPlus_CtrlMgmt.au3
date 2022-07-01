@@ -20,28 +20,27 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1)
 	Local $oNewControl
 	Local $isPaste = False
 
+	Local $cursor_pos = _mouse_snap_pos()
+
 	Switch IsObj($oCtrl)
 		Case True
 			$isPaste = True
 			$oNewControl = $oCtrl
 
 		Case False
-			Local $cursor_pos = _mouse_snap_pos()
 
 			If $startX <> -1 Then $cursor_pos[0] = $startX
 			If $startY <> -1 Then $cursor_pos[1] = $startY
 
 			; control will be inserted at current mouse position UNLESS out-of-bounds mouse
-			Switch $setting_paste_pos
-				Case True
-					If _cursor_out_of_bounds($cursor_pos) Then
-						ContinueCase
-					EndIf
-
-				Case False
-					$cursor_pos[0] = 0
-					$cursor_pos[1] = 0
-			EndSwitch
+			If $setting_paste_pos Or $oCtrls.mode = $mode_drawing Then
+				If _cursor_out_of_bounds($cursor_pos) Then
+					ContinueCase
+				EndIf
+			Else
+				$cursor_pos[0] = 0
+				$cursor_pos[1] = 0
+			EndIf
 
 			$oNewControl = $oCtrls.createNew()
 
@@ -111,6 +110,11 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1)
 			$oNewControl.Height = 20
 
 			$oNewControl.Hwnd = GUICtrlCreateCheckbox($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			If $isPaste Then
+				If $oNewControl.Background <> -1 Then
+					GUICtrlSetBkColor($oNewControl.Hwnd, $oNewControl.Background)
+				EndIf
+			EndIf
 
 			$oCtrls.add($oNewControl)
 
@@ -118,6 +122,11 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1)
 			$oNewControl.Height = 20
 
 			$oNewControl.Hwnd = GUICtrlCreateRadio($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			If $isPaste Then
+				If $oNewControl.Background <> -1 Then
+					GUICtrlSetBkColor($oNewControl.Hwnd, $oNewControl.Background)
+				EndIf
+			EndIf
 
 			$oCtrls.add($oNewControl)
 
@@ -615,7 +624,10 @@ Func _PasteSelected($bDuplicate = False, $bAtMouse = False)
 				;create a copy, so we don't overwrite the original!
 				$oNewCtrl = $oClipboard.getCopy($oCtrl.Hwnd)
 
-				If $bDuplicate Then
+				If Not $setting_paste_pos And Not $bDuplicate Then
+					$oNewCtrl.Left = 0
+					$oNewCtrl.Top = 0
+				ElseIf $bDuplicate Then
 					$oNewCtrl.Left += 20
 					$oNewCtrl.Top += 20
 				ElseIf $bAtMouse Then
@@ -641,7 +653,7 @@ Func _PasteSelected($bDuplicate = False, $bAtMouse = False)
 			Next
 	EndSwitch
 
-	If Not $bDuplicate And Not $bAtMouse And $oSelected.count > 0 Then
+	If Not $bDuplicate And Not $bAtMouse And $setting_paste_pos And $oSelected.count > 0 Then
 		$oCtrls.mode = $mode_paste
 	EndIf
 
