@@ -12,12 +12,13 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  07/01/2022 ...:	- FIXED:	Color and Background values of 0x000000 were saved as -1
+;  07/03/2022 ...:	- FIXED:	Color and Background values of 0x000000 were saved as -1
 ;					- FIXED:	Setting "Paste at mouse position" incorrect behavior when turned off
 ;					- FIXED:	Error when saving GUI to file
 ;					- FIXED:	Crash when loading GUI file and resizing control
 ;					- ADDED:	Change background color of checkbox and radio controls
 ;					- CHANGED:	You can now draw "on top of" other controls (instead of switching to selection)
+;					- CHANGED:	GUI definition files now use json formatting to prepare for future features
 ;
 ;  06/26/2022 ...: 	- FIXED:	UpDown control shrinks when dragging
 ;					- FIXED:	Missing ListView icon in compiled app
@@ -320,6 +321,7 @@ _AutoItObject_StartUp()
 #include <GuiMenu.au3>
 #include <GuiEdit.au3>
 #include <GuiTreeView.au3>
+#include "UDFS\Json\json.au3"
 #include "UDFS\GUIScrollbars_Ex.au3"
 #include "UDFs\StringSize.au3"
 #include "GuiBuilderPlus_objCtrl.au3"
