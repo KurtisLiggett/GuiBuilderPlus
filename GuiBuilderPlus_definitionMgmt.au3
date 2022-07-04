@@ -12,6 +12,8 @@
 ; Notes...........:	This can be optimized by creating the file in memory then writing at once
 ;------------------------------------------------------------------------------
 Func _save_gui_definition()
+	Local $objOutput
+
 	If $AgdOutFile = "" Then
 		; added by: TheSaint
 		If $lfld = "" Then
@@ -66,79 +68,81 @@ Func _save_gui_definition()
 		$mainHeight += _WinAPI_GetSystemMetrics($SM_CYMENU)
 	EndIf
 
-	IniWrite($AgdOutFile, "Main", "Left", $oMain.Left)
-	IniWrite($AgdOutFile, "Main", "Top", $oMain.Top)
-	IniWrite($AgdOutFile, "Main", "Width", $oMain.Width)
-	IniWrite($AgdOutFile, "Main", "Height", $mainHeight)
-	IniWrite($AgdOutFile, "Main", "Name", $oMain.Name)
-	IniWrite($AgdOutFile, "Main", "Title", $oMain.Title)
-	IniWrite($AgdOutFile, "Main", "Background", $oMain.Background)
-
 	Local Const $ctrl_count = $oCtrls.count
 
-	IniWrite($AgdOutFile, "Main", "numctrls", $ctrl_count)
+	Json_Put($objOutput, ".Main.Left", $oMain.Left)
+	Json_Put($objOutput, ".Main.Top", $oMain.Top)
+	Json_Put($objOutput, ".Main.Width", $oMain.Width)
+	Json_Put($objOutput, ".Main.Height", $mainHeight)
+	Json_Put($objOutput, ".Main.Name", $oMain.Name)
+	Json_Put($objOutput, ".Main.Title", $oMain.Title)
+	Json_Put($objOutput, ".Main.Background", $oMain.Background)
+	Json_Put($objOutput, ".Main.numctrls", $ctrl_count)
 
-	$i = 1
+	$i = 0
 	For $oCtrl In $oCtrls.ctrls.Items()
-		Local $Key = "Control_" & $i
-
 		Local $handle = $oCtrl.Hwnd
 
-		IniWrite($AgdOutFile, $Key, "Type", $oCtrl.Type)
-		IniWrite($AgdOutFile, $Key, "Name", $oCtrl.Name)
-		IniWrite($AgdOutFile, $Key, "Text", $oCtrl.Text)
-		IniWrite($AgdOutFile, $Key, "Visible", $oCtrl.Visible)
-		IniWrite($AgdOutFile, $Key, "OnTop", $oCtrl.OnTop)
-		IniWrite($AgdOutFile, $Key, "DropAccepted", $oCtrl.DropAccepted)
-		IniWrite($AgdOutFile, $Key, "Left", $oCtrl.Left)
-		IniWrite($AgdOutFile, $Key, "Top", $oCtrl.Top)
-		IniWrite($AgdOutFile, $Key, "Width", $oCtrl.Width)
-		IniWrite($AgdOutFile, $Key, "Height", $oCtrl.Height)
-		IniWrite($AgdOutFile, $Key, "Global", $oCtrl.Global)
+		Json_Put($objOutput, ".Controls[" & $i & "].Type", $oCtrl.Type)
+		Json_Put($objOutput, ".Controls[" & $i & "].Name", $oCtrl.Name)
+		Json_Put($objOutput, ".Controls[" & $i & "].Text", $oCtrl.Text)
+		Json_Put($objOutput, ".Controls[" & $i & "].Visible", $oCtrl.Visible)
+		Json_Put($objOutput, ".Controls[" & $i & "].OnTop", $oCtrl.OnTop)
+		Json_Put($objOutput, ".Controls[" & $i & "].DropAccepted", $oCtrl.DropAccepted)
+		Json_Put($objOutput, ".Controls[" & $i & "].Left", $oCtrl.Left)
+		Json_Put($objOutput, ".Controls[" & $i & "].Top", $oCtrl.Top)
+		Json_Put($objOutput, ".Controls[" & $i & "].Width", $oCtrl.Width)
+		Json_Put($objOutput, ".Controls[" & $i & "].Height", $oCtrl.Height)
+		Json_Put($objOutput, ".Controls[" & $i & "].Global", $oCtrl.Global)
 		If $oCtrl.Color = -1 Then
-			IniWrite($AgdOutFile, $Key, "Color", -1)
+			Json_Put($objOutput, ".Controls[" & $i & "].Color", -1)
 		Else
-			IniWrite($AgdOutFile, $Key, "Color", "0x" & Hex($oCtrl.Color, 6))
+			Json_Put($objOutput, ".Controls[" & $i & "].Color", "0x" & Hex($oCtrl.Color, 6))
 		EndIf
 		If $oCtrl.Background = -1 Then
-			IniWrite($AgdOutFile, $Key, "Background", -1)
+			Json_Put($objOutput, ".Controls[" & $i & "].Background", -1)
 		Else
-			IniWrite($AgdOutFile, $Key, "Background", "0x" & Hex($oCtrl.Background, 6))
+			Json_Put($objOutput, ".Controls[" & $i & "].Background", "0x" & Hex($oCtrl.Background, 6))
 		EndIf
 
 		If $oCtrl.Type = "Tab" Then
-			IniWrite($AgdOutFile, $Key, "TabCount", $oCtrl.TabCount)
+			Json_Put($objOutput, ".Controls[" & $i & "].TabCount", $oCtrl.TabCount)
 
 			Local $tabCount = $oCtrl.TabCount
 			Local $tabs = $oCtrl.Tabs
 			Local $tab
 
 			If $oCtrl.TabCount > 0 Then
-				Local $j = 1
+				Local $j = 0
 				For $oTab In $oCtrl.Tabs
-					IniWrite($AgdOutFile, $Key, "TabItem" & $j & "_Name", $oTab.Name)
-					IniWrite($AgdOutFile, $Key, "TabItem" & $j & "_Text", $oTab.Text)
+					Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Name", $oTab.Name)
+					Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Text", $oTab.Text)
 					$j += 1
 				Next
 			EndIf
 		EndIf
 
 		If $oCtrl.Type = "Menu" Then
-			IniWrite($AgdOutFile, $Key, "MenuItemCount", $oCtrl.Menuitems.count)
+			Json_Put($objOutput, ".Controls[" & $i & "].MenuItemCount", $oCtrl.Menuitems.count)
 
 			Local $menuCount = $oCtrl.Menuitems.count
 
 			If $menuCount > 0 Then
-				Local $j = 1
+				Local $j = 0
 				For $oMenuItem In $oCtrl.MenuItems
-					IniWrite($AgdOutFile, $Key, "MenuItem" & $j & "_Name", $oMenuItem.Name)
-					IniWrite($AgdOutFile, $Key, "MenuItem" & $j & "_Text", $oMenuItem.Text)
+					Json_Put($objOutput, ".Controls[" & $i & "].MenuItems[" & $j & "].Name", $oMenuItem.Name)
+					Json_Put($objOutput, ".Controls[" & $i & "].MenuItems[" & $j & "].Text", $oMenuItem.Text)
 					$j += 1
 				Next
 			EndIf
 		EndIf
 		$i += 1
 	Next
+
+	Local $Json = Json_Encode($objOutput, $Json_PRETTY_PRINT)
+	Local $hFile = FileOpen($AgdOutFile, $FO_OVERWRITE)
+	FileWrite($hFile, $Json)
+	FileClose($hFile)
 
 	$bStatusNewMessage = True
 	_GUICtrlStatusBar_SetText($hStatusbar, "Definition saved to file")
@@ -193,12 +197,15 @@ Func _load_gui_definition($AgdInfile = '')
 	EndIf
 	If $firstLoad Then $firstLoad = False
 
-	$oMain.Name = IniRead($AgdInfile, "Main", "Name", "hGUI")
-	$oMain.Title = IniRead($AgdInfile, "Main", "Title", StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1))
-	$oMain.Left = IniRead($AgdInfile, "Main", "Left", -1)
-	$oMain.Top = IniRead($AgdInfile, "Main", "Top", -1)
-	$oMain.Width = IniRead($AgdInfile, "Main", "Width", 400)
-	$oMain.Height = IniRead($AgdInfile, "Main", "Height", 350)
+	Local $sData = FileRead($AgdInfile)
+	Local $objInput = Json_Decode($sData)
+
+	$oMain.Name = _Json_Get($objInput, ".Main.Name", "hGUI")
+	$oMain.Title = _Json_Get($objInput, ".Main.Title", StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1))
+	$oMain.Left = _Json_Get($objInput, ".Main.Left", -1)
+	$oMain.Top = _Json_Get($objInput, ".Main.Top", -1)
+	$oMain.Width = _Json_Get($objInput, ".Main.Width", 400)
+	$oMain.Height = _Json_Get($objInput, ".Main.Height", 350)
 	If IsHWnd($hGUI) Then
 		Local $newLeft = $oMain.Left, $newTop = $oMain.Top
 		If $oMain.Left = -1 Then
@@ -214,7 +221,7 @@ Func _load_gui_definition($AgdInfile = '')
 			_display_grid($background, $oMain.Width, $oMain.Height)
 		EndIf
 	EndIf
-	$oMain.Background = IniRead($AgdInfile, "Main", "Background", -1)
+	$oMain.Background = _Json_Get($objInput, ".Main.Background", -1)
 	$oProperties_Main.Background.value = $oMain.Background
 	If $oMain.Background <> -1 And $oMain.Background <> "" Then
 		$oMain.Background = Dec(StringReplace($oMain.Background, "0x", ""))
@@ -230,31 +237,31 @@ Func _load_gui_definition($AgdInfile = '')
 	$oProperties_Main.Width.value = $oMain.Width
 	$oProperties_Main.Height.value = $oMain.Height
 
-
-	Local Const $numCtrls = IniRead($AgdInfile, "Main", "numctrls", -1)
+	Local Const $numCtrls = _Json_Get($objInput, ".Main.numctrls", -1)
 
 
 	Local $oCtrl, $Key
-	For $i = 1 To $numCtrls
-		$Key = "Control_" & $i
+	Local $aControls = Json_Get($objInput, ".Controls")
+	For $oThisCtrl In $aControls
+;~ 		$Key = "Control_" & $i
 		$oCtrl = $oCtrls.createNew()
 
 		$oCtrl.HwndCount = 1
-		$oCtrl.Type = IniRead($AgdInfile, $Key, "Type", -1)
-		$oCtrl.Name = IniRead($AgdInfile, $Key, "Name", -1)
-		$oCtrl.Text = IniRead($AgdInfile, $Key, "Text", -1)
-		$oCtrl.Visible = IniRead($AgdInfile, $Key, "Visible", 1)
-		$oCtrl.OnTop = IniRead($AgdInfile, $Key, "OnTop", 0)
-		$oCtrl.Left = IniRead($AgdInfile, $Key, "Left", -1)
-		$oCtrl.Top = IniRead($AgdInfile, $Key, "Top", -1)
-		$oCtrl.Width = IniRead($AgdInfile, $Key, "Width", -1)
-		$oCtrl.Height = IniRead($AgdInfile, $Key, "Height", -1)
-		$oCtrl.Global = (IniRead($AgdInfile, $Key, "Global", False) = "True") ? True : False
-		$oCtrl.Color = IniRead($AgdInfile, $Key, "Color", -1)
+		$oCtrl.Type = _Json_Get($oThisCtrl, ".Type", -1)
+		$oCtrl.Name = _Json_Get($oThisCtrl, ".Name", -1)
+		$oCtrl.Text = _Json_Get($oThisCtrl, ".Text", -1)
+		$oCtrl.Visible = _Json_Get($oThisCtrl, ".Visible", 1)
+		$oCtrl.OnTop = _Json_Get($oThisCtrl, ".OnTop", 0)
+		$oCtrl.Left = _Json_Get($oThisCtrl, ".Left", -1)
+		$oCtrl.Top = _Json_Get($oThisCtrl, ".Top", -1)
+		$oCtrl.Width = _Json_Get($oThisCtrl, ".Width", -1)
+		$oCtrl.Height = _Json_Get($oThisCtrl, ".Height", -1)
+		$oCtrl.Global = (_Json_Get($oThisCtrl, ".Global", False) = "True") ? True : False
+		$oCtrl.Color = _Json_Get($oThisCtrl, ".Color", -1)
 		If $oCtrl.Color <> -1 Then
 			$oCtrl.Color = Dec(StringReplace($oCtrl.Color, "0x", ""))
 		EndIf
-		$oCtrl.Background = IniRead($AgdInfile, $Key, "Background", -1)
+		$oCtrl.Background = _Json_Get($oThisCtrl, ".Background", -1)
 		If $oCtrl.Background <> -1 Then
 			$oCtrl.Background = Dec(StringReplace($oCtrl.Background, "0x", ""))
 		EndIf
@@ -263,30 +270,39 @@ Func _load_gui_definition($AgdInfile = '')
 
 
 		$oCtrl = $oCtrls.get($oNewCtrl.Hwnd)
+		Local $j
 		If $oCtrl.Type = "Tab" Then
-			Local $tabCount = IniRead($AgdInfile, $Key, "TabCount", 0)
+			Local $tabCount = _Json_Get($oThisCtrl, ".TabCount", 0)
 
 			If $tabCount > 0 Then
-				For $j = 1 To $tabCount
+				Local $aTabs = Json_Get($oThisCtrl, ".Tabs")
+
+				$j = 1
+				For $oThisTab In $aTabs
 					_new_tab()
 
-					$oCtrl.Tabs.at($j - 1).Name = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Name", "tempName")
-					$oCtrl.Tabs.at($j - 1).Text = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Text", "tempText")
+					$oCtrl.Tabs.at($j - 1).Name = _Json_Get($oThisTab, ".Name", "tempName")
+					$oCtrl.Tabs.at($j - 1).Text = _Json_Get($oThisTab, ".Text", "tempText")
 					_GUICtrlTab_SetItemText($oCtrl.Hwnd, $j - 1, $oCtrl.Tabs.at($j - 1).Text)
+					$j += 1
 				Next
 			EndIf
 		EndIf
 
 		If $oCtrl.Type = "Menu" Then
-			Local $MenuItemCount = IniRead($AgdInfile, $Key, "MenuItemCount", 0)
+			Local $MenuItemCount = _Json_Get($oThisCtrl, ".MenuItemCount", 0)
 
 			If $MenuItemCount > 0 Then
-				For $j = 1 To $MenuItemCount
+				Local $aMenuItems = Json_Get($oThisCtrl, ".MenuItems")
+
+				$j = 1
+				For $oMenuItem In $aMenuItems
 					_new_menuItemCreate($oCtrl)
 
-					$oCtrl.MenuItems.at($j - 1).Name = IniRead($AgdInfile, $Key, "MenuItem" & $j & "_Name", "tempName")
-					$oCtrl.MenuItems.at($j - 1).Text = IniRead($AgdInfile, $Key, "MenuItem" & $j & "_Text", "tempText")
+					$oCtrl.MenuItems.at($j - 1).Name = _Json_Get($oMenuItem, ".Name", "tempName")
+					$oCtrl.MenuItems.at($j - 1).Text = _Json_Get($oMenuItem, ".Text", "tempText")
 					GUICtrlSetData($oCtrl.MenuItems.at($j - 1).Hwnd, $oCtrl.MenuItems.at($j - 1).Text)
+					$j += 1
 				Next
 			EndIf
 		EndIf
@@ -301,3 +317,13 @@ Func _load_gui_definition($AgdInfile = '')
 
 	$oMain.hasChanged = False
 EndFunc   ;==>_load_gui_definition
+
+
+Func _Json_Get(ByRef $obj, $data, $defaultValue = 0)
+	Local $val = Json_Get($obj, $data)
+	If @error Then
+		Return $defaultValue
+	Else
+		Return $val
+	EndIf
+EndFunc
