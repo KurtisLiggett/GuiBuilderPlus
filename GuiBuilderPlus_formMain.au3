@@ -163,14 +163,16 @@ Func _formToolbar()
 	#Region create-menu
 	;create up the File menu
 	Local $menu_file = GUICtrlCreateMenu("File")
-	Local $menu_save_definition = GUICtrlCreateMenuItem("Save GUI" & @TAB & "Ctrl+S", $menu_file) ; Roy add-on
-	Local $menu_load_definition = GUICtrlCreateMenuItem("Load GUI" & @TAB & "Ctrl+O", $menu_file) ; Roy add-on
-	GUICtrlCreateMenuItem("", $menu_file) ; Roy add-on
+	Local $menu_save_definition = GUICtrlCreateMenuItem("Save" & @TAB & "Ctrl+S", $menu_file)
+	Local $menu_saveas_definition = GUICtrlCreateMenuItem("Save As..." & @TAB & "Ctrl+S", $menu_file)
+	Local $menu_load_definition = GUICtrlCreateMenuItem("Open" & @TAB & "Ctrl+O", $menu_file)
+	GUICtrlCreateMenuItem("", $menu_file)
 	Local $menu_export_au3 = GUICtrlCreateMenuItem("Export to au3", $menu_file)
 	GUICtrlCreateMenuItem("", $menu_file)
 	Local $menu_exit = GUICtrlCreateMenuItem("Exit", $menu_file)
 
-	GUICtrlSetOnEvent($menu_save_definition, _save_gui_definition)
+	GUICtrlSetOnEvent($menu_save_definition, "_onSaveGui")
+	GUICtrlSetOnEvent($menu_saveas_definition, "_onSaveAsGui")
 	GUICtrlSetOnEvent($menu_load_definition, _onload_gui_definition)
 	GUICtrlSetOnEvent($menu_export_au3, "_onExportMenuItem")
 	GUICtrlSetOnEvent($menu_exit, "_onExit")
@@ -493,7 +495,7 @@ Func _set_accelerators()
 	GUICtrlSetOnEvent($accel_Ctrldown, "_onKeyCtrlDown")
 	GUICtrlSetOnEvent($accel_Ctrlleft, "_onKeyCtrlLeft")
 	GUICtrlSetOnEvent($accel_Ctrlright, "_onKeyCtrlRight")
-	GUICtrlSetOnEvent($accel_s, "_save_gui_definition")
+	GUICtrlSetOnEvent($accel_s, "_onSaveGui")
 	GUICtrlSetOnEvent($accel_o, "_load_gui_definition")
 	GUICtrlSetOnEvent($accel_F5, "_onTestGUI")
 EndFunc   ;==>_set_accelerators

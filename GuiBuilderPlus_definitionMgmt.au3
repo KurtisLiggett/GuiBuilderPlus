@@ -4,6 +4,14 @@
 ; ===============================================================================================================================
 
 
+Func _onSaveGui()
+	_save_gui_definition()
+EndFunc
+
+Func _onSaveAsGui()
+	_save_gui_definition(True)
+EndFunc
+
 ;------------------------------------------------------------------------------
 ; Title...........: _save_gui_definition
 ; Description.....:	Save GUI to definition file
@@ -11,10 +19,10 @@
 ; Modified by.....: KurtyKurtyBoy
 ; Notes...........:	This can be optimized by creating the file in memory then writing at once
 ;------------------------------------------------------------------------------
-Func _save_gui_definition()
+Func _save_gui_definition($saveAs = False)
 	Local $objOutput
 
-	If $AgdOutFile = "" Then
+	If $AgdOutFile = "" Or $saveAs Then
 		; added by: TheSaint
 		If $lfld = "" Then
 			$lfld = IniRead($sIniPath, "Save Folder", "Last", "")
@@ -29,13 +37,15 @@ Func _save_gui_definition()
 		EndIf
 
 		Local $gdtitle = _get_script_title()
-		$AgdOutFile = FileSaveDialog("Save GUI Definition to file?", $lfld, "AutoIt Gui Definitions (*.agd)", BitOR($FD_PATHMUSTEXIST, $FD_PROMPTOVERWRITE), StringReplace($gdtitle, '"', ""))
+		Local $OutFile = FileSaveDialog("Save GUI Definition to file?", $lfld, "AutoIt Gui Definitions (*.agd)", BitOR($FD_PATHMUSTEXIST, $FD_PROMPTOVERWRITE), StringReplace($gdtitle, '"', ""))
 
-		If @error = 1 Or $AgdOutFile = "" Then
+		If @error = 1 Or $OutFile = "" Then
 			$bStatusNewMessage = True
 			_GUICtrlStatusBar_SetText($hStatusbar, "Error saving definition file!")
 			Return
 		Else
+			$AgdOutFile = $OutFile
+
 			; added by: TheSaint
 			$lfld = StringInStr($AgdOutFile, "\", 0, -1)
 
@@ -191,6 +201,8 @@ Func _load_gui_definition($AgdInfile = '')
 
 	$AgdOutFile = $AgdInfile
 
+	_SendMessage($hGUI, $WM_SETREDRAW, False)
+
 	;only wipe if GUI exists already
 	If Not $firstLoad Or Not $CmdLine[0] Then
 		_wipe_current_gui()
@@ -201,6 +213,8 @@ Func _load_gui_definition($AgdInfile = '')
 
 	If StringLeft($sData, 1) = "[" Then
 		_load_gui_definition_ini($AgdInfile)
+		_SendMessage($hGUI, $WM_SETREDRAW, True)
+		_WinAPI_RedrawWindow($hGUI)
 		Return
 	EndIf
 
@@ -285,7 +299,7 @@ Func _load_gui_definition($AgdInfile = '')
 
 				$j = 1
 				For $oThisTab In $aTabs
-					_new_tab()
+					_new_tab(True)
 
 					$oCtrl.Tabs.at($j - 1).Name = _Json_Get($oThisTab, ".Name", "tempName")
 					$oCtrl.Tabs.at($j - 1).Text = _Json_Get($oThisTab, ".Text", "tempText")
@@ -303,7 +317,7 @@ Func _load_gui_definition($AgdInfile = '')
 
 				$j = 1
 				For $oMenuItem In $aMenuItems
-					_new_menuItemCreate($oCtrl)
+					_new_menuItemCreate($oCtrl, True)
 
 					$oCtrl.MenuItems.at($j - 1).Name = _Json_Get($oMenuItem, ".Name", "tempName")
 					$oCtrl.MenuItems.at($j - 1).Text = _Json_Get($oMenuItem, ".Text", "tempText")
@@ -317,6 +331,9 @@ Func _load_gui_definition($AgdInfile = '')
 
 	_formObjectExplorer_updateList()
 	_refreshGenerateCode()
+
+	_SendMessage($hGUI, $WM_SETREDRAW, True)
+	_WinAPI_RedrawWindow($hGUI)
 
 	$bStatusNewMessage = True
 	_GUICtrlStatusBar_SetText($hStatusbar, "Loaded successfully")

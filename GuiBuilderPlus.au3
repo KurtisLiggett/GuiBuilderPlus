@@ -16,6 +16,8 @@
 ;					- FIXED:	Setting "Paste at mouse position" incorrect behavior when turned off
 ;					- FIXED:	Error when saving GUI to file
 ;					- FIXED:	Crash when loading GUI file and resizing control
+;					- FIXED:	Improved GUI file load times
+;					- ADDED:	"Save As..." menu item (File manu)
 ;					- ADDED:	Change background color of checkbox and radio controls
 ;					- CHANGED:	You can now draw "on top of" other controls (instead of switching to selection)
 ;					- CHANGED:	GUI definition files now use json formatting to prepare for future features
@@ -198,8 +200,8 @@
 #AutoIt3Wrapper_Res_HiDpi=y
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.28.exe
-#AutoIt3Wrapper_Res_Fileversion=0.28.0.0
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.29.exe
+#AutoIt3Wrapper_Res_Fileversion=0.29.0.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 1.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 2.ico
@@ -359,7 +361,7 @@ Func _main()
 	$oClipboard = _objCtrls()
 	$oMain = _objMain()
 	$oMain.AppName = "GuiBuilderPlus"
-	$oMain.AppVersion = "0.28"
+	$oMain.AppVersion = "0.29"
 	$oMain.Title = StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1)
 	$oMain.Name = "hGUI"
 	$oMain.Width = 400

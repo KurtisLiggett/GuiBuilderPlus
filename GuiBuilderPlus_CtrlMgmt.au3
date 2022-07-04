@@ -330,7 +330,7 @@ Func _GuiCtrlCreateSlider(Const $left, Const $top, Const $width, Const $height, 
 EndFunc   ;==>_GuiCtrlCreateSlider
 
 
-Func _new_tab()
+Func _new_tab($loadGUI = False)
 	Local $oCtrl
 
 	For $oCtrl In $oCtrls.ctrls.Items()
@@ -349,8 +349,10 @@ Func _new_tab()
 
 	_GUICtrlTab_SetCurSel($oCtrl.Hwnd, $oCtrl.TabCount - 1)
 
-	_refreshGenerateCode()
-	_formObjectExplorer_updateList()
+	If Not $loadGUI Then
+		_refreshGenerateCode()
+		_formObjectExplorer_updateList()
+	EndIf
 EndFunc   ;==>_new_tab
 
 
@@ -398,7 +400,7 @@ Func _new_menuItem()
 	_new_menuItemCreate()
 EndFunc   ;==>_new_menuItem
 
-Func _new_menuItemCreate($oParent = 0)
+Func _new_menuItemCreate($oParent = 0, $loadGUI = False)
 	Local $oCtrl, $hSelected
 	If Not IsObj($oParent) Then
 		$hSelected = _getLvSelectedHwnd()
@@ -418,8 +420,10 @@ Func _new_menuItemCreate($oParent = 0)
 
 	_GUICtrlTab_SetCurSel($oCtrl.Hwnd, $newCount - 1)
 
-	_refreshGenerateCode()
-	_formObjectExplorer_updateList()
+	If Not $loadGUI Then
+		_refreshGenerateCode()
+		_formObjectExplorer_updateList()
+	EndIf
 EndFunc   ;==>_new_menuItemCreate
 
 
