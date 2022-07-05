@@ -92,6 +92,7 @@ Func _save_gui_definition($saveAs = False)
 	$i = 0
 	For $oCtrl In $oCtrls.ctrls.Items()
 		If $oCtrl.Type = "TabItem" Then ContinueLoop
+		If $oCtrl.TabParent <> 0 Then ContinueLoop
 
 		Local $handle = $oCtrl.Hwnd
 
@@ -120,10 +121,6 @@ Func _save_gui_definition($saveAs = False)
 		If $oCtrl.Type = "Tab" Then
 			Json_Put($objOutput, ".Controls[" & $i & "].TabCount", $oCtrl.TabCount)
 
-;~ 			Local $tabCount = $oCtrl.TabCount
-;~ 			Local $tabs = $oCtrl.Tabs
-;~ 			Local $tab
-
 			If $oCtrl.TabCount > 0 Then
 				Local $j = 0, $oTab
 				For $hTab In $oCtrl.Tabs
@@ -131,6 +128,33 @@ Func _save_gui_definition($saveAs = False)
 					Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Type", $oTab.Type)
 					Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Name", $oTab.Name)
 					Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Text", $oTab.Text)
+
+					Local $k = 0
+					For $oTabCtrl In $oTab.ctrls.Items()
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Type", $oTabCtrl.Type)
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Name", $oTabCtrl.Name)
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Text", $oTabCtrl.Text)
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Visible", $oTabCtrl.Visible)
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].OnTop", $oTabCtrl.OnTop)
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].DropAccepted", $oTabCtrl.DropAccepted)
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Left", $oTabCtrl.Left)
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Top", $oTabCtrl.Top)
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Width", $oTabCtrl.Width)
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Height", $oTabCtrl.Height)
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Global", $oTabCtrl.Global)
+						If $oTabCtrl.Color = -1 Then
+							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Color", -1)
+						Else
+							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Color", "0x" & Hex($oTabCtrl.Color, 6))
+						EndIf
+						If $oTabCtrl.Background = -1 Then
+							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Background", -1)
+						Else
+							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Background", "0x" & Hex($oTabCtrl.Background, 6))
+						EndIf
+						$k += 1
+					Next
+
 					$j += 1
 				Next
 			EndIf

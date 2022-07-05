@@ -1125,6 +1125,8 @@ Func _onMousePrimaryDown()
 			$oMouse.StartX = $oMouse.X
 			$oMouse.StartY = $oMouse.Y
 
+			$oCtrls.drawHwnd = $ctrl_hwnd
+
 			If $oCtrls.CurrentType = "Menu" Then
 				Local $oCtrl = _create_ctrl(0, 0, $oMouse.StartX, $oMouse.StartY)
 
@@ -1374,7 +1376,8 @@ Func _onMouseMove()
 
 	Switch $oCtrls.mode
 		Case $mode_drawing
-			Local $oCtrl = _create_ctrl(0, 0, $oMouse.StartX, $oMouse.StartY)
+			Local $oCtrl = _create_ctrl(0, 0, $oMouse.StartX, $oMouse.StartY, $oCtrls.drawHwnd)
+			_log("-- TABS:  " & "Has tab " & $oCtrls.hasTab)
 
 			If IsObj($oCtrl) Then
 				_add_to_selected($oCtrl)

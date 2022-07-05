@@ -382,12 +382,13 @@ Func _formObjectExplorer_updateList()
 	Local $count = $oCtrls.count
 	Local $aList[$count]
 
-	Local $lvItem, $lvMenu, $lvMenuDelete, $childItem, $tabMenu, $tabMenuDelete, $lvMenuNewTab, $lvMenuDeleteTab, $sName
+	Local $lvItem, $lvMenu, $lvMenuDelete, $childItem, $tabMenu, $tabMenuDelete, $lvMenuNewTab, $lvMenuDeleteTab, $sName, $childTabCtrl
 	Local $lvMenuNewMenuItem, $menuItemMenu
 	_SendMessage($hFormObjectExplorer, $WM_SETREDRAW, False)
 	_GUICtrlTreeView_DeleteAll($lvObjects)
 	For $oCtrl In $oCtrls.ctrls.Items()
 		If $oCtrl.Type = "TabItem" Then ContinueLoop
+		If $oCtrl.TabParent <> 0 Then ContinueLoop
 
 		$sName = $oCtrl.Name
 		If $sName = "" Then
@@ -418,7 +419,22 @@ Func _formObjectExplorer_updateList()
 				GUICtrlSetOnEvent($tabMenuDelete, "_delete_tab")
 
 				_GUICtrlTreeView_Expand($lvObjects, $lvItem)
+
+				For $oTabCtrl In $oTab.ctrls.Items()
+					$sName = $oTabCtrl.Name
+					If $sName = "" Then
+						$sName = $oTabCtrl.Type & "*"
+					EndIf
+
+					$childTabCtrl = GUICtrlCreateTreeViewItem($sName & "       " & @TAB & "(HWND: " & Hex($oTabCtrl.Hwnd) & ")", $childItem)
+					GUICtrlSetOnEvent(-1, "_onLvObjectsItem")
+
+					$lvMenu = GUICtrlCreateContextMenu($childTabCtrl)
+					$lvMenuDelete = GUICtrlCreateMenuItem("Delete", $lvMenu)
+					GUICtrlSetOnEvent($lvMenuDelete, "_onLvObjectsDeleteMenu")
+				Next
 			Next
+			_GUICtrlTreeView_Expand($lvObjects, $lvItem)
 		ElseIf $oCtrl.Type = "Menu" Then
 			$lvMenuNewMenuItem = GUICtrlCreateMenuItem("New menu item", $lvMenu)
 			GUICtrlSetOnEvent($lvMenuNewMenuItem, "_new_menuItem")
