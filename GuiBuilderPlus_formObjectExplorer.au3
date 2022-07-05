@@ -130,8 +130,9 @@ Func _onLvObjectsItem()
 				$oParentCtrl = $oCtrls.get(Dec($ParentTextHwnd))
 				If $oParentCtrl.Type = "Tab" Then
 					;get tab #
-					Local $i = 0
-					For $oTab In $oParentCtrl.Tabs
+					Local $i = 0, $oTab
+					For $hTab In $oParentCtrl.Tabs
+						$oTab = $oCtrls.get($hTab)
 						If $oTab.Hwnd = Dec($textHwnd) Then
 							$childSelected = True
 							_GUICtrlTab_SetCurSel($oParentCtrl.Hwnd, $i)
@@ -386,6 +387,8 @@ Func _formObjectExplorer_updateList()
 	_SendMessage($hFormObjectExplorer, $WM_SETREDRAW, False)
 	_GUICtrlTreeView_DeleteAll($lvObjects)
 	For $oCtrl In $oCtrls.ctrls.Items()
+		If $oCtrl.Type = "TabItem" Then ContinueLoop
+
 		$sName = $oCtrl.Name
 		If $sName = "" Then
 			$sName = $oCtrl.Type & "*"
@@ -401,10 +404,12 @@ Func _formObjectExplorer_updateList()
 		If $oCtrl.Type = "Tab" Then
 			$lvMenuNewTab = GUICtrlCreateMenuItem("New Tab", $lvMenu)
 			$lvMenuDeleteTab = GUICtrlCreateMenuItem("Delete Tab", $lvMenu)
-			GUICtrlSetOnEvent($lvMenuNewTab, "_new_tab")
-			GUICtrlSetOnEvent($lvMenuDeleteTab, "_delete_tab")
+			GUICtrlSetOnEvent($lvMenuNewTab, "_onNewTab")
+			GUICtrlSetOnEvent($lvMenuDeleteTab, "_onDeleteTab")
 
-			For $oTab In $oCtrl.Tabs
+			Local $oTab
+			For $hTab In $oCtrl.Tabs
+				$oTab = $oCtrls.get($hTab)
 				$childItem = GUICtrlCreateTreeViewItem($oTab.Name & "       " & @TAB & "(HWND: " & Hex($oTab.Hwnd) & ")", $lvItem)
 				GUICtrlSetOnEvent(-1, "_onLvObjectsItem")
 

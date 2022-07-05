@@ -119,8 +119,8 @@ Func _formMain()
 	Local $overlay_contextmenutab_deletetab = GUICtrlCreateMenuItem("Delete Tab", $overlay_contextmenutab)
 
 	GUICtrlSetOnEvent($overlay_contextmenutab_delete, _delete_selected_controls)
-	GUICtrlSetOnEvent($overlay_contextmenutab_newtab, "_new_tab")
-	GUICtrlSetOnEvent($overlay_contextmenutab_deletetab, "_delete_tab")
+	GUICtrlSetOnEvent($overlay_contextmenutab_newtab, "_onNewTab")
+	GUICtrlSetOnEvent($overlay_contextmenutab_deletetab, "_onDeleteTab")
 
 EndFunc   ;==>_formMain
 
@@ -1675,7 +1675,8 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 			Local $iTabFocus = _GUICtrlTab_GetCurSel($oCtrl.Hwnd)
 
 			If $iTabFocus >= 0 Then
-				$text = $oCtrl.Tabs.at($iTabFocus).Text
+				$tabID = $oCtrl.Tabs.at($iTabFocus)
+				$text = $oCtrls.get($tabID).Text
 			EndIf
 		EndIf
 	EndIf
@@ -1688,7 +1689,8 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 			Local $iTabFocus = _GUICtrlTab_GetCurSel($oCtrl.Hwnd)
 
 			If $iTabFocus >= 0 Then
-				$name = $oCtrl.Tabs.at($iTabFocus).Name
+				$tabID = $oCtrl.Tabs.at($iTabFocus)
+				$name = $oCtrls.get($tabID).Name
 			EndIf
 		EndIf
 	EndIf
@@ -1844,7 +1846,8 @@ Func _ctrl_change_text()
 
 						If $iTabFocus >= 0 Then
 							_GUICtrlTab_SetItemText($oCtrl.Hwnd, $iTabFocus, $new_text)
-							$oCtrl.Tabs.at($iTabFocus).Text = $new_text
+							$tabID = $oCtrl.Tabs.at($iTabFocus)
+							$oCtrls.get($tabID).Text = $new_text
 						EndIf
 					Else
 						$oCtrl.Text = $new_text
@@ -1891,7 +1894,8 @@ Func _ctrl_change_name()
 				Local $iTabFocus = _GUICtrlTab_GetCurSel($oCtrl.Hwnd)
 
 				If $iTabFocus >= 0 Then
-					$oCtrl.Tabs.at($iTabFocus).Name = $new_name
+					$tabID = $oCtrl.Tabs.at($iTabFocus)
+					$oCtrls.get($tabID).Name = $new_name
 				Else
 					$oCtrl.Name = $new_name
 				EndIf

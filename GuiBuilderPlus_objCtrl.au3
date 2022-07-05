@@ -4,6 +4,7 @@
 ; ===============================================================================================================================
 
 
+#Region objCtrls
 ;------------------------------------------------------------------------------
 ; Title...........: _objCtrls
 ; Description.....:	Main container for all controls
@@ -80,7 +81,7 @@ EndFunc   ;==>_objCtrls_createNew
 
 Func _objCtrls_count($oSelf)
 	Return $oSelf.ctrls.Count
-EndFunc
+EndFunc   ;==>_objCtrls_count
 
 Func _objCtrls_add($oSelf, $objCtrl)
 	#forceref $oSelf
@@ -167,19 +168,6 @@ EndFunc   ;==>_objCtrls_removeAll
 Func _objCtrls_get($oSelf, $Hwnd)
 	#forceref $oSelf
 
-;~ 	For $oItem In $oSelf.ctrls
-;~ 		If $oItem.Hwnd = $Hwnd Then
-;~ 			Return $oItem
-;~ 		EndIf
-;~ 		If $oItem.Type = "Menu" Then
-;~ 			For $oMenuItem In $oItem.MenuItems
-;~ 				If $oMenuItem.Hwnd = $Hwnd Then
-;~ 					Return $oMenuItem
-;~ 				EndIf
-;~ 			Next
-;~ 		EndIf
-;~ 	Next
-
 	If $oSelf.ctrls.Exists($Hwnd) Then
 		Return $oSelf.ctrls.Item($Hwnd)
 	Else
@@ -192,7 +180,7 @@ Func _objCtrls_getFist($oSelf)
 	Local $aItems = $oSelf.ctrls.Items()
 
 	If IsArray($aItems) And UBound($aItems) > 0 Then
-		Return	$aItems[0]
+		Return $aItems[0]
 	Else
 		Return -1
 	EndIf
@@ -203,8 +191,8 @@ Func _objCtrls_getLast($oSelf)
 
 	Local $aItems = $oSelf.ctrls.Items()
 
-	If IsArray($aItems) And UBound($aItems) > 0  Then
-		Return	$aItems[$oSelf.ctrls.Count-1]
+	If IsArray($aItems) And UBound($aItems) > 0 Then
+		Return $aItems[$oSelf.ctrls.Count - 1]
 	Else
 		Return -1
 	EndIf
@@ -224,30 +212,9 @@ EndFunc   ;==>_objCtrls_getCopy
 Func _objCtrls_exists($oSelf, $Hwnd)
 	#forceref $oSelf
 
-;~ 	For $oItem In $oSelf.ctrls
-;~ 		If $oItem.Hwnd = $Hwnd Then
-;~ 			Return True
-;~ 		EndIf
-;~ 		If $oItem.Type = "Menu" Then
-;~ 			For $oMenuItem In $oItem.MenuItems
-;~ 				If $oMenuItem.Hwnd = $Hwnd Then
-;~ 					Return True
-;~ 				EndIf
-;~ 			Next
-;~ 		EndIf
-;~ 	Next
-
-;~ 	$aKeys = $oSelf.ctrls.Keys()
-;~ 	ConsoleWrite("---- keys" & @CRLF)
-;~ 	For $key in $aKeys
-;~ 		ConsoleWrite($key & @CRLF)
-;~ 	Next
-;~ 	ConsoleWrite(@CRLF)
 	If $oSelf.ctrls.Exists($Hwnd) Then
-;~ 		ConsoleWrite("yes " & $Hwnd & @CRLF)
 		Return True
 	Else
-;~ 		ConsoleWrite("no " & $Hwnd & @CRLF)
 		Return False
 	EndIf
 EndFunc   ;==>_objCtrls_exists
@@ -366,9 +333,11 @@ Func _objCtrls_startResizing($oSelf)
 		$oCtrl.resizePrevLeft = $mouse_pos[0]
 		$oCtrl.resizePrevTop = $mouse_pos[1]
 	Next
-EndFunc   ;==>_objCtrls_moveDown
+EndFunc   ;==>_objCtrls_startResizing
+#EndRegion objCtrls
 
 
+#Region objCtrl
 ;------------------------------------------------------------------------------
 ; Title...........: _objCtrl
 ; Description.....:	Ctrl object
@@ -407,8 +376,15 @@ Func _objCtrl($oParent)
 
 	Return $oObject
 EndFunc   ;==>_objCtrl
+#EndRegion objCtrl
 
 
+#Region tabs
+
+#EndRegion tabs
+
+
+#Region misc-objects
 Func _objCreateRect()
 	Local $oSelf = _AutoItObject_Create()
 
@@ -430,8 +406,6 @@ Func _CreateListItem($name, $value)
 
 	Return $oSelf
 EndFunc   ;==>_CreateListItem
-
-
 
 
 
@@ -458,10 +432,11 @@ Func _objMain()
 
 	Return $oObject
 EndFunc   ;==>_objMain
+#EndRegion misc-objects
 
 
 
-
+#Region grippies
 ;------------------------------------------------------------------------------
 ; Title...........: _objGrippies
 ; Description.....:	Grippies (selection handles) for a control
@@ -543,7 +518,7 @@ Func _objGrippies_mouseClickEvent($oObject = 0)
 		$oParentObject = $oObject
 	Else
 		If IsObj($oParentObject) Then
-			For $oCtrl in $oParentObject.ctrls.Items()
+			For $oCtrl In $oParentObject.ctrls.Items()
 				Switch @GUI_CtrlId
 					Case $oCtrl.grippies.NW, $oCtrl.grippies.N, $oCtrl.grippies.NE, $oCtrl.grippies.SE, $oCtrl.grippies.S, $oCtrl.grippies.SW, $oCtrl.grippies.W, $oCtrl.grippies.East
 						$oCtrl.grippies.mouseClick(@GUI_CtrlId)
@@ -762,4 +737,5 @@ Func _objGrippies_delete($oSelf)
 	GUICtrlDelete($oSelf.SE)
 	GUICtrlDelete($oSelf.W)
 EndFunc   ;==>_objGrippies_delete
+#EndRegion grippies
 

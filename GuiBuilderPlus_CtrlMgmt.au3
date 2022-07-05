@@ -329,6 +329,9 @@ Func _GuiCtrlCreateSlider(Const $left, Const $top, Const $width, Const $height, 
 	Return $ref
 EndFunc   ;==>_GuiCtrlCreateSlider
 
+Func _onNewTab()
+	_new_tab()
+EndFunc
 
 Func _new_tab($loadGUI = False)
 	Local $oCtrl
@@ -345,7 +348,13 @@ Func _new_tab($loadGUI = False)
 	GUICtrlCreateTabItem("")
 	$tab.Text = "Tab" & $oCtrl.TabCount
 	$tab.Name = "TabItem_" & $oCtrl.TabCount
-	$oCtrl.Tabs.add($tab)
+	$tab.Type = "TabItem"
+
+	;add control to the ctrls object
+	$oCtrls.add($tab)
+
+	;add tab sheet control ID to tab list for tracking
+	$oCtrl.Tabs.add($tab.Hwnd)
 
 	_GUICtrlTab_SetCurSel($oCtrl.Hwnd, $oCtrl.TabCount - 1)
 
@@ -353,6 +362,8 @@ Func _new_tab($loadGUI = False)
 		_refreshGenerateCode()
 		_formObjectExplorer_updateList()
 	EndIf
+
+	Return $oCtrl.TabCount
 EndFunc   ;==>_new_tab
 
 
@@ -360,6 +371,9 @@ Func _onCtrlTabSwitch()
 
 EndFunc   ;==>_onCtrlTabSwitch
 
+Func _onDeleteTab()
+	_delete_tab()
+EndFunc
 
 Func _delete_tab()
 	Local $oCtrl
@@ -374,7 +388,13 @@ Func _delete_tab()
 
 	If $iTabFocus >= 0 Then
 		_GUICtrlTab_DeleteItem($oCtrl.Hwnd, $iTabFocus)
+
+		;remove from controls object
+		$oCtrls.ctrls.remove($oCtrl.Hwnd)
+
+		;remove from tab tracker
 		$oCtrl.Tabs.remove($iTabFocus)
+
 		$oCtrl.TabCount = $oCtrl.TabCount - 1
 		_GUICtrlTab_SetCurSel($oCtrl.Hwnd, 0)
 	Else

@@ -199,6 +199,8 @@ EndFunc   ;==>_functionDoc
 ; Description.....: generate the code for the controls
 ;------------------------------------------------------------------------------
 Func _generate_controls(Const $oCtrl, $sDpiScale)
+	If $oCtrl.Type = "TabItem" Then Return 0
+
 	;apply the DPI scaling factor
 	Local $left = $oCtrl.Left
 	If $left <> -1 Then
@@ -244,7 +246,9 @@ Func _generate_controls(Const $oCtrl, $sDpiScale)
 		Case "Tab"
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '(' & $ltwh & ')' & @CRLF
 
-			For $oTab In $oCtrl.Tabs
+			Local $oTab
+			For $hTab In $oCtrl.Tabs
+				$oTab = $oCtrls.get($hTab)
 				$mControls &= $scopeString & " $" & $oTab.Name & " = "
 				$mControls &= 'GUICtrlCreateTabItem("' & $oTab.Text & '")' & @CRLF
 				$mControls &= 'GUICtrlCreateTabItem("")' & @CRLF

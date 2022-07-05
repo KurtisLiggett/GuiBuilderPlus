@@ -91,6 +91,8 @@ Func _save_gui_definition($saveAs = False)
 
 	$i = 0
 	For $oCtrl In $oCtrls.ctrls.Items()
+		If $oCtrl.Type = "TabItem" Then ContinueLoop
+
 		Local $handle = $oCtrl.Hwnd
 
 		Json_Put($objOutput, ".Controls[" & $i & "].Type", $oCtrl.Type)
@@ -118,13 +120,15 @@ Func _save_gui_definition($saveAs = False)
 		If $oCtrl.Type = "Tab" Then
 			Json_Put($objOutput, ".Controls[" & $i & "].TabCount", $oCtrl.TabCount)
 
-			Local $tabCount = $oCtrl.TabCount
-			Local $tabs = $oCtrl.Tabs
-			Local $tab
+;~ 			Local $tabCount = $oCtrl.TabCount
+;~ 			Local $tabs = $oCtrl.Tabs
+;~ 			Local $tab
 
 			If $oCtrl.TabCount > 0 Then
-				Local $j = 0
-				For $oTab In $oCtrl.Tabs
+				Local $j = 0, $oTab
+				For $hTab In $oCtrl.Tabs
+					$oTab = $oCtrls.get($hTab)
+					Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Type", $oTab.Type)
 					Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Name", $oTab.Name)
 					Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Text", $oTab.Text)
 					$j += 1
@@ -298,12 +302,14 @@ Func _load_gui_definition($AgdInfile = '')
 				Local $aTabs = Json_Get($oThisCtrl, ".Tabs")
 
 				$j = 1
+				Local $oTab
 				For $oThisTab In $aTabs
 					_new_tab(True)
 
-					$oCtrl.Tabs.at($j - 1).Name = _Json_Get($oThisTab, ".Name", "tempName")
-					$oCtrl.Tabs.at($j - 1).Text = _Json_Get($oThisTab, ".Text", "tempText")
-					_GUICtrlTab_SetItemText($oCtrl.Hwnd, $j - 1, $oCtrl.Tabs.at($j - 1).Text)
+					$oTab = $oCtrls.getLast()
+					$oTab.Name = _Json_Get($oThisTab, ".Name", "tempName")
+					$oTab.Text = _Json_Get($oThisTab, ".Text", "tempText")
+					_GUICtrlTab_SetItemText($oCtrl.Hwnd, $j - 1, $oTab.Text)
 					$j += 1
 				Next
 			EndIf
@@ -472,9 +478,10 @@ Func _load_gui_definition_ini($AgdInfile = '')
 				For $j = 1 To $tabCount
 					_new_tab()
 
-					$oCtrl.Tabs.at($j - 1).Name = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Name", "tempName")
-					$oCtrl.Tabs.at($j - 1).Text = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Text", "tempText")
-					_GUICtrlTab_SetItemText($oCtrl.Hwnd, $j - 1, $oCtrl.Tabs.at($j - 1).Text)
+					$oTab = $oCtrls.getLast()
+					$oTab.Name = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Name", "tempName")
+					$oTab.Text = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Text", "tempText")
+					_GUICtrlTab_SetItemText($oCtrl.Hwnd, $j - 1, $oTab.Text)
 				Next
 			EndIf
 		EndIf
