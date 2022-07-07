@@ -92,6 +92,23 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 			EndIf
 	EndSwitch
 
+	;if tab parent, then switch to that tab
+	Local $tabChild = False
+	If $hParent <> -1 Then
+		For $oThisCtrl In $oCtrls.ctrls.Items()
+			If $oThisCtrl.Hwnd = $hParent Then
+				If $oThisCtrl.Type = "Tab" Then
+					Local $iTabFocus = _GUICtrlTab_GetCurSel($oThisCtrl.Hwnd)
+					If $iTabFocus >= 0 Then
+						Local $tabID = $oThisCtrl.Tabs.at($iTabFocus)
+						GUISwitch($hGUI, $tabID)
+						$tabChild = True
+					EndIf
+				EndIf
+			EndIf
+		Next
+	EndIf
+
 	Switch $oNewControl.Type
 		Case "Button"
 			$oNewControl.Hwnd = GUICtrlCreateButton($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
@@ -139,7 +156,7 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 			GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
-			Return $oNewControl
+;~ 			Return $oNewControl
 
 		Case "Input"
 			$oNewControl.Hwnd = GUICtrlCreateInput($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
@@ -182,7 +199,7 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 			GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
-			Return $oNewControl
+;~ 			Return $oNewControl
 
 		Case "Slider"
 			$oNewControl.Hwnd = _GuiCtrlCreateSlider($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height, $oNewControl.Height)
@@ -191,7 +208,7 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 			GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
-			Return $oNewControl
+;~ 			Return $oNewControl
 
 		Case "Tab"
 			;create main tab control
@@ -234,7 +251,7 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 			GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
-			Return $oNewControl
+;~ 			Return $oNewControl
 
 		Case "Pic"
 			$oNewControl.Hwnd = GUICtrlCreatePic($samplebmp, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
@@ -244,7 +261,7 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 			GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
-			Return $oNewControl
+;~ 			Return $oNewControl
 
 		Case "Avi"
 			$oNewControl.Hwnd = GUICtrlCreateAvi($sampleavi, 0, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height, $ACS_AUTOPLAY)
@@ -253,14 +270,14 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 			GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
-			Return $oNewControl
+;~ 			Return $oNewControl
 
 		Case "Icon"
 			$oNewControl.Hwnd = GUICtrlCreateIcon($iconset, 0, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
 			$oCtrls.add($oNewControl, $hParent)
 
-			Return $oNewControl
+;~ 			Return $oNewControl
 
 		Case "Menu"
 			$oNewControl.Hwnd = GUICtrlCreateMenu("Menu 1")
@@ -294,6 +311,11 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 	EndSwitch
 
 	$oMain.hasChanged = True
+
+	If $tabChild Then
+		GUICtrlCreateTabItem('')
+		GUISwitch($hGUI)
+	EndIf
 
 	Switch IsObj($oCtrl)
 		Case True    ;paste from existing object
