@@ -92,7 +92,7 @@ Func _save_gui_definition($saveAs = False)
 	$i = 0
 	For $oCtrl In $oCtrls.ctrls.Items()
 		If $oCtrl.Type = "TabItem" Then ContinueLoop
-		If $oCtrl.TabParent <> 0 Then ContinueLoop
+		If $oCtrl.CtrlParent <> 0 Then ContinueLoop
 
 		Local $handle = $oCtrl.Hwnd
 

@@ -200,7 +200,7 @@ EndFunc   ;==>_functionDoc
 ;------------------------------------------------------------------------------
 Func _generate_controls(Const $oCtrl, $sDpiScale, $isChild=False)
 	If $oCtrl.Type = "TabItem" Then Return ""
-	If Not $isChild And $oCtrl.TabParent <> 0 Then Return ""
+	If Not $isChild And $oCtrl.CtrlParent <> 0 Then Return ""
 
 	;apply the DPI scaling factor
 	Local $left = $oCtrl.Left

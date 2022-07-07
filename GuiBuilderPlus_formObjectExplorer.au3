@@ -424,7 +424,7 @@ Func _formObjectExplorer_updateList()
 	_GUICtrlTreeView_DeleteAll($lvObjects)
 	For $oCtrl In $oCtrls.ctrls.Items()
 		If $oCtrl.Type = "TabItem" Then ContinueLoop
-		If $oCtrl.TabParent <> 0 Then ContinueLoop
+		If $oCtrl.CtrlParent <> 0 Then ContinueLoop
 
 		$sName = $oCtrl.Name
 		If $sName = "" Then

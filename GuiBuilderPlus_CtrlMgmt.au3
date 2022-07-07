@@ -9,7 +9,7 @@
 ; Description.....: create new control and add it to the ctrls object
 ; Called by.......: Draw with mouse; Paste
 ;------------------------------------------------------------------------------
-Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hParent = -1)
+Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hParent = -1, $bDuplicate = False)
 	;only allow 1 tab control
 	If $oCtrls.CurrentType = "Tab" Then
 		If $oCtrls.getTypeCount("Tab") > 0 Then
@@ -92,6 +92,20 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 			EndIf
 	EndSwitch
 
+	;check if pasting into Tab or Group
+	$oNewControl.CtrlParent = 0
+	If $isPaste Then
+		_log("Pasting...")
+		For $oThisCtrl In $oSelected.ctrls.Items()
+			Switch $oThisCtrl.Type
+				Case "Tab"
+					$hParent = $oThisCtrl.Hwnd
+					ExitLoop
+
+			EndSwitch
+		Next
+	EndIf
+
 	;if tab parent, then switch to that tab
 	Local $tabChild = False
 	If $hParent <> -1 Then
@@ -104,6 +118,7 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 						GUISwitch($hGUI, $tabID)
 						$tabChild = True
 					EndIf
+					ExitLoop
 				EndIf
 			EndIf
 		Next
@@ -716,8 +731,7 @@ Func _PasteSelected($bDuplicate = False, $bAtMouse = False)
 					$oNewCtrl.Top = ($oMouse.Y - $topLeftRect.Top) + $oNewCtrl.Top
 				EndIf
 
-				$aNewCtrls[$i] = _create_ctrl($oNewCtrl)
-
+				$aNewCtrls[$i] = _create_ctrl($oNewCtrl, 0, -1, -1, -1, $bDuplicate)
 
 				;select the new controls
 				If $i = 0 Then    ;select first item
@@ -800,14 +814,14 @@ Func _control_intersection(Const $oCtrl, Const $oRect)
 		$returnVal = _CtrlInRect($oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
 	EndIf
 
-	If $oCtrl.TabParent <> 0 Then
-		Local $TabHwnd = $oCtrls.get($oCtrl.TabParent).TabParent
+	If $oCtrl.CtrlParent <> 0 Then
+		Local $TabHwnd = $oCtrls.get($oCtrl.CtrlParent).CtrlParent
 		Local $iTabFocus = _GUICtrlTab_GetCurSel($TabHwnd)
 
 		If $iTabFocus >= 0 Then
 			Local $oTabCtrl = $oCtrls.get($TabHwnd)
 			Local $iTabFocusID = $oTabCtrl.Tabs.at($iTabFocus)
-			If $iTabFocusID <> $oCtrl.TabParent Then
+			If $iTabFocusID <> $oCtrl.CtrlParent Then
 				Return False
 			EndIf
 		EndIf

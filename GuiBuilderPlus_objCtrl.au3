@@ -117,8 +117,8 @@ Func _objCtrls_add($oSelf, $objCtrl, $hParent = -1)
 						$oTabItem = $oCtrls.get($tabID)
 
 						$oTabItem.ctrls.Add($objCtrl.Hwnd, $objCtrl)
-						$objCtrl.TabParent = $oTabItem.Hwnd
-						$oTabItem.TabParent = $oThisCtrl.Hwnd
+						$objCtrl.CtrlParent = $oTabItem.Hwnd
+						$oTabItem.CtrlParent = $oThisCtrl.Hwnd
 					EndIf
 				EndIf
 			EndIf
@@ -143,8 +143,8 @@ Func _objCtrls_remove($oSelf, $Hwnd)
 
 		If Not $oSelf.isSelection Then
 			; if this control was on a tab, remove the tracking
-			If $thisCtrl.Tabparent <> 0 Then
-				Local $oTabItem = $oCtrls.get($thisCtrl.Tabparent)
+			If $thisCtrl.CtrlParent <> 0 Then
+				Local $oTabItem = $oCtrls.get($thisCtrl.CtrlParent)
 				$oTabItem.ctrls.Remove($thisCtrl.Hwnd)
 			EndIf
 		EndIf
@@ -408,14 +408,14 @@ Func _objCtrl($oParent)
 	_AutoItObject_AddProperty($oObject, "Tabs", $ELSCOPE_PUBLIC, LinkedList())
 	_AutoItObject_AddProperty($oObject, "MenuItems", $ELSCOPE_PUBLIC, LinkedList())
 	_AutoItObject_AddProperty($oObject, "Dirty", $ELSCOPE_PUBLIC, False)
-	_AutoItObject_AddProperty($oObject, "TabParent", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "CtrlParent", $ELSCOPE_PUBLIC, 0)
 
 	Return $oObject
 EndFunc   ;==>_objCtrl
 #EndRegion objCtrl
 
 
-#Region tabs
+
 Func _objTab($oParent)
 	Local $oObject = _objCtrl($oParent)
 
@@ -423,7 +423,15 @@ Func _objTab($oParent)
 
 	Return $oObject
 EndFunc
-#EndRegion tabs
+
+Func _objGroup($oParent)
+	Local $oObject = _objCtrl($oParent)
+
+	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, ObjCreate("Scripting.Dictionary"))
+
+	Return $oObject
+EndFunc
+
 
 
 #Region misc-objects
