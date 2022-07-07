@@ -127,28 +127,23 @@ Func _onLvObjectsItem()
 			If $hParent <> 0 Then    ;this is a child
 				Local $hParent1 = _GUICtrlTreeView_GetParentHandle($lvObjects, _GUICtrlTreeView_GetItemHandle($lvObjects, $hParent))
 				If $hParent1 <> 0 Then    ;this is a grand-child
-					ConsoleWrite("this is a grand-child" & @CRLF)
 					Local $aParentText = _GUICtrlTreeView_GetText($lvObjects, $hParent)
 					Local $aParentStrings = StringSplit($aParentText, @TAB)
 					Local $ParentTextHwnd = StringTrimRight(StringTrimLeft($aParentStrings[2], 7), 1)
 					$oParentCtrl = $oCtrls.get(Dec($ParentTextHwnd))
-					ConsoleWrite("grand " & $ParentTextHwnd & @CRLF)
 
 					Local $aParentText1 = _GUICtrlTreeView_GetText($lvObjects, $hParent1)
 					Local $aParentStrings1 = StringSplit($aParentText1, @TAB)
 					Local $ParentTextHwnd1 = StringTrimRight(StringTrimLeft($aParentStrings1[2], 7), 1)
 					$oParentCtrl1 = $oCtrls.get(Dec($ParentTextHwnd1))
-					ConsoleWrite("parents " & $ParentTextHwnd1 & @CRLF)
 					If $oParentCtrl1.Type = "Tab" Then
 						;get tab #
 						Local $i = 0, $oTab
 						For $hTab In $oParentCtrl1.Tabs
 							$oTab = $oCtrls.get($hTab)
 							For $oTabCtrl In $oTab.ctrls.Items()
-								ConsoleWrite($oTabCtrl.Hwnd & "   " & Dec($textHwnd) & @CRLF)
 								If $oTabCtrl.Hwnd = Dec($textHwnd) Then
 									_GUICtrlTab_ActivateTab($oParentCtrl1.Hwnd, $i)
-									ConsoleWrite($oTabCtrl.Name & @CRLF)
 									If $first Then    ;select first item
 										$first = False
 										_add_to_selected($oTabCtrl)
@@ -163,7 +158,6 @@ Func _onLvObjectsItem()
 						Next
 					EndIf
 				Else
-					ConsoleWrite("this is a child" & @CRLF)
 					Local $aParentText = _GUICtrlTreeView_GetText($lvObjects, $hParent)
 					Local $aParentStrings = StringSplit($aParentText, @TAB)
 					Local $ParentTextHwnd = StringTrimRight(StringTrimLeft($aParentStrings[2], 7), 1)

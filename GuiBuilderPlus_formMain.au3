@@ -1166,10 +1166,9 @@ Func _onMousePrimaryDown()
 
 				Case Else
 					If Not $oCtrls.exists($ctrl_hwnd) Then Return
-					_log("  control exists")
+
 
 					Local $oCtrl = $oCtrls.get($ctrl_hwnd)
-					_log("  " & $oCtrl.Type)
 
 					;if ctrl is pressed, add/remove form selection
 					Switch _IsPressed("11")
@@ -1894,7 +1893,6 @@ EndFunc   ;==>_ctrl_change_text
 
 
 Func _ctrl_change_name()
-	_log("change name")
 	Local $new_name = $oProperties_Ctrls.Name.value
 	$new_name = StringReplace($new_name, " ", "_")
 	$oProperties_Ctrls.Name.value = $new_name

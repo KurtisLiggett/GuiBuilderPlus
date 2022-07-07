@@ -390,7 +390,6 @@ EndFunc   ;==>_new_tab
 
 
 Func _onCtrlTabSwitch()
-	ConsoleWrite("switch tab" & @CRLF)
 ;~ 	_remove_all_from_selected()
 	_tabClearInactiveSelection(@GUI_CtrlId)
 EndFunc   ;==>_onCtrlTabSwitch
@@ -801,17 +800,13 @@ Func _control_intersection(Const $oCtrl, Const $oRect)
 		$returnVal = _CtrlInRect($oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
 	EndIf
 
-	ConsoleWrite($oCtrl.Name & @CRLF)
 	If $oCtrl.TabParent <> 0 Then
 		Local $TabHwnd = $oCtrls.get($oCtrl.TabParent).TabParent
-		ConsoleWrite("Tab control: " & $TabHwnd & @CRLF)
-		ConsoleWrite("Tab item: " & $oCtrl.TabParent & @CRLF)
 		Local $iTabFocus = _GUICtrlTab_GetCurSel($TabHwnd)
 
 		If $iTabFocus >= 0 Then
 			Local $oTabCtrl = $oCtrls.get($TabHwnd)
 			Local $iTabFocusID = $oTabCtrl.Tabs.at($iTabFocus)
-			ConsoleWrite("Tab focus: " & $iTabFocusID & @CRLF)
 			If $iTabFocusID <> $oCtrl.TabParent Then
 				Return False
 			EndIf
