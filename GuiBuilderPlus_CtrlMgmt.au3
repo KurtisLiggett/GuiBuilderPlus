@@ -102,6 +102,10 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 					$hParent = $oThisCtrl.Hwnd
 					ExitLoop
 
+				Case "Group"
+					$hParent = $oThisCtrl.Hwnd
+					ExitLoop
+
 			EndSwitch
 		Next
 	EndIf
@@ -111,15 +115,21 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 	If $hParent <> -1 Then
 		For $oThisCtrl In $oCtrls.ctrls.Items()
 			If $oThisCtrl.Hwnd = $hParent Then
-				If $oThisCtrl.Type = "Tab" Then
-					Local $iTabFocus = _GUICtrlTab_GetCurSel($oThisCtrl.Hwnd)
-					If $iTabFocus >= 0 Then
-						Local $tabID = $oThisCtrl.Tabs.at($iTabFocus)
-						GUISwitch($hGUI, $tabID)
-						$tabChild = True
-					EndIf
-					ExitLoop
-				EndIf
+				Switch $oThisCtrl.Type
+					Case "Tab"
+						Local $iTabFocus = _GUICtrlTab_GetCurSel($oThisCtrl.Hwnd)
+						If $iTabFocus >= 0 Then
+							Local $tabID = $oThisCtrl.Tabs.at($iTabFocus)
+							GUISwitch($hGUI, $tabID)
+							$tabChild = True
+						EndIf
+						ExitLoop
+
+;~ 					Case "Group"
+;~ 						Local $iTabFocus = _GUICtrlTab_GetCurSel($oThisCtrl.Hwnd)
+;~ 						ExitLoop
+
+				EndSwitch
 			EndIf
 		Next
 	EndIf
@@ -380,7 +390,7 @@ Func _new_tab($loadGUI = False)
 	Next
 
 	$oCtrl.TabCount = $oCtrl.TabCount + 1
-	Local $tab = _objTab($oCtrls)
+	Local $tab = _objCtrl($oCtrls)
 	$tab.Hwnd = GUICtrlCreateTabItem("Tab" & $oCtrl.TabCount)
 	GUICtrlCreateTabItem("")
 	$tab.Text = "Tab" & $oCtrl.TabCount
@@ -569,6 +579,12 @@ Func _delete_ctrl(Const $oCtrl)
 			For $hTabItem In $oCtrl.Tabs
 ;~ 				_delete_ctrl($oCtrls.get($hTabItem))
 				_delete_tab()
+			Next
+			GUICtrlDelete($oCtrl.Hwnd)
+
+		Case "Group"
+			For $oThisCtrl In $oCtrl.ctrls.Items()
+				_delete_ctrl($oThisCtrl)
 			Next
 			GUICtrlDelete($oCtrl.Hwnd)
 
@@ -815,14 +831,16 @@ Func _control_intersection(Const $oCtrl, Const $oRect)
 	EndIf
 
 	If $oCtrl.CtrlParent <> 0 Then
-		Local $TabHwnd = $oCtrls.get($oCtrl.CtrlParent).CtrlParent
-		Local $iTabFocus = _GUICtrlTab_GetCurSel($TabHwnd)
+		If $oCtrls.get($oCtrl.CtrlParent).Type = "TabItem" Then
+			Local $TabHwnd = $oCtrls.get($oCtrl.CtrlParent).CtrlParent
+			Local $iTabFocus = _GUICtrlTab_GetCurSel($TabHwnd)
 
-		If $iTabFocus >= 0 Then
-			Local $oTabCtrl = $oCtrls.get($TabHwnd)
-			Local $iTabFocusID = $oTabCtrl.Tabs.at($iTabFocus)
-			If $iTabFocusID <> $oCtrl.CtrlParent Then
-				Return False
+			If $iTabFocus >= 0 Then
+				Local $oTabCtrl = $oCtrls.get($TabHwnd)
+				Local $iTabFocusID = $oTabCtrl.Tabs.at($iTabFocus)
+				If $iTabFocusID <> $oCtrl.CtrlParent Then
+					Return False
+				EndIf
 			EndIf
 		EndIf
 	EndIf
@@ -1140,6 +1158,31 @@ Func _moveTabCtrls($oCtrl, $delta_x, $delta_y, $width, $height)
 			_change_ctrl_size_pos($oTabCtrl, $left, $top, $width, $height, True)
 		Next
 	Next
+	GUISwitch($hGUI)
+EndFunc
+
+
+Func _moveGroupCtrls($oCtrl, $delta_x, $delta_y, $width, $height)
+	Local $left, $top
+
+	For $oThisCtrl In $oCtrl.ctrls.Items()
+		If $oSelected.exists($oThisCtrl.Hwnd) Then ContinueLoop
+
+		if $delta_x = Default Then
+			$left = Default
+		Else
+			$left = $oThisCtrl.Left - $delta_x
+		EndIf
+
+		if $delta_y = Default Then
+			$top = Default
+		Else
+			$top = $oThisCtrl.Top - $delta_y
+		EndIf
+
+		_change_ctrl_size_pos($oThisCtrl, $left, $top, $width, $height, True)
+	Next
+
 	GUISwitch($hGUI)
 EndFunc
 

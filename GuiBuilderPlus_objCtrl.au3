@@ -109,18 +109,24 @@ Func _objCtrls_add($oSelf, $objCtrl, $hParent = -1)
 	If $hParent <> -1 Then
 		For $oThisCtrl In $oSelf.ctrls.Items()
 			If $oThisCtrl.Hwnd = $hParent Then
-				If $oThisCtrl.Type = "Tab" Then
-					Local $iTabFocus = _GUICtrlTab_GetCurSel($oThisCtrl.Hwnd)
-					If $iTabFocus >= 0 Then
+				Switch $oThisCtrl.Type
+					Case "Tab"
+						Local $iTabFocus = _GUICtrlTab_GetCurSel($oThisCtrl.Hwnd)
+						If $iTabFocus >= 0 Then
 
-						Local $tabID = $oThisCtrl.Tabs.at($iTabFocus)
-						$oTabItem = $oCtrls.get($tabID)
+							Local $tabID = $oThisCtrl.Tabs.at($iTabFocus)
+							$oTabItem = $oCtrls.get($tabID)
 
-						$oTabItem.ctrls.Add($objCtrl.Hwnd, $objCtrl)
-						$objCtrl.CtrlParent = $oTabItem.Hwnd
-						$oTabItem.CtrlParent = $oThisCtrl.Hwnd
-					EndIf
-				EndIf
+							$oTabItem.ctrls.Add($objCtrl.Hwnd, $objCtrl)
+							$objCtrl.CtrlParent = $oTabItem.Hwnd
+							$oTabItem.CtrlParent = $oThisCtrl.Hwnd
+						EndIf
+
+					Case "Group"
+						$oThisCtrl.ctrls.Add($objCtrl.Hwnd, $objCtrl)
+						$objCtrl.CtrlParent = $oThisCtrl.Hwnd
+
+				EndSwitch
 			EndIf
 		Next
 	EndIf
@@ -407,6 +413,7 @@ Func _objCtrl($oParent)
 	_AutoItObject_AddProperty($oObject, "TabCount", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "Tabs", $ELSCOPE_PUBLIC, LinkedList())
 	_AutoItObject_AddProperty($oObject, "MenuItems", $ELSCOPE_PUBLIC, LinkedList())
+	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, ObjCreate("Scripting.Dictionary"))
 	_AutoItObject_AddProperty($oObject, "Dirty", $ELSCOPE_PUBLIC, False)
 	_AutoItObject_AddProperty($oObject, "CtrlParent", $ELSCOPE_PUBLIC, 0)
 
@@ -416,13 +423,13 @@ EndFunc   ;==>_objCtrl
 
 
 
-Func _objTab($oParent)
-	Local $oObject = _objCtrl($oParent)
+;~ Func _objTab($oParent)
+;~ 	Local $oObject = _objCtrl($oParent)
 
-	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, ObjCreate("Scripting.Dictionary"))
+;~ 	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, ObjCreate("Scripting.Dictionary"))
 
-	Return $oObject
-EndFunc
+;~ 	Return $oObject
+;~ EndFunc
 
 Func _objGroup($oParent)
 	Local $oObject = _objCtrl($oParent)

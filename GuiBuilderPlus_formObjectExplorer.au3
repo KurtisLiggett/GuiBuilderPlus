@@ -157,30 +157,33 @@ Func _onLvObjectsItem()
 							$i += 1
 						Next
 					EndIf
-				Else
+				Else	;this is a child
 					Local $aParentText = _GUICtrlTreeView_GetText($lvObjects, $hParent)
 					Local $aParentStrings = StringSplit($aParentText, @TAB)
 					Local $ParentTextHwnd = StringTrimRight(StringTrimLeft($aParentStrings[2], 7), 1)
 					$oParentCtrl = $oCtrls.get(Dec($ParentTextHwnd))
-					If $oParentCtrl.Type = "Tab" Then
-						;get tab #
-						Local $i = 0, $oTab
-						For $hTab In $oParentCtrl.Tabs
-							$oTab = $oCtrls.get($hTab)
-							If $oTab.Hwnd = Dec($textHwnd) Then
-								$childSelected = True
-								_GUICtrlTab_ActivateTab($oParentCtrl.Hwnd, $i)
-								_add_to_selected($oParentCtrl)
-								_populate_control_properties_gui($oParentCtrl, Dec($textHwnd))
-							EndIf
+					Switch $oParentCtrl.Type
+						Case "Tab"
+							;get tab #
+							Local $i = 0, $oTab
+							For $hTab In $oParentCtrl.Tabs
+								$oTab = $oCtrls.get($hTab)
+								If $oTab.Hwnd = Dec($textHwnd) Then
+									$childSelected = True
+									_GUICtrlTab_ActivateTab($oParentCtrl.Hwnd, $i)
+									_add_to_selected($oParentCtrl)
+									_populate_control_properties_gui($oParentCtrl, Dec($textHwnd))
+								EndIf
 
-							$i += 1
-						Next
-					ElseIf $oParentCtrl.Type = "Menu" Then
-						$childSelected = True
-	;~ 					_add_to_selected($oParentCtrl)
-						_populate_control_properties_gui($oCtrl, Dec($textHwnd))
-					EndIf
+								$i += 1
+							Next
+
+						Case "Menu"
+							$childSelected = True
+		;~ 					_add_to_selected($oParentCtrl)
+							_populate_control_properties_gui($oCtrl, Dec($textHwnd))
+
+					EndSwitch
 				EndIf
 			Else
 				If $first Then    ;select first item
@@ -438,54 +441,73 @@ Func _formObjectExplorer_updateList()
 		$lvMenuDelete = GUICtrlCreateMenuItem("Delete", $lvMenu)
 		GUICtrlSetOnEvent($lvMenuDelete, "_onLvObjectsDeleteMenu")
 
-		If $oCtrl.Type = "Tab" Then
-			$lvMenuNewTab = GUICtrlCreateMenuItem("New Tab", $lvMenu)
-			$lvMenuDeleteTab = GUICtrlCreateMenuItem("Delete Tab", $lvMenu)
-			GUICtrlSetOnEvent($lvMenuNewTab, "_onNewTab")
-			GUICtrlSetOnEvent($lvMenuDeleteTab, "_onDeleteTab")
+		Switch $oCtrl.Type
+			Case "Tab"
+				$lvMenuNewTab = GUICtrlCreateMenuItem("New Tab", $lvMenu)
+				$lvMenuDeleteTab = GUICtrlCreateMenuItem("Delete Tab", $lvMenu)
+				GUICtrlSetOnEvent($lvMenuNewTab, "_onNewTab")
+				GUICtrlSetOnEvent($lvMenuDeleteTab, "_onDeleteTab")
 
-			Local $oTab
-			For $hTab In $oCtrl.Tabs
-				$oTab = $oCtrls.get($hTab)
-				$childItem = GUICtrlCreateTreeViewItem($oTab.Name & "       " & @TAB & "(HWND: " & Hex($oTab.Hwnd) & ")", $lvItem)
-				GUICtrlSetOnEvent(-1, "_onLvObjectsItem")
-
-				$tabMenu = GUICtrlCreateContextMenu($childItem)
-				$tabMenuDelete = GUICtrlCreateMenuItem("Delete Tab", $tabMenu)
-				GUICtrlSetOnEvent($tabMenuDelete, "_delete_tab")
-
-				_GUICtrlTreeView_Expand($lvObjects, $lvItem)
-
-				For $oTabCtrl In $oTab.ctrls.Items()
-					$sName = $oTabCtrl.Name
-					If $sName = "" Then
-						$sName = $oTabCtrl.Type & "*"
-					EndIf
-
-					$childTabCtrl = GUICtrlCreateTreeViewItem($sName & "       " & @TAB & "(HWND: " & Hex($oTabCtrl.Hwnd) & ")", $childItem)
+				Local $oTab
+				For $hTab In $oCtrl.Tabs
+					$oTab = $oCtrls.get($hTab)
+					$childItem = GUICtrlCreateTreeViewItem($oTab.Name & "       " & @TAB & "(HWND: " & Hex($oTab.Hwnd) & ")", $lvItem)
 					GUICtrlSetOnEvent(-1, "_onLvObjectsItem")
 
-					$lvMenu = GUICtrlCreateContextMenu($childTabCtrl)
+					$tabMenu = GUICtrlCreateContextMenu($childItem)
+					$tabMenuDelete = GUICtrlCreateMenuItem("Delete Tab", $tabMenu)
+					GUICtrlSetOnEvent($tabMenuDelete, "_delete_tab")
+
+					_GUICtrlTreeView_Expand($lvObjects, $lvItem)
+
+					For $oTabCtrl In $oTab.ctrls.Items()
+						$sName = $oTabCtrl.Name
+						If $sName = "" Then
+							$sName = $oTabCtrl.Type & "*"
+						EndIf
+
+						$childTabCtrl = GUICtrlCreateTreeViewItem($sName & "       " & @TAB & "(HWND: " & Hex($oTabCtrl.Hwnd) & ")", $childItem)
+						GUICtrlSetOnEvent(-1, "_onLvObjectsItem")
+
+						$lvMenu = GUICtrlCreateContextMenu($childTabCtrl)
+						$lvMenuDelete = GUICtrlCreateMenuItem("Delete", $lvMenu)
+						GUICtrlSetOnEvent($lvMenuDelete, "_onLvObjectsDeleteMenu")
+					Next
+				Next
+				_GUICtrlTreeView_Expand($lvObjects, $lvItem)
+
+			Case "Group"
+				For $oThisCtrl In $oCtrl.ctrls.Items()
+					$sName = $oThisCtrl.Name
+					If $sName = "" Then
+						$sName = $oThisCtrl.Type & "*"
+					EndIf
+
+					$childCtrl = GUICtrlCreateTreeViewItem($sName & "       " & @TAB & "(HWND: " & Hex($oThisCtrl.Hwnd) & ")", $lvItem)
+					GUICtrlSetOnEvent(-1, "_onLvObjectsItem")
+
+					$lvMenu = GUICtrlCreateContextMenu($childCtrl)
 					$lvMenuDelete = GUICtrlCreateMenuItem("Delete", $lvMenu)
 					GUICtrlSetOnEvent($lvMenuDelete, "_onLvObjectsDeleteMenu")
 				Next
-			Next
-			_GUICtrlTreeView_Expand($lvObjects, $lvItem)
-		ElseIf $oCtrl.Type = "Menu" Then
-			$lvMenuNewMenuItem = GUICtrlCreateMenuItem("New menu item", $lvMenu)
-			GUICtrlSetOnEvent($lvMenuNewMenuItem, "_new_menuItem")
-
-			For $oMenuItem In $oCtrl.MenuItems
-				$childItem = GUICtrlCreateTreeViewItem($oMenuItem.Name & "       " & @TAB & "(HWND: " & Hex($oMenuItem.Hwnd) & ")", $lvItem)
-				GUICtrlSetOnEvent(-1, "_onLvObjectsItem")
-
-				$menuItemMenu = GUICtrlCreateContextMenu($childItem)
-				$menuItemMenuDelete = GUICtrlCreateMenuItem("Delete menu item", $menuItemMenu)
-				GUICtrlSetOnEvent($menuItemMenuDelete, "_delete_menuItem")
-
 				_GUICtrlTreeView_Expand($lvObjects, $lvItem)
-			Next
-		EndIf
+
+			Case "Menu"
+				$lvMenuNewMenuItem = GUICtrlCreateMenuItem("New menu item", $lvMenu)
+				GUICtrlSetOnEvent($lvMenuNewMenuItem, "_new_menuItem")
+
+				For $oMenuItem In $oCtrl.MenuItems
+					$childItem = GUICtrlCreateTreeViewItem($oMenuItem.Name & "       " & @TAB & "(HWND: " & Hex($oMenuItem.Hwnd) & ")", $lvItem)
+					GUICtrlSetOnEvent(-1, "_onLvObjectsItem")
+
+					$menuItemMenu = GUICtrlCreateContextMenu($childItem)
+					$menuItemMenuDelete = GUICtrlCreateMenuItem("Delete menu item", $menuItemMenu)
+					GUICtrlSetOnEvent($menuItemMenuDelete, "_delete_menuItem")
+
+					_GUICtrlTreeView_Expand($lvObjects, $lvItem)
+				Next
+
+		EndSwitch
 	Next
 
 	_SendMessage($hFormObjectExplorer, $WM_SETREDRAW, True)

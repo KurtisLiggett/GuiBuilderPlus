@@ -281,6 +281,15 @@ Func _generate_controls(Const $oCtrl, $sDpiScale, $isChild=False)
 			$mControls &= "_GUICtrlIpAddress_Create" & '($' & $oMain.Name & ', ' & $ltwh & ")" & @CRLF
 			$mControls &= "_GUICtrlIpAddress_Set($" & $oCtrl.Name & ', "' & $oCtrl.Text & '")' & @CRLF
 
+		Case "Group"
+			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & ")" & @CRLF
+
+			For $oGroupCtrl In $oCtrl.ctrls.Items()
+				$mControls &= _generate_controls($oGroupCtrl, $sDpiScale, True)
+			Next
+
+			$mControls &= 'GUICtrlCreateGroup("", -99, -99, 1, 1)' & @CRLF
+
 		Case Else
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & ")" & @CRLF
 	EndSwitch
