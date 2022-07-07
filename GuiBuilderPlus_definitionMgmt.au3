@@ -91,6 +91,9 @@ Func _save_gui_definition($saveAs = False)
 
 	$i = 0
 	For $oCtrl In $oCtrls.ctrls.Items()
+		If $oCtrl.Type = "TabItem" Then ContinueLoop
+		If $oCtrl.TabParent <> 0 Then ContinueLoop
+
 		Local $handle = $oCtrl.Hwnd
 
 		Json_Put($objOutput, ".Controls[" & $i & "].Type", $oCtrl.Type)
@@ -118,15 +121,40 @@ Func _save_gui_definition($saveAs = False)
 		If $oCtrl.Type = "Tab" Then
 			Json_Put($objOutput, ".Controls[" & $i & "].TabCount", $oCtrl.TabCount)
 
-			Local $tabCount = $oCtrl.TabCount
-			Local $tabs = $oCtrl.Tabs
-			Local $tab
-
 			If $oCtrl.TabCount > 0 Then
-				Local $j = 0
-				For $oTab In $oCtrl.Tabs
+				Local $j = 0, $oTab
+				For $hTab In $oCtrl.Tabs
+					$oTab = $oCtrls.get($hTab)
+					Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Type", $oTab.Type)
 					Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Name", $oTab.Name)
 					Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Text", $oTab.Text)
+
+					Local $k = 0
+					For $oTabCtrl In $oTab.ctrls.Items()
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Type", $oTabCtrl.Type)
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Name", $oTabCtrl.Name)
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Text", $oTabCtrl.Text)
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Visible", $oTabCtrl.Visible)
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].OnTop", $oTabCtrl.OnTop)
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].DropAccepted", $oTabCtrl.DropAccepted)
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Left", $oTabCtrl.Left)
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Top", $oTabCtrl.Top)
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Width", $oTabCtrl.Width)
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Height", $oTabCtrl.Height)
+						Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Global", $oTabCtrl.Global)
+						If $oTabCtrl.Color = -1 Then
+							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Color", -1)
+						Else
+							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Color", "0x" & Hex($oTabCtrl.Color, 6))
+						EndIf
+						If $oTabCtrl.Background = -1 Then
+							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Background", -1)
+						Else
+							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Background", "0x" & Hex($oTabCtrl.Background, 6))
+						EndIf
+						$k += 1
+					Next
+
 					$j += 1
 				Next
 			EndIf
@@ -260,10 +288,9 @@ Func _load_gui_definition($AgdInfile = '')
 	Local Const $numCtrls = _Json_Get($objInput, ".Main.numctrls", -1)
 
 
-	Local $oCtrl, $Key
+	Local $oCtrl, $Key, $oNewCtrl
 	Local $aControls = Json_Get($objInput, ".Controls")
 	For $oThisCtrl In $aControls
-;~ 		$Key = "Control_" & $i
 		$oCtrl = $oCtrls.createNew()
 
 		$oCtrl.HwndCount = 1
@@ -286,7 +313,7 @@ Func _load_gui_definition($AgdInfile = '')
 			$oCtrl.Background = Dec(StringReplace($oCtrl.Background, "0x", ""))
 		EndIf
 
-		Local $oNewCtrl = _create_ctrl($oCtrl, True)
+		$oNewCtrl = _create_ctrl($oCtrl, True)
 
 
 		$oCtrl = $oCtrls.get($oNewCtrl.Hwnd)
@@ -298,12 +325,46 @@ Func _load_gui_definition($AgdInfile = '')
 				Local $aTabs = Json_Get($oThisCtrl, ".Tabs")
 
 				$j = 1
+				Local $oTab
 				For $oThisTab In $aTabs
 					_new_tab(True)
 
-					$oCtrl.Tabs.at($j - 1).Name = _Json_Get($oThisTab, ".Name", "tempName")
-					$oCtrl.Tabs.at($j - 1).Text = _Json_Get($oThisTab, ".Text", "tempText")
-					_GUICtrlTab_SetItemText($oCtrl.Hwnd, $j - 1, $oCtrl.Tabs.at($j - 1).Text)
+					$oTab = $oCtrls.getLast()
+					$oTab.Name = _Json_Get($oThisTab, ".Name", "tempName")
+					$oTab.Text = _Json_Get($oThisTab, ".Text", "tempText")
+					_GUICtrlTab_SetItemText($oCtrl.Hwnd, $j - 1, $oTab.Text)
+
+					Local $aTabCtrls = Json_Get($oThisTab, ".Controls")
+					If Not IsArray($aTabCtrls) Then ContinueLoop
+					GUISwitch($hGUI, $oTab.Hwnd)
+					For $oTabCtrl in $aTabCtrls
+						$oCtrl2 = $oCtrls.createNew()
+
+						$oCtrl2.HwndCount = 1
+						$oCtrl2.Type = _Json_Get($oTabCtrl, ".Type", -1)
+						$oCtrl2.Name = _Json_Get($oTabCtrl, ".Name", -1)
+						$oCtrl2.Text = _Json_Get($oTabCtrl, ".Text", -1)
+						$oCtrl2.Visible = _Json_Get($oTabCtrl, ".Visible", 1)
+						$oCtrl2.OnTop = _Json_Get($oTabCtrl, ".OnTop", 0)
+						$oCtrl2.Left = _Json_Get($oTabCtrl, ".Left", -1)
+						$oCtrl2.Top = _Json_Get($oTabCtrl, ".Top", -1)
+						$oCtrl2.Width = _Json_Get($oTabCtrl, ".Width", -1)
+						$oCtrl2.Height = _Json_Get($oTabCtrl, ".Height", -1)
+						$oCtrl2.Global = (_Json_Get($oTabCtrl, ".Global", False) = "True") ? True : False
+						$oCtrl2.Color = _Json_Get($oTabCtrl, ".Color", -1)
+						If $oCtrl2.Color <> -1 Then
+							$oCtrl2.Color = Dec(StringReplace($oCtrl2.Color, "0x", ""))
+						EndIf
+						$oCtrl2.Background = _Json_Get($oTabCtrl, ".Background", -1)
+						If $oCtrl2.Background <> -1 Then
+							$oCtrl2.Background = Dec(StringReplace($oCtrl2.Background, "0x", ""))
+						EndIf
+
+						$oNewCtrl = _create_ctrl($oCtrl2, True, -1, -1, $oCtrl.Hwnd)
+					Next
+					GUICtrlCreateTabItem('')
+					GUISwitch($hGUI)
+
 					$j += 1
 				Next
 			EndIf
@@ -472,9 +533,10 @@ Func _load_gui_definition_ini($AgdInfile = '')
 				For $j = 1 To $tabCount
 					_new_tab()
 
-					$oCtrl.Tabs.at($j - 1).Name = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Name", "tempName")
-					$oCtrl.Tabs.at($j - 1).Text = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Text", "tempText")
-					_GUICtrlTab_SetItemText($oCtrl.Hwnd, $j - 1, $oCtrl.Tabs.at($j - 1).Text)
+					$oTab = $oCtrls.getLast()
+					$oTab.Name = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Name", "tempName")
+					$oTab.Text = IniRead($AgdInfile, $Key, "TabItem" & $j & "_Text", "tempText")
+					_GUICtrlTab_SetItemText($oCtrl.Hwnd, $j - 1, $oTab.Text)
 				Next
 			EndIf
 		EndIf
