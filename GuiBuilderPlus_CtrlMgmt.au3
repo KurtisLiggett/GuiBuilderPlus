@@ -213,7 +213,7 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 		Case "Tab"
 			;create main tab control
 			$oNewControl.Hwnd = GUICtrlCreateTab($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
-			GUICtrlSetOnEvent($oNewControl.Hwnd, "_onCtrlTabSwitch")
+			GUICtrlSetOnEvent(-1, "_onCtrlTabSwitch")
 
 			$oCtrls.add($oNewControl, $hParent)
 
@@ -390,8 +390,28 @@ EndFunc   ;==>_new_tab
 
 
 Func _onCtrlTabSwitch()
-
+	ConsoleWrite("switch tab" & @CRLF)
+;~ 	_remove_all_from_selected()
+	_tabClearInactiveSelection(@GUI_CtrlId)
 EndFunc   ;==>_onCtrlTabSwitch
+
+Func _tabClearInactiveSelection($Hwnd)
+	Local $oCtrl = $oCtrls.get($Hwnd)
+	Local $oTab
+
+	Local $iTabFocus = _GUICtrlTab_GetCurSel($Hwnd)
+	Local $tabFocusID = $oCtrl.Tabs.at($iTabFocus)
+
+	For $hTab In $oCtrl.Tabs
+		If $hTab = $tabFocusID Then ContinueLoop
+
+		$oTab = $oCtrls.get($hTab)
+		For $oTabCtrl In $oTab.ctrls.Items()
+			_remove_from_selected($oTabCtrl)
+		Next
+	Next
+	GUISwitch($hGUI)
+EndFunc
 
 Func _onDeleteTab()
 	_delete_tab()
@@ -771,13 +791,34 @@ Func _display_selected_tooltip()
 EndFunc   ;==>_display_selected_tooltip
 
 Func _control_intersection(Const $oCtrl, Const $oRect)
+	If $oCtrl.Type = "TabItem" Then Return False
 	Local $aMousePos = MouseGetPos()
+	Local $returnVal
 
 	If $aMousePos[0] < $oMouse.StartX Then	;right-to-left
-		Return _CtrlCrossRect($oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
+		$returnVal = _CtrlCrossRect($oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
 	Else	;left-to-right
-		Return _CtrlInRect($oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
+		$returnVal = _CtrlInRect($oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
 	EndIf
+
+	ConsoleWrite($oCtrl.Name & @CRLF)
+	If $oCtrl.TabParent <> 0 Then
+		Local $TabHwnd = $oCtrls.get($oCtrl.TabParent).TabParent
+		ConsoleWrite("Tab control: " & $TabHwnd & @CRLF)
+		ConsoleWrite("Tab item: " & $oCtrl.TabParent & @CRLF)
+		Local $iTabFocus = _GUICtrlTab_GetCurSel($TabHwnd)
+
+		If $iTabFocus >= 0 Then
+			Local $oTabCtrl = $oCtrls.get($TabHwnd)
+			Local $iTabFocusID = $oTabCtrl.Tabs.at($iTabFocus)
+			ConsoleWrite("Tab focus: " & $iTabFocusID & @CRLF)
+			If $iTabFocusID <> $oCtrl.TabParent Then
+				Return False
+			EndIf
+		EndIf
+	EndIf
+
+	Return $returnVal
 EndFunc   ;==>_control_intersection
 
 Func _group_select(Const $oCtrl)

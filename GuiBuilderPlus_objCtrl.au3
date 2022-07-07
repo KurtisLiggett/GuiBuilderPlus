@@ -119,6 +119,9 @@ Func _objCtrls_add($oSelf, $objCtrl, $hParent = -1)
 
 						$oTabItem.ctrls.Add($objCtrl.Hwnd, $objCtrl)
 						$objCtrl.TabParent = $oTabItem.Hwnd
+						$oTabItem.TabParent = $oThisCtrl.Hwnd
+						ConsoleWrite($oTabItem.TabParent & @CRLF)
+						ConsoleWrite($objCtrl.TabParent & @CRLF)
 					EndIf
 				EndIf
 			EndIf

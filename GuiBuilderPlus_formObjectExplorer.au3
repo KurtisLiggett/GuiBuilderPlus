@@ -123,28 +123,70 @@ Func _onLvObjectsItem()
 			$oCtrl = $oCtrls.get(Dec($textHwnd))
 
 			Local $hParent = _GUICtrlTreeView_GetParentHandle($lvObjects, $hItem)
+			Local $aParentText1, $aParentStrings1, $ParentTextHwnd1, $oParentCtrl1
 			If $hParent <> 0 Then    ;this is a child
-				Local $aParentText = _GUICtrlTreeView_GetText($lvObjects, $hParent)
-				Local $aParentStrings = StringSplit($aParentText, @TAB)
-				Local $ParentTextHwnd = StringTrimRight(StringTrimLeft($aParentStrings[2], 7), 1)
-				$oParentCtrl = $oCtrls.get(Dec($ParentTextHwnd))
-				If $oParentCtrl.Type = "Tab" Then
-					;get tab #
-					Local $i = 0, $oTab
-					For $hTab In $oParentCtrl.Tabs
-						$oTab = $oCtrls.get($hTab)
-						If $oTab.Hwnd = Dec($textHwnd) Then
-							$childSelected = True
-							_GUICtrlTab_SetCurSel($oParentCtrl.Hwnd, $i)
-						EndIf
-						$i += 1
-					Next
-					_add_to_selected($oParentCtrl)
-					_populate_control_properties_gui($oParentCtrl, Dec($textHwnd))
-				ElseIf $oParentCtrl.Type = "Menu" Then
-					$childSelected = True
-;~ 					_add_to_selected($oParentCtrl)
-					_populate_control_properties_gui($oCtrl, Dec($textHwnd))
+				Local $hParent1 = _GUICtrlTreeView_GetParentHandle($lvObjects, _GUICtrlTreeView_GetItemHandle($lvObjects, $hParent))
+				If $hParent1 <> 0 Then    ;this is a grand-child
+					ConsoleWrite("this is a grand-child" & @CRLF)
+					Local $aParentText = _GUICtrlTreeView_GetText($lvObjects, $hParent)
+					Local $aParentStrings = StringSplit($aParentText, @TAB)
+					Local $ParentTextHwnd = StringTrimRight(StringTrimLeft($aParentStrings[2], 7), 1)
+					$oParentCtrl = $oCtrls.get(Dec($ParentTextHwnd))
+					ConsoleWrite("grand " & $ParentTextHwnd & @CRLF)
+
+					Local $aParentText1 = _GUICtrlTreeView_GetText($lvObjects, $hParent1)
+					Local $aParentStrings1 = StringSplit($aParentText1, @TAB)
+					Local $ParentTextHwnd1 = StringTrimRight(StringTrimLeft($aParentStrings1[2], 7), 1)
+					$oParentCtrl1 = $oCtrls.get(Dec($ParentTextHwnd1))
+					ConsoleWrite("parents " & $ParentTextHwnd1 & @CRLF)
+					If $oParentCtrl1.Type = "Tab" Then
+						;get tab #
+						Local $i = 0, $oTab
+						For $hTab In $oParentCtrl1.Tabs
+							$oTab = $oCtrls.get($hTab)
+							For $oTabCtrl In $oTab.ctrls.Items()
+								ConsoleWrite($oTabCtrl.Hwnd & "   " & Dec($textHwnd) & @CRLF)
+								If $oTabCtrl.Hwnd = Dec($textHwnd) Then
+									_GUICtrlTab_ActivateTab($oParentCtrl1.Hwnd, $i)
+									ConsoleWrite($oTabCtrl.Name & @CRLF)
+									If $first Then    ;select first item
+										$first = False
+										_add_to_selected($oTabCtrl)
+										_populate_control_properties_gui($oTabCtrl.Hwnd)
+									Else    ;add to selection
+										_add_to_selected($oTabCtrl, False)
+									EndIf
+								EndIf
+							Next
+
+							$i += 1
+						Next
+					EndIf
+				Else
+					ConsoleWrite("this is a child" & @CRLF)
+					Local $aParentText = _GUICtrlTreeView_GetText($lvObjects, $hParent)
+					Local $aParentStrings = StringSplit($aParentText, @TAB)
+					Local $ParentTextHwnd = StringTrimRight(StringTrimLeft($aParentStrings[2], 7), 1)
+					$oParentCtrl = $oCtrls.get(Dec($ParentTextHwnd))
+					If $oParentCtrl.Type = "Tab" Then
+						;get tab #
+						Local $i = 0, $oTab
+						For $hTab In $oParentCtrl.Tabs
+							$oTab = $oCtrls.get($hTab)
+							If $oTab.Hwnd = Dec($textHwnd) Then
+								$childSelected = True
+								_GUICtrlTab_ActivateTab($oParentCtrl.Hwnd, $i)
+								_add_to_selected($oParentCtrl)
+								_populate_control_properties_gui($oParentCtrl, Dec($textHwnd))
+							EndIf
+
+							$i += 1
+						Next
+					ElseIf $oParentCtrl.Type = "Menu" Then
+						$childSelected = True
+	;~ 					_add_to_selected($oParentCtrl)
+						_populate_control_properties_gui($oCtrl, Dec($textHwnd))
+					EndIf
 				EndIf
 			Else
 				If $first Then    ;select first item

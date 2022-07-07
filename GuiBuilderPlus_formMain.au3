@@ -1416,7 +1416,7 @@ Func _onMouseMove()
 			EndIf
 
 		Case $mode_init_move, $mode_default, $mode_paste
-			_log("MOVE:  Moving")
+;~ 			_log("MOVE:  Moving")
 			Local Const $mouse_pos = _mouse_snap_pos()
 
 			Local Const $delta_x = $oMouse.X - $mouse_pos[0]
@@ -1462,7 +1462,7 @@ Func _onMouseMove()
 			EndIf
 
 		Case $mode_init_selection
-			_log("MOVE:  Selection")
+;~ 			_log("MOVE:  Selection")
 			Local Const $oRect = _rect_from_points($oMouse.X, $oMouse.Y, MouseGetPos(0), MouseGetPos(1))
 			_display_selection_rect($oRect)
 			_add_remove_selected_control($oRect)
@@ -1470,7 +1470,7 @@ Func _onMouseMove()
 			Return
 
 		Case $resize_nw, $resize_n, $resize_ne, $resize_w, $resize_e, $resize_sw, $resize_s, $resize_se
-			_log("MOVE:  Resizing")
+;~ 			_log("MOVE:  Resizing")
 			Local $tooltip
 
 			_SendMessage($hGUI, $WM_SETREDRAW, False)
