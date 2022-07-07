@@ -12,7 +12,8 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;	- FIXED:	Crash when using Ctrl+O shortcut key
+;  07/07/2022 ...:	- FIXED:	Crash when using Ctrl+O shortcut key
+;					- ADDED:	Ability to add child controls to tabs
 ;
 ;  07/03/2022 ...:	- FIXED:	Color and Background values of 0x000000 were saved as -1
 ;					- FIXED:	Setting "Paste at mouse position" incorrect behavior when turned off
