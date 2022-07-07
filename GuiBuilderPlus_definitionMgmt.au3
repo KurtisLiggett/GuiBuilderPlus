@@ -360,7 +360,7 @@ Func _load_gui_definition($AgdInfile = '')
 							$oCtrl2.Background = Dec(StringReplace($oCtrl2.Background, "0x", ""))
 						EndIf
 
-						$oNewCtrl = _create_ctrl($oCtrl2, True, -1, -1, $oTab.Hwnd)
+						$oNewCtrl = _create_ctrl($oCtrl2, True, -1, -1, $oCtrl.Hwnd)
 					Next
 					GUICtrlCreateTabItem('')
 					GUISwitch($hGUI)

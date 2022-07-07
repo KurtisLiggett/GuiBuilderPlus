@@ -1038,7 +1038,7 @@ EndFunc   ;==>_show_selected_controls
 
 
 #Region ; moving & resizing
-Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, Const $height)
+Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, Const $height, $tabChild = False)
 	If $width < 1 Or $height < 1 Then
 		Return
 	EndIf
@@ -1061,9 +1061,37 @@ Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, 
 			GUICtrlSetPos($oCtrl.Hwnd, $left, $top, $width, $height)
 	EndSwitch
 
-	$oCtrl.grippies.show()
+	If Not $tabChild Then
+		$oCtrl.grippies.show()
+	EndIf
 	$oMain.hasChanged = True
 EndFunc   ;==>_change_ctrl_size_pos
+
+Func _moveTabCtrls($oCtrl, $delta_x, $delta_y, $width, $height)
+	Local $oTab, $left, $top
+
+	For $hTab In $oCtrl.Tabs
+		$oTab = $oCtrls.get($hTab)
+		For $oTabCtrl In $oTab.ctrls.Items()
+			If $oSelected.exists($oTabCtrl.Hwnd) Then ContinueLoop
+
+			if $delta_x = Default Then
+				$left = Default
+			Else
+				$left = $oTabCtrl.Left - $delta_x
+			EndIf
+
+			if $delta_y = Default Then
+				$top = Default
+			Else
+				$top = $oTabCtrl.Top - $delta_y
+			EndIf
+
+			_change_ctrl_size_pos($oTabCtrl, $left, $top, $width, $height, True)
+		Next
+	Next
+	GUISwitch($hGUI)
+EndFunc
 
 
 Func _move_mouse_to_grippy(Const $x, Const $y)

@@ -862,6 +862,10 @@ Func _nudgeSelected($x = 0, $y = 0)
 		EndIf
 		_change_ctrl_size_pos($oCtrl, $oCtrl.Left + $x * ($nudgeAmount + $adjustmentX), $oCtrl.Top + $y * ($nudgeAmount + $adjustmentY), $oCtrl.Width, $oCtrl.Height)
 
+		If $oCtrl.Type = "Tab" Then
+			_moveTabCtrls($oCtrl, -1 * $x * ($nudgeAmount + $adjustmentX), -1 * $y * ($nudgeAmount + $adjustmentY), Default, Default)
+		EndIf
+
 	Next
 
 	;get last control
@@ -1376,8 +1380,8 @@ Func _onMouseMove()
 
 	Switch $oCtrls.mode
 		Case $mode_drawing
+			_log("MOVE:  Drawing")
 			Local $oCtrl = _create_ctrl(0, 0, $oMouse.StartX, $oMouse.StartY, $oCtrls.drawHwnd)
-			_log("-- TABS:  " & "Has tab " & $oCtrls.hasTab)
 
 			If IsObj($oCtrl) Then
 				_add_to_selected($oCtrl)
@@ -1412,6 +1416,7 @@ Func _onMouseMove()
 			EndIf
 
 		Case $mode_init_move, $mode_default, $mode_paste
+			_log("MOVE:  Moving")
 			Local Const $mouse_pos = _mouse_snap_pos()
 
 			Local Const $delta_x = $oMouse.X - $mouse_pos[0]
@@ -1438,7 +1443,12 @@ Func _onMouseMove()
 				If $oCtrls.mode = $mode_init_move Then
 					$oCtrl.Dirty = True
 				EndIf
+
+				If $oCtrl.Type = "Tab" Then
+					_moveTabCtrls($oCtrl, $delta_x, $delta_y, Default, Default)
+				EndIf
 			Next
+
 			_SendMessage($hGUI, $WM_SETREDRAW, True)
 
 			If $oSelected.count < 5 Then
@@ -1452,6 +1462,7 @@ Func _onMouseMove()
 			EndIf
 
 		Case $mode_init_selection
+			_log("MOVE:  Selection")
 			Local Const $oRect = _rect_from_points($oMouse.X, $oMouse.Y, MouseGetPos(0), MouseGetPos(1))
 			_display_selection_rect($oRect)
 			_add_remove_selected_control($oRect)
@@ -1459,6 +1470,7 @@ Func _onMouseMove()
 			Return
 
 		Case $resize_nw, $resize_n, $resize_ne, $resize_w, $resize_e, $resize_sw, $resize_s, $resize_se
+			_log("MOVE:  Resizing")
 			Local $tooltip
 
 			_SendMessage($hGUI, $WM_SETREDRAW, False)
@@ -1937,6 +1949,9 @@ Func _ctrl_change_left()
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Type = "Tab" Then
+					_moveTabCtrls($oCtrl, $oCtrl.Left - $new_data, Default, Default, Default)
+				EndIf
 
 				;move the selected control
 				_change_ctrl_size_pos($oCtrl, $new_data, Default, Default, Default)
@@ -1973,6 +1988,9 @@ Func _ctrl_change_top()
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Type = "Tab" Then
+					_moveTabCtrls($oCtrl, Default, $oCtrl.Top - $new_data, Default, Default)
+				EndIf
 
 				;move the selected control
 				_change_ctrl_size_pos($oCtrl, Default, $new_data, Default, Default)

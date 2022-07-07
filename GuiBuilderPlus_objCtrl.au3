@@ -112,6 +112,8 @@ Func _objCtrls_add($oSelf, $objCtrl, $hParent = -1)
 				If $oThisCtrl.Type = "Tab" Then
 					Local $iTabFocus = _GUICtrlTab_GetCurSel($oThisCtrl.Hwnd)
 					If $iTabFocus >= 0 Then
+						ConsoleWrite("add to tab" & @CRLF)
+
 						Local $tabID = $oThisCtrl.Tabs.at($iTabFocus)
 						$oTabItem = $oCtrls.get($tabID)
 
