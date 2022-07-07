@@ -173,7 +173,7 @@ Func _formToolbar()
 
 	GUICtrlSetOnEvent($menu_save_definition, "_onSaveGui")
 	GUICtrlSetOnEvent($menu_saveas_definition, "_onSaveAsGui")
-	GUICtrlSetOnEvent($menu_load_definition, _onload_gui_definition)
+	GUICtrlSetOnEvent($menu_load_definition, "_onload_gui_definition")
 	GUICtrlSetOnEvent($menu_export_au3, "_onExportMenuItem")
 	GUICtrlSetOnEvent($menu_exit, "_onExit")
 
@@ -496,7 +496,7 @@ Func _set_accelerators()
 	GUICtrlSetOnEvent($accel_Ctrlleft, "_onKeyCtrlLeft")
 	GUICtrlSetOnEvent($accel_Ctrlright, "_onKeyCtrlRight")
 	GUICtrlSetOnEvent($accel_s, "_onSaveGui")
-	GUICtrlSetOnEvent($accel_o, "_load_gui_definition")
+	GUICtrlSetOnEvent($accel_o, "_onload_gui_definition")
 	GUICtrlSetOnEvent($accel_F5, "_onTestGUI")
 EndFunc   ;==>_set_accelerators
 #EndRegion formMain
