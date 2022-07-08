@@ -1075,6 +1075,8 @@ EndFunc   ;==>_show_selected_controls
 
 #Region ; moving & resizing
 Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, Const $height, $tabChild = False)
+	If $oCtrl.Locked Then Return
+
 	If $width < 1 Or $height < 1 Then
 		Return
 	EndIf

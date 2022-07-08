@@ -243,7 +243,7 @@ Global $debug = True
 ;GUI components
 Global $hGUI, $hToolbar, $hFormGenerateCode, $hFormObjectExplorer, $hStatusbar, $hAbout
 Global $iGuiFrameH, $iGuiFrameW, $defaultGuiBkColor = 0xF0F0F0
-Global $menu_wipe
+Global $menu_wipe, $contextmenu_lock
 ;Settings menu
 Global $menu_show_grid, $menu_grid_snap, $menu_paste_pos, $menu_show_ctrl, $menu_show_hidden, $menu_dpi_scaling, $menu_gui_function, $menu_onEvent_mode
 ;View menu
