@@ -1213,12 +1213,6 @@ Func _onMousePrimaryDown()
 
 					Local $oCtrl = $oCtrls.get($ctrl_hwnd)
 
-					If IsObj($oCtrl) Then
-						If $oCtrl.Locked Then
-							$oCtrls.mode = $mode_init_selection
-						EndIf
-					EndIf
-
 					;if ctrl is pressed, add/remove form selection
 					Switch _IsPressed("11")
 						Case False ; single select
@@ -1248,6 +1242,12 @@ Func _onMousePrimaryDown()
 					If $oSelected.count <= 1 Then
 						_setLvSelected($oSelected.getFirst())
 					EndIf
+
+;~ 					If IsObj($oCtrl) Then
+;~ 						If $oCtrl.Locked Then
+;~ 							$oCtrls.mode = $mode_init_selection
+;~ 						EndIf
+;~ 					EndIf
 			EndSwitch
 
 		Case $mode_paste
@@ -1920,6 +1920,7 @@ Func _ctrl_change_text()
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
 
 				If $oCtrl.Type = "Combo" Then
 					GUICtrlSetData($oCtrl.Hwnd, $new_text, $new_text)
@@ -1971,6 +1972,7 @@ Func _ctrl_change_name()
 
 	If $sel_count = 1 Then
 		Local $oCtrl = $oSelected.getFirst()
+		If $oCtrl.Locked Then Return
 
 		If $oCtrl.Type = "Tab" Then
 			If $childSelected Then
@@ -2017,6 +2019,8 @@ Func _ctrl_change_left()
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
 				Switch $oCtrl.Type
 					Case "Tab"
 						_moveTabCtrls($oCtrl, $oCtrl.Left - $new_data, Default, Default, Default)
@@ -2061,6 +2065,8 @@ Func _ctrl_change_top()
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
 				Switch $oCtrl.Type
 					Case "Tab"
 						_moveTabCtrls($oCtrl, Default, $oCtrl.Top - $new_data, Default, Default)
@@ -2104,6 +2110,7 @@ Func _ctrl_change_width()
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
 
 				;move the selected control
 				_change_ctrl_size_pos($oCtrl, Default, Default, $new_data, Default)
@@ -2139,6 +2146,7 @@ Func _ctrl_change_height()
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
 
 				;move the selected control
 				_change_ctrl_size_pos($oCtrl, Default, Default, Default, $new_data)
@@ -2187,6 +2195,7 @@ Func _ctrl_change_bkColor()
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
 
 				;convert string to color then apply
 				Switch $oCtrl.Type
@@ -2225,6 +2234,8 @@ Func _ctrl_change_global()
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
 				;update the property
 				$oCtrl.Global = $new_data
 			Next
@@ -2259,6 +2270,8 @@ Func _ctrl_change_Color()
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
 				;convert string to color then apply
 				If $oCtrl.Type <> "Label" Then Return 0
 
