@@ -95,7 +95,6 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 	;check if pasting into Tab or Group
 	$oNewControl.CtrlParent = 0
 	If $isPaste Then
-		_log("Pasting...")
 		For $oThisCtrl In $oSelected.ctrls.Items()
 			Switch $oThisCtrl.Type
 				Case "Tab"

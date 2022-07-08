@@ -178,6 +178,12 @@ Func _onLvObjectsItem()
 								$i += 1
 							Next
 
+						Case "Group"
+							$childSelected = True
+							_add_to_selected($oCtrl)
+							_populate_control_properties_gui($oCtrl, Dec($textHwnd))
+
+
 						Case "Menu"
 							$childSelected = True
 		;~ 					_add_to_selected($oParentCtrl)
@@ -287,12 +293,16 @@ Func _getLvSelected()
 			Local $textHwnd = StringTrimRight(StringTrimLeft($aStrings[2], 7), 1)
 			$oCtrl = $oCtrls.get(Dec($textHwnd))
 
-			Local $hParent = _GUICtrlTreeView_GetParentHandle($lvObjects, $hItem)
-			If $hParent <> 0 Then    ;this is a child
-				Local $aParentText = _GUICtrlTreeView_GetText($lvObjects, $hParent)
-				Local $aParentStrings = StringSplit($aParentText, @TAB)
-				Local $ParentTextHwnd = StringTrimRight(StringTrimLeft($aParentStrings[2], 7), 1)
-				$oCtrl = $oCtrls.get(Dec($ParentTextHwnd))
+			If $oCtrl.Type = "TabItem" Then
+				Local $hParent = _GUICtrlTreeView_GetParentHandle($lvObjects, $hItem)
+				If $hParent <> 0 Then    ;this is a child
+					Local $aParentText = _GUICtrlTreeView_GetText($lvObjects, $hParent)
+					Local $aParentStrings = StringSplit($aParentText, @TAB)
+					Local $ParentTextHwnd = StringTrimRight(StringTrimLeft($aParentStrings[2], 7), 1)
+					$oCtrl = $oCtrls.get(Dec($ParentTextHwnd))
+				EndIf
+			Else
+				$oCtrl = $oCtrl
 			EndIf
 
 			Return $oCtrl

@@ -151,7 +151,9 @@ Func _objCtrls_remove($oSelf, $Hwnd)
 			; if this control was on a tab, remove the tracking
 			If $thisCtrl.CtrlParent <> 0 Then
 				Local $oTabItem = $oCtrls.get($thisCtrl.CtrlParent)
-				$oTabItem.ctrls.Remove($thisCtrl.Hwnd)
+				If IsObj($oTabItem) Then
+					$oTabItem.ctrls.Remove($thisCtrl.Hwnd)
+				EndIf
 			EndIf
 		EndIf
 
@@ -286,39 +288,88 @@ Func _objCtrls_moveUp($oSelf, $oCtrlStart)
 	#forceref $oSelf
 
 	;find start and end index
-	Local $iStart = -1
+	Local $iStart = -1, $iEnd = -1
 	Local $i = 0
-	For $oCtrl In $oSelf.ctrls.Items()
-		If $oCtrl.Hwnd = $oCtrlStart.Hwnd Then
-			$iStart = $i
-			$iEnd = $iStart - 1
-			ExitLoop
-		EndIf
-
-		$i += 1
-	Next
-
-	If $iStart = -1 Or $iEnd > $oSelf.count - 1 Or $iEnd < 0 Then Return 1
-
-	Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")
-
-	;loop through items, creating new order in temp list
-	$i = 0
-	For $oCtrl In $oSelf.ctrls.Items()
-		If $i <> $iStart Then
-			If $i = $iEnd Then
-				$oCtrlsTemp.Add($oCtrlStart.Hwnd, $oCtrlStart)
+	;if root element
+	If $oCtrlStart.CtrlParent = 0 Then
+		For $oCtrl In $oSelf.ctrls.Items()
+			If $oCtrl.Hwnd <> $oCtrlStart.Hwnd Then
+				If $oCtrl.CtrlParent = 0 Then
+					$iEnd = $i
+				EndIf
+			Else
+				$iStart = $i
+				ExitLoop
 			EndIf
-			$oCtrlsTemp.Add($oCtrl.Hwnd, $oCtrl)
-		EndIf
-		$i += 1
-	Next
 
-	;clear ctrls list
-	$oSelf.ctrls = 0
+			$i += 1
+		Next
 
-	;move temp list to our list
-	$oSelf.ctrls = $oCtrlsTemp
+		If $iStart = -1 Or $iEnd > $oSelf.count - 1 Or $iEnd < 0 Then Return 1
+
+		Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")
+
+		;loop through items, creating new order in temp list
+		$i = 0
+		For $oCtrl In $oSelf.ctrls.Items()
+			If $i <> $iStart Then
+				If $i = $iEnd Then
+					$oCtrlsTemp.Add($oCtrlStart.Hwnd, $oCtrlStart)
+				EndIf
+				$oCtrlsTemp.Add($oCtrl.Hwnd, $oCtrl)
+			EndIf
+			$i += 1
+		Next
+
+		;clear ctrls list
+		$oSelf.ctrls = 0
+
+		;move temp list to our list
+		$oSelf.ctrls = $oCtrlsTemp
+	Else	;if child element
+		Local $oParent = $oSelf.get($oCtrlStart.CtrlParent)
+		Switch $oCtrlStart.Type
+			Case "TabItem"
+				;for later
+
+			Case Else
+				For $oCtrl In $oParent.ctrls.Items()
+					If $oCtrl.Hwnd <> $oCtrlStart.Hwnd Then
+						If $oCtrl.CtrlParent = $oCtrlStart.CtrlParent Then
+							$iEnd = $i
+						EndIf
+					Else
+						$iStart = $i
+						ExitLoop
+					EndIf
+
+					$i += 1
+				Next
+
+				If $iStart = -1 Or $iEnd > $oParent.ctrls.Count - 1 Or $iEnd < 0 Then Return 1
+
+				Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")
+
+				;loop through items, creating new order in temp list
+				$i = 0
+				For $oCtrl In $oParent.ctrls.Items()
+					If $i <> $iStart Then
+						If $i = $iEnd Then
+							$oCtrlsTemp.Add($oCtrlStart.Hwnd, $oCtrlStart)
+						EndIf
+						$oCtrlsTemp.Add($oCtrl.Hwnd, $oCtrl)
+					EndIf
+					$i += 1
+				Next
+
+				;clear ctrls list
+				$oParent.ctrls = 0
+
+				;move temp list to our list
+				$oParent.ctrls = $oCtrlsTemp
+
+		EndSwitch
+	EndIf
 
 	Return $oCtrlStart
 EndFunc   ;==>_objCtrls_moveUp
@@ -328,39 +379,89 @@ Func _objCtrls_moveDown($oSelf, $oCtrlStart)
 	#forceref $oSelf
 
 	;find start and end index
-	Local $iStart = -1
+	Local $iStart = -1, $iEnd = -1
 	Local $i = 0
-	For $oCtrl In $oSelf.ctrls.Items()
-		If $oCtrl.Hwnd = $oCtrlStart.Hwnd Then
-			$iStart = $i
-			$iEnd = $iStart + 1
-			ExitLoop
-		EndIf
-
-		$i += 1
-	Next
-
-	If $iStart = -1 Or $iEnd > $oSelf.count - 1 Or $iEnd < 0 Then Return 1
-
-	Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")
-
-	;loop through items, creating new order in temp list
-	$i = 0
-	For $oCtrl In $oSelf.ctrls.Items()
-		If $i <> $iStart Then
-			$oCtrlsTemp.Add($oCtrl.Hwnd, $oCtrl)
-			If $i = $iEnd Then
-				$oCtrlsTemp.Add($oCtrlStart.Hwnd, $oCtrlStart)
+	If $oCtrlStart.CtrlParent = 0 Then
+		For $oCtrl In $oSelf.ctrls.Items()
+			If $oCtrl.Hwnd = $oCtrlStart.Hwnd Then
+				$iStart = $i
+			Else
+				If $iStart <> -1 And $oCtrl.CtrlParent = 0 Then
+					$iEnd = $i
+					ExitLoop
+				EndIf
 			EndIf
-		EndIf
-		$i += 1
-	Next
 
-	;clear ctrls list
-	$oSelf.ctrls = 0
+			$i += 1
+		Next
 
-	;move temp list to our list
-	$oSelf.ctrls = $oCtrlsTemp
+		If $iStart = -1 Or $iEnd > $oSelf.count - 1 Or $iEnd < 0 Then Return 1
+
+		Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")
+
+		;loop through items, creating new order in temp list
+		$i = 0
+		For $oCtrl In $oSelf.ctrls.Items()
+			If $i <> $iStart Then
+				$oCtrlsTemp.Add($oCtrl.Hwnd, $oCtrl)
+				If $i = $iEnd Then
+					$oCtrlsTemp.Add($oCtrlStart.Hwnd, $oCtrlStart)
+				EndIf
+			EndIf
+			$i += 1
+		Next
+
+		;clear ctrls list
+		$oSelf.ctrls = 0
+
+		;move temp list to our list
+		$oSelf.ctrls = $oCtrlsTemp
+	Else
+		Local $oParent = $oSelf.get($oCtrlStart.CtrlParent)
+		Switch $oCtrlStart.Type
+			Case "TabItem"
+				;for later
+
+			Case Else
+				For $oCtrl In $oParent.ctrls.Items()
+					ConsoleWrite($oCtrl.Name & @CRLF)
+					If $oCtrl.Hwnd = $oCtrlStart.Hwnd Then
+						$iStart = $i
+					Else
+						If $iStart <> -1 And $oCtrl.CtrlParent = $oCtrlStart.CtrlParent Then
+							$iEnd = $i
+							ExitLoop
+						EndIf
+					EndIf
+
+					$i += 1
+				Next
+
+				ConsoleWrite("start " & $iStart & " end " & $iEnd & @CRLF)
+				If $iStart = -1 Or $iEnd > $oParent.ctrls.Count - 1 Or $iEnd < 0 Then Return 1
+
+				Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")
+
+				;loop through items, creating new order in temp list
+				$i = 0
+				For $oCtrl In $oParent.ctrls.Items()
+					If $i <> $iStart Then
+						$oCtrlsTemp.Add($oCtrl.Hwnd, $oCtrl)
+						If $i = $iEnd Then
+							$oCtrlsTemp.Add($oCtrlStart.Hwnd, $oCtrlStart)
+						EndIf
+					EndIf
+					$i += 1
+				Next
+
+				;clear ctrls list
+				$oParent.ctrls = 0
+
+				;move temp list to our list
+				$oParent.ctrls = $oCtrlsTemp
+
+		EndSwitch
+	EndIf
 
 	Return $oCtrlStart
 EndFunc   ;==>_objCtrls_moveDown
