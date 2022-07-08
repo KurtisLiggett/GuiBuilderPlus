@@ -564,7 +564,9 @@ EndFunc   ;==>_control_type
 ; Title...........: _delete_ctrl
 ; Description.....: delete control from GUI and remove the data object
 ;------------------------------------------------------------------------------
-Func _delete_ctrl(Const $oCtrl)
+Func _delete_ctrl(Const $oCtrl, $clear = False)
+	If $oCtrl.Locked And Not $clear Then Return
+
 	GUISwitch($hGUI)
 	Switch $oCtrl.Type
 		Case "Updown"
@@ -1106,6 +1108,8 @@ EndFunc   ;==>_show_selected_controls
 
 #Region ; moving & resizing
 Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, Const $height, $tabChild = False)
+	If $oCtrl.Locked Then Return
+
 	If $width < 1 Or $height < 1 Then
 		Return
 	EndIf
@@ -1135,6 +1139,8 @@ Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, 
 EndFunc   ;==>_change_ctrl_size_pos
 
 Func _moveTabCtrls($oCtrl, $delta_x, $delta_y, $width, $height)
+	If $oCtrl.Locked Then Return
+
 	Local $oTab, $left, $top
 
 	For $hTab In $oCtrl.Tabs
@@ -1162,6 +1168,8 @@ EndFunc
 
 
 Func _moveGroupCtrls($oCtrl, $delta_x, $delta_y, $width, $height)
+	If $oCtrl.Locked Then Return
+
 	Local $left, $top
 
 	For $oThisCtrl In $oCtrl.ctrls.Items()

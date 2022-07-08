@@ -80,6 +80,8 @@ Func _formMain()
 	Local $overlay_contextmenu_copy = GUICtrlCreateMenuItem("Copy", $overlay_contextmenu)
 	Local $overlay_contextmenu_delete = GUICtrlCreateMenuItem("Delete", $overlay_contextmenu)
 	GUICtrlCreateMenuItem("", $overlay_contextmenu)
+	$contextmenu_lock = GUICtrlCreateMenuItem("Lock Control", $overlay_contextmenu)
+	GUICtrlCreateMenuItem("", $overlay_contextmenu)
 	Local $contextmenu_arrange = GUICtrlCreateMenu("Arrange", $overlay_contextmenu)
 ;~ 	Local $contextmenu_arrange_back = GUICtrlCreateMenuItem("Send to Back", $contextmenu_arrange)
 ;~ 	Local $contextmenu_arrange_front = GUICtrlCreateMenuItem("Bring to Front", $contextmenu_arrange)
@@ -100,6 +102,7 @@ Func _formMain()
 	GUICtrlSetOnEvent($overlay_contextmenu_cut, _cut_selected)
 	GUICtrlSetOnEvent($overlay_contextmenu_copy, _copy_selected)
 	GUICtrlSetOnEvent($overlay_contextmenu_delete, _delete_selected_controls)
+	GUICtrlSetOnEvent($contextmenu_lock, "_onLockControl")
 ;~ 	GUICtrlSetOnEvent($contextmenu_arrange_back, "_onAlignMenu_Back")
 ;~ 	GUICtrlSetOnEvent($contextmenu_arrange_front, "_onAlignMenu_Front")
 	GUICtrlSetOnEvent($contextmenu_arrange_left, "_onAlignMenu_Left")
@@ -881,6 +884,41 @@ EndFunc   ;==>_nudgeSelected
 
 
 ;------------------------------------------------------------------------------
+; Title...........: _onLockControl
+; Description.....: Lock selected controls
+; Events..........: Context menu item
+;------------------------------------------------------------------------------
+Func _onLockControl()
+	If $oSelected.count = 0 Then Return 0
+
+	_SendMessage($hGUI, $WM_SETREDRAW, False)
+	For $oCtrl In $oSelected.ctrls.Items()
+		$oCtrl.Locked = True
+		$oCtrl.grippies.show()
+	Next
+	_SendMessage($hGUI, $WM_SETREDRAW, True)
+	_WinAPI_RedrawWindow($hGUI)
+EndFunc
+
+;------------------------------------------------------------------------------
+; Title...........: _onUnlockControl
+; Description.....: Unlock selected controls
+; Events..........: Context menu item
+;------------------------------------------------------------------------------
+Func _onUnlockControl()
+	If $oSelected.count = 0 Then Return 0
+
+	_SendMessage($hGUI, $WM_SETREDRAW, False)
+	For $oCtrl In $oSelected.ctrls.Items()
+		$oCtrl.Locked = False
+		$oCtrl.grippies.show()
+	Next
+	_SendMessage($hGUI, $WM_SETREDRAW, True)
+	_WinAPI_RedrawWindow($hGUI)
+EndFunc
+
+
+;------------------------------------------------------------------------------
 ; Title...........: _onAlignMenu_Left
 ; Description.....: Align selected items
 ; Events..........: Context menu item
@@ -1128,6 +1166,7 @@ Func _onMousePrimaryDown()
 	Switch $oCtrls.mode
 		Case $mode_draw
 			_log("** PrimaryDown: draw **")
+
 			$initDraw = True
 			_set_current_mouse_pos()
 			$oMouse.StartX = $oMouse.X
@@ -1173,6 +1212,12 @@ Func _onMousePrimaryDown()
 
 
 					Local $oCtrl = $oCtrls.get($ctrl_hwnd)
+
+					If IsObj($oCtrl) Then
+						If $oCtrl.Locked Then
+							$oCtrls.mode = $mode_init_selection
+						EndIf
+					EndIf
 
 					;if ctrl is pressed, add/remove form selection
 					Switch _IsPressed("11")
@@ -1366,6 +1411,22 @@ Func _onMouseSecondaryUp()
 				If $oCtrl.Type = "Tab" Then
 					ShowMenu($overlay_contextmenutab, $oMouse.X, $oMouse.Y)
 				Else
+					Local $hasLocked = False
+					For $oSelectedCtrl In $oSelected.ctrls.Items()
+						If $oCtrl.Locked Then
+							$hasLocked = True
+							ExitLoop
+						EndIf
+					Next
+
+					If $hasLocked Then
+						GUICtrlSetData($contextmenu_lock, "Unlock Control")
+						GUICtrlSetOnEvent($contextmenu_lock, "_onUnlockControl")
+					Else
+						GUICtrlSetData($contextmenu_lock, "Lock Control")
+						GUICtrlSetOnEvent($contextmenu_lock, "_onLockControl")
+					EndIf
+
 					ShowMenu($overlay_contextmenu, $oMouse.X, $oMouse.Y)
 				EndIf
 
@@ -2283,7 +2344,7 @@ Func _wipe_current_gui()
 
 	For $oCtrl In $oCtrls.ctrls.Items()
 
-		_delete_ctrl($oCtrl)
+		_delete_ctrl($oCtrl, True)
 
 	Next
 
