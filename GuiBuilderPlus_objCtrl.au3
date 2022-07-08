@@ -424,7 +424,6 @@ Func _objCtrls_moveDown($oSelf, $oCtrlStart)
 
 			Case Else
 				For $oCtrl In $oParent.ctrls.Items()
-					ConsoleWrite($oCtrl.Name & @CRLF)
 					If $oCtrl.Hwnd = $oCtrlStart.Hwnd Then
 						$iStart = $i
 					Else
@@ -437,7 +436,6 @@ Func _objCtrls_moveDown($oSelf, $oCtrlStart)
 					$i += 1
 				Next
 
-				ConsoleWrite("start " & $iStart & " end " & $iEnd & @CRLF)
 				If $iStart = -1 Or $iEnd > $oParent.ctrls.Count - 1 Or $iEnd < 0 Then Return 1
 
 				Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")

@@ -613,7 +613,7 @@ EndFunc   ;==>_objCreateMouse
 Func _log($sMessage, $startup = False)
 	Static $tTimer = TimerInit()
 
-	If $startup or Not $debug Then Return
+	If $startup Or Not $debug Then Return
 
 	Local $iTime = Floor(TimerDiff($tTimer))
 	Local $sTime = StringFormat("%d:%.2d:%06.3f", (Floor($iTime / 3600000)), (Floor(Mod($iTime, 3600000) / 60000)), (Mod(Mod($iTime, 3600000), 60000) / 1000))
@@ -623,4 +623,4 @@ Func _log($sMessage, $startup = False)
 	Else
 		ConsoleWrite($sTime & ":  " & $sMessage & @CRLF)
 	EndIf
-EndFunc
+EndFunc   ;==>_log
