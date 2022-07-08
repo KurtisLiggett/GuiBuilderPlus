@@ -1139,6 +1139,8 @@ Func _onMousePrimaryDown()
 		Next
 	EndIf
 
+	$oCtrls.clickedCtrl = $oCtrls.get($ctrl_hwnd)
+
 	Local $pos
 
 	;if tool is selected and clicking on an existing control (but not resizing), switch to selection
@@ -1498,6 +1500,13 @@ Func _onMouseMove()
 			Local $tooltip
 
 			Local $count = $oSelected.count
+
+			If IsObj($oCtrls.clickedCtrl) Then
+				If $oCtrls.clickedCtrl.Locked Then
+					$oCtrls.mode = $mode_default
+					Return
+				EndIf
+			EndIf
 
 			_SendMessage($hGUI, $WM_SETREDRAW, False)
 			For $oCtrl In $oSelected.ctrls.Items()

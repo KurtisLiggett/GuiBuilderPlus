@@ -26,6 +26,7 @@ Func _objCtrls($isSelection = False)
 	_AutoItObject_AddProperty($oObject, "hasTab", $ELSCOPE_PUBLIC, False)
 	_AutoItObject_AddProperty($oObject, "isSelection", $ELSCOPE_PUBLIC, $isSelection)
 	_AutoItObject_AddProperty($oObject, "drawHwnd", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "clickedCtrl", $ELSCOPE_PUBLIC, 0)
 	;actual list of controls
 	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, $oDict)
 
