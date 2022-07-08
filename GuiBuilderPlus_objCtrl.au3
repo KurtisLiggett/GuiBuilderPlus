@@ -515,6 +515,7 @@ Func _objCtrl($oParent)
 	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, ObjCreate("Scripting.Dictionary"))
 	_AutoItObject_AddProperty($oObject, "Dirty", $ELSCOPE_PUBLIC, False)
 	_AutoItObject_AddProperty($oObject, "CtrlParent", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "Locked", $ELSCOPE_PUBLIC, False)
 
 	Return $oObject
 EndFunc   ;==>_objCtrl
@@ -605,14 +606,14 @@ Func _objGrippies($oParent, $oGrandParent)
 
 	;create the labels to represent the grippy handles
 	Local $grippy_size = 5
-	Local $NW = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	Local $N = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	Local $NE = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	Local $W = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	Local $East = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	Local $SW = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	Local $S = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	Local $SE = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
+	Local $NW = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
+	Local $N = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
+	Local $NE = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
+	Local $W = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
+	Local $East = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
+	Local $SW = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
+	Local $S = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
+	Local $SE = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
 
 	;set mouse cursor for each grippy
 	GUICtrlSetCursor($NW, $SIZENWSE)
@@ -692,6 +693,8 @@ EndFunc   ;==>_objGrippies_mouseClickEvent
 ; Description.....:	when a grippy is clicked, set the flag
 ;------------------------------------------------------------------------------
 Func _objGrippies_mouseClick($oSelf, $CtrlID)
+	If $oSelf.parent.Locked Then Return
+
 	Switch $CtrlID
 		Case $oSelf.NW
 			$oSelf.parent.parent.mode = $resize_nw
@@ -806,6 +809,49 @@ EndFunc   ;==>_objGrippies_resizing
 ;------------------------------------------------------------------------------
 Func _objGrippies_show($oSelf)
 ;~ 	_log("show grippies for " & $oSelf.parent.Name)
+	;set lock=red, or unlock=black
+	Local $lockColor = 0xFF0000
+	Local $unlockColor = 0x333333
+	If $oSelf.parent.Locked Then
+		GUICtrlSetBkColor($oSelf.NW, $lockColor)
+		GUICtrlSetBkColor($oSelf.N, $lockColor)
+		GUICtrlSetBkColor($oSelf.NE, $lockColor)
+		GUICtrlSetBkColor($oSelf.East, $lockColor)
+		GUICtrlSetBkColor($oSelf.SE, $lockColor)
+		GUICtrlSetBkColor($oSelf.S, $lockColor)
+		GUICtrlSetBkColor($oSelf.SW, $lockColor)
+		GUICtrlSetBkColor($oSelf.W, $lockColor)
+
+		;set mouse cursor for each grippy
+		GUICtrlSetCursor($oSelf.NW, -1)
+		GUICtrlSetCursor($oSelf.N, -1)
+		GUICtrlSetCursor($oSelf.NE, -1)
+		GUICtrlSetCursor($oSelf.East, -1)
+		GUICtrlSetCursor($oSelf.SE, -1)
+		GUICtrlSetCursor($oSelf.S, -1)
+		GUICtrlSetCursor($oSelf.SW, -1)
+		GUICtrlSetCursor($oSelf.W, -1)
+	Else
+		GUICtrlSetBkColor($oSelf.NW, $unlockColor)
+		GUICtrlSetBkColor($oSelf.N, $unlockColor)
+		GUICtrlSetBkColor($oSelf.NE, $unlockColor)
+		GUICtrlSetBkColor($oSelf.East, $unlockColor)
+		GUICtrlSetBkColor($oSelf.SE, $unlockColor)
+		GUICtrlSetBkColor($oSelf.S, $unlockColor)
+		GUICtrlSetBkColor($oSelf.SW, $unlockColor)
+		GUICtrlSetBkColor($oSelf.W, $unlockColor)
+
+		;set mouse cursor for each grippy
+		GUICtrlSetCursor($oSelf.NW, $SIZENWSE)
+		GUICtrlSetCursor($oSelf.N, $SIZENS)
+		GUICtrlSetCursor($oSelf.NE, $SIZENESW)
+		GUICtrlSetCursor($oSelf.East, $SIZEWS)
+		GUICtrlSetCursor($oSelf.SE, $SIZENWSE)
+		GUICtrlSetCursor($oSelf.S, $SIZENS)
+		GUICtrlSetCursor($oSelf.SW, $SIZENESW)
+		GUICtrlSetCursor($oSelf.W, $SIZEWS)
+	EndIf
+
 	;show
 	GUICtrlSetState($oSelf.NW, $GUI_SHOW)
 	GUICtrlSetState($oSelf.N, $GUI_SHOW)

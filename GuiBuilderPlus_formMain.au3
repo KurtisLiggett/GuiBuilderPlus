@@ -1166,6 +1166,7 @@ Func _onMousePrimaryDown()
 	Switch $oCtrls.mode
 		Case $mode_draw
 			_log("** PrimaryDown: draw **")
+
 			$initDraw = True
 			_set_current_mouse_pos()
 			$oMouse.StartX = $oMouse.X
@@ -1211,6 +1212,12 @@ Func _onMousePrimaryDown()
 
 
 					Local $oCtrl = $oCtrls.get($ctrl_hwnd)
+
+					If IsObj($oCtrl) Then
+						If $oCtrl.Locked Then
+							$oCtrls.mode = $mode_init_selection
+						EndIf
+					EndIf
 
 					;if ctrl is pressed, add/remove form selection
 					Switch _IsPressed("11")
@@ -2337,7 +2344,7 @@ Func _wipe_current_gui()
 
 	For $oCtrl In $oCtrls.ctrls.Items()
 
-		_delete_ctrl($oCtrl)
+		_delete_ctrl($oCtrl, True)
 
 	Next
 

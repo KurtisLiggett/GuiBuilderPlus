@@ -107,6 +107,7 @@ Func _save_gui_definition($saveAs = False)
 		Json_Put($objOutput, ".Controls[" & $i & "].Width", $oCtrl.Width)
 		Json_Put($objOutput, ".Controls[" & $i & "].Height", $oCtrl.Height)
 		Json_Put($objOutput, ".Controls[" & $i & "].Global", $oCtrl.Global)
+		Json_Put($objOutput, ".Controls[" & $i & "].Locked", $oCtrl.Locked)
 		If $oCtrl.Color = -1 Then
 			Json_Put($objOutput, ".Controls[" & $i & "].Color", -1)
 		Else
@@ -143,6 +144,7 @@ Func _save_gui_definition($saveAs = False)
 							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Width", $oTabCtrl.Width)
 							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Height", $oTabCtrl.Height)
 							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Global", $oTabCtrl.Global)
+							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Locked", $oTabCtrl.Locked)
 							If $oTabCtrl.Color = -1 Then
 								Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Color", -1)
 							Else
@@ -175,6 +177,7 @@ Func _save_gui_definition($saveAs = False)
 						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Width", $oThisCtrl.Width)
 						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Height", $oThisCtrl.Height)
 						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Global", $oThisCtrl.Global)
+						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Locked", $oThisCtrl.Locked)
 						If $oThisCtrl.Color = -1 Then
 							Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Color", -1)
 						Else
@@ -334,6 +337,7 @@ Func _load_gui_definition($AgdInfile = '')
 		$oCtrl.Width = _Json_Get($oThisCtrl, ".Width", -1)
 		$oCtrl.Height = _Json_Get($oThisCtrl, ".Height", -1)
 		$oCtrl.Global = (_Json_Get($oThisCtrl, ".Global", False) = "True") ? True : False
+		$oCtrl.Locked = (_Json_Get($oThisCtrl, ".Locked", False) = "True") ? True : False
 		$oCtrl.Color = _Json_Get($oThisCtrl, ".Color", -1)
 		If $oCtrl.Color <> -1 Then
 			$oCtrl.Color = Dec(StringReplace($oCtrl.Color, "0x", ""))
@@ -382,6 +386,7 @@ Func _load_gui_definition($AgdInfile = '')
 							$oCtrl2.Width = _Json_Get($oTabCtrl, ".Width", -1)
 							$oCtrl2.Height = _Json_Get($oTabCtrl, ".Height", -1)
 							$oCtrl2.Global = (_Json_Get($oTabCtrl, ".Global", False) = "True") ? True : False
+							$oCtrl2.Locked = (_Json_Get($oTabCtrl, ".Locked", False) = "True") ? True : False
 							$oCtrl2.Color = _Json_Get($oTabCtrl, ".Color", -1)
 							If $oCtrl2.Color <> -1 Then
 								$oCtrl2.Color = Dec(StringReplace($oCtrl2.Color, "0x", ""))
@@ -417,6 +422,7 @@ Func _load_gui_definition($AgdInfile = '')
 					$oCtrl2.Width = _Json_Get($oGroupCtrl, ".Width", -1)
 					$oCtrl2.Height = _Json_Get($oGroupCtrl, ".Height", -1)
 					$oCtrl2.Global = (_Json_Get($oGroupCtrl, ".Global", False) = "True") ? True : False
+					$oCtrl2.Locked = (_Json_Get($oGroupCtrl, ".Locked", False) = "True") ? True : False
 					$oCtrl2.Color = _Json_Get($oGroupCtrl, ".Color", -1)
 					If $oCtrl2.Color <> -1 Then
 						$oCtrl2.Color = Dec(StringReplace($oCtrl2.Color, "0x", ""))
@@ -574,6 +580,7 @@ Func _load_gui_definition_ini($AgdInfile = '')
 		$oCtrl.Width = IniRead($AgdInfile, $Key, "Width", -1)
 		$oCtrl.Height = IniRead($AgdInfile, $Key, "Height", -1)
 		$oCtrl.Global = (IniRead($AgdInfile, $Key, "Global", False) = "True") ? True : False
+		$oCtrl.Locked = (IniRead($AgdInfile, $Key, "Locked", False) = "True") ? True : False
 		$oCtrl.Color = IniRead($AgdInfile, $Key, "Color", -1)
 		If $oCtrl.Color <> -1 Then
 			$oCtrl.Color = Dec(StringReplace($oCtrl.Color, "0x", ""))
