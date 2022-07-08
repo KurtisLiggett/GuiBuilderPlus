@@ -109,18 +109,24 @@ Func _objCtrls_add($oSelf, $objCtrl, $hParent = -1)
 	If $hParent <> -1 Then
 		For $oThisCtrl In $oSelf.ctrls.Items()
 			If $oThisCtrl.Hwnd = $hParent Then
-				If $oThisCtrl.Type = "Tab" Then
-					Local $iTabFocus = _GUICtrlTab_GetCurSel($oThisCtrl.Hwnd)
-					If $iTabFocus >= 0 Then
+				Switch $oThisCtrl.Type
+					Case "Tab"
+						Local $iTabFocus = _GUICtrlTab_GetCurSel($oThisCtrl.Hwnd)
+						If $iTabFocus >= 0 Then
 
-						Local $tabID = $oThisCtrl.Tabs.at($iTabFocus)
-						$oTabItem = $oCtrls.get($tabID)
+							Local $tabID = $oThisCtrl.Tabs.at($iTabFocus)
+							$oTabItem = $oCtrls.get($tabID)
 
-						$oTabItem.ctrls.Add($objCtrl.Hwnd, $objCtrl)
-						$objCtrl.TabParent = $oTabItem.Hwnd
-						$oTabItem.TabParent = $oThisCtrl.Hwnd
-					EndIf
-				EndIf
+							$oTabItem.ctrls.Add($objCtrl.Hwnd, $objCtrl)
+							$objCtrl.CtrlParent = $oTabItem.Hwnd
+							$oTabItem.CtrlParent = $oThisCtrl.Hwnd
+						EndIf
+
+					Case "Group"
+						$oThisCtrl.ctrls.Add($objCtrl.Hwnd, $objCtrl)
+						$objCtrl.CtrlParent = $oThisCtrl.Hwnd
+
+				EndSwitch
 			EndIf
 		Next
 	EndIf
@@ -143,9 +149,11 @@ Func _objCtrls_remove($oSelf, $Hwnd)
 
 		If Not $oSelf.isSelection Then
 			; if this control was on a tab, remove the tracking
-			If $thisCtrl.Tabparent <> 0 Then
-				Local $oTabItem = $oCtrls.get($thisCtrl.Tabparent)
-				$oTabItem.ctrls.Remove($thisCtrl.Hwnd)
+			If $thisCtrl.CtrlParent <> 0 Then
+				Local $oTabItem = $oCtrls.get($thisCtrl.CtrlParent)
+				If IsObj($oTabItem) Then
+					$oTabItem.ctrls.Remove($thisCtrl.Hwnd)
+				EndIf
 			EndIf
 		EndIf
 
@@ -280,39 +288,88 @@ Func _objCtrls_moveUp($oSelf, $oCtrlStart)
 	#forceref $oSelf
 
 	;find start and end index
-	Local $iStart = -1
+	Local $iStart = -1, $iEnd = -1
 	Local $i = 0
-	For $oCtrl In $oSelf.ctrls.Items()
-		If $oCtrl.Hwnd = $oCtrlStart.Hwnd Then
-			$iStart = $i
-			$iEnd = $iStart - 1
-			ExitLoop
-		EndIf
-
-		$i += 1
-	Next
-
-	If $iStart = -1 Or $iEnd > $oSelf.count - 1 Or $iEnd < 0 Then Return 1
-
-	Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")
-
-	;loop through items, creating new order in temp list
-	$i = 0
-	For $oCtrl In $oSelf.ctrls.Items()
-		If $i <> $iStart Then
-			If $i = $iEnd Then
-				$oCtrlsTemp.Add($oCtrlStart.Hwnd, $oCtrlStart)
+	;if root element
+	If $oCtrlStart.CtrlParent = 0 Then
+		For $oCtrl In $oSelf.ctrls.Items()
+			If $oCtrl.Hwnd <> $oCtrlStart.Hwnd Then
+				If $oCtrl.CtrlParent = 0 Then
+					$iEnd = $i
+				EndIf
+			Else
+				$iStart = $i
+				ExitLoop
 			EndIf
-			$oCtrlsTemp.Add($oCtrl.Hwnd, $oCtrl)
-		EndIf
-		$i += 1
-	Next
 
-	;clear ctrls list
-	$oSelf.ctrls = 0
+			$i += 1
+		Next
 
-	;move temp list to our list
-	$oSelf.ctrls = $oCtrlsTemp
+		If $iStart = -1 Or $iEnd > $oSelf.count - 1 Or $iEnd < 0 Then Return 1
+
+		Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")
+
+		;loop through items, creating new order in temp list
+		$i = 0
+		For $oCtrl In $oSelf.ctrls.Items()
+			If $i <> $iStart Then
+				If $i = $iEnd Then
+					$oCtrlsTemp.Add($oCtrlStart.Hwnd, $oCtrlStart)
+				EndIf
+				$oCtrlsTemp.Add($oCtrl.Hwnd, $oCtrl)
+			EndIf
+			$i += 1
+		Next
+
+		;clear ctrls list
+		$oSelf.ctrls = 0
+
+		;move temp list to our list
+		$oSelf.ctrls = $oCtrlsTemp
+	Else	;if child element
+		Local $oParent = $oSelf.get($oCtrlStart.CtrlParent)
+		Switch $oCtrlStart.Type
+			Case "TabItem"
+				;for later
+
+			Case Else
+				For $oCtrl In $oParent.ctrls.Items()
+					If $oCtrl.Hwnd <> $oCtrlStart.Hwnd Then
+						If $oCtrl.CtrlParent = $oCtrlStart.CtrlParent Then
+							$iEnd = $i
+						EndIf
+					Else
+						$iStart = $i
+						ExitLoop
+					EndIf
+
+					$i += 1
+				Next
+
+				If $iStart = -1 Or $iEnd > $oParent.ctrls.Count - 1 Or $iEnd < 0 Then Return 1
+
+				Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")
+
+				;loop through items, creating new order in temp list
+				$i = 0
+				For $oCtrl In $oParent.ctrls.Items()
+					If $i <> $iStart Then
+						If $i = $iEnd Then
+							$oCtrlsTemp.Add($oCtrlStart.Hwnd, $oCtrlStart)
+						EndIf
+						$oCtrlsTemp.Add($oCtrl.Hwnd, $oCtrl)
+					EndIf
+					$i += 1
+				Next
+
+				;clear ctrls list
+				$oParent.ctrls = 0
+
+				;move temp list to our list
+				$oParent.ctrls = $oCtrlsTemp
+
+		EndSwitch
+	EndIf
 
 	Return $oCtrlStart
 EndFunc   ;==>_objCtrls_moveUp
@@ -322,39 +379,87 @@ Func _objCtrls_moveDown($oSelf, $oCtrlStart)
 	#forceref $oSelf
 
 	;find start and end index
-	Local $iStart = -1
+	Local $iStart = -1, $iEnd = -1
 	Local $i = 0
-	For $oCtrl In $oSelf.ctrls.Items()
-		If $oCtrl.Hwnd = $oCtrlStart.Hwnd Then
-			$iStart = $i
-			$iEnd = $iStart + 1
-			ExitLoop
-		EndIf
-
-		$i += 1
-	Next
-
-	If $iStart = -1 Or $iEnd > $oSelf.count - 1 Or $iEnd < 0 Then Return 1
-
-	Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")
-
-	;loop through items, creating new order in temp list
-	$i = 0
-	For $oCtrl In $oSelf.ctrls.Items()
-		If $i <> $iStart Then
-			$oCtrlsTemp.Add($oCtrl.Hwnd, $oCtrl)
-			If $i = $iEnd Then
-				$oCtrlsTemp.Add($oCtrlStart.Hwnd, $oCtrlStart)
+	If $oCtrlStart.CtrlParent = 0 Then
+		For $oCtrl In $oSelf.ctrls.Items()
+			If $oCtrl.Hwnd = $oCtrlStart.Hwnd Then
+				$iStart = $i
+			Else
+				If $iStart <> -1 And $oCtrl.CtrlParent = 0 Then
+					$iEnd = $i
+					ExitLoop
+				EndIf
 			EndIf
-		EndIf
-		$i += 1
-	Next
 
-	;clear ctrls list
-	$oSelf.ctrls = 0
+			$i += 1
+		Next
 
-	;move temp list to our list
-	$oSelf.ctrls = $oCtrlsTemp
+		If $iStart = -1 Or $iEnd > $oSelf.count - 1 Or $iEnd < 0 Then Return 1
+
+		Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")
+
+		;loop through items, creating new order in temp list
+		$i = 0
+		For $oCtrl In $oSelf.ctrls.Items()
+			If $i <> $iStart Then
+				$oCtrlsTemp.Add($oCtrl.Hwnd, $oCtrl)
+				If $i = $iEnd Then
+					$oCtrlsTemp.Add($oCtrlStart.Hwnd, $oCtrlStart)
+				EndIf
+			EndIf
+			$i += 1
+		Next
+
+		;clear ctrls list
+		$oSelf.ctrls = 0
+
+		;move temp list to our list
+		$oSelf.ctrls = $oCtrlsTemp
+	Else
+		Local $oParent = $oSelf.get($oCtrlStart.CtrlParent)
+		Switch $oCtrlStart.Type
+			Case "TabItem"
+				;for later
+
+			Case Else
+				For $oCtrl In $oParent.ctrls.Items()
+					If $oCtrl.Hwnd = $oCtrlStart.Hwnd Then
+						$iStart = $i
+					Else
+						If $iStart <> -1 And $oCtrl.CtrlParent = $oCtrlStart.CtrlParent Then
+							$iEnd = $i
+							ExitLoop
+						EndIf
+					EndIf
+
+					$i += 1
+				Next
+
+				If $iStart = -1 Or $iEnd > $oParent.ctrls.Count - 1 Or $iEnd < 0 Then Return 1
+
+				Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")
+
+				;loop through items, creating new order in temp list
+				$i = 0
+				For $oCtrl In $oParent.ctrls.Items()
+					If $i <> $iStart Then
+						$oCtrlsTemp.Add($oCtrl.Hwnd, $oCtrl)
+						If $i = $iEnd Then
+							$oCtrlsTemp.Add($oCtrlStart.Hwnd, $oCtrlStart)
+						EndIf
+					EndIf
+					$i += 1
+				Next
+
+				;clear ctrls list
+				$oParent.ctrls = 0
+
+				;move temp list to our list
+				$oParent.ctrls = $oCtrlsTemp
+
+		EndSwitch
+	EndIf
 
 	Return $oCtrlStart
 EndFunc   ;==>_objCtrls_moveDown
@@ -407,24 +512,32 @@ Func _objCtrl($oParent)
 	_AutoItObject_AddProperty($oObject, "TabCount", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "Tabs", $ELSCOPE_PUBLIC, LinkedList())
 	_AutoItObject_AddProperty($oObject, "MenuItems", $ELSCOPE_PUBLIC, LinkedList())
+	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, ObjCreate("Scripting.Dictionary"))
 	_AutoItObject_AddProperty($oObject, "Dirty", $ELSCOPE_PUBLIC, False)
-	_AutoItObject_AddProperty($oObject, "TabParent", $ELSCOPE_PUBLIC, 0)
-	_AutoItObject_AddProperty($oObject, "Locked", $ELSCOPE_PUBLIC, False)
+	_AutoItObject_AddProperty($oObject, "CtrlParent", $ELSCOPE_PUBLIC, 0)
 
 	Return $oObject
 EndFunc   ;==>_objCtrl
 #EndRegion objCtrl
 
 
-#Region tabs
-Func _objTab($oParent)
+
+;~ Func _objTab($oParent)
+;~ 	Local $oObject = _objCtrl($oParent)
+
+;~ 	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, ObjCreate("Scripting.Dictionary"))
+
+;~ 	Return $oObject
+;~ EndFunc
+
+Func _objGroup($oParent)
 	Local $oObject = _objCtrl($oParent)
 
 	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, ObjCreate("Scripting.Dictionary"))
 
 	Return $oObject
 EndFunc
-#EndRegion tabs
+
 
 
 #Region misc-objects
@@ -492,14 +605,14 @@ Func _objGrippies($oParent, $oGrandParent)
 
 	;create the labels to represent the grippy handles
 	Local $grippy_size = 5
-	Local $NW = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
-	Local $N = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
-	Local $NE = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
-	Local $W = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
-	Local $East = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
-	Local $SW = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
-	Local $S = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
-	Local $SE = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
+	Local $NW = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
+	Local $N = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
+	Local $NE = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
+	Local $W = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
+	Local $East = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
+	Local $SW = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
+	Local $S = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
+	Local $SE = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
 
 	;set mouse cursor for each grippy
 	GUICtrlSetCursor($NW, $SIZENWSE)
@@ -693,29 +806,6 @@ EndFunc   ;==>_objGrippies_resizing
 ;------------------------------------------------------------------------------
 Func _objGrippies_show($oSelf)
 ;~ 	_log("show grippies for " & $oSelf.parent.Name)
-	;set lock=red, or unlock=black
-	Local $lockColor = 0xFF0000
-	Local $unlockColor = 0x333333
-	If $oSelf.parent.Locked Then
-		GUICtrlSetBkColor($oSelf.NW, $lockColor)
-		GUICtrlSetBkColor($oSelf.N, $lockColor)
-		GUICtrlSetBkColor($oSelf.NE, $lockColor)
-		GUICtrlSetBkColor($oSelf.East, $lockColor)
-		GUICtrlSetBkColor($oSelf.SE, $lockColor)
-		GUICtrlSetBkColor($oSelf.S, $lockColor)
-		GUICtrlSetBkColor($oSelf.SW, $lockColor)
-		GUICtrlSetBkColor($oSelf.W, $lockColor)
-	Else
-		GUICtrlSetBkColor($oSelf.NW, $unlockColor)
-		GUICtrlSetBkColor($oSelf.N, $unlockColor)
-		GUICtrlSetBkColor($oSelf.NE, $unlockColor)
-		GUICtrlSetBkColor($oSelf.East, $unlockColor)
-		GUICtrlSetBkColor($oSelf.SE, $unlockColor)
-		GUICtrlSetBkColor($oSelf.S, $unlockColor)
-		GUICtrlSetBkColor($oSelf.SW, $unlockColor)
-		GUICtrlSetBkColor($oSelf.W, $unlockColor)
-	EndIf
-
 	;show
 	GUICtrlSetState($oSelf.NW, $GUI_SHOW)
 	GUICtrlSetState($oSelf.N, $GUI_SHOW)

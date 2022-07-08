@@ -865,10 +865,14 @@ Func _nudgeSelected($x = 0, $y = 0)
 		EndIf
 		_change_ctrl_size_pos($oCtrl, $oCtrl.Left + $x * ($nudgeAmount + $adjustmentX), $oCtrl.Top + $y * ($nudgeAmount + $adjustmentY), $oCtrl.Width, $oCtrl.Height)
 
-		If $oCtrl.Type = "Tab" Then
-			_moveTabCtrls($oCtrl, -1 * $x * ($nudgeAmount + $adjustmentX), -1 * $y * ($nudgeAmount + $adjustmentY), Default, Default)
-		EndIf
+		Switch $oCtrl.Type
+			Case "Tab"
+				_moveTabCtrls($oCtrl, -1 * $x * ($nudgeAmount + $adjustmentX), -1 * $y * ($nudgeAmount + $adjustmentY), Default, Default)
 
+			Case "Group"
+				_moveGroupCtrls($oCtrl, -1 * $x * ($nudgeAmount + $adjustmentX), -1 * $y * ($nudgeAmount + $adjustmentY), Default, Default)
+
+		EndSwitch
 	Next
 
 	;get last control
@@ -1497,9 +1501,14 @@ Func _onMouseMove()
 					$oCtrl.Dirty = True
 				EndIf
 
-				If $oCtrl.Type = "Tab" Then
-					_moveTabCtrls($oCtrl, $delta_x, $delta_y, Default, Default)
-				EndIf
+				Switch $oCtrl.Type
+					Case "Tab"
+						_moveTabCtrls($oCtrl, $delta_x, $delta_y, Default, Default)
+
+					Case "Group"
+						_moveGroupCtrls($oCtrl, $delta_x, $delta_y, Default, Default)
+
+				EndSwitch
 			Next
 
 			_SendMessage($hGUI, $WM_SETREDRAW, True)
@@ -2001,9 +2010,14 @@ Func _ctrl_change_left()
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
-				If $oCtrl.Type = "Tab" Then
-					_moveTabCtrls($oCtrl, $oCtrl.Left - $new_data, Default, Default, Default)
-				EndIf
+				Switch $oCtrl.Type
+					Case "Tab"
+						_moveTabCtrls($oCtrl, $oCtrl.Left - $new_data, Default, Default, Default)
+
+					Case "Group"
+						_moveGroupCtrls($oCtrl, $oCtrl.Left - $new_data, Default, Default, Default)
+
+				EndSwitch
 
 				;move the selected control
 				_change_ctrl_size_pos($oCtrl, $new_data, Default, Default, Default)
@@ -2040,9 +2054,14 @@ Func _ctrl_change_top()
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
-				If $oCtrl.Type = "Tab" Then
-					_moveTabCtrls($oCtrl, Default, $oCtrl.Top - $new_data, Default, Default)
-				EndIf
+				Switch $oCtrl.Type
+					Case "Tab"
+						_moveTabCtrls($oCtrl, Default, $oCtrl.Top - $new_data, Default, Default)
+
+					Case "Group"
+						_moveGroupCtrls($oCtrl, Default, $oCtrl.Top - $new_data, Default, Default)
+
+				EndSwitch
 
 				;move the selected control
 				_change_ctrl_size_pos($oCtrl, Default, $new_data, Default, Default)
