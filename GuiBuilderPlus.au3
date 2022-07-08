@@ -12,6 +12,9 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
+;  07/07/2022 ...:	- FIXED:	Crash when using Ctrl+O shortcut key
+;					- ADDED:	Ability to add child controls to tabs
+;
 ;  07/03/2022 ...:	- FIXED:	Color and Background values of 0x000000 were saved as -1
 ;					- FIXED:	Setting "Paste at mouse position" incorrect behavior when turned off
 ;					- FIXED:	Error when saving GUI to file
@@ -610,7 +613,7 @@ EndFunc   ;==>_objCreateMouse
 Func _log($sMessage, $startup = False)
 	Static $tTimer = TimerInit()
 
-	If $startup or Not $debug Then Return
+	If $startup Or Not $debug Then Return
 
 	Local $iTime = Floor(TimerDiff($tTimer))
 	Local $sTime = StringFormat("%d:%.2d:%06.3f", (Floor($iTime / 3600000)), (Floor(Mod($iTime, 3600000) / 60000)), (Mod(Mod($iTime, 3600000), 60000) / 1000))
@@ -620,4 +623,4 @@ Func _log($sMessage, $startup = False)
 	Else
 		ConsoleWrite($sTime & ":  " & $sMessage & @CRLF)
 	EndIf
-EndFunc
+EndFunc   ;==>_log

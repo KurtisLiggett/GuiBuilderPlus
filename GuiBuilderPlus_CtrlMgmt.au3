@@ -9,7 +9,7 @@
 ; Description.....: create new control and add it to the ctrls object
 ; Called by.......: Draw with mouse; Paste
 ;------------------------------------------------------------------------------
-Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1)
+Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hParent = -1, $bDuplicate = False)
 	;only allow 1 tab control
 	If $oCtrls.CurrentType = "Tab" Then
 		If $oCtrls.getTypeCount("Tab") > 0 Then
@@ -92,11 +92,52 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1)
 			EndIf
 	EndSwitch
 
+	;check if pasting into Tab or Group
+	$oNewControl.CtrlParent = 0
+	If $isPaste Then
+		For $oThisCtrl In $oSelected.ctrls.Items()
+			Switch $oThisCtrl.Type
+				Case "Tab"
+					$hParent = $oThisCtrl.Hwnd
+					ExitLoop
+
+				Case "Group"
+					$hParent = $oThisCtrl.Hwnd
+					ExitLoop
+
+			EndSwitch
+		Next
+	EndIf
+
+	;if tab parent, then switch to that tab
+	Local $tabChild = False
+	If $hParent <> -1 Then
+		For $oThisCtrl In $oCtrls.ctrls.Items()
+			If $oThisCtrl.Hwnd = $hParent Then
+				Switch $oThisCtrl.Type
+					Case "Tab"
+						Local $iTabFocus = _GUICtrlTab_GetCurSel($oThisCtrl.Hwnd)
+						If $iTabFocus >= 0 Then
+							Local $tabID = $oThisCtrl.Tabs.at($iTabFocus)
+							GUISwitch($hGUI, $tabID)
+							$tabChild = True
+						EndIf
+						ExitLoop
+
+;~ 					Case "Group"
+;~ 						Local $iTabFocus = _GUICtrlTab_GetCurSel($oThisCtrl.Hwnd)
+;~ 						ExitLoop
+
+				EndSwitch
+			EndIf
+		Next
+	EndIf
+
 	Switch $oNewControl.Type
 		Case "Button"
 			$oNewControl.Hwnd = GUICtrlCreateButton($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
-			$oCtrls.add($oNewControl)
+			$oCtrls.add($oNewControl, $hParent)
 
 			$bStatusNewMessage = True
 			_GUICtrlStatusBar_SetText($hStatusbar, "new button")
@@ -104,7 +145,7 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1)
 		Case "Group"
 			$oNewControl.Hwnd = GUICtrlCreateGroup($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
-			$oCtrls.add($oNewControl)
+			$oCtrls.add($oNewControl, $hParent)
 
 		Case "Checkbox"
 			$oNewControl.Height = 20
@@ -116,7 +157,7 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1)
 				EndIf
 			EndIf
 
-			$oCtrls.add($oNewControl)
+			$oCtrls.add($oNewControl, $hParent)
 
 		Case "Radio"
 			$oNewControl.Height = 20
@@ -128,25 +169,25 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1)
 				EndIf
 			EndIf
 
-			$oCtrls.add($oNewControl)
+			$oCtrls.add($oNewControl, $hParent)
 
 		Case "Edit"
 			$oNewControl.Hwnd = GUICtrlCreateEdit('', $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
 ;~ 			GUICtrlSetState($oNewControl.Hwnd, $GUI_DISABLE)
 
-			$oCtrls.add($oNewControl)
+			$oCtrls.add($oNewControl, $hParent)
 
 			GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
-			Return $oNewControl
+;~ 			Return $oNewControl
 
 		Case "Input"
 			$oNewControl.Hwnd = GUICtrlCreateInput($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
 ;~ 			GUICtrlSetState($oNewControl.Hwnd, $GUI_DISABLE)
 
-			$oCtrls.add($oNewControl)
+			$oCtrls.add($oNewControl, $hParent)
 
 		Case "Label"
 			$oNewControl.Hwnd = GUICtrlCreateLabel($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
@@ -159,46 +200,46 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1)
 				EndIf
 			EndIf
 
-			$oCtrls.add($oNewControl)
+			$oCtrls.add($oNewControl, $hParent)
 
 		Case "List"
 			$oNewControl.Hwnd = GUICtrlCreateList($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
 ;~ 			GUICtrlSetState($oNewControl.Hwnd, $GUI_DISABLE)
 
-			$oCtrls.add($oNewControl)
+			$oCtrls.add($oNewControl, $hParent)
 
 		Case "Combo"
 			$oNewControl.Height = 20
 
 			$oNewControl.Hwnd = GUICtrlCreateCombo('', $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
-			$oCtrls.add($oNewControl)
+			$oCtrls.add($oNewControl, $hParent)
 
 		Case "Date"
 			$oNewControl.Hwnd = GUICtrlCreateDate('', $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
-			$oCtrls.add($oNewControl)
+			$oCtrls.add($oNewControl, $hParent)
 
 			GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
-			Return $oNewControl
+;~ 			Return $oNewControl
 
 		Case "Slider"
 			$oNewControl.Hwnd = _GuiCtrlCreateSlider($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height, $oNewControl.Height)
 
-			$oCtrls.add($oNewControl)
+			$oCtrls.add($oNewControl, $hParent)
 
 			GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
-			Return $oNewControl
+;~ 			Return $oNewControl
 
 		Case "Tab"
 			;create main tab control
 			$oNewControl.Hwnd = GUICtrlCreateTab($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
-			GUICtrlSetOnEvent($oNewControl.Hwnd, "_onCtrlTabSwitch")
+			GUICtrlSetOnEvent(-1, "_onCtrlTabSwitch")
 
-			$oCtrls.add($oNewControl)
+			$oCtrls.add($oNewControl, $hParent)
 
 			GUISwitch($hGUI)
 
@@ -212,7 +253,7 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1)
 
 			GUICtrlCreateTreeViewItem($oNewControl.Text, $oNewControl.Hwnd)
 
-			$oCtrls.add($oNewControl)
+			$oCtrls.add($oNewControl, $hParent)
 
 		Case "Updown"
 			$oNewControl.HwndCount = 2
@@ -223,44 +264,44 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1)
 			$oNewControl.Hwnd = $oNewControl.Hwnd1
 			$oNewControl.Hwnd2 = GUICtrlCreateUpdown($oNewControl.Hwnd1)
 
-			$oCtrls.add($oNewControl)
+			$oCtrls.add($oNewControl, $hParent)
 
 		Case "Progress"
 			$oNewControl.Hwnd = GUICtrlCreateProgress($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
 			GUICtrlSetData($oNewControl.Hwnd, 100)
 
-			$oCtrls.add($oNewControl)
+			$oCtrls.add($oNewControl, $hParent)
 
 			GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
-			Return $oNewControl
+;~ 			Return $oNewControl
 
 		Case "Pic"
 			$oNewControl.Hwnd = GUICtrlCreatePic($samplebmp, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 			GUICtrlSetImage($oNewControl.Hwnd, $samplebmp)
 
-			$oCtrls.add($oNewControl)
+			$oCtrls.add($oNewControl, $hParent)
 
 			GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
-			Return $oNewControl
+;~ 			Return $oNewControl
 
 		Case "Avi"
 			$oNewControl.Hwnd = GUICtrlCreateAvi($sampleavi, 0, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height, $ACS_AUTOPLAY)
 
-			$oCtrls.add($oNewControl)
+			$oCtrls.add($oNewControl, $hParent)
 
 			GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
-			Return $oNewControl
+;~ 			Return $oNewControl
 
 		Case "Icon"
 			$oNewControl.Hwnd = GUICtrlCreateIcon($iconset, 0, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
-			$oCtrls.add($oNewControl)
+			$oCtrls.add($oNewControl, $hParent)
 
-			Return $oNewControl
+;~ 			Return $oNewControl
 
 		Case "Menu"
 			$oNewControl.Hwnd = GUICtrlCreateMenu("Menu 1")
@@ -269,7 +310,7 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1)
 			$oNewControl.Width = 0
 			$oNewControl.Height = 0
 
-			$oCtrls.add($oNewControl)
+			$oCtrls.add($oNewControl, $hParent)
 
 			Local $cmenu = GUICtrlCreateContextMenu($oNewControl.Hwnd)
 			GUICtrlCreateMenuItem("test Item", $cmenu)
@@ -289,11 +330,16 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1)
 
 ;~ 			GUICtrlSetState($oNewControl.Hwnd, $GUI_DISABLE)
 
-			$oCtrls.add($oNewControl)
+			$oCtrls.add($oNewControl, $hParent)
 
 	EndSwitch
 
 	$oMain.hasChanged = True
+
+	If $tabChild Then
+		GUICtrlCreateTabItem('')
+		GUISwitch($hGUI)
+	EndIf
 
 	Switch IsObj($oCtrl)
 		Case True    ;paste from existing object
@@ -329,6 +375,9 @@ Func _GuiCtrlCreateSlider(Const $left, Const $top, Const $width, Const $height, 
 	Return $ref
 EndFunc   ;==>_GuiCtrlCreateSlider
 
+Func _onNewTab()
+	_new_tab()
+EndFunc
 
 Func _new_tab($loadGUI = False)
 	Local $oCtrl
@@ -345,7 +394,13 @@ Func _new_tab($loadGUI = False)
 	GUICtrlCreateTabItem("")
 	$tab.Text = "Tab" & $oCtrl.TabCount
 	$tab.Name = "TabItem_" & $oCtrl.TabCount
-	$oCtrl.Tabs.add($tab)
+	$tab.Type = "TabItem"
+
+	;add control to the ctrls object
+	$oCtrls.add($tab)
+
+	;add tab sheet control ID to tab list for tracking
+	$oCtrl.Tabs.add($tab.Hwnd)
 
 	_GUICtrlTab_SetCurSel($oCtrl.Hwnd, $oCtrl.TabCount - 1)
 
@@ -353,13 +408,37 @@ Func _new_tab($loadGUI = False)
 		_refreshGenerateCode()
 		_formObjectExplorer_updateList()
 	EndIf
+
+	Return $oCtrl.TabCount
 EndFunc   ;==>_new_tab
 
 
 Func _onCtrlTabSwitch()
-
+;~ 	_remove_all_from_selected()
+	_tabClearInactiveSelection(@GUI_CtrlId)
 EndFunc   ;==>_onCtrlTabSwitch
 
+Func _tabClearInactiveSelection($Hwnd)
+	Local $oCtrl = $oCtrls.get($Hwnd)
+	Local $oTab
+
+	Local $iTabFocus = _GUICtrlTab_GetCurSel($Hwnd)
+	Local $tabFocusID = $oCtrl.Tabs.at($iTabFocus)
+
+	For $hTab In $oCtrl.Tabs
+		If $hTab = $tabFocusID Then ContinueLoop
+
+		$oTab = $oCtrls.get($hTab)
+		For $oTabCtrl In $oTab.ctrls.Items()
+			_remove_from_selected($oTabCtrl)
+		Next
+	Next
+	GUISwitch($hGUI)
+EndFunc
+
+Func _onDeleteTab()
+	_delete_tab()
+EndFunc
 
 Func _delete_tab()
 	Local $oCtrl
@@ -373,8 +452,20 @@ Func _delete_tab()
 	Local $iTabFocus = _GUICtrlTab_GetCurSel($oCtrl.Hwnd)
 
 	If $iTabFocus >= 0 Then
+		$tabID = $oCtrl.Tabs.at($iTabFocus)
+		$oTabItem = $oCtrls.get($tabID)
+		For $oTabCtrl In $oTabItem.ctrls.Items()
+			_delete_ctrl($oTabCtrl)
+		Next
+
 		_GUICtrlTab_DeleteItem($oCtrl.Hwnd, $iTabFocus)
+
+		;remove from controls object
+		$oCtrls.ctrls.remove($oTabItem.Hwnd)
+
+		;remove from tab tracker
 		$oCtrl.Tabs.remove($iTabFocus)
+
 		$oCtrl.TabCount = $oCtrl.TabCount - 1
 		_GUICtrlTab_SetCurSel($oCtrl.Hwnd, 0)
 	Else
@@ -482,6 +573,19 @@ Func _delete_ctrl(Const $oCtrl)
 
 		Case "IP"
 			_GUICtrlIpAddress_Destroy(HWnd($oCtrl.Hwnd))
+
+		Case "Tab"
+			For $hTabItem In $oCtrl.Tabs
+;~ 				_delete_ctrl($oCtrls.get($hTabItem))
+				_delete_tab()
+			Next
+			GUICtrlDelete($oCtrl.Hwnd)
+
+		Case "Group"
+			For $oThisCtrl In $oCtrl.ctrls.Items()
+				_delete_ctrl($oThisCtrl)
+			Next
+			GUICtrlDelete($oCtrl.Hwnd)
 
 		Case Else
 			GUICtrlDelete($oCtrl.Hwnd)
@@ -642,8 +746,7 @@ Func _PasteSelected($bDuplicate = False, $bAtMouse = False)
 					$oNewCtrl.Top = ($oMouse.Y - $topLeftRect.Top) + $oNewCtrl.Top
 				EndIf
 
-				$aNewCtrls[$i] = _create_ctrl($oNewCtrl)
-
+				$aNewCtrls[$i] = _create_ctrl($oNewCtrl, 0, -1, -1, -1, $bDuplicate)
 
 				;select the new controls
 				If $i = 0 Then    ;select first item
@@ -716,13 +819,32 @@ Func _display_selected_tooltip()
 EndFunc   ;==>_display_selected_tooltip
 
 Func _control_intersection(Const $oCtrl, Const $oRect)
+	If $oCtrl.Type = "TabItem" Then Return False
 	Local $aMousePos = MouseGetPos()
+	Local $returnVal
 
 	If $aMousePos[0] < $oMouse.StartX Then	;right-to-left
-		Return _CtrlCrossRect($oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
+		$returnVal = _CtrlCrossRect($oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
 	Else	;left-to-right
-		Return _CtrlInRect($oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
+		$returnVal = _CtrlInRect($oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
 	EndIf
+
+	If $oCtrl.CtrlParent <> 0 Then
+		If $oCtrls.get($oCtrl.CtrlParent).Type = "TabItem" Then
+			Local $TabHwnd = $oCtrls.get($oCtrl.CtrlParent).CtrlParent
+			Local $iTabFocus = _GUICtrlTab_GetCurSel($TabHwnd)
+
+			If $iTabFocus >= 0 Then
+				Local $oTabCtrl = $oCtrls.get($TabHwnd)
+				Local $iTabFocusID = $oTabCtrl.Tabs.at($iTabFocus)
+				If $iTabFocusID <> $oCtrl.CtrlParent Then
+					Return False
+				EndIf
+			EndIf
+		EndIf
+	EndIf
+
+	Return $returnVal
 EndFunc   ;==>_control_intersection
 
 Func _group_select(Const $oCtrl)
@@ -983,7 +1105,7 @@ EndFunc   ;==>_show_selected_controls
 
 
 #Region ; moving & resizing
-Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, Const $height)
+Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, Const $height, $tabChild = False)
 	If $width < 1 Or $height < 1 Then
 		Return
 	EndIf
@@ -1006,9 +1128,62 @@ Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, 
 			GUICtrlSetPos($oCtrl.Hwnd, $left, $top, $width, $height)
 	EndSwitch
 
-	$oCtrl.grippies.show()
+	If Not $tabChild Then
+		$oCtrl.grippies.show()
+	EndIf
 	$oMain.hasChanged = True
 EndFunc   ;==>_change_ctrl_size_pos
+
+Func _moveTabCtrls($oCtrl, $delta_x, $delta_y, $width, $height)
+	Local $oTab, $left, $top
+
+	For $hTab In $oCtrl.Tabs
+		$oTab = $oCtrls.get($hTab)
+		For $oTabCtrl In $oTab.ctrls.Items()
+			If $oSelected.exists($oTabCtrl.Hwnd) Then ContinueLoop
+
+			if $delta_x = Default Then
+				$left = Default
+			Else
+				$left = $oTabCtrl.Left - $delta_x
+			EndIf
+
+			if $delta_y = Default Then
+				$top = Default
+			Else
+				$top = $oTabCtrl.Top - $delta_y
+			EndIf
+
+			_change_ctrl_size_pos($oTabCtrl, $left, $top, $width, $height, True)
+		Next
+	Next
+	GUISwitch($hGUI)
+EndFunc
+
+
+Func _moveGroupCtrls($oCtrl, $delta_x, $delta_y, $width, $height)
+	Local $left, $top
+
+	For $oThisCtrl In $oCtrl.ctrls.Items()
+		If $oSelected.exists($oThisCtrl.Hwnd) Then ContinueLoop
+
+		if $delta_x = Default Then
+			$left = Default
+		Else
+			$left = $oThisCtrl.Left - $delta_x
+		EndIf
+
+		if $delta_y = Default Then
+			$top = Default
+		Else
+			$top = $oThisCtrl.Top - $delta_y
+		EndIf
+
+		_change_ctrl_size_pos($oThisCtrl, $left, $top, $width, $height, True)
+	Next
+
+	GUISwitch($hGUI)
+EndFunc
 
 
 Func _move_mouse_to_grippy(Const $x, Const $y)

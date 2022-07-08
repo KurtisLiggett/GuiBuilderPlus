@@ -4,6 +4,7 @@
 ; ===============================================================================================================================
 
 
+#Region objCtrls
 ;------------------------------------------------------------------------------
 ; Title...........: _objCtrls
 ; Description.....:	Main container for all controls
@@ -24,6 +25,7 @@ Func _objCtrls($isSelection = False)
 	_AutoItObject_AddProperty($oObject, "hasIP", $ELSCOPE_PUBLIC, False)
 	_AutoItObject_AddProperty($oObject, "hasTab", $ELSCOPE_PUBLIC, False)
 	_AutoItObject_AddProperty($oObject, "isSelection", $ELSCOPE_PUBLIC, $isSelection)
+	_AutoItObject_AddProperty($oObject, "drawHwnd", $ELSCOPE_PUBLIC, 0)
 	;actual list of controls
 	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, $oDict)
 
@@ -80,9 +82,9 @@ EndFunc   ;==>_objCtrls_createNew
 
 Func _objCtrls_count($oSelf)
 	Return $oSelf.ctrls.Count
-EndFunc
+EndFunc   ;==>_objCtrls_count
 
-Func _objCtrls_add($oSelf, $objCtrl)
+Func _objCtrls_add($oSelf, $objCtrl, $hParent = -1)
 	#forceref $oSelf
 
 	If $oSelf.isSelection Then
@@ -98,6 +100,35 @@ Func _objCtrls_add($oSelf, $objCtrl)
 	If $objCtrl.Type = "IP" Then
 		$oSelf.IPCount = $oSelf.IPCount + 1
 		$oSelf.hasIP = True
+	EndIf
+
+	If $objCtrl.Type = "Tab" Then
+		$oSelf.hasTab = True
+	EndIf
+
+	If $hParent <> -1 Then
+		For $oThisCtrl In $oSelf.ctrls.Items()
+			If $oThisCtrl.Hwnd = $hParent Then
+				Switch $oThisCtrl.Type
+					Case "Tab"
+						Local $iTabFocus = _GUICtrlTab_GetCurSel($oThisCtrl.Hwnd)
+						If $iTabFocus >= 0 Then
+
+							Local $tabID = $oThisCtrl.Tabs.at($iTabFocus)
+							$oTabItem = $oCtrls.get($tabID)
+
+							$oTabItem.ctrls.Add($objCtrl.Hwnd, $objCtrl)
+							$objCtrl.CtrlParent = $oTabItem.Hwnd
+							$oTabItem.CtrlParent = $oThisCtrl.Hwnd
+						EndIf
+
+					Case "Group"
+						$oThisCtrl.ctrls.Add($objCtrl.Hwnd, $objCtrl)
+						$objCtrl.CtrlParent = $oThisCtrl.Hwnd
+
+				EndSwitch
+			EndIf
+		Next
 	EndIf
 
 	$oSelf.incTypeCount($objCtrl.Type)
@@ -116,6 +147,16 @@ Func _objCtrls_remove($oSelf, $Hwnd)
 	If $bFoundItem Then
 		Local $thisCtrl = $oSelf.ctrls.Item($Hwnd)
 
+		If Not $oSelf.isSelection Then
+			; if this control was on a tab, remove the tracking
+			If $thisCtrl.CtrlParent <> 0 Then
+				Local $oTabItem = $oCtrls.get($thisCtrl.CtrlParent)
+				If IsObj($oTabItem) Then
+					$oTabItem.ctrls.Remove($thisCtrl.Hwnd)
+				EndIf
+			EndIf
+		EndIf
+
 		If $thisCtrl.Type = "Menu" Then
 			$oSelf.menuCount = $oSelf.menuCount - 1
 			If $oSelf.menuCount >= 1 Then
@@ -130,6 +171,8 @@ Func _objCtrls_remove($oSelf, $Hwnd)
 			Else
 				$oSelf.hasIP = False
 			EndIf
+		ElseIf $thisCtrl.Type = "Tab" Then
+			$oSelf.hasTab = False
 		EndIf
 
 		If $oSelf.isSelection Then
@@ -162,23 +205,11 @@ Func _objCtrls_removeAll($oSelf)
 	$oSelf.ctrls = ObjCreate("Scripting.Dictionary")
 	$oSelf.menuCount = 0
 	$oSelf.hasMenu = False
+	$oSelf.hasTab = False
 EndFunc   ;==>_objCtrls_removeAll
 
 Func _objCtrls_get($oSelf, $Hwnd)
 	#forceref $oSelf
-
-;~ 	For $oItem In $oSelf.ctrls
-;~ 		If $oItem.Hwnd = $Hwnd Then
-;~ 			Return $oItem
-;~ 		EndIf
-;~ 		If $oItem.Type = "Menu" Then
-;~ 			For $oMenuItem In $oItem.MenuItems
-;~ 				If $oMenuItem.Hwnd = $Hwnd Then
-;~ 					Return $oMenuItem
-;~ 				EndIf
-;~ 			Next
-;~ 		EndIf
-;~ 	Next
 
 	If $oSelf.ctrls.Exists($Hwnd) Then
 		Return $oSelf.ctrls.Item($Hwnd)
@@ -192,7 +223,7 @@ Func _objCtrls_getFist($oSelf)
 	Local $aItems = $oSelf.ctrls.Items()
 
 	If IsArray($aItems) And UBound($aItems) > 0 Then
-		Return	$aItems[0]
+		Return $aItems[0]
 	Else
 		Return -1
 	EndIf
@@ -203,8 +234,8 @@ Func _objCtrls_getLast($oSelf)
 
 	Local $aItems = $oSelf.ctrls.Items()
 
-	If IsArray($aItems) And UBound($aItems) > 0  Then
-		Return	$aItems[$oSelf.ctrls.Count-1]
+	If IsArray($aItems) And UBound($aItems) > 0 Then
+		Return $aItems[$oSelf.ctrls.Count - 1]
 	Else
 		Return -1
 	EndIf
@@ -224,30 +255,9 @@ EndFunc   ;==>_objCtrls_getCopy
 Func _objCtrls_exists($oSelf, $Hwnd)
 	#forceref $oSelf
 
-;~ 	For $oItem In $oSelf.ctrls
-;~ 		If $oItem.Hwnd = $Hwnd Then
-;~ 			Return True
-;~ 		EndIf
-;~ 		If $oItem.Type = "Menu" Then
-;~ 			For $oMenuItem In $oItem.MenuItems
-;~ 				If $oMenuItem.Hwnd = $Hwnd Then
-;~ 					Return True
-;~ 				EndIf
-;~ 			Next
-;~ 		EndIf
-;~ 	Next
-
-;~ 	$aKeys = $oSelf.ctrls.Keys()
-;~ 	ConsoleWrite("---- keys" & @CRLF)
-;~ 	For $key in $aKeys
-;~ 		ConsoleWrite($key & @CRLF)
-;~ 	Next
-;~ 	ConsoleWrite(@CRLF)
 	If $oSelf.ctrls.Exists($Hwnd) Then
-;~ 		ConsoleWrite("yes " & $Hwnd & @CRLF)
 		Return True
 	Else
-;~ 		ConsoleWrite("no " & $Hwnd & @CRLF)
 		Return False
 	EndIf
 EndFunc   ;==>_objCtrls_exists
@@ -278,39 +288,88 @@ Func _objCtrls_moveUp($oSelf, $oCtrlStart)
 	#forceref $oSelf
 
 	;find start and end index
-	Local $iStart = -1
+	Local $iStart = -1, $iEnd = -1
 	Local $i = 0
-	For $oCtrl In $oSelf.ctrls.Items()
-		If $oCtrl.Hwnd = $oCtrlStart.Hwnd Then
-			$iStart = $i
-			$iEnd = $iStart - 1
-			ExitLoop
-		EndIf
-
-		$i += 1
-	Next
-
-	If $iStart = -1 Or $iEnd > $oSelf.count - 1 Or $iEnd < 0 Then Return 1
-
-	Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")
-
-	;loop through items, creating new order in temp list
-	$i = 0
-	For $oCtrl In $oSelf.ctrls.Items()
-		If $i <> $iStart Then
-			If $i = $iEnd Then
-				$oCtrlsTemp.Add($oCtrlStart.Hwnd, $oCtrlStart)
+	;if root element
+	If $oCtrlStart.CtrlParent = 0 Then
+		For $oCtrl In $oSelf.ctrls.Items()
+			If $oCtrl.Hwnd <> $oCtrlStart.Hwnd Then
+				If $oCtrl.CtrlParent = 0 Then
+					$iEnd = $i
+				EndIf
+			Else
+				$iStart = $i
+				ExitLoop
 			EndIf
-			$oCtrlsTemp.Add($oCtrl.Hwnd, $oCtrl)
-		EndIf
-		$i += 1
-	Next
 
-	;clear ctrls list
-	$oSelf.ctrls = 0
+			$i += 1
+		Next
 
-	;move temp list to our list
-	$oSelf.ctrls = $oCtrlsTemp
+		If $iStart = -1 Or $iEnd > $oSelf.count - 1 Or $iEnd < 0 Then Return 1
+
+		Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")
+
+		;loop through items, creating new order in temp list
+		$i = 0
+		For $oCtrl In $oSelf.ctrls.Items()
+			If $i <> $iStart Then
+				If $i = $iEnd Then
+					$oCtrlsTemp.Add($oCtrlStart.Hwnd, $oCtrlStart)
+				EndIf
+				$oCtrlsTemp.Add($oCtrl.Hwnd, $oCtrl)
+			EndIf
+			$i += 1
+		Next
+
+		;clear ctrls list
+		$oSelf.ctrls = 0
+
+		;move temp list to our list
+		$oSelf.ctrls = $oCtrlsTemp
+	Else	;if child element
+		Local $oParent = $oSelf.get($oCtrlStart.CtrlParent)
+		Switch $oCtrlStart.Type
+			Case "TabItem"
+				;for later
+
+			Case Else
+				For $oCtrl In $oParent.ctrls.Items()
+					If $oCtrl.Hwnd <> $oCtrlStart.Hwnd Then
+						If $oCtrl.CtrlParent = $oCtrlStart.CtrlParent Then
+							$iEnd = $i
+						EndIf
+					Else
+						$iStart = $i
+						ExitLoop
+					EndIf
+
+					$i += 1
+				Next
+
+				If $iStart = -1 Or $iEnd > $oParent.ctrls.Count - 1 Or $iEnd < 0 Then Return 1
+
+				Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")
+
+				;loop through items, creating new order in temp list
+				$i = 0
+				For $oCtrl In $oParent.ctrls.Items()
+					If $i <> $iStart Then
+						If $i = $iEnd Then
+							$oCtrlsTemp.Add($oCtrlStart.Hwnd, $oCtrlStart)
+						EndIf
+						$oCtrlsTemp.Add($oCtrl.Hwnd, $oCtrl)
+					EndIf
+					$i += 1
+				Next
+
+				;clear ctrls list
+				$oParent.ctrls = 0
+
+				;move temp list to our list
+				$oParent.ctrls = $oCtrlsTemp
+
+		EndSwitch
+	EndIf
 
 	Return $oCtrlStart
 EndFunc   ;==>_objCtrls_moveUp
@@ -320,39 +379,87 @@ Func _objCtrls_moveDown($oSelf, $oCtrlStart)
 	#forceref $oSelf
 
 	;find start and end index
-	Local $iStart = -1
+	Local $iStart = -1, $iEnd = -1
 	Local $i = 0
-	For $oCtrl In $oSelf.ctrls.Items()
-		If $oCtrl.Hwnd = $oCtrlStart.Hwnd Then
-			$iStart = $i
-			$iEnd = $iStart + 1
-			ExitLoop
-		EndIf
-
-		$i += 1
-	Next
-
-	If $iStart = -1 Or $iEnd > $oSelf.count - 1 Or $iEnd < 0 Then Return 1
-
-	Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")
-
-	;loop through items, creating new order in temp list
-	$i = 0
-	For $oCtrl In $oSelf.ctrls.Items()
-		If $i <> $iStart Then
-			$oCtrlsTemp.Add($oCtrl.Hwnd, $oCtrl)
-			If $i = $iEnd Then
-				$oCtrlsTemp.Add($oCtrlStart.Hwnd, $oCtrlStart)
+	If $oCtrlStart.CtrlParent = 0 Then
+		For $oCtrl In $oSelf.ctrls.Items()
+			If $oCtrl.Hwnd = $oCtrlStart.Hwnd Then
+				$iStart = $i
+			Else
+				If $iStart <> -1 And $oCtrl.CtrlParent = 0 Then
+					$iEnd = $i
+					ExitLoop
+				EndIf
 			EndIf
-		EndIf
-		$i += 1
-	Next
 
-	;clear ctrls list
-	$oSelf.ctrls = 0
+			$i += 1
+		Next
 
-	;move temp list to our list
-	$oSelf.ctrls = $oCtrlsTemp
+		If $iStart = -1 Or $iEnd > $oSelf.count - 1 Or $iEnd < 0 Then Return 1
+
+		Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")
+
+		;loop through items, creating new order in temp list
+		$i = 0
+		For $oCtrl In $oSelf.ctrls.Items()
+			If $i <> $iStart Then
+				$oCtrlsTemp.Add($oCtrl.Hwnd, $oCtrl)
+				If $i = $iEnd Then
+					$oCtrlsTemp.Add($oCtrlStart.Hwnd, $oCtrlStart)
+				EndIf
+			EndIf
+			$i += 1
+		Next
+
+		;clear ctrls list
+		$oSelf.ctrls = 0
+
+		;move temp list to our list
+		$oSelf.ctrls = $oCtrlsTemp
+	Else
+		Local $oParent = $oSelf.get($oCtrlStart.CtrlParent)
+		Switch $oCtrlStart.Type
+			Case "TabItem"
+				;for later
+
+			Case Else
+				For $oCtrl In $oParent.ctrls.Items()
+					If $oCtrl.Hwnd = $oCtrlStart.Hwnd Then
+						$iStart = $i
+					Else
+						If $iStart <> -1 And $oCtrl.CtrlParent = $oCtrlStart.CtrlParent Then
+							$iEnd = $i
+							ExitLoop
+						EndIf
+					EndIf
+
+					$i += 1
+				Next
+
+				If $iStart = -1 Or $iEnd > $oParent.ctrls.Count - 1 Or $iEnd < 0 Then Return 1
+
+				Local $oCtrlsTemp = ObjCreate("Scripting.Dictionary")
+
+				;loop through items, creating new order in temp list
+				$i = 0
+				For $oCtrl In $oParent.ctrls.Items()
+					If $i <> $iStart Then
+						$oCtrlsTemp.Add($oCtrl.Hwnd, $oCtrl)
+						If $i = $iEnd Then
+							$oCtrlsTemp.Add($oCtrlStart.Hwnd, $oCtrlStart)
+						EndIf
+					EndIf
+					$i += 1
+				Next
+
+				;clear ctrls list
+				$oParent.ctrls = 0
+
+				;move temp list to our list
+				$oParent.ctrls = $oCtrlsTemp
+
+		EndSwitch
+	EndIf
 
 	Return $oCtrlStart
 EndFunc   ;==>_objCtrls_moveDown
@@ -366,9 +473,11 @@ Func _objCtrls_startResizing($oSelf)
 		$oCtrl.resizePrevLeft = $mouse_pos[0]
 		$oCtrl.resizePrevTop = $mouse_pos[1]
 	Next
-EndFunc   ;==>_objCtrls_moveDown
+EndFunc   ;==>_objCtrls_startResizing
+#EndRegion objCtrls
 
 
+#Region objCtrl
 ;------------------------------------------------------------------------------
 ; Title...........: _objCtrl
 ; Description.....:	Ctrl object
@@ -403,12 +512,35 @@ Func _objCtrl($oParent)
 	_AutoItObject_AddProperty($oObject, "TabCount", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "Tabs", $ELSCOPE_PUBLIC, LinkedList())
 	_AutoItObject_AddProperty($oObject, "MenuItems", $ELSCOPE_PUBLIC, LinkedList())
+	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, ObjCreate("Scripting.Dictionary"))
 	_AutoItObject_AddProperty($oObject, "Dirty", $ELSCOPE_PUBLIC, False)
+	_AutoItObject_AddProperty($oObject, "CtrlParent", $ELSCOPE_PUBLIC, 0)
 
 	Return $oObject
 EndFunc   ;==>_objCtrl
+#EndRegion objCtrl
 
 
+
+;~ Func _objTab($oParent)
+;~ 	Local $oObject = _objCtrl($oParent)
+
+;~ 	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, ObjCreate("Scripting.Dictionary"))
+
+;~ 	Return $oObject
+;~ EndFunc
+
+Func _objGroup($oParent)
+	Local $oObject = _objCtrl($oParent)
+
+	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, ObjCreate("Scripting.Dictionary"))
+
+	Return $oObject
+EndFunc
+
+
+
+#Region misc-objects
 Func _objCreateRect()
 	Local $oSelf = _AutoItObject_Create()
 
@@ -430,8 +562,6 @@ Func _CreateListItem($name, $value)
 
 	Return $oSelf
 EndFunc   ;==>_CreateListItem
-
-
 
 
 
@@ -458,10 +588,11 @@ Func _objMain()
 
 	Return $oObject
 EndFunc   ;==>_objMain
+#EndRegion misc-objects
 
 
 
-
+#Region grippies
 ;------------------------------------------------------------------------------
 ; Title...........: _objGrippies
 ; Description.....:	Grippies (selection handles) for a control
@@ -543,7 +674,7 @@ Func _objGrippies_mouseClickEvent($oObject = 0)
 		$oParentObject = $oObject
 	Else
 		If IsObj($oParentObject) Then
-			For $oCtrl in $oParentObject.ctrls.Items()
+			For $oCtrl In $oParentObject.ctrls.Items()
 				Switch @GUI_CtrlId
 					Case $oCtrl.grippies.NW, $oCtrl.grippies.N, $oCtrl.grippies.NE, $oCtrl.grippies.SE, $oCtrl.grippies.S, $oCtrl.grippies.SW, $oCtrl.grippies.W, $oCtrl.grippies.East
 						$oCtrl.grippies.mouseClick(@GUI_CtrlId)
@@ -762,4 +893,5 @@ Func _objGrippies_delete($oSelf)
 	GUICtrlDelete($oSelf.SE)
 	GUICtrlDelete($oSelf.W)
 EndFunc   ;==>_objGrippies_delete
+#EndRegion grippies
 

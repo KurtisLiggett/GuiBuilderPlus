@@ -198,7 +198,10 @@ EndFunc   ;==>_functionDoc
 ; Title...........: _generate_controls
 ; Description.....: generate the code for the controls
 ;------------------------------------------------------------------------------
-Func _generate_controls(Const $oCtrl, $sDpiScale)
+Func _generate_controls(Const $oCtrl, $sDpiScale, $isChild=False)
+	If $oCtrl.Type = "TabItem" Then Return ""
+	If Not $isChild And $oCtrl.CtrlParent <> 0 Then Return ""
+
 	;apply the DPI scaling factor
 	Local $left = $oCtrl.Left
 	If $left <> -1 Then
@@ -244,9 +247,16 @@ Func _generate_controls(Const $oCtrl, $sDpiScale)
 		Case "Tab"
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '(' & $ltwh & ')' & @CRLF
 
-			For $oTab In $oCtrl.Tabs
+			Local $oTab
+			For $hTab In $oCtrl.Tabs
+				$oTab = $oCtrls.get($hTab)
 				$mControls &= $scopeString & " $" & $oTab.Name & " = "
 				$mControls &= 'GUICtrlCreateTabItem("' & $oTab.Text & '")' & @CRLF
+
+				For $oTabCtrl In $oTab.ctrls.Items()
+					$mControls &= _generate_controls($oTabCtrl, $sDpiScale, True)
+				Next
+
 				$mControls &= 'GUICtrlCreateTabItem("")' & @CRLF
 			Next
 
@@ -270,6 +280,15 @@ Func _generate_controls(Const $oCtrl, $sDpiScale)
 ;~ 			_GUICtrlIpAddress_Create($hGUI, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 			$mControls &= "_GUICtrlIpAddress_Create" & '($' & $oMain.Name & ', ' & $ltwh & ")" & @CRLF
 			$mControls &= "_GUICtrlIpAddress_Set($" & $oCtrl.Name & ', "' & $oCtrl.Text & '")' & @CRLF
+
+		Case "Group"
+			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & ")" & @CRLF
+
+			For $oGroupCtrl In $oCtrl.ctrls.Items()
+				$mControls &= _generate_controls($oGroupCtrl, $sDpiScale, True)
+			Next
+
+			$mControls &= 'GUICtrlCreateGroup("", -99, -99, 1, 1)' & @CRLF
 
 		Case Else
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & ")" & @CRLF
