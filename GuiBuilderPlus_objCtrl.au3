@@ -588,6 +588,37 @@ Func _objMain()
 	_AutoItObject_AddProperty($oObject, "DefaultCursor", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "hasChanged", $ELSCOPE_PUBLIC, False)
 
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+	$oDict.Add("WS_BORDER", False)
+	$oDict.Add("WS_POPUP", False)
+	$oDict.Add("WS_CAPTION", False)
+	$oDict.Add("WS_CLIPCHILDREN", False)
+	$oDict.Add("WS_CLIPSIBLINGS", False)
+	$oDict.Add("WS_DISABLED", False)
+	$oDict.Add("WS_DLGFRAME", False)
+	$oDict.Add("WS_HSCROLL", False)
+	$oDict.Add("WS_MAXIMIZE", False)
+	$oDict.Add("WS_MAXIMIZEBOX", False)
+	$oDict.Add("WS_MINIMIZE", False)
+	$oDict.Add("WS_MINIMIZEBOX", False)
+	$oDict.Add("WS_OVERLAPPED", False)
+	$oDict.Add("WS_OVERLAPPEDWINDOW", False)
+	$oDict.Add("WS_POPUPWINDOW", False)
+	$oDict.Add("WS_SIZEBOX", False)
+	$oDict.Add("WS_SYSMENU", False)
+	$oDict.Add("WS_THICKFRAME", False)
+	$oDict.Add("WS_VSCROLL", False)
+	$oDict.Add("WS_VISIBLE", False)
+	$oDict.Add("WS_CHILD", False)
+	$oDict.Add("WS_GROUP", False)
+	$oDict.Add("WS_TABSTOP", False)
+	$oDict.Add("DS_MODALFRAME", False)
+	$oDict.Add("DS_SETFOREGROUND", False)
+	$oDict.Add("DS_CONTEXTHELP", False)
+
+	_AutoItObject_AddProperty($oObject, "styles", $ELSCOPE_PUBLIC, $oDict)
+
+
 	Return $oObject
 EndFunc   ;==>_objMain
 #EndRegion misc-objects

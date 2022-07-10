@@ -10,17 +10,40 @@ Global Enum $typeHeading, $typeText, $typeNumber, $typeCheck, $typeColor, $getHe
 ; Description.....:	Create the code generation GUI
 ;------------------------------------------------------------------------------
 Func _formPropertyInspector($x, $y, $w, $h)
-	;top line
-	Local $labelLine = GUICtrlCreateLabel("", $x, $y, $w, 1)
+	;tabs
+	Local $tabHeight = 20
+	GUICtrlCreateLabel("Properties", $x, $y, 70, $tabHeight)
+	GUICtrlSetBkColor(-1, 0xFFFFFF)
+	GUICtrlSetColor(-1, 0x000000)
+	GUICtrlSetOnEvent(-1, "_onTabProperties")
+
+	Local $labelLine = GUICtrlCreateLabel("", $x + 70, $y, 1, $tabHeight)
 	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
+	GUICtrlCreateLabel("Styles", $x+71, $y, 50, $tabHeight)
+	GUICtrlSetBkColor(-1, 0xFFFFFF)
+	GUICtrlSetColor(-1, 0x000000)
+	GUICtrlSetOnEvent(-1, "_onTabStyles")
 
-	#Region properties-tab-main
+	$labelLine = GUICtrlCreateLabel("", $x + 71 + 50, $y, 1, $tabHeight)
+	GUICtrlSetBkColor(-1, 0xDDDDDD)
+
+	$labelLine = GUICtrlCreateLabel("", $x, $y + $tabHeight, $w, 1)
+	GUICtrlSetBkColor(-1, 0xDDDDDD)
+
+	$y = $y + $tabHeight
+	$h = $h - $tabHeight
+
+	;top line
+	$labelLine = GUICtrlCreateLabel("", $x, $y, $w, 1)
+	GUICtrlSetBkColor(-1, 0xDDDDDD)
+
+	#Region main-properties
 	;create the child gui for controls properties
 	Local $guiHandle = GUICreate("", $w, $h - 2, $x, $y + 1, $WS_POPUP, $WS_EX_MDICHILD, $hToolbar)
 	GUISetBkColor(0xFFFFFF)
 	Local $ret = _GUIScrollbars_Generate($guiHandle, $w - 2, $h + 20)
-	$oProperties_Main.Hwnd = $guiHandle
+	$oProperties_Main.properties.Hwnd = $guiHandle
 
 	Local $iScrollbarWidth = $__g_aSB_WindowInfo[0][5]
 
@@ -29,41 +52,75 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
 	;items
-	$oProperties_Main.Title.Hwnd = _formPropertyInspector_newitem("Title", $typeText, 0, 1, $w - $iScrollbarWidth - 1, 20)
-	$oProperties_Main.Name.Hwnd = _formPropertyInspector_newitem("Name", $typeText)
-	$oProperties_Main.Left.Hwnd = _formPropertyInspector_newitem("Left", $typeNumber)
-	$oProperties_Main.Top.Hwnd = _formPropertyInspector_newitem("Top", $typeNumber)
-	$oProperties_Main.Width.Hwnd = _formPropertyInspector_newitem("Width", $typeNumber)
-	$oProperties_Main.Height.Hwnd = _formPropertyInspector_newitem("Height", $typeNumber)
-	$oProperties_Main.Background.Hwnd = _formPropertyInspector_newitem("Background", $typeColor, -1, -1, -1, -1, "_main_pick_bkColor")
+	$oProperties_Main.properties.Title.Hwnd = _formPropertyInspector_newitem("Title", $typeText, 0, 1, $w - $iScrollbarWidth - 1, 20)
+	$oProperties_Main.properties.Name.Hwnd = _formPropertyInspector_newitem("Name", $typeText)
+	$oProperties_Main.properties.Left.Hwnd = _formPropertyInspector_newitem("Left", $typeNumber)
+	$oProperties_Main.properties.Top.Hwnd = _formPropertyInspector_newitem("Top", $typeNumber)
+	$oProperties_Main.properties.Width.Hwnd = _formPropertyInspector_newitem("Width", $typeNumber)
+	$oProperties_Main.properties.Height.Hwnd = _formPropertyInspector_newitem("Height", $typeNumber)
+	$oProperties_Main.properties.Background.Hwnd = _formPropertyInspector_newitem("Background", $typeColor, -1, -1, -1, -1, "_main_pick_bkColor")
 
 	;vertical line
 	Local $itemsHeight = _formPropertyInspector_newitem("", $getHeight)
 	$labelLine = GUICtrlCreateLabel("", $w - $iScrollbarWidth - 1 - 81, 0, 1, $itemsHeight)
 	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
-	GUICtrlSetOnEvent($oProperties_Main.Title.Hwnd, _main_change_title)
-	GUICtrlSetOnEvent($oProperties_Main.Name.Hwnd, _main_change_name)
-	GUICtrlSetOnEvent($oProperties_Main.Left.Hwnd, _main_change_left)
-	GUICtrlSetOnEvent($oProperties_Main.Top.Hwnd, _main_change_top)
-	GUICtrlSetOnEvent($oProperties_Main.Width.Hwnd, _main_change_width)
-	GUICtrlSetOnEvent($oProperties_Main.Height.Hwnd, _main_change_height)
-	GUICtrlSetOnEvent($oProperties_Main.Background.Hwnd, _main_change_background)
+	GUICtrlSetOnEvent($oProperties_Main.properties.Title.Hwnd, _main_change_title)
+	GUICtrlSetOnEvent($oProperties_Main.properties.Name.Hwnd, _main_change_name)
+	GUICtrlSetOnEvent($oProperties_Main.properties.Left.Hwnd, _main_change_left)
+	GUICtrlSetOnEvent($oProperties_Main.properties.Top.Hwnd, _main_change_top)
+	GUICtrlSetOnEvent($oProperties_Main.properties.Width.Hwnd, _main_change_width)
+	GUICtrlSetOnEvent($oProperties_Main.properties.Height.Hwnd, _main_change_height)
+	GUICtrlSetOnEvent($oProperties_Main.properties.Background.Hwnd, _main_change_background)
 
 	;populate settings with default values
-	$oProperties_Main.Title.value = $oMain.Title
-	$oProperties_Main.Name.value = $oMain.Name
-	$oProperties_Main.Width.value = $oMain.Width
-	$oProperties_Main.Height.value = $oMain.Height
-	$oProperties_Main.Left.value = $oMain.Left
-	$oProperties_Main.Top.value = $oMain.Top
-	$oProperties_Main.Background.value = $oMain.Background
+	$oProperties_Main.properties.Title.value = $oMain.Title
+	$oProperties_Main.properties.Name.value = $oMain.Name
+	$oProperties_Main.properties.Width.value = $oMain.Width
+	$oProperties_Main.properties.Height.value = $oMain.Height
+	$oProperties_Main.properties.Left.value = $oMain.Left
+	$oProperties_Main.properties.Top.value = $oMain.Top
+	$oProperties_Main.properties.Background.value = $oMain.Background
 
-	#EndRegion properties-tab-main
+	#EndRegion main-properties
+
+
+	#Region main-styles
+	;create the child gui for controls properties
+	Local $guiHandle = GUICreate("", $w, $h - 2, $x, $y + 1, $WS_POPUP, $WS_EX_MDICHILD, $hToolbar)
+	GUISetBkColor(0xFFFFFF)
+	Local $ret = _GUIScrollbars_Generate($guiHandle, $w - 2, $h + 300)
+	$oProperties_Main.styles.Hwnd = $guiHandle
+
+	Local $iScrollbarWidth = $__g_aSB_WindowInfo[0][5]
+
+	;End line
+	Local $labelLine = GUICtrlCreateLabel("", $w - $iScrollbarWidth - 1, 0, 1, $h + 20)
+	GUICtrlSetBkColor(-1, 0xDDDDDD)
+
+	;items
+	$i = 0
+	For $oStyleCtrl In $oProperties_Main.styles.ctrls.Items()
+		If $i = 0 Then
+			$oStyleCtrl.Hwnd = _formPropertyInspector_newitem($oStyleCtrl.name, $typeCheck, 0, 1, $w - $iScrollbarWidth - 1, 20)
+		Else
+			$oStyleCtrl.Hwnd = _formPropertyInspector_newitem($oStyleCtrl.name, $typeCheck, -1, -1, -1, -1)
+		EndIf
+		GUICtrlSetOnEvent($oStyleCtrl.Hwnd, "_onStyleMain")
+		$oStyleCtrl.value = $oMain.styles.Item($oStyleCtrl.name)
+		$i += 1
+	Next
+
+	;vertical line
+	Local $itemsHeight = _formPropertyInspector_newitem("", $getHeight)
+	$labelLine = GUICtrlCreateLabel("", $w - $iScrollbarWidth - 1 - 81, 0, 1, $itemsHeight)
+	GUICtrlSetBkColor(-1, 0xDDDDDD)
+
+	#EndRegion main-styles
 
 
 
-	#Region properties-tab-controls
+	#Region ctrl-properties
 	;create the child gui for controls properties
 	$guiHandle = GUICreate("", $w, $h - 1, $x, $y + 1, $WS_POPUP, $WS_EX_MDICHILD, $hToolbar)
 	GUISetBkColor(0xFFFFFF)
@@ -99,7 +156,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	GUICtrlSetOnEvent($oProperties_Ctrls.Color.Hwnd, _ctrl_change_Color)
 	GUICtrlSetOnEvent($oProperties_Ctrls.Background.Hwnd, _ctrl_change_bkColor)
 	GUICtrlSetOnEvent($oProperties_Ctrls.Global.Hwnd, _ctrl_change_global)
-	#EndRegion properties-tab-controls
+	#EndRegion ctrl-properties
 
 
 
@@ -215,9 +272,18 @@ Func _showProperties($props = $props_Main)
 
 	Switch $props
 		Case $props_Main
-			GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Main.Hwnd)
-			GUISetState(@SW_HIDE, $oProperties_Ctrls.Hwnd)
-;~ 			_GUIScrollbars_Generate($oProperties_Main.Hwnd, $w - 2, $h)
+			Switch $tabSelected
+				Case "Properties"
+					GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Main.properties.Hwnd)
+					GUISetState(@SW_HIDE, $oProperties_Main.styles.Hwnd)
+					GUISetState(@SW_HIDE, $oProperties_Ctrls.Hwnd)
+
+				Case "Styles"
+					GUISetState(@SW_HIDE, $oProperties_Main.properties.Hwnd)
+					GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Main.styles.Hwnd)
+					GUISetState(@SW_HIDE, $oProperties_Ctrls.Hwnd)
+
+			EndSwitch
 
 		Case $props_Ctrls
 ;~ 			If _containsMenus() Then
@@ -244,12 +310,14 @@ Func _showProperties($props = $props_Main)
 				GUICtrlSetState($oProperties_Ctrls.Background.Hwnd, $GUI_DISABLE)
 			EndIf
 
-			GUISetState(@SW_HIDE, $oProperties_Main.Hwnd)
+			GUISetState(@SW_HIDE, $oProperties_Main.properties.Hwnd)
+			GUISetState(@SW_HIDE, $oProperties_Main.styles.Hwnd)
 			GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Ctrls.Hwnd)
 ;~ 			_GUIScrollbars_Generate($oProperties_Ctrls.Hwnd, $w - 2, $h)
 
 		Case Else
-			GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Main.Hwnd)
+			GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Main.properties.Hwnd)
+			GUISetState(@SW_HIDE, $oProperties_Main.styles.Hwnd)
 			GUISetState(@SW_HIDE, $oProperties_Ctrls.Hwnd)
 ;~ 			_GUIScrollbars_Generate($oProperties_Main.Hwnd, $w - 2, $h)
 	EndSwitch
@@ -285,7 +353,7 @@ Func _hasBG()
 	EndIf
 
 	Return True
-EndFunc
+EndFunc   ;==>_hasBG
 
 
 Func _containsMenus()
@@ -299,3 +367,31 @@ Func _containsMenus()
 
 	Return False
 EndFunc   ;==>_containsMenus
+
+Func _onTabProperties()
+	$tabSelected = "Properties"
+	_showProperties()
+EndFunc
+
+Func _onTabStyles()
+	$tabSelected = "Styles"
+	_showProperties()
+EndFunc
+
+Func _onStyleMain()
+	Local $value = BitAND(GUICtrlRead(@GUI_CtrlId), $GUI_CHECKED) = $GUI_CHECKED
+
+	For $oCtrl In $oProperties_Main.styles.ctrls.Items()
+		If $oCtrl.Hwnd = @GUI_CtrlId Then
+			$text = $oCtrl.name
+			$oMain.styles.Item($text) = $value
+			ExitLoop
+		EndIf
+	Next
+
+	_refreshGenerateCode()
+	$oMain.hasChanged = True
+
+;~ 	$oProperties_Main.styles.ctrls.Item($text).value = $value
+;~ 	$oMain.styles.Item($text) = $value
+EndFunc

@@ -261,7 +261,7 @@ Global $editCodeGeneration
 Global $lvObjects, $labelObjectCount, $childSelected
 
 ;Property Inspector
-Global $oProperties_Main, $oProperties_Ctrls
+Global $oProperties_Main, $oProperties_Ctrls, $tabSelected
 
 ;GUI Constants
 Global Const $grid_ticks = 10
@@ -374,9 +374,10 @@ Func _main()
 	$oMain.Left = -1
 	$oMain.Top = -1
 	$oMain.Background = ""
+	$tabSelected = "Properties"
 
 	;create properties objects
-	$oProperties_Main = _objProperties()
+	$oProperties_Main = _objPropertiesMain()
 	$oProperties_Ctrls = _objProperties()
 
 	;make the main program GUI
@@ -403,7 +404,7 @@ Func _main()
 	EndIf
 
 	GUISetState(@SW_SHOWNORMAL, $hToolbar)
-	GUISetState(@SW_SHOWNORMAL, $oProperties_Main.Hwnd)
+	GUISetState(@SW_SHOWNORMAL, $oProperties_Main.properties.Hwnd)
 	GUISwitch($hGUI)
 	GUISetState(@SW_SHOWNORMAL, $hGUI)
 	$bResizedFlag = 0

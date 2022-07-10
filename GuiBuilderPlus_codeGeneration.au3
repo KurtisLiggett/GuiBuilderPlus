@@ -145,10 +145,30 @@ Func _code_generation()
 	Local $guiBodyCode = ""
 
 ;~ 			"Global $MainStyle = BitOR($WS_OVERLAPPED, $WS_CAPTION, $WS_SYSMENU, $WS_VISIBLE, $WS_CLIPSIBLINGS, $WS_MINIMIZEBOX)" & @CRLF
+	Local $guiStyle = ""
+	Local $item, $styleCount = 0
+	For $styleKey In $oMain.styles.Keys()
+		$item = $oMain.styles.Item( $styleKey )
+		If $item = True Then
+			If $guiStyle = "" Then
+				$guiStyle = "$" & $styleKey
+			Else
+				$guiStyle &= ", $" & $styleKey
+			EndIf
+			$styleCount += 1
+		EndIf
+	Next
+	If $styleCount > 1 Then
+		$guiStyle = "BitOR(" & $guiStyle & ")"
+	EndIf
+	If $styleCount > 0 Then
+		$guiStyle = ", " & $guiStyle
+	EndIf
+
 	If $oMain.Name = "" Then
-		$guiBodyCode &= 'GUICreate("' & $gdtitle & '", ' & $w & ", " & $h & ", " & $x & ", " & $y & ")" & @CRLF
+		$guiBodyCode &= 'GUICreate("' & $gdtitle & '", ' & $w & ", " & $h & ", " & $x & ", " & $y & $guiStyle & ")" & @CRLF
 	Else
-		$guiBodyCode &= "Global $" & $oMain.Name & ' = GUICreate("' & $gdtitle & '", ' & $w & ", " & $h & ", " & $x & ", " & $y & ")" & @CRLF
+		$guiBodyCode &= "Global $" & $oMain.Name & ' = GUICreate("' & $gdtitle & '", ' & $w & ", " & $h & ", " & $x & ", " & $y & $guiStyle & ")" & @CRLF
 	EndIf
 
 	$guiBodyCode &= $setOnEvent & _

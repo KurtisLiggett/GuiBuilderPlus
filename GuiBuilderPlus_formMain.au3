@@ -482,7 +482,7 @@ Func _set_accelerators()
 			["^o", $accel_o] _
 			]
 	GUISetAccelerators($accelerators, $hToolbar)
-	GUISetAccelerators($accelerators, $oProperties_Main.Hwnd)
+	GUISetAccelerators($accelerators, $oProperties_Main.properties.Hwnd)
 
 	GUICtrlSetOnEvent($accel_delete, _delete_selected_controls)
 	GUICtrlSetOnEvent($accel_x, _cut_selected)
@@ -618,7 +618,7 @@ Func _onMinimize()
 	_saveWinPositions()
 
 	GUISetState(@SW_MINIMIZE, $hGUI)
-	GUISetState(@SW_HIDE, $oProperties_Main.Hwnd)
+	GUISetState(@SW_HIDE, $oProperties_Main.properties.Hwnd)
 	GUISetState(@SW_HIDE, $oProperties_Ctrls.Hwnd)
 EndFunc   ;==>_onMinimize
 
@@ -633,7 +633,7 @@ Func _onRestore()
 	If $oSelected.count > 0 Then
 		GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Ctrls.Hwnd)
 	Else
-		GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Main.Hwnd)
+		GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Main.properties.Hwnd)
 	EndIf
 	GUISetState(@SW_SHOWNORMAL, $hGUI)
 	GUISwitch($hGUI)
@@ -715,13 +715,13 @@ Func _onResize()
 	$oMain.Width = $win_client_size[0]
 	$oMain.Height = $win_client_size[1]
 
-	$oProperties_Main.Width.value = $oMain.Width
+	$oProperties_Main.properties.Width.value = $oMain.Width
 	If $oCtrls.hasMenu Then
-		$oProperties_Main.Height.value = $oMain.Height + _WinAPI_GetSystemMetrics($SM_CYMENU)
+		$oProperties_Main.properties.Height.value = $oMain.Height + _WinAPI_GetSystemMetrics($SM_CYMENU)
 	Else
-		$oProperties_Main.Height.value = $oMain.Height
+		$oProperties_Main.properties.Height.value = $oMain.Height
 	EndIf
-	WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $oProperties_Main.Width.value & ", " & $oProperties_Main.Height.value & ")")
+	WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $oProperties_Main.properties.Width.value & ", " & $oProperties_Main.properties.Height.value & ")")
 
 ;~ 	$oSelected.getFirst().grippies.show()
 EndFunc   ;==>_onResize
@@ -1812,7 +1812,7 @@ EndFunc   ;==>_populate_control_properties_gui
 
 #Region change-properties-main
 Func _main_change_title()
-	Local Const $new_text = $oProperties_Main.Title.value
+	Local Const $new_text = $oProperties_Main.properties.Title.value
 	$oMain.Title = $new_text
 
 	_refreshGenerateCode()
@@ -1821,9 +1821,9 @@ EndFunc   ;==>_main_change_title
 
 
 Func _main_change_name()
-	Local $new_name = $oProperties_Main.Name.value
+	Local $new_name = $oProperties_Main.properties.Name.value
 	$new_name = StringReplace($new_name, " ", "_")
-	$oProperties_Main.Name.value = $new_name
+	$oProperties_Main.properties.Name.value = $new_name
 	$oMain.Name = $new_name
 
 	_refreshGenerateCode()
@@ -1833,7 +1833,7 @@ EndFunc   ;==>_main_change_name
 
 
 Func _main_change_left()
-	Local Const $new_text = $oProperties_Main.Left.value
+	Local Const $new_text = $oProperties_Main.properties.Left.value
 	$oMain.Left = $new_text
 
 	_refreshGenerateCode()
@@ -1842,7 +1842,7 @@ EndFunc   ;==>_main_change_left
 
 
 Func _main_change_top()
-	Local Const $new_text = $oProperties_Main.Top.value
+	Local Const $new_text = $oProperties_Main.properties.Top.value
 	$oMain.Top = $new_text
 
 	_refreshGenerateCode()
@@ -1851,7 +1851,7 @@ EndFunc   ;==>_main_change_top
 
 
 Func _main_change_width()
-	Local Const $newValue = $oProperties_Main.Width.value
+	Local Const $newValue = $oProperties_Main.properties.Width.value
 
 	WinMove($hGUI, "", Default, Default, $newValue + $iGuiFrameW, Default)
 
@@ -1870,7 +1870,7 @@ EndFunc   ;==>_main_change_width
 
 
 Func _main_change_height()
-	Local Const $newValue = $oProperties_Main.Height.value
+	Local Const $newValue = $oProperties_Main.properties.Height.value
 
 	WinMove($hGUI, "", Default, Default, Default, $newValue + $iGuiFrameH)
 
@@ -1892,7 +1892,7 @@ Func _main_pick_bkColor()
 	Local $color = _ChooseColor(2)
 
 	If $color = -1 Then Return 0
-	$oProperties_Main.Background.value = $color
+	$oProperties_Main.properties.Background.value = $color
 
 	_main_change_background()
 	$oMain.hasChanged = True
@@ -1900,13 +1900,13 @@ EndFunc   ;==>_main_pick_bkColor
 
 
 Func _main_change_background()
-	Local $colorInput = $oProperties_Main.Background.value
+	Local $colorInput = $oProperties_Main.properties.Background.value
 	If $colorInput = "" Or $colorInput = -1 Then
 		$colorInput = $defaultGuiBkColor
 	Else
 		$colorInput = Dec(StringReplace($colorInput, "0x", ""))
 	EndIf
-	$oMain.Background = $oProperties_Main.Background.value
+	$oMain.Background = $oProperties_Main.properties.Background.value
 
 	GUISetBkColor($colorInput, $hGUI)
 
