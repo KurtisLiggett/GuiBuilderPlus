@@ -6,11 +6,11 @@
 
 Func _onSaveGui()
 	_save_gui_definition()
-EndFunc
+EndFunc   ;==>_onSaveGui
 
 Func _onSaveAsGui()
 	_save_gui_definition(True)
-EndFunc
+EndFunc   ;==>_onSaveAsGui
 
 ;------------------------------------------------------------------------------
 ; Title...........: _save_gui_definition
@@ -384,7 +384,7 @@ Func _load_gui_definition($AgdInfile = '')
 						Local $aTabCtrls = Json_Get($oThisTab, ".Controls")
 						If Not IsArray($aTabCtrls) Then ContinueLoop
 						GUISwitch($hGUI, $oTab.Hwnd)
-						For $oTabCtrl in $aTabCtrls
+						For $oTabCtrl In $aTabCtrls
 							$oCtrl2 = $oCtrls.createNew()
 
 							$oCtrl2.HwndCount = 1
@@ -426,7 +426,7 @@ Func _load_gui_definition($AgdInfile = '')
 			Case "Group"
 				Local $aCtrls = Json_Get($oThisCtrl, ".Controls")
 				If Not IsArray($aCtrls) Then ContinueLoop
-				For $oGroupCtrl in $aCtrls
+				For $oGroupCtrl In $aCtrls
 					$oCtrl2 = $oCtrls.createNew()
 
 					$oCtrl2.HwndCount = 1
@@ -500,7 +500,7 @@ Func _Json_Get(ByRef $obj, $data, $defaultValue = 0)
 	Else
 		Return $val
 	EndIf
-EndFunc
+EndFunc   ;==>_Json_Get
 
 
 
@@ -655,4 +655,4 @@ Func _load_gui_definition_ini($AgdInfile = '')
 	_GUICtrlStatusBar_SetText($hStatusbar, "Loaded successfully")
 
 	$oMain.hasChanged = False
-EndFunc   ;==>_load_gui_definition
+EndFunc   ;==>_load_gui_definition_ini

@@ -49,7 +49,7 @@ Func _code_generation()
 			If StringLen($globals[$globalsIndex]) > 100 Then
 				$globals[$globalsIndex] = StringTrimRight($globals[$globalsIndex], 2) & @CRLF
 				$globalsIndex += 1
-				ReDim $globals[$globalsIndex+1]
+				ReDim $globals[$globalsIndex + 1]
 				$globals[$globalsIndex] = "Global "
 			EndIf
 			$globals[$globalsIndex] &= "$" & $oCtrl.Name & ", "
@@ -129,7 +129,7 @@ Func _code_generation()
 	$code &= $regionStart & @CRLF
 
 	If $bGuiFunction Then
-		For $line in $globals
+		For $line In $globals
 			$code &= $line
 		Next
 		$code &= @CRLF
@@ -172,8 +172,8 @@ Func _code_generation()
 	EndIf
 
 	$guiBodyCode &= $setOnEvent & _
-		$background & _
-		@CRLF & $controls
+			$background & _
+			@CRLF & $controls
 
 	If $bGuiFunction Then
 		$guiBodyCode = StringReplace($guiBodyCode, "Global ", "")
@@ -183,8 +183,8 @@ Func _code_generation()
 	EndIf
 
 	$code &= $guiBodyCode & _
-		$regionEnd & @CRLF & @CRLF & _
-		$FuncMain & @CRLF & @CRLF
+			$regionEnd & @CRLF & @CRLF & _
+			$FuncMain & @CRLF & @CRLF
 
 	If $bOnEventMode Then
 		$code &= @CRLF & $FuncOnEventMode
@@ -218,7 +218,7 @@ EndFunc   ;==>_functionDoc
 ; Title...........: _generate_controls
 ; Description.....: generate the code for the controls
 ;------------------------------------------------------------------------------
-Func _generate_controls(Const $oCtrl, $sDpiScale, $isChild=False)
+Func _generate_controls(Const $oCtrl, $sDpiScale, $isChild = False)
 	If $oCtrl.Type = "TabItem" Then Return ""
 	If Not $isChild And $oCtrl.CtrlParent <> 0 Then Return ""
 
@@ -439,10 +439,10 @@ Func _getFuncMain($bOnEventMode, $bGuiFunction)
 			"_main()" & @CRLF & @CRLF & _
 			$FuncDoc & _
 			"Func _main()" & @CRLF
-			If $bGuiFunction Then
-				$code &= @TAB & "_guiCreate()" & @CRLF
-			EndIf
-			$code &= @TAB & "GUISetState(@SW_SHOWNORMAL)" & @CRLF & @CRLF & _
+	If $bGuiFunction Then
+		$code &= @TAB & "_guiCreate()" & @CRLF
+	EndIf
+	$code &= @TAB & "GUISetState(@SW_SHOWNORMAL)" & @CRLF & @CRLF & _
 			@TAB & "While 1" & @CRLF
 	If Not $bOnEventMode Then
 		$code &= '' & _
@@ -521,4 +521,4 @@ Func _objDocData()
 	_AutoItObject_AddProperty($oObject, "description", $ELSCOPE_PUBLIC, "")
 
 	Return $oObject
-EndFunc
+EndFunc   ;==>_objDocData

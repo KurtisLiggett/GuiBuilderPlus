@@ -911,7 +911,7 @@ Func _onLockControl()
 	Next
 	_SendMessage($hGUI, $WM_SETREDRAW, True)
 	_WinAPI_RedrawWindow($hGUI)
-EndFunc
+EndFunc   ;==>_onLockControl
 
 ;------------------------------------------------------------------------------
 ; Title...........: _onUnlockControl
@@ -928,7 +928,7 @@ Func _onUnlockControl()
 	Next
 	_SendMessage($hGUI, $WM_SETREDRAW, True)
 	_WinAPI_RedrawWindow($hGUI)
-EndFunc
+EndFunc   ;==>_onUnlockControl
 
 
 ;------------------------------------------------------------------------------
@@ -942,7 +942,7 @@ Func _onAlignMenu_Left()
 	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, $value, Default, Default, Default)
 	Next
-EndFunc
+EndFunc   ;==>_onAlignMenu_Left
 
 Func _onAlignMenu_Center()
 	If $oSelected.count = 0 Then Return 0
@@ -951,7 +951,7 @@ Func _onAlignMenu_Center()
 	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, $value - $oCtrl.Width / 2, Default, Default, Default)
 	Next
-EndFunc
+EndFunc   ;==>_onAlignMenu_Center
 
 Func _onAlignMenu_Right()
 	If $oSelected.count = 0 Then Return 0
@@ -960,7 +960,7 @@ Func _onAlignMenu_Right()
 	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, $value - $oCtrl.Width, Default, Default, Default)
 	Next
-EndFunc
+EndFunc   ;==>_onAlignMenu_Right
 
 Func _onAlignMenu_Top()
 	If $oSelected.count = 0 Then Return 0
@@ -968,7 +968,7 @@ Func _onAlignMenu_Top()
 	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, Default, $value, Default, Default)
 	Next
-EndFunc
+EndFunc   ;==>_onAlignMenu_Top
 
 Func _onAlignMenu_Middle()
 	If $oSelected.count = 0 Then Return 0
@@ -977,7 +977,7 @@ Func _onAlignMenu_Middle()
 	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, Default, $value - $oCtrl.Height / 2, Default, Default)
 	Next
-EndFunc
+EndFunc   ;==>_onAlignMenu_Middle
 
 Func _onAlignMenu_Bottom()
 	If $oSelected.count = 0 Then Return 0
@@ -986,7 +986,7 @@ Func _onAlignMenu_Bottom()
 	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, Default, $value - $oCtrl.Height, Default, Default)
 	Next
-EndFunc
+EndFunc   ;==>_onAlignMenu_Bottom
 
 Func _onAlignMenu_CenterPoints()
 	If $oSelected.count = 0 Then Return 0
@@ -996,7 +996,7 @@ Func _onAlignMenu_CenterPoints()
 	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, $valueCenter - $oCtrl.Width / 2, $valueMiddle - $oCtrl.Height / 2, Default, Default)
 	Next
-EndFunc
+EndFunc   ;==>_onAlignMenu_CenterPoints
 
 Func _onAlignMenu_SpaceVertical()
 	If $oSelected.count = 0 Then Return 0
@@ -1005,7 +1005,7 @@ Func _onAlignMenu_SpaceVertical()
 
 	;first find the order
 	For $oCtrl In $oSelected.ctrls.Items()
-		For $i=0 To UBound($aCtrls)-1
+		For $i = 0 To UBound($aCtrls) - 1
 			If $firstObj Then
 				$aCtrls[0] = $oCtrl
 				$firstObj = False
@@ -1013,7 +1013,7 @@ Func _onAlignMenu_SpaceVertical()
 			ElseIf $oCtrl.Top < $aCtrls[$i].Top Then
 				_ArrayInsert($aCtrls, $i, $oCtrl)
 				ExitLoop
-			ElseIf $i = UBound($aCtrls)-1 Then
+			ElseIf $i = UBound($aCtrls) - 1 Then
 				_ArrayAdd($aCtrls, $oCtrl, 0, "|", @CRLF, $ARRAYFILL_FORCE_SINGLEITEM)
 			EndIf
 		Next
@@ -1021,8 +1021,8 @@ Func _onAlignMenu_SpaceVertical()
 
 	;calculate the spacing
 	Local $posTop = $aCtrls[0].Top + $aCtrls[0].Height / 2
-	Local $posBottom = $aCtrls[$oSelected.count-1].Top + $aCtrls[$oSelected.count-1].Height / 2
-	Local $spacing = ( $posBottom - $posTop ) / ($oSelected.count - 1)
+	Local $posBottom = $aCtrls[$oSelected.count - 1].Top + $aCtrls[$oSelected.count - 1].Height / 2
+	Local $spacing = ($posBottom - $posTop) / ($oSelected.count - 1)
 
 	;set the new positions
 	Local $pos = $aCtrls[0].Top + $aCtrls[0].Height / 2
@@ -1031,7 +1031,7 @@ Func _onAlignMenu_SpaceVertical()
 		$pos += $spacing
 	Next
 
-EndFunc
+EndFunc   ;==>_onAlignMenu_SpaceVertical
 
 Func _onAlignMenu_SpaceHorizontal()
 	If $oSelected.count = 0 Then Return 0
@@ -1040,7 +1040,7 @@ Func _onAlignMenu_SpaceHorizontal()
 
 	;first find the order
 	For $oCtrl In $oSelected.ctrls.Items()
-		For $i=0 To UBound($aCtrls)-1
+		For $i = 0 To UBound($aCtrls) - 1
 			If $firstObj Then
 				$aCtrls[0] = $oCtrl
 				$firstObj = False
@@ -1048,7 +1048,7 @@ Func _onAlignMenu_SpaceHorizontal()
 			ElseIf $oCtrl.Left < $aCtrls[$i].Left Then
 				_ArrayInsert($aCtrls, $i, $oCtrl)
 				ExitLoop
-			ElseIf $i = UBound($aCtrls)-1 Then
+			ElseIf $i = UBound($aCtrls) - 1 Then
 				_ArrayAdd($aCtrls, $oCtrl, 0, "|", @CRLF, $ARRAYFILL_FORCE_SINGLEITEM)
 			EndIf
 		Next
@@ -1056,8 +1056,8 @@ Func _onAlignMenu_SpaceHorizontal()
 
 	;calculate the spacing
 	Local $posLeft = $aCtrls[0].Left + $aCtrls[0].Width / 2
-	Local $posRight = $aCtrls[$oSelected.count-1].Left + $aCtrls[$oSelected.count-1].Width / 2
-	Local $spacing = ( $posRight - $posLeft ) / ($oSelected.count - 1)
+	Local $posRight = $aCtrls[$oSelected.count - 1].Left + $aCtrls[$oSelected.count - 1].Width / 2
+	Local $spacing = ($posRight - $posLeft) / ($oSelected.count - 1)
 
 	;set the new positions
 	Local $pos = $aCtrls[0].Left + $aCtrls[0].Width / 2
@@ -1065,21 +1065,21 @@ Func _onAlignMenu_SpaceHorizontal()
 		_change_ctrl_size_pos($oCtrl, $pos - $oCtrl.Width / 2, Default, Default, Default)
 		$pos += $spacing
 	Next
-EndFunc
+EndFunc   ;==>_onAlignMenu_SpaceHorizontal
 
 Func _onAlignMenu_Back()
 	If $oSelected.count = 0 Then Return 0
 	For $oCtrl In $oSelected.ctrls.Items()
 		_WinAPI_SetWindowPos(GUICtrlGetHandle($oCtrl.Hwnd), $HWND_TOP, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
 	Next
-EndFunc
+EndFunc   ;==>_onAlignMenu_Back
 
 Func _onAlignMenu_Front()
 	If $oSelected.count = 0 Then Return 0
 	For $oCtrl In $oSelected.ctrls.Items()
 		_WinAPI_SetWindowPos(GUICtrlGetHandle($oCtrl.Hwnd), $HWND_BOTTOM, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
 	Next
-EndFunc
+EndFunc   ;==>_onAlignMenu_Front
 
 ;------------------------------------------------------------------------------
 ; Title...........: _onPasteSelected
@@ -1112,7 +1112,7 @@ EndFunc   ;==>_onDuplicate
 
 Func _onContextMenuPasteSelected()
 	_PasteSelected(False, True)
-EndFunc
+EndFunc   ;==>_onContextMenuPasteSelected
 
 ;------------------------------------------------------------------------------
 ; Title...........: _onMenuSelectAll
@@ -1677,7 +1677,7 @@ Func _onResetLayout()
 		Local $w = 250
 		Local $h = 500
 
-		Local $x = $oMain.Left + ($oMain.Width	+ 5)
+		Local $x = $oMain.Left + ($oMain.Width + 5)
 		Local $y = $oMain.Top
 
 		WinMove($hFormObjectExplorer, "", $x, $y, $w, $h)
@@ -1693,7 +1693,7 @@ Func _onResetLayout()
 
 		WinMove($hFormGenerateCode, "", $x, $y, $w, $h)
 	EndIf
-EndFunc   ;==>_onShowObjectExplorer
+EndFunc   ;==>_onResetLayout
 
 
 ;------------------------------------------------------------------------------
@@ -2547,7 +2547,7 @@ Func _CtrlInRect(Const $x, Const $y, Const $w, Const $h, Const $left, Const $top
 		Return False
 	EndIf
 
-EndFunc   ;==>__WinAPI_PtInRectEx
+EndFunc   ;==>_CtrlInRect
 
 Func _CtrlCrossRect(Const $x, Const $y, Const $w, Const $h, Const $left, Const $top, Const $width, Const $height)
 	; Author.........: kurtykurtyboy
@@ -2558,7 +2558,7 @@ Func _CtrlCrossRect(Const $x, Const $y, Const $w, Const $h, Const $left, Const $
 		Return False
 	EndIf
 
-EndFunc   ;==>__WinAPI_PtInRectEx
+EndFunc   ;==>_CtrlCrossRect
 
 Func _rect_from_points(Const $a1, Const $a2, Const $b1, Const $b2)
 	Local $oRect = _objCreateRect()
@@ -2850,7 +2850,7 @@ EndFunc   ;==>_menu_gui_function
 ;------------------------------------------------------------------------------
 Func _onGithubItem()
 	ShellExecute('https://github.com/KurtisLiggett/GuiBuilderPlus')
-EndFunc
+EndFunc   ;==>_onGithubItem
 
 ;------------------------------------------------------------------------------
 ; Title...........: _menu_about
@@ -2992,4 +2992,4 @@ Func _setIconFromResource($ctrlID, $sIconName, $iIcon)
 	Else
 		GUICtrlSetImage($ctrlID, $iconset & "\" & $sIconName)
 	EndIf
-EndFunc
+EndFunc   ;==>_setIconFromResource

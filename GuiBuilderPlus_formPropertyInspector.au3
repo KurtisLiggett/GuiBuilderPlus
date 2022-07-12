@@ -11,11 +11,11 @@ Global Enum $typeHeading, $typeText, $typeNumber, $typeCheck, $typeColor, $getHe
 ;------------------------------------------------------------------------------
 Func _formPropertyInspector($x, $y, $w, $h)
 	;tabs
-	Local $labelLine = GUICtrlCreateLabel("", $x, $y, 70+50, 1)
+	Local $labelLine = GUICtrlCreateLabel("", $x, $y, 70 + 50, 1)
 	GUICtrlSetBkColor(-1, 0xC5C5C5)
 
 	Local $tabHeight = 20
-	$tabProperties = GUICtrlCreateLabel("Properties", $x, $y+1, 70, $tabHeight-1, BitOR($GUI_SS_DEFAULT_LABEL, $SS_CENTER, $SS_CENTERIMAGE))
+	$tabProperties = GUICtrlCreateLabel("Properties", $x, $y + 1, 70, $tabHeight - 1, BitOR($GUI_SS_DEFAULT_LABEL, $SS_CENTER, $SS_CENTERIMAGE))
 	GUICtrlSetBkColor(-1, 0xEEEEEE)
 	GUICtrlSetColor(-1, 0x000000)
 	GUICtrlSetOnEvent(-1, "_onTabProperties")
@@ -23,7 +23,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	$labelLine = GUICtrlCreateLabel("", $x + 70, $y, 1, $tabHeight)
 	GUICtrlSetBkColor(-1, 0xC5C5C5)
 
-	$tabStyles = GUICtrlCreateLabel("Styles", $x+71, $y+1, 50, $tabHeight-1, BitOR($GUI_SS_DEFAULT_LABEL, $SS_CENTER, $SS_CENTERIMAGE))
+	$tabStyles = GUICtrlCreateLabel("Styles", $x + 71, $y + 1, 50, $tabHeight - 1, BitOR($GUI_SS_DEFAULT_LABEL, $SS_CENTER, $SS_CENTERIMAGE))
 	GUICtrlSetBkColor(-1, 0xD6D6D6)
 	GUICtrlSetColor(-1, 0x000000)
 	GUICtrlSetOnEvent(-1, "_onTabStyles")
@@ -431,7 +431,7 @@ Func _generateStyles($w = Default, $h = Default, $x = Default, $y = Default)
 
 	GUISwitch($hGUI)
 ;~ 	GUISwitch($hToolbar)
-EndFunc
+EndFunc   ;==>_generateStyles
 
 Func _isAllLabels()
 	If $oSelected.count > 0 Then
@@ -481,14 +481,14 @@ Func _onTabProperties()
 	GUICtrlSetBkColor($tabProperties, 0xEEEEEE)
 	GUICtrlSetBkColor($tabStyles, 0xD6D6D6)
 	_showProperties()
-EndFunc
+EndFunc   ;==>_onTabProperties
 
 Func _onTabStyles()
 	$tabSelected = "Styles"
 	GUICtrlSetBkColor($tabProperties, 0xD6D6D6)
 	GUICtrlSetBkColor($tabStyles, 0xEEEEEE)
 	_showProperties()
-EndFunc
+EndFunc   ;==>_onTabStyles
 
 Func _onStyleChange()
 ;~ 	Local $value = BitAND(GUICtrlRead(@GUI_CtrlId), $GUI_CHECKED) = $GUI_CHECKED
@@ -573,7 +573,7 @@ Func _onStyleChange()
 
 ;~ 	$oProperties_Main.styles.ctrls.Item($text).value = $value
 ;~ 	$oMain.styles.Item($text) = $value
-EndFunc
+EndFunc   ;==>_onStyleChange
 
 Func _onCheckboxChange($ctrlID)
 	Local $value = GUICtrlRead($ctrlID)
@@ -587,4 +587,4 @@ Func _onCheckboxChange($ctrlID)
 	EndIf
 
 	Return $value
-EndFunc
+EndFunc   ;==>_onCheckboxChange

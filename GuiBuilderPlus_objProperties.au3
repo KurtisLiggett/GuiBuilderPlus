@@ -12,7 +12,7 @@ Func _objProperties()
 	_AutoItObject_AddProperty($oObject, "styles", $ELSCOPE_PUBLIC, ObjCreate("Scripting.Dictionary"))
 
 	Return $oObject
-EndFunc   ;==>_objPropertiesMain
+EndFunc   ;==>_objProperties
 
 
 ;------------------------------------------------------------------------------
@@ -35,7 +35,7 @@ Func _objPropertiesProps()
 	_AutoItObject_AddProperty($oObject, "Global", $ELSCOPE_PUBLIC, _objProperty("Global", "Checkbox"))
 
 	Return $oObject
-EndFunc   ;==>_objProperties
+EndFunc   ;==>_objPropertiesProps
 
 ;_objProperty("GUI_SS_DEFAULT_GUI", "Checkbox")
 
