@@ -261,7 +261,7 @@ Global $editCodeGeneration
 Global $lvObjects, $labelObjectCount, $childSelected
 
 ;Property Inspector
-Global $oProperties_Main, $oProperties_Ctrls, $tabSelected
+Global $oProperties_Main, $oProperties_Ctrls, $tabSelected, $tabProperties, $tabStyles, $tabStylesHwnd
 
 ;GUI Constants
 Global Const $grid_ticks = 10
@@ -343,12 +343,17 @@ _AutoItObject_StartUp()
 #EndRegion ; includes
 
 
+;~ Global $oMyError = ObjEvent("AutoIt.Error", "MyErrFunc")
+Func MyErrFunc($oError)
+	SetError(1)
+	MsgBox(1, "COM Error", "COM Erorr" & @CRLF & "Error Number: " & Hex($oError.number) & @CRLF & $oError.windescription)
+EndFunc   ;==>MyErrFunc
+
 ;start up the logger
 _log("", True)
 
 ;run the main loop
 _main()
-
 
 ;------------------------------------------------------------------------------
 ; Title...........: _main
@@ -377,7 +382,7 @@ Func _main()
 	$tabSelected = "Properties"
 
 	;create properties objects
-	$oProperties_Main = _objPropertiesMain()
+	$oProperties_Main = _objProperties()
 	$oProperties_Ctrls = _objProperties()
 
 	;make the main program GUI
