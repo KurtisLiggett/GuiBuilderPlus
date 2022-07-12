@@ -261,7 +261,7 @@ Global $editCodeGeneration
 Global $lvObjects, $labelObjectCount, $childSelected
 
 ;Property Inspector
-Global $oProperties_Main, $oProperties_Ctrls
+Global $oProperties_Main, $oProperties_Ctrls, $tabSelected, $tabProperties, $tabStyles, $tabStylesHwnd
 
 ;GUI Constants
 Global Const $grid_ticks = 10
@@ -343,12 +343,17 @@ _AutoItObject_StartUp()
 #EndRegion ; includes
 
 
+;~ Global $oMyError = ObjEvent("AutoIt.Error", "MyErrFunc")
+Func MyErrFunc($oError)
+	SetError(1)
+	MsgBox(1, "COM Error", "COM Erorr" & @CRLF & "Error Number: " & Hex($oError.number) & @CRLF & $oError.windescription)
+EndFunc   ;==>MyErrFunc
+
 ;start up the logger
 _log("", True)
 
 ;run the main loop
 _main()
-
 
 ;------------------------------------------------------------------------------
 ; Title...........: _main
@@ -374,6 +379,7 @@ Func _main()
 	$oMain.Left = -1
 	$oMain.Top = -1
 	$oMain.Background = ""
+	$tabSelected = "Properties"
 
 	;create properties objects
 	$oProperties_Main = _objProperties()
@@ -403,7 +409,7 @@ Func _main()
 	EndIf
 
 	GUISetState(@SW_SHOWNORMAL, $hToolbar)
-	GUISetState(@SW_SHOWNORMAL, $oProperties_Main.Hwnd)
+	GUISetState(@SW_SHOWNORMAL, $oProperties_Main.properties.Hwnd)
 	GUISwitch($hGUI)
 	GUISetState(@SW_SHOWNORMAL, $hGUI)
 	$bResizedFlag = 0

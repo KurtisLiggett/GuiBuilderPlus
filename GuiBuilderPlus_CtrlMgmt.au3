@@ -48,7 +48,7 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 			$oNewControl.Type = $oCtrls.CurrentType
 			$oNewControl.Left = $cursor_pos[0]
 			$oNewControl.Top = $cursor_pos[1]
-			$oNewControl.Global = True
+			$oNewControl.Global = $GUI_CHECKED
 
 	EndSwitch
 
@@ -951,7 +951,7 @@ Func _add_remove_selected_control(Const $oRect)
 				EndSwitch
 
 			Case False
-				Switch _remove_from_selected($oCtrl)
+				Switch _remove_from_selected($oCtrl, False)
 					Case True
 						Local $sel_count = $oSelected.count
 
@@ -973,7 +973,7 @@ EndFunc   ;==>_add_remove_selected_control
 Func _remove_all_from_selected()
 	_SendMessage($hGUI, $WM_SETREDRAW, False)
 	$oSelected.removeAll()
-	_showProperties($props_Main)
+;~ 	_showProperties($props_Main)
 	_SendMessage($hGUI, $WM_SETREDRAW, True)
 	_WinAPI_RedrawWindow($hGUI)
 
@@ -1019,7 +1019,7 @@ Func _delete_selected_controls()
 
 EndFunc   ;==>_delete_selected_controls
 
-Func _remove_from_selected(Const $oCtrl)
+Func _remove_from_selected(Const $oCtrl, $updateProps = True)
 	If Not IsObj($oCtrl) Then
 		Return
 	EndIf
@@ -1039,10 +1039,12 @@ Func _remove_from_selected(Const $oCtrl)
 
 	$oCtrl.grippies.hide()
 
-	If $oSelected.count > 0 Then
-		_showProperties($props_Ctrls)
-	Else
-		_showProperties($props_Main)
+	If $updateProps Then
+		If $oSelected.count > 0 Then
+			_showProperties($props_Ctrls)
+		Else
+			_showProperties($props_Main)
+		EndIf
 	EndIf
 
 	Return True
@@ -1124,7 +1126,6 @@ Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, 
 			GUICtrlSetPos($oCtrl.Hwnd, $left, $top, $oCtrl.Width, $oCtrl.Height)
 
 		Case "IP"
-;~ 			ConsoleWrite($oCtrl.Hwnd & @CRLF)
 ;~ 			WinMove($oCtrl.Hwnd, "", $left, $top, $width, $height)
 			_updateIP($oCtrl)
 

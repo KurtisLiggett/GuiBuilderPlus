@@ -45,7 +45,7 @@ Func _code_generation()
 	Local $globalsIndex = 1
 	For $oCtrl In $oCtrls.ctrls.Items()
 		;generate globals for controls
-		If $oCtrl.Name <> "" And $oCtrl.Global Then
+		If $oCtrl.Name <> "" And $oCtrl.Global = $GUI_CHECKED Then
 			If StringLen($globals[$globalsIndex]) > 100 Then
 				$globals[$globalsIndex] = StringTrimRight($globals[$globalsIndex], 2) & @CRLF
 				$globalsIndex += 1
@@ -145,10 +145,30 @@ Func _code_generation()
 	Local $guiBodyCode = ""
 
 ;~ 			"Global $MainStyle = BitOR($WS_OVERLAPPED, $WS_CAPTION, $WS_SYSMENU, $WS_VISIBLE, $WS_CLIPSIBLINGS, $WS_MINIMIZEBOX)" & @CRLF
+	Local $guiStyle = $oMain.styleString
+;~ 	Local $item, $styleCount = 0
+;~ 	For $styleKey In $oMain.styles.Keys()
+;~ 		$item = $oMain.styles.Item( $styleKey )
+;~ 		If $item = True Then
+;~ 			If $guiStyle = "" Then
+;~ 				$guiStyle = "$" & $styleKey
+;~ 			Else
+;~ 				$guiStyle &= ", $" & $styleKey
+;~ 			EndIf
+;~ 			$styleCount += 1
+;~ 		EndIf
+;~ 	Next
+	If StringInStr($guiStyle, ",") Then
+		$guiStyle = "BitOR(" & $guiStyle & ")"
+	EndIf
+	If $guiStyle <> "" Then
+		$guiStyle = ", " & $guiStyle
+	EndIf
+
 	If $oMain.Name = "" Then
-		$guiBodyCode &= 'GUICreate("' & $gdtitle & '", ' & $w & ", " & $h & ", " & $x & ", " & $y & ")" & @CRLF
+		$guiBodyCode &= 'GUICreate("' & $gdtitle & '", ' & $w & ", " & $h & ", " & $x & ", " & $y & $guiStyle & ")" & @CRLF
 	Else
-		$guiBodyCode &= "Global $" & $oMain.Name & ' = GUICreate("' & $gdtitle & '", ' & $w & ", " & $h & ", " & $x & ", " & $y & ")" & @CRLF
+		$guiBodyCode &= "Global $" & $oMain.Name & ' = GUICreate("' & $gdtitle & '", ' & $w & ", " & $h & ", " & $x & ", " & $y & $guiStyle & ")" & @CRLF
 	EndIf
 
 	$guiBodyCode &= $setOnEvent & _
@@ -225,12 +245,20 @@ Func _generate_controls(Const $oCtrl, $sDpiScale, $isChild=False)
 
 	Local Const $ltwh = $left & ", " & $top & ", " & $width & ", " & $height
 
+	Local $ctrlStyle = $oCtrl.styleString
+	If StringInStr($ctrlStyle, ",") Then
+		$ctrlStyle = "BitOR(" & $ctrlStyle & ")"
+	EndIf
+	If $ctrlStyle <> "" Then
+		$ctrlStyle = ", " & $ctrlStyle
+	EndIf
+
 	; The general template is GUICtrlCreateXXX( "text", left, top [, width [, height [, style [, exStyle]]] )
 	; but some controls do not use this.... Avi, Icon, Menu, Menuitem, Progress, Tabitem, TreeViewitem, updown
 	Local $mControls
 
 	Local $scopeString = "Global"
-	If Not $oCtrl.Global Then $scopeString = "Local"
+	If Not $oCtrl.Global = $GUI_CHECKED Then $scopeString = "Local"
 
 	Switch StringStripWS($oCtrl.Name, $STR_STRIPALL) <> ''
 		Case True
@@ -239,13 +267,13 @@ Func _generate_controls(Const $oCtrl, $sDpiScale, $isChild=False)
 
 	Switch $oCtrl.Type
 		Case "Progress", "Slider", "TreeView" ; no text field
-			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '(' & $ltwh & ")" & @CRLF
+			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '(' & $ltwh & $ctrlStyle & ')' & @CRLF
 
 		Case "Icon" ; extra iconid [set to zero]
-			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", 0, ' & $ltwh & ")" & @CRLF
+			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", 0, ' & $ltwh & $ctrlStyle & ')' & @CRLF
 
 		Case "Tab"
-			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '(' & $ltwh & ')' & @CRLF
+			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '(' & $ltwh & $ctrlStyle & ')' & @CRLF
 
 			Local $oTab
 			For $hTab In $oCtrl.Tabs
@@ -261,11 +289,11 @@ Func _generate_controls(Const $oCtrl, $sDpiScale, $isChild=False)
 			Next
 
 		Case "Updown"
-			$mControls &= "GUICtrlCreateInput" & '("' & $oCtrl.Text & '", ' & $ltwh & ")" & @CRLF
+			$mControls &= "GUICtrlCreateInput" & '("' & $oCtrl.Text & '", ' & $ltwh & $ctrlStyle & ')' & @CRLF
 			$mControls &= "GUICtrlCreateUpdown(-1)" & @CRLF
 
 		Case "Pic"
-			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("", ' & $ltwh & ")" & @CRLF
+			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("", ' & $ltwh & $ctrlStyle & ')' & @CRLF
 			$mControls &= "GUICtrlSetImage(-1, " & '"' & $samplebmp & '")' & @CRLF
 
 		Case "Menu"
@@ -278,11 +306,11 @@ Func _generate_controls(Const $oCtrl, $sDpiScale, $isChild=False)
 
 		Case "IP"
 ;~ 			_GUICtrlIpAddress_Create($hGUI, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
-			$mControls &= "_GUICtrlIpAddress_Create" & '($' & $oMain.Name & ', ' & $ltwh & ")" & @CRLF
+			$mControls &= "_GUICtrlIpAddress_Create" & '($' & $oMain.Name & ', ' & $ltwh & $ctrlStyle & ')' & @CRLF
 			$mControls &= "_GUICtrlIpAddress_Set($" & $oCtrl.Name & ', "' & $oCtrl.Text & '")' & @CRLF
 
 		Case "Group"
-			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & ")" & @CRLF
+			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & $ctrlStyle & ')' & @CRLF
 
 			For $oGroupCtrl In $oCtrl.ctrls.Items()
 				$mControls &= _generate_controls($oGroupCtrl, $sDpiScale, True)
@@ -291,7 +319,7 @@ Func _generate_controls(Const $oCtrl, $sDpiScale, $isChild=False)
 			$mControls &= 'GUICtrlCreateGroup("", -99, -99, 1, 1)' & @CRLF
 
 		Case Else
-			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & ")" & @CRLF
+			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & $ctrlStyle & ')' & @CRLF
 	EndSwitch
 
 	If $oCtrl.Color <> -1 Then
