@@ -16,7 +16,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 
 	Local $tabHeight = 20
 	$tabProperties = GUICtrlCreateLabel("Properties", $x, $y+1, 70, $tabHeight-1, BitOR($GUI_SS_DEFAULT_LABEL, $SS_CENTER, $SS_CENTERIMAGE))
-	GUICtrlSetBkColor(-1, 0xD6D6D6)
+	GUICtrlSetBkColor(-1, 0xEEEEEE)
 	GUICtrlSetColor(-1, 0x000000)
 	GUICtrlSetOnEvent(-1, "_onTabProperties")
 
@@ -24,7 +24,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	GUICtrlSetBkColor(-1, 0xC5C5C5)
 
 	$tabStyles = GUICtrlCreateLabel("Styles", $x+71, $y+1, 50, $tabHeight-1, BitOR($GUI_SS_DEFAULT_LABEL, $SS_CENTER, $SS_CENTERIMAGE))
-	GUICtrlSetBkColor(-1, 0xEEEEEE)
+	GUICtrlSetBkColor(-1, 0xD6D6D6)
 	GUICtrlSetColor(-1, 0x000000)
 	GUICtrlSetOnEvent(-1, "_onTabStyles")
 
@@ -218,7 +218,7 @@ Func _formPropertyInspector_newitem($text, $type = -1, $x = -1, $y = -1, $w = -1
 		GUICtrlCreateLabel("", $item_x + $item_w - $editWidth, $item_y, $editWidth, $item_h - 1)
 		GUICtrlSetBkColor(-1, 0xFFFFFF)
 		GUICtrlSetState(-1, $GUI_DISABLE)
-		Local $edit = GUICtrlCreateCheckbox("", $item_x + $item_w - 45, $item_y, -1, $item_h - 1, $SS_CENTERIMAGE)
+		Local $edit = GUICtrlCreateCheckbox("", $item_x + $item_w - 45, $item_y, -1, $item_h - 1, BitOR($SS_CENTERIMAGE, $BS_3STATE))
 		GUICtrlSetBkColor(-1, 0xFFFFFF)
 	ElseIf $type = $typeHeading Then
 		Local $aStrings = StringSplit($text, "|", $STR_NOCOUNT)
@@ -346,7 +346,7 @@ Func _generateStyles($w = Default, $h = Default, $x = Default, $y = Default)
 				EndIf
 				GUICtrlSetOnEvent($objProp.Hwnd, "_onStyleChange")
 ;~ 				$objProp.value = $oMain.styles.Item($sStyleString)
-				$objProp.value = StringRegExp($oMain.styleString, '(?:^|,\s)\$' & $sStyleString & '(?:,|$)')
+				$objProp.value = (StringRegExp($oMain.styleString, '(?:^|,\s)\$' & $sStyleString & '(?:,|$)')) ? $GUI_CHECKED : $GUI_UNCHECKED
 				$oProperties_Main.styles.Add($sStyleString, $objProp)
 				$i += 1
 			Next
@@ -399,18 +399,18 @@ Func _generateStyles($w = Default, $h = Default, $x = Default, $y = Default)
 				For $oCtrl In $oSelected.ctrls.Items()
 ;~ 					If $oCtrl.styles.Item($sStyleString) Then
 					If StringRegExp($oCtrl.styleString, '(?:^|,\s)\$' & $sStyleString & '(?:,|$)') Then
-						If $checkValue <> -1 Then
-							$checkValue = 2
+						If $checkValue = $GUI_UNCHECKED Then
+							$checkValue = $GUI_INDETERMINATE
 							ExitLoop
 						Else
-							$checkValue = True
+							$checkValue = $GUI_CHECKED
 						EndIf
 					Else
-						If $checkValue <> -1 Then
-							$checkValue = 2
+						If $checkValue = $GUI_CHECKED Then
+							$checkValue = $GUI_INDETERMINATE
 							ExitLoop
 						Else
-							$checkValue = False
+							$checkValue = $GUI_UNCHECKED
 						EndIf
 					EndIf
 				Next
@@ -478,20 +478,29 @@ EndFunc   ;==>_containsMenus
 
 Func _onTabProperties()
 	$tabSelected = "Properties"
-	GUICtrlSetBkColor($tabProperties, 0xD6D6D6)
-	GUICtrlSetBkColor($tabStyles, 0xEEEEEE)
-	_showProperties()
-EndFunc
-
-Func _onTabStyles()
-	$tabSelected = "Styles"
 	GUICtrlSetBkColor($tabProperties, 0xEEEEEE)
 	GUICtrlSetBkColor($tabStyles, 0xD6D6D6)
 	_showProperties()
 EndFunc
 
+Func _onTabStyles()
+	$tabSelected = "Styles"
+	GUICtrlSetBkColor($tabProperties, 0xD6D6D6)
+	GUICtrlSetBkColor($tabStyles, 0xEEEEEE)
+	_showProperties()
+EndFunc
+
 Func _onStyleChange()
-	Local $value = BitAND(GUICtrlRead(@GUI_CtrlId), $GUI_CHECKED) = $GUI_CHECKED
+;~ 	Local $value = BitAND(GUICtrlRead(@GUI_CtrlId), $GUI_CHECKED) = $GUI_CHECKED
+	Local $value = GUICtrlRead(@GUI_CtrlId)
+
+	If BitAND($value, $GUI_UNCHECKED) = $GUI_UNCHECKED Then
+		GUICtrlSetState(@GUI_CtrlId, $GUI_CHECKED)
+		$value = $GUI_CHECKED
+	Else
+		GUICtrlSetState(@GUI_CtrlId, $GUI_UNCHECKED)
+		$value = $GUI_UNCHECKED
+	EndIf
 
 	Local $props
 	If $oSelected.count > 0 Then
@@ -506,9 +515,9 @@ Func _onStyleChange()
 				If $oCtrl.Hwnd = @GUI_CtrlId Then
 					$text = $oCtrl.name
 ;~ 					If $oMain.styles.Item($text) <> $value Then
-					If StringRegExp($oMain.styleString, '(?:^|,\s)\$' & $text & '(?:,|$)') <> $value Then
+					If StringRegExp($oMain.styleString, '(?:^|,\s)\$' & $text & '(?:,|$)') <> ($value = $GUI_CHECKED) Then
 ;~ 						$oMain.styles.Item($text) = $value
-						If $value Then
+						If ($value = $GUI_CHECKED) Then
 							If $oMain.styleString = "" Then
 								$oMain.styleString = "$" & $text
 							ElseIf Not StringInStr($oMain.styleString, $text) Then
@@ -533,10 +542,10 @@ Func _onStyleChange()
 
 					For $oThisCtrl In $oSelected.ctrls.Items()
 						$CtrlValue = StringRegExp($oThisCtrl.styleString, '(?:^|,\s)\$' & $text & '(?:,|$)')
-						If $CtrlValue <> $value Then
+						If $CtrlValue <> ($value = $GUI_CHECKED) Then
 ;~ 							$oThisCtrl.styles.Item($text) = $value
 							$iOldStyle = _WinAPI_GetWindowLong(GUICtrlGetHandle($oThisCtrl.Hwnd), $GWL_STYLE)
-							If $value Then
+							If ($value = $GUI_CHECKED) Then
 								If $oThisCtrl.styleString = "" Then
 									$oThisCtrl.styleString = "$" & $text
 								ElseIf Not StringRegExp($oThisCtrl.styleString, '(?:^|,\s)\$' & $text & '(?:,|$)') Then
@@ -564,4 +573,18 @@ Func _onStyleChange()
 
 ;~ 	$oProperties_Main.styles.ctrls.Item($text).value = $value
 ;~ 	$oMain.styles.Item($text) = $value
+EndFunc
+
+Func _onCheckboxChange($ctrlID)
+	Local $value = GUICtrlRead($ctrlID)
+
+	If BitAND($value, $GUI_UNCHECKED) = $GUI_UNCHECKED Then
+		GUICtrlSetState($ctrlID, $GUI_CHECKED)
+		$value = $GUI_CHECKED
+	Else
+		GUICtrlSetState($ctrlID, $GUI_UNCHECKED)
+		$value = $GUI_UNCHECKED
+	EndIf
+
+	Return $value
 EndFunc

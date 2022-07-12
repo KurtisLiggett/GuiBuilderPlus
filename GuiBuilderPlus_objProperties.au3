@@ -56,12 +56,12 @@ Func _objProperty_value($oSelf, $vNewValue = "")
 			Case "Checkbox"
 ;~ 				_setCheckedState($oSelf.Hwnd, $vNewValue)
 				Switch $vNewValue
-					Case 2
-						GUICtrlSetState($oSelf.Hwnd, $GUI_INDETERMINATE)
-					Case True
+					Case $GUI_CHECKED
 						GUICtrlSetState($oSelf.Hwnd, $GUI_CHECKED)
-					Case False
+					Case $GUI_UNCHECKED
 						GUICtrlSetState($oSelf.Hwnd, $GUI_UNCHECKED)
+					Case Else
+						GUICtrlSetState($oSelf.Hwnd, $GUI_INDETERMINATE)
 				EndSwitch
 			Case Else
 				GUICtrlSetData($oSelf.Hwnd, $vNewValue)
@@ -69,7 +69,7 @@ Func _objProperty_value($oSelf, $vNewValue = "")
 	Else
 		Switch $oSelf.type
 			Case "Checkbox"
-				Return BitAND(GUICtrlRead($oSelf.Hwnd), $GUI_CHECKED) = $GUI_CHECKED
+				Return GUICtrlRead($oSelf.Hwnd)
 			Case Else
 				Return GUICtrlRead($oSelf.Hwnd)
 		EndSwitch

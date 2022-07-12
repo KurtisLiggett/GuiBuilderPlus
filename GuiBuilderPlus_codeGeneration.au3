@@ -45,7 +45,7 @@ Func _code_generation()
 	Local $globalsIndex = 1
 	For $oCtrl In $oCtrls.ctrls.Items()
 		;generate globals for controls
-		If $oCtrl.Name <> "" And $oCtrl.Global Then
+		If $oCtrl.Name <> "" And $oCtrl.Global = $GUI_CHECKED Then
 			If StringLen($globals[$globalsIndex]) > 100 Then
 				$globals[$globalsIndex] = StringTrimRight($globals[$globalsIndex], 2) & @CRLF
 				$globalsIndex += 1
@@ -258,7 +258,7 @@ Func _generate_controls(Const $oCtrl, $sDpiScale, $isChild=False)
 	Local $mControls
 
 	Local $scopeString = "Global"
-	If Not $oCtrl.Global Then $scopeString = "Local"
+	If Not $oCtrl.Global = $GUI_CHECKED Then $scopeString = "Local"
 
 	Switch StringStripWS($oCtrl.Name, $STR_STRIPALL) <> ''
 		Case True

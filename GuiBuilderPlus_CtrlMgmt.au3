@@ -48,7 +48,7 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 			$oNewControl.Type = $oCtrls.CurrentType
 			$oNewControl.Left = $cursor_pos[0]
 			$oNewControl.Top = $cursor_pos[1]
-			$oNewControl.Global = True
+			$oNewControl.Global = $GUI_CHECKED
 
 	EndSwitch
 

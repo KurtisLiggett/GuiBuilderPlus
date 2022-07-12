@@ -1931,9 +1931,6 @@ EndFunc   ;==>_main_change_background
 
 
 #Region change-properties-ctrls
-;~ Func _onPropertyChange($sPropertyName, $value)
-;~ 	ConsoleWrite($sPropertyName & " " & $value & @CRLF)
-;~ EndFunc   ;==>_onPropertyChange
 
 Func _ctrl_change_text()
 	Local Const $new_text = $oProperties_Ctrls.properties.Text.value
@@ -2250,7 +2247,8 @@ EndFunc   ;==>_ctrl_change_bkColor
 
 
 Func _ctrl_change_global()
-	Local $new_data = $oProperties_Ctrls.properties.Global.value
+	Local $new_data = _onCheckboxChange(@GUI_CtrlId)
+;~ 	Local $new_data = $oProperties_Ctrls.properties.Global.value
 
 	Local Const $sel_count = $oSelected.count
 

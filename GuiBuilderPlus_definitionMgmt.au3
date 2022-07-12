@@ -341,8 +341,8 @@ Func _load_gui_definition($AgdInfile = '')
 		$oCtrl.Top = _Json_Get($oThisCtrl, ".Top", -1)
 		$oCtrl.Width = _Json_Get($oThisCtrl, ".Width", -1)
 		$oCtrl.Height = _Json_Get($oThisCtrl, ".Height", -1)
-		$oCtrl.Global = (_Json_Get($oThisCtrl, ".Global", False) = "True") ? True : False
-		$oCtrl.Locked = (_Json_Get($oThisCtrl, ".Locked", False) = "True") ? True : False
+		$oCtrl.Global = _Json_Get($oThisCtrl, ".Global", $GUI_CHECKED)
+		$oCtrl.Locked = _Json_Get($oThisCtrl, ".Locked", $GUI_UNCHECKED)
 		$oCtrl.styleString = _Json_Get($oThisCtrl, ".styleString", "")
 		$oCtrl.Color = _Json_Get($oThisCtrl, ".Color", -1)
 		If $oCtrl.Color <> -1 Then
@@ -397,8 +397,8 @@ Func _load_gui_definition($AgdInfile = '')
 							$oCtrl2.Top = _Json_Get($oTabCtrl, ".Top", -1)
 							$oCtrl2.Width = _Json_Get($oTabCtrl, ".Width", -1)
 							$oCtrl2.Height = _Json_Get($oTabCtrl, ".Height", -1)
-							$oCtrl2.Global = (_Json_Get($oTabCtrl, ".Global", False) = "True") ? True : False
-							$oCtrl2.Locked = (_Json_Get($oTabCtrl, ".Locked", False) = "True") ? True : False
+							$oCtrl2.Global = _Json_Get($oTabCtrl, ".Global", $GUI_CHECKED)
+							$oCtrl2.Locked = _Json_Get($oTabCtrl, ".Locked", $GUI_UNCHECKED)
 							$oCtrl2.styleString = _Json_Get($oTabCtrl, ".styleString", "")
 							$oCtrl2.Color = _Json_Get($oTabCtrl, ".Color", -1)
 							If $oCtrl2.Color <> -1 Then
@@ -439,8 +439,8 @@ Func _load_gui_definition($AgdInfile = '')
 					$oCtrl2.Top = _Json_Get($oGroupCtrl, ".Top", -1)
 					$oCtrl2.Width = _Json_Get($oGroupCtrl, ".Width", -1)
 					$oCtrl2.Height = _Json_Get($oGroupCtrl, ".Height", -1)
-					$oCtrl2.Global = (_Json_Get($oGroupCtrl, ".Global", False) = "True") ? True : False
-					$oCtrl2.Locked = (_Json_Get($oGroupCtrl, ".Locked", False) = "True") ? True : False
+					$oCtrl2.Global = _Json_Get($oGroupCtrl, ".Global", $GUI_CHECKED)
+					$oCtrl2.Locked = _Json_Get($oGroupCtrl, ".Locked", $GUI_UNCHECKED)
 					$oCtrl2.styleString = _Json_Get($oGroupCtrl, ".styleString", "")
 					$oCtrl2.Color = _Json_Get($oGroupCtrl, ".Color", -1)
 					If $oCtrl2.Color <> -1 Then
@@ -602,8 +602,8 @@ Func _load_gui_definition_ini($AgdInfile = '')
 		$oCtrl.Top = IniRead($AgdInfile, $Key, "Top", -1)
 		$oCtrl.Width = IniRead($AgdInfile, $Key, "Width", -1)
 		$oCtrl.Height = IniRead($AgdInfile, $Key, "Height", -1)
-		$oCtrl.Global = (IniRead($AgdInfile, $Key, "Global", False) = "True") ? True : False
-		$oCtrl.Locked = (IniRead($AgdInfile, $Key, "Locked", False) = "True") ? True : False
+		$oCtrl.Global = IniRead($AgdInfile, $Key, "Global", $GUI_CHECKED)
+		$oCtrl.Locked = IniRead($AgdInfile, $Key, "Locked", $GUI_UNCHECKED)
 		$oCtrl.Color = IniRead($AgdInfile, $Key, "Color", -1)
 		If $oCtrl.Color <> -1 Then
 			$oCtrl.Color = Dec(StringReplace($oCtrl.Color, "0x", ""))
