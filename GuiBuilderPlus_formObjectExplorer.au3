@@ -24,6 +24,13 @@ Func _formObjectExplorer()
 		$y = $aPos[2]
 	EndIf
 
+	$sPos = IniRead($sIniPath, "Settings", "sizeObjectExplorer", $w & "," & $h)
+	$aPos = StringSplit($sPos, ",")
+	If Not @error Then
+		$w = $aPos[1]
+		$h = $aPos[2]
+	EndIf
+
 	;make sure not set off screen
 	Local $ixCoordMin = _WinAPI_GetSystemMetrics(76)
 	Local $iyCoordMin = _WinAPI_GetSystemMetrics(77)

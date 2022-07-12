@@ -2250,6 +2250,7 @@ Func _ctrl_change_global()
 	Local $new_data = _onCheckboxChange(@GUI_CtrlId)
 ;~ 	Local $new_data = $oProperties_Ctrls.properties.Global.value
 
+
 	Local Const $sel_count = $oSelected.count
 
 	Switch $sel_count >= 1
@@ -2976,11 +2977,15 @@ Func _saveWinPositions()
 		If IsHWnd($hFormGenerateCode) Then
 			$currentWinPos = WinGetPos($hFormGenerateCode)
 			IniWrite($sIniPath, "Settings", "posGenerateCode", $currentWinPos[0] & "," & $currentWinPos[1])
+;~ 			$currentWinPos = WinGetClientSize($hFormGenerateCode)
+;~ 			IniWrite($sIniPath, "Settings", "sizeGenerateCode", $currentWinPos[0] & "," & $currentWinPos[1])
 		EndIf
 
 		If IsHWnd($hFormObjectExplorer) Then
 			$currentWinPos = WinGetPos($hFormObjectExplorer)
 			IniWrite($sIniPath, "Settings", "posObjectExplorer", $currentWinPos[0] & "," & $currentWinPos[1])
+;~ 			$currentWinPos = WinGetClientSize($hFormObjectExplorer)
+;~ 			IniWrite($sIniPath, "Settings", "sizeObjectExplorer", $currentWinPos[0] & "," & $currentWinPos[1])
 		EndIf
 	EndIf
 EndFunc   ;==>_saveWinPositions
