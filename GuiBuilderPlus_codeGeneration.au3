@@ -322,6 +322,14 @@ Func _generate_controls(Const $oCtrl, $sDpiScale, $isChild = False)
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & $ctrlStyle & ')' & @CRLF
 	EndSwitch
 
+	If $oCtrl.FontSize <> "" And $oCtrl.FontSize <> -1 And $oCtrl.FontSize <> 8.5 Then
+		If $oCtrl.Type = "IP" Then
+			$mControls &= '_GUICtrlIpAddress_SetFont($' & $oCtrl.Name & ', "Arial", ' & $oCtrl.FontSize & ')' & @CRLF
+		Else
+			$mControls &= 'GUICtrlSetFont(-1, ' & $oCtrl.FontSize & ')' & @CRLF
+		EndIf
+	EndIf
+
 	If $oCtrl.Color <> -1 Then
 		$mControls &= "GUICtrlSetColor(-1, 0x" & Hex($oCtrl.Color, 6) & ")" & @CRLF
 	EndIf
