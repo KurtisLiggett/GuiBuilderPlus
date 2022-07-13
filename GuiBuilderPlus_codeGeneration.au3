@@ -386,6 +386,11 @@ Func _generate_includes(Const $oCtrl, Const $includes)
 			If Not StringInStr($includes, "<GuiIPAddress.au3>") Then
 				Return @CRLF & "#include <GuiIPAddress.au3>"
 			EndIf
+
+		Case "ListView"
+			If Not StringInStr($includes, "<ListViewConstants.au3>") Then
+				Return @CRLF & "#include <ListViewConstants.au3>"
+			EndIf
 	EndSwitch
 
 	Return ""

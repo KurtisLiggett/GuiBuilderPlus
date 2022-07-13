@@ -210,8 +210,8 @@
 #AutoIt3Wrapper_Res_HiDpi=y
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.29.exe
-#AutoIt3Wrapper_Res_Fileversion=0.29.0.0
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.0.0-beta.exe
+#AutoIt3Wrapper_Res_Fileversion=1.0.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 1.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 2.ico
@@ -376,7 +376,7 @@ Func _main()
 	$oClipboard = _objCtrls()
 	$oMain = _objMain()
 	$oMain.AppName = "GuiBuilderPlus"
-	$oMain.AppVersion = "0.29"
+	$oMain.AppVersion = "1.0.0-beta"
 	$oMain.Title = StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1)
 	$oMain.Name = "hGUI"
 	$oMain.Width = 400
