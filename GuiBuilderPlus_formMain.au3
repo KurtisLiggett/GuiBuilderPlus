@@ -80,6 +80,8 @@ Func _formMain()
 	Local $overlay_contextmenu_copy = GUICtrlCreateMenuItem("Copy", $overlay_contextmenu)
 	Local $overlay_contextmenu_delete = GUICtrlCreateMenuItem("Delete", $overlay_contextmenu)
 	GUICtrlCreateMenuItem("", $overlay_contextmenu)
+	$contextmenu_lock = GUICtrlCreateMenuItem("Lock Control", $overlay_contextmenu)
+	GUICtrlCreateMenuItem("", $overlay_contextmenu)
 	Local $contextmenu_arrange = GUICtrlCreateMenu("Arrange", $overlay_contextmenu)
 ;~ 	Local $contextmenu_arrange_back = GUICtrlCreateMenuItem("Send to Back", $contextmenu_arrange)
 ;~ 	Local $contextmenu_arrange_front = GUICtrlCreateMenuItem("Bring to Front", $contextmenu_arrange)
@@ -100,6 +102,7 @@ Func _formMain()
 	GUICtrlSetOnEvent($overlay_contextmenu_cut, _cut_selected)
 	GUICtrlSetOnEvent($overlay_contextmenu_copy, _copy_selected)
 	GUICtrlSetOnEvent($overlay_contextmenu_delete, _delete_selected_controls)
+	GUICtrlSetOnEvent($contextmenu_lock, "_onLockControl")
 ;~ 	GUICtrlSetOnEvent($contextmenu_arrange_back, "_onAlignMenu_Back")
 ;~ 	GUICtrlSetOnEvent($contextmenu_arrange_front, "_onAlignMenu_Front")
 	GUICtrlSetOnEvent($contextmenu_arrange_left, "_onAlignMenu_Left")
@@ -479,7 +482,7 @@ Func _set_accelerators()
 			["^o", $accel_o] _
 			]
 	GUISetAccelerators($accelerators, $hToolbar)
-	GUISetAccelerators($accelerators, $oProperties_Main.Hwnd)
+	GUISetAccelerators($accelerators, $oProperties_Main.properties.Hwnd)
 
 	GUICtrlSetOnEvent($accel_delete, _delete_selected_controls)
 	GUICtrlSetOnEvent($accel_x, _cut_selected)
@@ -582,7 +585,19 @@ Func _onExit()
 		Switch MsgBox($MB_SYSTEMMODAL + $MB_YESNOCANCEL, "Quit?", "Do you want to save the GUI?")
 			Case $IDYES
 ;~ 				_save_code()
-				_save_gui_definition()
+				$ret = _save_gui_definition()
+				Switch $ret
+					Case -1
+						$bStatusNewMessage = True
+						_GUICtrlStatusBar_SetText($hStatusbar, "Save cancelled.")
+						Return
+
+					Case -2
+						$bStatusNewMessage = True
+						_GUICtrlStatusBar_SetText($hStatusbar, "Save failed.")
+						Return
+
+				EndSwitch
 
 			Case $IDCANCEL
 				Return
@@ -615,8 +630,9 @@ Func _onMinimize()
 	_saveWinPositions()
 
 	GUISetState(@SW_MINIMIZE, $hGUI)
-	GUISetState(@SW_HIDE, $oProperties_Main.Hwnd)
-	GUISetState(@SW_HIDE, $oProperties_Ctrls.Hwnd)
+	GUISetState(@SW_HIDE, $oProperties_Main.properties.Hwnd)
+	GUISetState(@SW_HIDE, $oProperties_Ctrls.properties.Hwnd)
+	GUISetState(@SW_HIDE, $tabStylesHwnd)
 EndFunc   ;==>_onMinimize
 
 
@@ -628,9 +644,21 @@ EndFunc   ;==>_onMinimize
 Func _onRestore()
 	GUISetState(@SW_RESTORE, $hGUI)
 	If $oSelected.count > 0 Then
-		GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Ctrls.Hwnd)
+		Switch $tabSelected
+			Case "Properties"
+				GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Ctrls.properties.Hwnd)
+
+			Case "Styles"
+				GUISetState(@SW_SHOWNOACTIVATE, $tabStylesHwnd)
+		EndSwitch
 	Else
-		GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Main.Hwnd)
+		Switch $tabSelected
+			Case "Properties"
+				GUISetState(@SW_SHOWNOACTIVATE, $oProperties_Main.properties.Hwnd)
+
+			Case "Styles"
+				GUISetState(@SW_SHOWNOACTIVATE, $tabStylesHwnd)
+		EndSwitch
 	EndIf
 	GUISetState(@SW_SHOWNORMAL, $hGUI)
 	GUISwitch($hGUI)
@@ -712,13 +740,13 @@ Func _onResize()
 	$oMain.Width = $win_client_size[0]
 	$oMain.Height = $win_client_size[1]
 
-	$oProperties_Main.Width.value = $oMain.Width
+	$oProperties_Main.properties.Width.value = $oMain.Width
 	If $oCtrls.hasMenu Then
-		$oProperties_Main.Height.value = $oMain.Height + _WinAPI_GetSystemMetrics($SM_CYMENU)
+		$oProperties_Main.properties.Height.value = $oMain.Height + _WinAPI_GetSystemMetrics($SM_CYMENU)
 	Else
-		$oProperties_Main.Height.value = $oMain.Height
+		$oProperties_Main.properties.Height.value = $oMain.Height
 	EndIf
-	WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $oProperties_Main.Width.value & ", " & $oProperties_Main.Height.value & ")")
+	WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $oProperties_Main.properties.Width.value & ", " & $oProperties_Main.properties.Height.value & ")")
 
 ;~ 	$oSelected.getFirst().grippies.show()
 EndFunc   ;==>_onResize
@@ -881,6 +909,41 @@ EndFunc   ;==>_nudgeSelected
 
 
 ;------------------------------------------------------------------------------
+; Title...........: _onLockControl
+; Description.....: Lock selected controls
+; Events..........: Context menu item
+;------------------------------------------------------------------------------
+Func _onLockControl()
+	If $oSelected.count = 0 Then Return 0
+
+	_SendMessage($hGUI, $WM_SETREDRAW, False)
+	For $oCtrl In $oSelected.ctrls.Items()
+		$oCtrl.Locked = True
+		$oCtrl.grippies.show()
+	Next
+	_SendMessage($hGUI, $WM_SETREDRAW, True)
+	_WinAPI_RedrawWindow($hGUI)
+EndFunc   ;==>_onLockControl
+
+;------------------------------------------------------------------------------
+; Title...........: _onUnlockControl
+; Description.....: Unlock selected controls
+; Events..........: Context menu item
+;------------------------------------------------------------------------------
+Func _onUnlockControl()
+	If $oSelected.count = 0 Then Return 0
+
+	_SendMessage($hGUI, $WM_SETREDRAW, False)
+	For $oCtrl In $oSelected.ctrls.Items()
+		$oCtrl.Locked = False
+		$oCtrl.grippies.show()
+	Next
+	_SendMessage($hGUI, $WM_SETREDRAW, True)
+	_WinAPI_RedrawWindow($hGUI)
+EndFunc   ;==>_onUnlockControl
+
+
+;------------------------------------------------------------------------------
 ; Title...........: _onAlignMenu_Left
 ; Description.....: Align selected items
 ; Events..........: Context menu item
@@ -891,7 +954,7 @@ Func _onAlignMenu_Left()
 	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, $value, Default, Default, Default)
 	Next
-EndFunc
+EndFunc   ;==>_onAlignMenu_Left
 
 Func _onAlignMenu_Center()
 	If $oSelected.count = 0 Then Return 0
@@ -900,7 +963,7 @@ Func _onAlignMenu_Center()
 	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, $value - $oCtrl.Width / 2, Default, Default, Default)
 	Next
-EndFunc
+EndFunc   ;==>_onAlignMenu_Center
 
 Func _onAlignMenu_Right()
 	If $oSelected.count = 0 Then Return 0
@@ -909,7 +972,7 @@ Func _onAlignMenu_Right()
 	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, $value - $oCtrl.Width, Default, Default, Default)
 	Next
-EndFunc
+EndFunc   ;==>_onAlignMenu_Right
 
 Func _onAlignMenu_Top()
 	If $oSelected.count = 0 Then Return 0
@@ -917,7 +980,7 @@ Func _onAlignMenu_Top()
 	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, Default, $value, Default, Default)
 	Next
-EndFunc
+EndFunc   ;==>_onAlignMenu_Top
 
 Func _onAlignMenu_Middle()
 	If $oSelected.count = 0 Then Return 0
@@ -926,7 +989,7 @@ Func _onAlignMenu_Middle()
 	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, Default, $value - $oCtrl.Height / 2, Default, Default)
 	Next
-EndFunc
+EndFunc   ;==>_onAlignMenu_Middle
 
 Func _onAlignMenu_Bottom()
 	If $oSelected.count = 0 Then Return 0
@@ -935,7 +998,7 @@ Func _onAlignMenu_Bottom()
 	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, Default, $value - $oCtrl.Height, Default, Default)
 	Next
-EndFunc
+EndFunc   ;==>_onAlignMenu_Bottom
 
 Func _onAlignMenu_CenterPoints()
 	If $oSelected.count = 0 Then Return 0
@@ -945,7 +1008,7 @@ Func _onAlignMenu_CenterPoints()
 	For $oCtrl In $oSelected.ctrls.Items()
 		_change_ctrl_size_pos($oCtrl, $valueCenter - $oCtrl.Width / 2, $valueMiddle - $oCtrl.Height / 2, Default, Default)
 	Next
-EndFunc
+EndFunc   ;==>_onAlignMenu_CenterPoints
 
 Func _onAlignMenu_SpaceVertical()
 	If $oSelected.count = 0 Then Return 0
@@ -954,7 +1017,7 @@ Func _onAlignMenu_SpaceVertical()
 
 	;first find the order
 	For $oCtrl In $oSelected.ctrls.Items()
-		For $i=0 To UBound($aCtrls)-1
+		For $i = 0 To UBound($aCtrls) - 1
 			If $firstObj Then
 				$aCtrls[0] = $oCtrl
 				$firstObj = False
@@ -962,7 +1025,7 @@ Func _onAlignMenu_SpaceVertical()
 			ElseIf $oCtrl.Top < $aCtrls[$i].Top Then
 				_ArrayInsert($aCtrls, $i, $oCtrl)
 				ExitLoop
-			ElseIf $i = UBound($aCtrls)-1 Then
+			ElseIf $i = UBound($aCtrls) - 1 Then
 				_ArrayAdd($aCtrls, $oCtrl, 0, "|", @CRLF, $ARRAYFILL_FORCE_SINGLEITEM)
 			EndIf
 		Next
@@ -970,8 +1033,8 @@ Func _onAlignMenu_SpaceVertical()
 
 	;calculate the spacing
 	Local $posTop = $aCtrls[0].Top + $aCtrls[0].Height / 2
-	Local $posBottom = $aCtrls[$oSelected.count-1].Top + $aCtrls[$oSelected.count-1].Height / 2
-	Local $spacing = ( $posBottom - $posTop ) / ($oSelected.count - 1)
+	Local $posBottom = $aCtrls[$oSelected.count - 1].Top + $aCtrls[$oSelected.count - 1].Height / 2
+	Local $spacing = ($posBottom - $posTop) / ($oSelected.count - 1)
 
 	;set the new positions
 	Local $pos = $aCtrls[0].Top + $aCtrls[0].Height / 2
@@ -980,7 +1043,7 @@ Func _onAlignMenu_SpaceVertical()
 		$pos += $spacing
 	Next
 
-EndFunc
+EndFunc   ;==>_onAlignMenu_SpaceVertical
 
 Func _onAlignMenu_SpaceHorizontal()
 	If $oSelected.count = 0 Then Return 0
@@ -989,7 +1052,7 @@ Func _onAlignMenu_SpaceHorizontal()
 
 	;first find the order
 	For $oCtrl In $oSelected.ctrls.Items()
-		For $i=0 To UBound($aCtrls)-1
+		For $i = 0 To UBound($aCtrls) - 1
 			If $firstObj Then
 				$aCtrls[0] = $oCtrl
 				$firstObj = False
@@ -997,7 +1060,7 @@ Func _onAlignMenu_SpaceHorizontal()
 			ElseIf $oCtrl.Left < $aCtrls[$i].Left Then
 				_ArrayInsert($aCtrls, $i, $oCtrl)
 				ExitLoop
-			ElseIf $i = UBound($aCtrls)-1 Then
+			ElseIf $i = UBound($aCtrls) - 1 Then
 				_ArrayAdd($aCtrls, $oCtrl, 0, "|", @CRLF, $ARRAYFILL_FORCE_SINGLEITEM)
 			EndIf
 		Next
@@ -1005,8 +1068,8 @@ Func _onAlignMenu_SpaceHorizontal()
 
 	;calculate the spacing
 	Local $posLeft = $aCtrls[0].Left + $aCtrls[0].Width / 2
-	Local $posRight = $aCtrls[$oSelected.count-1].Left + $aCtrls[$oSelected.count-1].Width / 2
-	Local $spacing = ( $posRight - $posLeft ) / ($oSelected.count - 1)
+	Local $posRight = $aCtrls[$oSelected.count - 1].Left + $aCtrls[$oSelected.count - 1].Width / 2
+	Local $spacing = ($posRight - $posLeft) / ($oSelected.count - 1)
 
 	;set the new positions
 	Local $pos = $aCtrls[0].Left + $aCtrls[0].Width / 2
@@ -1014,21 +1077,21 @@ Func _onAlignMenu_SpaceHorizontal()
 		_change_ctrl_size_pos($oCtrl, $pos - $oCtrl.Width / 2, Default, Default, Default)
 		$pos += $spacing
 	Next
-EndFunc
+EndFunc   ;==>_onAlignMenu_SpaceHorizontal
 
 Func _onAlignMenu_Back()
 	If $oSelected.count = 0 Then Return 0
 	For $oCtrl In $oSelected.ctrls.Items()
 		_WinAPI_SetWindowPos(GUICtrlGetHandle($oCtrl.Hwnd), $HWND_TOP, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
 	Next
-EndFunc
+EndFunc   ;==>_onAlignMenu_Back
 
 Func _onAlignMenu_Front()
 	If $oSelected.count = 0 Then Return 0
 	For $oCtrl In $oSelected.ctrls.Items()
 		_WinAPI_SetWindowPos(GUICtrlGetHandle($oCtrl.Hwnd), $HWND_BOTTOM, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
 	Next
-EndFunc
+EndFunc   ;==>_onAlignMenu_Front
 
 ;------------------------------------------------------------------------------
 ; Title...........: _onPasteSelected
@@ -1061,7 +1124,7 @@ EndFunc   ;==>_onDuplicate
 
 Func _onContextMenuPasteSelected()
 	_PasteSelected(False, True)
-EndFunc
+EndFunc   ;==>_onContextMenuPasteSelected
 
 ;------------------------------------------------------------------------------
 ; Title...........: _onMenuSelectAll
@@ -1101,6 +1164,8 @@ Func _onMousePrimaryDown()
 		Next
 	EndIf
 
+	$oCtrls.clickedCtrl = $oCtrls.get($ctrl_hwnd)
+
 	Local $pos
 
 	;if tool is selected and clicking on an existing control (but not resizing), switch to selection
@@ -1128,6 +1193,7 @@ Func _onMousePrimaryDown()
 	Switch $oCtrls.mode
 		Case $mode_draw
 			_log("** PrimaryDown: draw **")
+
 			$initDraw = True
 			_set_current_mouse_pos()
 			$oMouse.StartX = $oMouse.X
@@ -1159,7 +1225,6 @@ Func _onMousePrimaryDown()
 				Case $background
 					_log("  background")
 					_set_default_mode()
-
 					_set_current_mouse_pos(1)
 
 					$oCtrls.mode = $mode_init_selection
@@ -1171,14 +1236,13 @@ Func _onMousePrimaryDown()
 				Case Else
 					If Not $oCtrls.exists($ctrl_hwnd) Then Return
 
-
 					Local $oCtrl = $oCtrls.get($ctrl_hwnd)
 
 					;if ctrl is pressed, add/remove form selection
 					Switch _IsPressed("11")
 						Case False ; single select
 							If Not $oSelected.exists($ctrl_hwnd) Then
-								_add_to_selected($oCtrl)
+								_add_to_selected($oCtrl, True, False)
 
 								_set_current_mouse_pos()
 							EndIf
@@ -1192,10 +1256,10 @@ Func _onMousePrimaryDown()
 
 								Case False
 									If Not $oSelected.exists($ctrl_hwnd) Then
-										_add_to_selected($oCtrl, False)
+										_add_to_selected($oCtrl, False, False)
 										_set_current_mouse_pos()
 									Else
-										_remove_from_selected($oCtrl)
+										_remove_from_selected($oCtrl, False)
 									EndIf
 							EndSwitch
 					EndSwitch
@@ -1203,6 +1267,12 @@ Func _onMousePrimaryDown()
 					If $oSelected.count <= 1 Then
 						_setLvSelected($oSelected.getFirst())
 					EndIf
+
+;~ 					If IsObj($oCtrl) Then
+;~ 						If $oCtrl.Locked Then
+;~ 							$oCtrls.mode = $mode_init_selection
+;~ 						EndIf
+;~ 					EndIf
 			EndSwitch
 
 		Case $mode_paste
@@ -1224,6 +1294,7 @@ Func _onMousePrimaryUp()
 			_log("** PrimaryUp: draw **")
 			GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 			_set_default_mode()
+			_showProperties()
 			$initDraw = False
 
 		Case $mode_init_move
@@ -1239,7 +1310,7 @@ Func _onMousePrimaryUp()
 			$oCtrls.mode = $mode_default
 
 			_showProperties()
-			_populate_control_properties_gui($oCtrls.getLast())
+			_populate_control_properties_gui($oSelected.getLast())
 
 		Case $resize_nw, $resize_n, $resize_ne, $resize_e, $resize_se, $resize_s, $resize_sw, $resize_w
 			_log("** PrimaryUp: Resize **")
@@ -1301,7 +1372,10 @@ Func _onMousePrimaryUp()
 				_populate_control_properties_gui($oCtrl)
 			EndIf
 
-			_refreshGenerateCode()
+			If $oSelected.count > 0 Then
+				_refreshGenerateCode()
+			EndIf
+			_showProperties()
 
 	EndSwitch
 
@@ -1366,6 +1440,22 @@ Func _onMouseSecondaryUp()
 				If $oCtrl.Type = "Tab" Then
 					ShowMenu($overlay_contextmenutab, $oMouse.X, $oMouse.Y)
 				Else
+					Local $hasLocked = False
+					For $oSelectedCtrl In $oSelected.ctrls.Items()
+						If $oCtrl.Locked Then
+							$hasLocked = True
+							ExitLoop
+						EndIf
+					Next
+
+					If $hasLocked Then
+						GUICtrlSetData($contextmenu_lock, "Unlock Control")
+						GUICtrlSetOnEvent($contextmenu_lock, "_onUnlockControl")
+					Else
+						GUICtrlSetData($contextmenu_lock, "Lock Control")
+						GUICtrlSetOnEvent($contextmenu_lock, "_onLockControl")
+					EndIf
+
 					ShowMenu($overlay_contextmenu, $oMouse.X, $oMouse.Y)
 				EndIf
 
@@ -1437,6 +1527,13 @@ Func _onMouseMove()
 			Local $tooltip
 
 			Local $count = $oSelected.count
+
+			If IsObj($oCtrls.clickedCtrl) Then
+				If $oCtrls.clickedCtrl.Locked Then
+					$oCtrls.mode = $mode_default
+					Return
+				EndIf
+			EndIf
 
 			_SendMessage($hGUI, $WM_SETREDRAW, False)
 			For $oCtrl In $oSelected.ctrls.Items()
@@ -1593,7 +1690,7 @@ Func _onResetLayout()
 		Local $w = 250
 		Local $h = 500
 
-		Local $x = $oMain.Left + ($oMain.Width	+ 5)
+		Local $x = $oMain.Left + ($oMain.Width + 5)
 		Local $y = $oMain.Top
 
 		WinMove($hFormObjectExplorer, "", $x, $y, $w, $h)
@@ -1609,7 +1706,7 @@ Func _onResetLayout()
 
 		WinMove($hFormGenerateCode, "", $x, $y, $w, $h)
 	EndIf
-EndFunc   ;==>_onShowObjectExplorer
+EndFunc   ;==>_onResetLayout
 
 
 ;------------------------------------------------------------------------------
@@ -1703,7 +1800,7 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 			EndIf
 		EndIf
 	EndIf
-	$oProperties_Ctrls.Text.value = $text
+	$oProperties_Ctrls.properties.Text.value = $text
 
 	;NAME
 	Local $name = $oCtrl.Name
@@ -1717,32 +1814,38 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 			EndIf
 		EndIf
 	EndIf
-	$oProperties_Ctrls.Name.value = $name
+	$oProperties_Ctrls.properties.Name.value = $name
 
-	$oProperties_Ctrls.Left.value = $oCtrl.Left
-	$oProperties_Ctrls.Top.value = $oCtrl.Top
-	$oProperties_Ctrls.Width.value = $oCtrl.Width
-	$oProperties_Ctrls.Height.value = $oCtrl.Height
+	$oProperties_Ctrls.properties.Left.value = $oCtrl.Left
+	$oProperties_Ctrls.properties.Top.value = $oCtrl.Top
+	$oProperties_Ctrls.properties.Width.value = $oCtrl.Width
+	$oProperties_Ctrls.properties.Height.value = $oCtrl.Height
+
+	If $oCtrl.FontSize <> -1 Then
+		$oProperties_Ctrls.properties.FontSize.value = $oCtrl.FontSize
+	Else
+		$oProperties_Ctrls.properties.FontSize.value = 8.5
+	EndIf
 
 	If $oCtrl.Background <> -1 Then
-		$oProperties_Ctrls.Background.value = "0x" & Hex($oCtrl.Background, 6)
+		$oProperties_Ctrls.properties.Background.value = "0x" & Hex($oCtrl.Background, 6)
 	Else
-		$oProperties_Ctrls.Background.value = ""
+		$oProperties_Ctrls.properties.Background.value = ""
 	EndIf
 	If $oCtrl.Color <> -1 Then
-		$oProperties_Ctrls.Color.value = "0x" & Hex($oCtrl.Color, 6)
+		$oProperties_Ctrls.properties.Color.value = "0x" & Hex($oCtrl.Color, 6)
 	Else
-		$oProperties_Ctrls.Color.value = ""
+		$oProperties_Ctrls.properties.Color.value = ""
 	EndIf
 
 
-	$oProperties_Ctrls.Global.value = $oCtrl.Global
+	$oProperties_Ctrls.properties.Global.value = $oCtrl.Global
 EndFunc   ;==>_populate_control_properties_gui
 
 
 #Region change-properties-main
 Func _main_change_title()
-	Local Const $new_text = $oProperties_Main.Title.value
+	Local Const $new_text = $oProperties_Main.properties.Title.value
 	$oMain.Title = $new_text
 
 	_refreshGenerateCode()
@@ -1751,9 +1854,9 @@ EndFunc   ;==>_main_change_title
 
 
 Func _main_change_name()
-	Local $new_name = $oProperties_Main.Name.value
+	Local $new_name = $oProperties_Main.properties.Name.value
 	$new_name = StringReplace($new_name, " ", "_")
-	$oProperties_Main.Name.value = $new_name
+	$oProperties_Main.properties.Name.value = $new_name
 	$oMain.Name = $new_name
 
 	_refreshGenerateCode()
@@ -1763,7 +1866,7 @@ EndFunc   ;==>_main_change_name
 
 
 Func _main_change_left()
-	Local Const $new_text = $oProperties_Main.Left.value
+	Local Const $new_text = $oProperties_Main.properties.Left.value
 	$oMain.Left = $new_text
 
 	_refreshGenerateCode()
@@ -1772,7 +1875,7 @@ EndFunc   ;==>_main_change_left
 
 
 Func _main_change_top()
-	Local Const $new_text = $oProperties_Main.Top.value
+	Local Const $new_text = $oProperties_Main.properties.Top.value
 	$oMain.Top = $new_text
 
 	_refreshGenerateCode()
@@ -1781,7 +1884,7 @@ EndFunc   ;==>_main_change_top
 
 
 Func _main_change_width()
-	Local Const $newValue = $oProperties_Main.Width.value
+	Local Const $newValue = $oProperties_Main.properties.Width.value
 
 	WinMove($hGUI, "", Default, Default, $newValue + $iGuiFrameW, Default)
 
@@ -1800,7 +1903,7 @@ EndFunc   ;==>_main_change_width
 
 
 Func _main_change_height()
-	Local Const $newValue = $oProperties_Main.Height.value
+	Local Const $newValue = $oProperties_Main.properties.Height.value
 
 	WinMove($hGUI, "", Default, Default, Default, $newValue + $iGuiFrameH)
 
@@ -1822,7 +1925,7 @@ Func _main_pick_bkColor()
 	Local $color = _ChooseColor(2)
 
 	If $color = -1 Then Return 0
-	$oProperties_Main.Background.value = $color
+	$oProperties_Main.properties.Background.value = $color
 
 	_main_change_background()
 	$oMain.hasChanged = True
@@ -1830,13 +1933,13 @@ EndFunc   ;==>_main_pick_bkColor
 
 
 Func _main_change_background()
-	Local $colorInput = $oProperties_Main.Background.value
+	Local $colorInput = $oProperties_Main.properties.Background.value
 	If $colorInput = "" Or $colorInput = -1 Then
 		$colorInput = $defaultGuiBkColor
 	Else
 		$colorInput = Dec(StringReplace($colorInput, "0x", ""))
 	EndIf
-	$oMain.Background = $oProperties_Main.Background.value
+	$oMain.Background = $oProperties_Main.properties.Background.value
 
 	GUISetBkColor($colorInput, $hGUI)
 
@@ -1847,18 +1950,16 @@ EndFunc   ;==>_main_change_background
 
 
 #Region change-properties-ctrls
-;~ Func _onPropertyChange($sPropertyName, $value)
-;~ 	ConsoleWrite($sPropertyName & " " & $value & @CRLF)
-;~ EndFunc   ;==>_onPropertyChange
 
 Func _ctrl_change_text()
-	Local Const $new_text = $oProperties_Ctrls.Text.value
+	Local Const $new_text = $oProperties_Ctrls.properties.Text.value
 
 	Local Const $sel_count = $oSelected.count
 
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
 
 				If $oCtrl.Type = "Combo" Then
 					GUICtrlSetData($oCtrl.Hwnd, $new_text, $new_text)
@@ -1902,14 +2003,15 @@ EndFunc   ;==>_ctrl_change_text
 
 
 Func _ctrl_change_name()
-	Local $new_name = $oProperties_Ctrls.Name.value
+	Local $new_name = $oProperties_Ctrls.properties.Name.value
 	$new_name = StringReplace($new_name, " ", "_")
-	$oProperties_Ctrls.Name.value = $new_name
+	$oProperties_Ctrls.properties.Name.value = $new_name
 
 	Local Const $sel_count = $oSelected.count
 
 	If $sel_count = 1 Then
 		Local $oCtrl = $oSelected.getFirst()
+		If $oCtrl.Locked Then Return
 
 		If $oCtrl.Type = "Tab" Then
 			If $childSelected Then
@@ -1945,10 +2047,10 @@ EndFunc   ;==>_ctrl_change_name
 
 
 Func _ctrl_change_left()
-	Local $new_data = $oProperties_Ctrls.Left.value
+	Local $new_data = $oProperties_Ctrls.properties.Left.value
 	If $new_data = "" Then
 		$new_data = 0
-		$oProperties_Ctrls.Left.value = $new_data
+		$oProperties_Ctrls.properties.Left.value = $new_data
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
@@ -1956,6 +2058,8 @@ Func _ctrl_change_left()
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
 				Switch $oCtrl.Type
 					Case "Tab"
 						_moveTabCtrls($oCtrl, $oCtrl.Left - $new_data, Default, Default, Default)
@@ -1989,10 +2093,10 @@ EndFunc   ;==>_ctrl_change_left
 
 
 Func _ctrl_change_top()
-	Local $new_data = $oProperties_Ctrls.Top.value
+	Local $new_data = $oProperties_Ctrls.properties.Top.value
 	If $new_data = "" Then
 		$new_data = 0
-		$oProperties_Ctrls.Top.value = $new_data
+		$oProperties_Ctrls.properties.Top.value = $new_data
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
@@ -2000,6 +2104,8 @@ Func _ctrl_change_top()
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
 				Switch $oCtrl.Type
 					Case "Tab"
 						_moveTabCtrls($oCtrl, Default, $oCtrl.Top - $new_data, Default, Default)
@@ -2032,10 +2138,10 @@ EndFunc   ;==>_ctrl_change_top
 
 
 Func _ctrl_change_width()
-	Local $new_data = $oProperties_Ctrls.Width.value
+	Local $new_data = $oProperties_Ctrls.properties.Width.value
 	If $new_data = "" Then
 		$new_data = 0
-		$oProperties_Ctrls.Width.value = $new_data
+		$oProperties_Ctrls.properties.Width.value = $new_data
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
@@ -2043,6 +2149,7 @@ Func _ctrl_change_width()
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
 
 				;move the selected control
 				_change_ctrl_size_pos($oCtrl, Default, Default, $new_data, Default)
@@ -2067,10 +2174,10 @@ EndFunc   ;==>_ctrl_change_width
 
 
 Func _ctrl_change_height()
-	Local $new_data = $oProperties_Ctrls.Height.value
+	Local $new_data = $oProperties_Ctrls.properties.Height.value
 	If $new_data = "" Then
 		$new_data = 0
-		$oProperties_Ctrls.Height.value = $new_data
+		$oProperties_Ctrls.properties.Height.value = $new_data
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
@@ -2078,6 +2185,7 @@ Func _ctrl_change_height()
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
 
 				;move the selected control
 				_change_ctrl_size_pos($oCtrl, Default, Default, Default, $new_data)
@@ -2105,7 +2213,7 @@ Func _ctrl_pick_bkColor()
 	Local $color = _ChooseColor(2)
 
 	If $color = -1 Then Return 0
-	$oProperties_Ctrls.Background.value = $color
+	$oProperties_Ctrls.properties.Background.value = $color
 
 	_ctrl_change_bkColor()
 	$oMain.hasChanged = True
@@ -2113,10 +2221,10 @@ EndFunc   ;==>_ctrl_pick_bkColor
 
 
 Func _ctrl_change_bkColor()
-	Local $colorInput = $oProperties_Ctrls.Background.value
+	Local $colorInput = $oProperties_Ctrls.properties.Background.value
 	If $colorInput = "" Then
 		$colorInput = -1
-		$oProperties_Ctrls.Background.value = -1
+		$oProperties_Ctrls.properties.Background.value = -1
 	Else
 		$colorInput = Dec(StringReplace($colorInput, "0x", ""))
 	EndIf
@@ -2126,6 +2234,7 @@ Func _ctrl_change_bkColor()
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
 
 				;convert string to color then apply
 				Switch $oCtrl.Type
@@ -2157,13 +2266,17 @@ EndFunc   ;==>_ctrl_change_bkColor
 
 
 Func _ctrl_change_global()
-	Local $new_data = $oProperties_Ctrls.Global.value
+	Local $new_data = _onCheckboxChange(@GUI_CtrlId)
+;~ 	Local $new_data = $oProperties_Ctrls.properties.Global.value
+
 
 	Local Const $sel_count = $oSelected.count
 
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
 				;update the property
 				$oCtrl.Global = $new_data
 			Next
@@ -2174,21 +2287,55 @@ Func _ctrl_change_global()
 EndFunc   ;==>_ctrl_change_global
 
 
+Func _ctrl_change_FontSize()
+	Local $new_data = $oProperties_Ctrls.properties.FontSize.value
+	If $new_data = "" or $new_data = "8.5" Then
+		$oProperties_Ctrls.properties.FontSize.value = 8.5
+		$new_data = -1
+	ElseIf Not StringRegExp($new_data, '^[1-9]\d*(\.\d+)?$') Then
+		$oProperties_Ctrls.properties.FontSize.value = ""
+		Return -1
+	EndIf
+
+	Local Const $sel_count = $oSelected.count
+
+	Switch $sel_count >= 1
+		Case True
+			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
+				;update the selected control
+				If $oCtrl.Type = "IP" Then
+					_GUICtrlIpAddress_SetFont($oCtrl.Hwnd, "Arial", $new_data)
+				Else
+					GUICtrlSetFont($oCtrl.Hwnd, $new_data)
+				EndIf
+
+				;update the selected property
+				$oCtrl.FontSize = $new_data
+
+			Next
+	EndSwitch
+
+	_refreshGenerateCode()
+EndFunc   ;==>_ctrl_change_global
+
+
 Func _ctrl_pick_Color()
 	Local $color = _ChooseColor(2)
 
 	If $color = -1 Then Return 0
-	$oProperties_Ctrls.Color.value = $color
+	$oProperties_Ctrls.properties.Color.value = $color
 
 	_ctrl_change_Color()
 EndFunc   ;==>_ctrl_pick_Color
 
 
 Func _ctrl_change_Color()
-	Local $colorInput = $oProperties_Ctrls.Color.value
+	Local $colorInput = $oProperties_Ctrls.properties.Color.value
 	If $colorInput = "" Then
 		$colorInput = -1
-		$oProperties_Ctrls.Color.value = -1
+		$oProperties_Ctrls.properties.Color.value = -1
 	Else
 		$colorInput = Dec(StringReplace($colorInput, "0x", ""))
 	EndIf
@@ -2198,6 +2345,8 @@ Func _ctrl_change_Color()
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
 				;convert string to color then apply
 				If $oCtrl.Type <> "Label" Then Return 0
 
@@ -2283,7 +2432,7 @@ Func _wipe_current_gui()
 
 	For $oCtrl In $oCtrls.ctrls.Items()
 
-		_delete_ctrl($oCtrl)
+		_delete_ctrl($oCtrl, True)
 
 	Next
 
@@ -2385,7 +2534,7 @@ Func _set_default_mode()
 
 	_remove_all_from_selected()
 
-	_showProperties($props_Main)
+;~ 	_showProperties($props_Main)
 
 	;clear listview selections
 	_setLvSelected(0)
@@ -2452,7 +2601,7 @@ Func _CtrlInRect(Const $x, Const $y, Const $w, Const $h, Const $left, Const $top
 		Return False
 	EndIf
 
-EndFunc   ;==>__WinAPI_PtInRectEx
+EndFunc   ;==>_CtrlInRect
 
 Func _CtrlCrossRect(Const $x, Const $y, Const $w, Const $h, Const $left, Const $top, Const $width, Const $height)
 	; Author.........: kurtykurtyboy
@@ -2463,7 +2612,7 @@ Func _CtrlCrossRect(Const $x, Const $y, Const $w, Const $h, Const $left, Const $
 		Return False
 	EndIf
 
-EndFunc   ;==>__WinAPI_PtInRectEx
+EndFunc   ;==>_CtrlCrossRect
 
 Func _rect_from_points(Const $a1, Const $a2, Const $b1, Const $b2)
 	Local $oRect = _objCreateRect()
@@ -2755,7 +2904,7 @@ EndFunc   ;==>_menu_gui_function
 ;------------------------------------------------------------------------------
 Func _onGithubItem()
 	ShellExecute('https://github.com/KurtisLiggett/GuiBuilderPlus')
-EndFunc
+EndFunc   ;==>_onGithubItem
 
 ;------------------------------------------------------------------------------
 ; Title...........: _menu_about
@@ -2881,11 +3030,15 @@ Func _saveWinPositions()
 		If IsHWnd($hFormGenerateCode) Then
 			$currentWinPos = WinGetPos($hFormGenerateCode)
 			IniWrite($sIniPath, "Settings", "posGenerateCode", $currentWinPos[0] & "," & $currentWinPos[1])
+;~ 			$currentWinPos = WinGetClientSize($hFormGenerateCode)
+;~ 			IniWrite($sIniPath, "Settings", "sizeGenerateCode", $currentWinPos[0] & "," & $currentWinPos[1])
 		EndIf
 
 		If IsHWnd($hFormObjectExplorer) Then
 			$currentWinPos = WinGetPos($hFormObjectExplorer)
 			IniWrite($sIniPath, "Settings", "posObjectExplorer", $currentWinPos[0] & "," & $currentWinPos[1])
+;~ 			$currentWinPos = WinGetClientSize($hFormObjectExplorer)
+;~ 			IniWrite($sIniPath, "Settings", "sizeObjectExplorer", $currentWinPos[0] & "," & $currentWinPos[1])
 		EndIf
 	EndIf
 EndFunc   ;==>_saveWinPositions
@@ -2897,4 +3050,4 @@ Func _setIconFromResource($ctrlID, $sIconName, $iIcon)
 	Else
 		GUICtrlSetImage($ctrlID, $iconset & "\" & $sIconName)
 	EndIf
-EndFunc
+EndFunc   ;==>_setIconFromResource

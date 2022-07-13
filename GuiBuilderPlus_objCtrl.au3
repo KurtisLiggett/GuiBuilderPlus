@@ -26,6 +26,8 @@ Func _objCtrls($isSelection = False)
 	_AutoItObject_AddProperty($oObject, "hasTab", $ELSCOPE_PUBLIC, False)
 	_AutoItObject_AddProperty($oObject, "isSelection", $ELSCOPE_PUBLIC, $isSelection)
 	_AutoItObject_AddProperty($oObject, "drawHwnd", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "clickedCtrl", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "styleList", $ELSCOPE_PUBLIC, _Styles_Main)
 	;actual list of controls
 	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, $oDict)
 
@@ -90,6 +92,51 @@ Func _objCtrls_add($oSelf, $objCtrl, $hParent = -1)
 	If $oSelf.isSelection Then
 		_AutoItObject_AddProperty($objCtrl, "grippies", $ELSCOPE_PUBLIC, _objGrippies($objCtrl, $oSelf))
 	EndIf
+
+	Switch $objCtrl.Type
+		Case "Tab"
+			$objCtrl.styles = _Styles_Tab()
+		Case "Group"
+			$objCtrl.styles = _Styles_Group()
+		Case "Button"
+			$objCtrl.styles = _Styles_Button()
+		Case "Checkbox"
+			$objCtrl.styles = _Styles_Checkbox()
+		Case "Radio"
+			$objCtrl.styles = _Styles_Radio()
+		Case "Edit"
+			$objCtrl.styles = _Styles_Edit()
+		Case "Input"
+			$objCtrl.styles = _Styles_Input()
+		Case "Label"
+			$objCtrl.styles = _Styles_Label()
+			$objCtrl.styles.Item("SS_CENTER") = True
+		Case "UpDown"
+			$objCtrl.styles = _Styles_UpDown()
+		Case "List"
+			$objCtrl.styles = _Styles_List()
+		Case "Combo"
+			$objCtrl.styles = _Styles_Combo()
+		Case "Date"
+			$objCtrl.styles = _Styles_Date()
+		Case "TreeView"
+			$objCtrl.styles = _Styles_TreeView()
+		Case "Progress"
+			$objCtrl.styles = _Styles_Progress()
+		Case "Avi"
+			$objCtrl.styles = _Styles_Avi()
+		Case "Icon"
+			$objCtrl.styles = _Styles_Icon()
+		Case "Pic"
+			$objCtrl.styles = _Styles_Pic()
+		Case "Slider"
+			$objCtrl.styles = _Styles_Slider()
+		Case "IP"
+			$objCtrl.styles = _Styles_IP()
+		Case "ListView"
+			$objCtrl.styles = _Styles_ListView()
+	EndSwitch
+
 	$oSelf.ctrls.Add($objCtrl.Hwnd, $objCtrl)
 
 	If $objCtrl.Type = "Menu" Then
@@ -326,7 +373,7 @@ Func _objCtrls_moveUp($oSelf, $oCtrlStart)
 
 		;move temp list to our list
 		$oSelf.ctrls = $oCtrlsTemp
-	Else	;if child element
+	Else    ;if child element
 		Local $oParent = $oSelf.get($oCtrlStart.CtrlParent)
 		Switch $oCtrlStart.Type
 			Case "TabItem"
@@ -507,6 +554,7 @@ Func _objCtrl($oParent)
 	_AutoItObject_AddProperty($oObject, "DropAccepted", $ELSCOPE_PUBLIC, False)
 	_AutoItObject_AddProperty($oObject, "DefButton", $ELSCOPE_PUBLIC, False)
 	_AutoItObject_AddProperty($oObject, "Color", $ELSCOPE_PUBLIC, -1)
+	_AutoItObject_AddProperty($oObject, "FontSize", $ELSCOPE_PUBLIC, -1)
 	_AutoItObject_AddProperty($oObject, "Background", $ELSCOPE_PUBLIC, -1)
 	_AutoItObject_AddProperty($oObject, "Global", $ELSCOPE_PUBLIC, True)
 	_AutoItObject_AddProperty($oObject, "TabCount", $ELSCOPE_PUBLIC, 0)
@@ -515,11 +563,13 @@ Func _objCtrl($oParent)
 	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, ObjCreate("Scripting.Dictionary"))
 	_AutoItObject_AddProperty($oObject, "Dirty", $ELSCOPE_PUBLIC, False)
 	_AutoItObject_AddProperty($oObject, "CtrlParent", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "Locked", $ELSCOPE_PUBLIC, False)
+	_AutoItObject_AddProperty($oObject, "styleString", $ELSCOPE_PUBLIC, "")
+	_AutoItObject_AddProperty($oObject, "styles", $ELSCOPE_PUBLIC, ObjCreate("Scripting.Dictionary"))
 
 	Return $oObject
 EndFunc   ;==>_objCtrl
 #EndRegion objCtrl
-
 
 
 ;~ Func _objTab($oParent)
@@ -536,7 +586,7 @@ Func _objGroup($oParent)
 	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, ObjCreate("Scripting.Dictionary"))
 
 	Return $oObject
-EndFunc
+EndFunc   ;==>_objGroup
 
 
 
@@ -585,6 +635,9 @@ Func _objMain()
 	_AutoItObject_AddProperty($oObject, "AppVersion", $ELSCOPE_PUBLIC, "")
 	_AutoItObject_AddProperty($oObject, "DefaultCursor", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "hasChanged", $ELSCOPE_PUBLIC, False)
+	_AutoItObject_AddProperty($oObject, "styles", $ELSCOPE_PUBLIC, _Styles_Main())
+	_AutoItObject_AddProperty($oObject, "styleString", $ELSCOPE_PUBLIC, "")
+
 
 	Return $oObject
 EndFunc   ;==>_objMain
@@ -605,14 +658,14 @@ Func _objGrippies($oParent, $oGrandParent)
 
 	;create the labels to represent the grippy handles
 	Local $grippy_size = 5
-	Local $NW = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	Local $N = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	Local $NE = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	Local $W = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	Local $East = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	Local $SW = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	Local $S = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
-	Local $SE = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, $SS_BLACKRECT, $WS_EX_TOPMOST)
+	Local $NW = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
+	Local $N = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
+	Local $NE = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
+	Local $W = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
+	Local $East = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
+	Local $SW = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
+	Local $S = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
+	Local $SE = GUICtrlCreateLabel("", -$grippy_size, -$grippy_size, $grippy_size, $grippy_size, -1, $WS_EX_TOPMOST)
 
 	;set mouse cursor for each grippy
 	GUICtrlSetCursor($NW, $SIZENWSE)
@@ -692,6 +745,8 @@ EndFunc   ;==>_objGrippies_mouseClickEvent
 ; Description.....:	when a grippy is clicked, set the flag
 ;------------------------------------------------------------------------------
 Func _objGrippies_mouseClick($oSelf, $CtrlID)
+	If $oSelf.parent.Locked Then Return
+
 	Switch $CtrlID
 		Case $oSelf.NW
 			$oSelf.parent.parent.mode = $resize_nw
@@ -806,6 +861,49 @@ EndFunc   ;==>_objGrippies_resizing
 ;------------------------------------------------------------------------------
 Func _objGrippies_show($oSelf)
 ;~ 	_log("show grippies for " & $oSelf.parent.Name)
+	;set lock=red, or unlock=black
+	Local $lockColor = 0xFF0000
+	Local $unlockColor = 0x333333
+	If $oSelf.parent.Locked Then
+		GUICtrlSetBkColor($oSelf.NW, $lockColor)
+		GUICtrlSetBkColor($oSelf.N, $lockColor)
+		GUICtrlSetBkColor($oSelf.NE, $lockColor)
+		GUICtrlSetBkColor($oSelf.East, $lockColor)
+		GUICtrlSetBkColor($oSelf.SE, $lockColor)
+		GUICtrlSetBkColor($oSelf.S, $lockColor)
+		GUICtrlSetBkColor($oSelf.SW, $lockColor)
+		GUICtrlSetBkColor($oSelf.W, $lockColor)
+
+		;set mouse cursor for each grippy
+		GUICtrlSetCursor($oSelf.NW, -1)
+		GUICtrlSetCursor($oSelf.N, -1)
+		GUICtrlSetCursor($oSelf.NE, -1)
+		GUICtrlSetCursor($oSelf.East, -1)
+		GUICtrlSetCursor($oSelf.SE, -1)
+		GUICtrlSetCursor($oSelf.S, -1)
+		GUICtrlSetCursor($oSelf.SW, -1)
+		GUICtrlSetCursor($oSelf.W, -1)
+	Else
+		GUICtrlSetBkColor($oSelf.NW, $unlockColor)
+		GUICtrlSetBkColor($oSelf.N, $unlockColor)
+		GUICtrlSetBkColor($oSelf.NE, $unlockColor)
+		GUICtrlSetBkColor($oSelf.East, $unlockColor)
+		GUICtrlSetBkColor($oSelf.SE, $unlockColor)
+		GUICtrlSetBkColor($oSelf.S, $unlockColor)
+		GUICtrlSetBkColor($oSelf.SW, $unlockColor)
+		GUICtrlSetBkColor($oSelf.W, $unlockColor)
+
+		;set mouse cursor for each grippy
+		GUICtrlSetCursor($oSelf.NW, $SIZENWSE)
+		GUICtrlSetCursor($oSelf.N, $SIZENS)
+		GUICtrlSetCursor($oSelf.NE, $SIZENESW)
+		GUICtrlSetCursor($oSelf.East, $SIZEWS)
+		GUICtrlSetCursor($oSelf.SE, $SIZENWSE)
+		GUICtrlSetCursor($oSelf.S, $SIZENS)
+		GUICtrlSetCursor($oSelf.SW, $SIZENESW)
+		GUICtrlSetCursor($oSelf.W, $SIZEWS)
+	EndIf
+
 	;show
 	GUICtrlSetState($oSelf.NW, $GUI_SHOW)
 	GUICtrlSetState($oSelf.N, $GUI_SHOW)
@@ -895,3 +993,431 @@ Func _objGrippies_delete($oSelf)
 EndFunc   ;==>_objGrippies_delete
 #EndRegion grippies
 
+
+
+;------------------------------------------------------------------------------
+; Title...........: _StyleList_Main
+; Description.....:	array containing gui or control property IDs
+;------------------------------------------------------------------------------
+Func _Styles_Main()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	$oDict.Add("GUI_SS_DEFAULT_GUI", False)
+	$oDict.Add("WS_BORDER", False)
+	$oDict.Add("WS_POPUP", False)
+	$oDict.Add("WS_CAPTION", False)
+	$oDict.Add("WS_CLIPCHILDREN", False)
+	$oDict.Add("WS_CLIPSIBLINGS", False)
+	$oDict.Add("WS_DISABLED", False)
+	$oDict.Add("WS_DLGFRAME", False)
+	$oDict.Add("WS_HSCROLL", False)
+	$oDict.Add("WS_MAXIMIZE", False)
+	$oDict.Add("WS_MAXIMIZEBOX", False)
+	$oDict.Add("WS_MINIMIZE", False)
+	$oDict.Add("WS_MINIMIZEBOX", False)
+	$oDict.Add("WS_OVERLAPPED", False)
+	$oDict.Add("WS_OVERLAPPEDWINDOW", False)
+	$oDict.Add("WS_POPUPWINDOW", False)
+	$oDict.Add("WS_SIZEBOX", False)
+	$oDict.Add("WS_SYSMENU", False)
+	$oDict.Add("WS_THICKFRAME", False)
+	$oDict.Add("WS_VSCROLL", False)
+	$oDict.Add("WS_VISIBLE", False)
+	$oDict.Add("WS_CHILD", False)
+	$oDict.Add("WS_GROUP", False)
+	$oDict.Add("WS_TABSTOP", False)
+	$oDict.Add("DS_MODALFRAME", False)
+	$oDict.Add("DS_SETFOREGROUND", False)
+	$oDict.Add("DS_CONTEXTHELP", False)
+
+	Return $oDict
+EndFunc   ;==>_Styles_Main
+
+
+Func _Styles_Tab()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	$oDict.Add("GUI_SS_DEFAULT_TAB", False)
+	$oDict.Add("TCS_SCROLLOPPOSITE", False)
+	$oDict.Add("TCS_BOTTOM", False)
+	$oDict.Add("TCS_RIGHT", False)
+	$oDict.Add("TCS_MULTISELECT", False)
+	$oDict.Add("TCS_FLATBUTTONS", False)
+	$oDict.Add("TCS_FORCEICONLEFT", False)
+	$oDict.Add("TCS_FORCELABELLEFT", False)
+	$oDict.Add("TCS_HOTTRACK", False)
+	$oDict.Add("TCS_VERTICAL", False)
+	$oDict.Add("TCS_TABS", False)
+	$oDict.Add("TCS_BUTTONS", False)
+	$oDict.Add("TCS_SINGLELINE", False)
+	$oDict.Add("TCS_MULTILINE", False)
+	$oDict.Add("TCS_RIGHTJUSTIFY", False)
+	$oDict.Add("TCS_FIXEDWIDTH", False)
+	$oDict.Add("TCS_RAGGEDRIGHT", False)
+	$oDict.Add("TCS_FOCUSONBUTTONDOWN", False)
+	$oDict.Add("TCS_OWNERDRAWFIXED", False)
+	$oDict.Add("TCS_TOOLTIPS", False)
+	$oDict.Add("TCS_FOCUSNEVER", False)
+
+	Return $oDict
+EndFunc   ;==>_Styles_Tab
+
+
+Func _Styles_Group()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	$oDict.Add("WS_BORDER", False)
+	$oDict.Add("WS_POPUP", False)
+	$oDict.Add("WS_CAPTION", False)
+	$oDict.Add("WS_CLIPCHILDREN", False)
+	$oDict.Add("WS_CLIPSIBLINGS", False)
+	$oDict.Add("WS_DISABLED", False)
+	$oDict.Add("WS_DLGFRAME", False)
+	$oDict.Add("WS_HSCROLL", False)
+	$oDict.Add("WS_MAXIMIZE", False)
+	$oDict.Add("WS_MAXIMIZEBOX", False)
+	$oDict.Add("WS_MINIMIZE", False)
+	$oDict.Add("WS_MINIMIZEBOX", False)
+	$oDict.Add("WS_OVERLAPPED", False)
+	$oDict.Add("WS_OVERLAPPEDWINDOW", False)
+	$oDict.Add("WS_POPUPWINDOW", False)
+	$oDict.Add("WS_SIZEBOX", False)
+	$oDict.Add("WS_SYSMENU", False)
+	$oDict.Add("WS_THICKFRAME", False)
+	$oDict.Add("WS_VSCROLL", False)
+	$oDict.Add("WS_VISIBLE", False)
+	$oDict.Add("WS_CHILD", False)
+	$oDict.Add("WS_GROUP", False)
+	$oDict.Add("WS_TABSTOP", False)
+	$oDict.Add("DS_MODALFRAME", False)
+	$oDict.Add("DS_SETFOREGROUND", False)
+	$oDict.Add("DS_CONTEXTHELP", False)
+
+	Return $oDict
+EndFunc   ;==>_Styles_Group
+
+
+Func _Styles_Button()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	$oDict.Add("GUI_SS_DEFAULT_BUTTON", False)
+	$oDict.Add("BS_BOTTOM", False)
+	$oDict.Add("BS_CENTER", False)
+	$oDict.Add("BS_DEFPUSHBUTTON", False)
+	$oDict.Add("BS_MULTILINE", False)
+	$oDict.Add("BS_TOP", False)
+	$oDict.Add("BS_VCENTER", False)
+	$oDict.Add("BS_ICON", False)
+	$oDict.Add("BS_BITMAP", False)
+	$oDict.Add("BS_FLAT", False)
+	$oDict.Add("BS_NOTIFY", False)
+
+	Return $oDict
+EndFunc   ;==>_Styles_Button
+
+Func _Styles_Checkbox()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	$oDict.Add("GUI_SS_DEFAULT_CHECKBOX", False)
+	$oDict.Add("BS_3STATE", False)
+	$oDict.Add("BS_AUTO3STATE", False)
+	$oDict.Add("BS_AUTOCHECKBOX", False)
+	$oDict.Add("BS_CHECKBOX", False)
+	$oDict.Add("BS_LEFT", False)
+	$oDict.Add("BS_PUSHLIKE", False)
+	$oDict.Add("BS_RIGHT", False)
+	$oDict.Add("BS_RIGHTBUTTON", False)
+	$oDict.Add("BS_GROUPBOX", False)
+	$oDict.Add("BS_AUTORADIOBUTTON", False)
+
+	Return $oDict
+EndFunc   ;==>_Styles_Checkbox
+
+Func _Styles_Radio()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	$oDict.Add("GUI_SS_DEFAULT_RADIO", False)
+	$oDict.Add("BS_BOTTOM", False)
+	$oDict.Add("BS_CENTER", False)
+	$oDict.Add("BS_DEFPUSHBUTTON", False)
+	$oDict.Add("BS_MULTILINE", False)
+	$oDict.Add("BS_TOP", False)
+	$oDict.Add("BS_VCENTER", False)
+	$oDict.Add("BS_ICON", False)
+	$oDict.Add("BS_BITMAP", False)
+	$oDict.Add("BS_FLAT", False)
+	$oDict.Add("BS_NOTIFY", False)
+
+	Return $oDict
+EndFunc   ;==>_Styles_Radio
+
+Func _Styles_Edit()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	$oDict.Add("GUI_SS_DEFAULT_EDIT", False)
+	$oDict.Add("ES_AUTOHSCROLL", False)
+	$oDict.Add("ES_AUTOVSCROLL", False)
+	$oDict.Add("ES_CENTER", False)
+	$oDict.Add("ES_LOWERCASE", False)
+	$oDict.Add("ES_NOHIDESEL", False)
+	$oDict.Add("ES_NUMBER", False)
+	$oDict.Add("ES_OEMCONVERT", False)
+	$oDict.Add("ES_MULTILINE", False)
+	$oDict.Add("ES_PASSWORD", False)
+	$oDict.Add("ES_READONLY", False)
+	$oDict.Add("ES_RIGHT", False)
+	$oDict.Add("ES_UPPERCASE", False)
+	$oDict.Add("ES_WANTRETURN", False)
+
+	Return $oDict
+EndFunc   ;==>_Styles_Edit
+
+Func _Styles_Input()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	$oDict.Add("ES_AUTOHSCROLL", False)
+	$oDict.Add("ES_AUTOVSCROLL", False)
+	$oDict.Add("ES_CENTER", False)
+	$oDict.Add("ES_LOWERCASE", False)
+	$oDict.Add("ES_NOHIDESEL", False)
+	$oDict.Add("ES_NUMBER", False)
+	$oDict.Add("ES_OEMCONVERT", False)
+	$oDict.Add("ES_MULTILINE", False)
+	$oDict.Add("ES_PASSWORD", False)
+	$oDict.Add("ES_READONLY", False)
+	$oDict.Add("ES_RIGHT", False)
+	$oDict.Add("ES_UPPERCASE", False)
+	$oDict.Add("ES_WANTRETURN", False)
+
+	Return $oDict
+EndFunc   ;==>_Styles_Input
+
+Func _Styles_Label()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	$oDict.Add("GUI_SS_DEFAULT_LABEL", False)
+	$oDict.Add("SS_BLACKFRAME", False)
+	$oDict.Add("SS_BLACKRECT", False)
+	$oDict.Add("SS_CENTER", False)
+	$oDict.Add("SS_CENTERIMAGE", False)
+	$oDict.Add("SS_ETCHEDFRAME", False)
+	$oDict.Add("SS_ETCHEDHORZ", False)
+	$oDict.Add("SS_ETCHEDVERT", False)
+	$oDict.Add("SS_GRAYFRAME", False)
+	$oDict.Add("SS_GRAYRECT", False)
+	$oDict.Add("SS_LEFT", False)
+	$oDict.Add("SS_LEFTNOWORDWRAP", False)
+	$oDict.Add("SS_NOPREFIX", False)
+	$oDict.Add("SS_NOTIFY", False)
+	$oDict.Add("SS_RIGHT", False)
+	$oDict.Add("SS_RIGHTJUST", False)
+	$oDict.Add("SS_SIMPLE", False)
+	$oDict.Add("SS_SUNKEN", False)
+	$oDict.Add("SS_WHITEFRAME", False)
+	$oDict.Add("SS_WHITERECT", False)
+
+	Return $oDict
+EndFunc   ;==>_Styles_Label
+
+Func _Styles_UpDown()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	$oDict.Add("UDS_ALIGNLEFT", False)
+	$oDict.Add("UDS_ALIGNRIGHT", False)
+	$oDict.Add("UDS_ARROWKEYS", False)
+	$oDict.Add("UDS_HORZ", False)
+	$oDict.Add("UDS_NOTHOUSANDS", False)
+	$oDict.Add("UDS_WRAP", False)
+
+	Return $oDict
+EndFunc   ;==>_Styles_UpDown
+
+Func _Styles_List()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	$oDict.Add("GUI_SS_DEFAULT_LIST", False)
+	$oDict.Add("LBS_DISABLENOSCROLL", False)
+	$oDict.Add("LBS_NOINTEGRALHEIGHT", False)
+	$oDict.Add("LBS_NOSEL", False)
+	$oDict.Add("LBS_NOTIFY", False)
+	$oDict.Add("LBS_SORT", False)
+	$oDict.Add("LBS_STANDARD", False)
+	$oDict.Add("LBS_USETABSTOPS", False)
+
+	Return $oDict
+EndFunc   ;==>_Styles_List
+
+Func _Styles_Combo()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	$oDict.Add("GUI_SS_DEFAULT_COMBO", False)
+	$oDict.Add("CBS_AUTOHSCROLL", False)
+	$oDict.Add("CBS_DISABLENOSCROLL", False)
+	$oDict.Add("CBS_DROPDOWN", False)
+	$oDict.Add("CBS_DROPDOWNLIST", False)
+	$oDict.Add("CBS_LOWERCASE", False)
+	$oDict.Add("CBS_NOINTEGRALHEIGHT", False)
+	$oDict.Add("CBS_OEMCONVERT", False)
+	$oDict.Add("CBS_SIMPLE", False)
+	$oDict.Add("CBS_SORT", False)
+	$oDict.Add("CBS_UPPERCASE", False)
+
+	Return $oDict
+EndFunc   ;==>_Styles_Combo
+
+Func _Styles_Date()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	$oDict.Add("GUI_SS_DEFAULT_DATE", False)
+	$oDict.Add("DTS_UPDOWN", False)
+	$oDict.Add("DTS_SHOWNONE", False)
+	$oDict.Add("DTS_LONGDATEFORMAT", False)
+	$oDict.Add("DTS_TIMEFORMAT", False)
+	$oDict.Add("DTS_RIGHTALIGN", False)
+	$oDict.Add("DTS_SHORTDATEFORMAT", False)
+
+	Return $oDict
+EndFunc   ;==>_Styles_Date
+
+Func _Styles_TreeView()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	$oDict.Add("GUI_SS_DEFAULT_TREEVIEW", False)
+	$oDict.Add("TVS_HASBUTTONS", False)
+	$oDict.Add("TVS_HASLINES", False)
+	$oDict.Add("TVS_LINESATROOT", False)
+	$oDict.Add("TVS_DISABLEDRAGDROP", False)
+	$oDict.Add("TVS_SHOWSELALWAYS", False)
+	$oDict.Add("TVS_RTLREADING", False)
+	$oDict.Add("TVS_NOTOOLTIPS", False)
+	$oDict.Add("TVS_CHECKBOXES", False)
+	$oDict.Add("TVS_TRACKSELECT", False)
+	$oDict.Add("TVS_SINGLEEXPAND", False)
+	$oDict.Add("TVS_FULLROWSELECT", False)
+	$oDict.Add("TVS_NOSCROLL", False)
+	$oDict.Add("TVS_NONEVENHEIGHT", False)
+
+	Return $oDict
+EndFunc   ;==>_Styles_TreeView
+
+Func _Styles_Progress()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	$oDict.Add("GUI_SS_DEFAULT_PROGRESS", False)
+	$oDict.Add("PBS_MARQUEE", False)
+	$oDict.Add("PBS_SMOOTH", False)
+	$oDict.Add("PBS_SMOOTHREVERSE", False)
+	$oDict.Add("PBS_VERTICAL", False)
+
+	Return $oDict
+EndFunc   ;==>_Styles_Progress
+
+Func _Styles_Avi()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	$oDict.Add("GUI_SS_DEFAULT_AVI", False)
+	$oDict.Add("ACS_AUTOPLAY", False)
+	$oDict.Add("ACS_CENTER", False)
+	$oDict.Add("ACS_TRANSPARENT", False)
+	$oDict.Add("ACS_NONTRANSPARENT", False)
+
+	Return $oDict
+EndFunc   ;==>_Styles_Avi
+
+Func _Styles_Icon()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	$oDict.Add("GUI_SS_DEFAULT_ICON", False)
+	$oDict.Add("SS_BLACKFRAME", False)
+	$oDict.Add("SS_BLACKRECT", False)
+	$oDict.Add("SS_CENTER", False)
+	$oDict.Add("SS_CENTERIMAGE", False)
+	$oDict.Add("SS_ETCHEDFRAME", False)
+	$oDict.Add("SS_ETCHEDHORZ", False)
+	$oDict.Add("SS_ETCHEDVERT", False)
+	$oDict.Add("SS_GRAYFRAME", False)
+	$oDict.Add("SS_GRAYRECT", False)
+	$oDict.Add("SS_LEFT", False)
+	$oDict.Add("SS_LEFTNOWORDWRAP", False)
+	$oDict.Add("SS_NOPREFIX", False)
+	$oDict.Add("SS_NOTIFY", False)
+	$oDict.Add("SS_RIGHT", False)
+	$oDict.Add("SS_RIGHTJUST", False)
+	$oDict.Add("SS_SIMPLE", False)
+	$oDict.Add("SS_SUNKEN", False)
+	$oDict.Add("SS_WHITEFRAME", False)
+	$oDict.Add("SS_WHITERECT", False)
+
+	Return $oDict
+EndFunc   ;==>_Styles_Icon
+
+Func _Styles_Pic()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	$oDict.Add("GUI_SS_DEFAULT_PIC", False)
+	$oDict.Add("SS_BLACKFRAME", False)
+	$oDict.Add("SS_BLACKRECT", False)
+	$oDict.Add("SS_CENTER", False)
+	$oDict.Add("SS_CENTERIMAGE", False)
+	$oDict.Add("SS_ETCHEDFRAME", False)
+	$oDict.Add("SS_ETCHEDHORZ", False)
+	$oDict.Add("SS_ETCHEDVERT", False)
+	$oDict.Add("SS_GRAYFRAME", False)
+	$oDict.Add("SS_GRAYRECT", False)
+	$oDict.Add("SS_LEFT", False)
+	$oDict.Add("SS_LEFTNOWORDWRAP", False)
+	$oDict.Add("SS_NOPREFIX", False)
+	$oDict.Add("SS_NOTIFY", False)
+	$oDict.Add("SS_RIGHT", False)
+	$oDict.Add("SS_RIGHTJUST", False)
+	$oDict.Add("SS_SIMPLE", False)
+	$oDict.Add("SS_SUNKEN", False)
+	$oDict.Add("SS_WHITEFRAME", False)
+	$oDict.Add("SS_WHITERECT", False)
+
+	Return $oDict
+EndFunc   ;==>_Styles_Pic
+
+Func _Styles_Slider()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	$oDict.Add("GUI_SS_DEFAULT_SLIDER", False)
+	$oDict.Add("TBS_AUTOTICKS", False)
+	$oDict.Add("TBS_BOTH", False)
+	$oDict.Add("TBS_BOTTOM", False)
+	$oDict.Add("TBS_HORZ", False)
+	$oDict.Add("TBS_VERT", False)
+	$oDict.Add("TBS_NOTHUMB", False)
+	$oDict.Add("TBS_NOTICKS", False)
+	$oDict.Add("TBS_LEFT", False)
+	$oDict.Add("TBS_RIGHT", False)
+	$oDict.Add("TBS_TOP", False)
+
+	Return $oDict
+EndFunc   ;==>_Styles_Slider
+
+Func _Styles_IP()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	Return $oDict
+EndFunc   ;==>_Styles_IP
+
+Func _Styles_ListView()
+	Local $oDict = ObjCreate("Scripting.Dictionary")
+
+	$oDict.Add("GUI_SS_DEFAULT_LISTVIEW", False)
+	$oDict.Add("LVS_ICON", False)
+	$oDict.Add("LVS_REPORT", False)
+	$oDict.Add("LVS_SMALLICON", False)
+	$oDict.Add("LVS_LIST", False)
+	$oDict.Add("LVS_EDITLABELS", False)
+	$oDict.Add("LVS_NOCOLUMNHEADER", False)
+	$oDict.Add("LVS_NOSORTHEADER", False)
+	$oDict.Add("LVS_SINGLESEL", False)
+	$oDict.Add("LVS_SHOWSELALWAYS", False)
+	$oDict.Add("LVS_SORTASCENDING", False)
+	$oDict.Add("LVS_SORTDESCENDING", False)
+	$oDict.Add("LVS_NOLABELWRAP", False)
+
+	Return $oDict
+EndFunc   ;==>_Styles_ListView

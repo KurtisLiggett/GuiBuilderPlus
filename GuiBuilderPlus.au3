@@ -12,8 +12,15 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  07/07/2022 ...:	- FIXED:	Crash when using Ctrl+O shortcut key
-;					- ADDED:	Ability to add child controls to tabs
+;  07/12/2022 ...:	- FIXED:	Crash when using Ctrl+O shortcut key
+;					- FIXED:	GUI should not close when cancelling the save dialog
+;					- ADDED:	Ability to add child controls to Tabs
+;					- ADDED:	Ability to add child controls to Groups
+;					- ADDED:	Ability to lock controls to prevent from moving, resizing, deleting
+;					- ADDED:	New Styles tab to set GUI and control styles
+;					- ADDED:	Font size property
+;					- ADDED:	Shortcut key Ctrl+A to select all in code preview
+;					- CHANGED:	Properties list is now in alphabetical order
 ;
 ;  07/03/2022 ...:	- FIXED:	Color and Background values of 0x000000 were saved as -1
 ;					- FIXED:	Setting "Paste at mouse position" incorrect behavior when turned off
@@ -203,8 +210,8 @@
 #AutoIt3Wrapper_Res_HiDpi=y
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v0.29.exe
-#AutoIt3Wrapper_Res_Fileversion=0.29.0.0
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.0.0-beta.exe
+#AutoIt3Wrapper_Res_Fileversion=1.0.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 1.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 2.ico
@@ -243,7 +250,7 @@ Global $debug = True
 ;GUI components
 Global $hGUI, $hToolbar, $hFormGenerateCode, $hFormObjectExplorer, $hStatusbar, $hAbout
 Global $iGuiFrameH, $iGuiFrameW, $defaultGuiBkColor = 0xF0F0F0
-Global $menu_wipe
+Global $menu_wipe, $contextmenu_lock
 ;Settings menu
 Global $menu_show_grid, $menu_grid_snap, $menu_paste_pos, $menu_show_ctrl, $menu_show_hidden, $menu_dpi_scaling, $menu_gui_function, $menu_onEvent_mode
 ;View menu
@@ -259,7 +266,7 @@ Global $editCodeGeneration
 Global $lvObjects, $labelObjectCount, $childSelected
 
 ;Property Inspector
-Global $oProperties_Main, $oProperties_Ctrls
+Global $oProperties_Main, $oProperties_Ctrls, $tabSelected, $tabProperties, $tabStyles, $tabStylesHwnd
 
 ;GUI Constants
 Global Const $grid_ticks = 10
@@ -341,12 +348,17 @@ _AutoItObject_StartUp()
 #EndRegion ; includes
 
 
+;~ Global $oMyError = ObjEvent("AutoIt.Error", "MyErrFunc")
+Func MyErrFunc($oError)
+	SetError(1)
+	MsgBox(1, "COM Error", "COM Erorr" & @CRLF & "Error Number: " & Hex($oError.number) & @CRLF & $oError.windescription)
+EndFunc   ;==>MyErrFunc
+
 ;start up the logger
 _log("", True)
 
 ;run the main loop
 _main()
-
 
 ;------------------------------------------------------------------------------
 ; Title...........: _main
@@ -364,7 +376,7 @@ Func _main()
 	$oClipboard = _objCtrls()
 	$oMain = _objMain()
 	$oMain.AppName = "GuiBuilderPlus"
-	$oMain.AppVersion = "0.29"
+	$oMain.AppVersion = "1.0.0-beta"
 	$oMain.Title = StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1)
 	$oMain.Name = "hGUI"
 	$oMain.Width = 400
@@ -372,6 +384,7 @@ Func _main()
 	$oMain.Left = -1
 	$oMain.Top = -1
 	$oMain.Background = ""
+	$tabSelected = "Properties"
 
 	;create properties objects
 	$oProperties_Main = _objProperties()
@@ -401,7 +414,7 @@ Func _main()
 	EndIf
 
 	GUISetState(@SW_SHOWNORMAL, $hToolbar)
-	GUISetState(@SW_SHOWNORMAL, $oProperties_Main.Hwnd)
+	GUISetState(@SW_SHOWNORMAL, $oProperties_Main.properties.Hwnd)
 	GUISwitch($hGUI)
 	GUISetState(@SW_SHOWNORMAL, $hGUI)
 	$bResizedFlag = 0

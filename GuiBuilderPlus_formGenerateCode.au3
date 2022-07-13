@@ -24,6 +24,13 @@ Func _formGenerateCode()
 		$y = $aPos[2]
 	EndIf
 
+	$sPos = IniRead($sIniPath, "Settings", "sizeGenerateCode", $w & "," & $h)
+	$aPos = StringSplit($sPos, ",")
+	If Not @error Then
+		$w = $aPos[1]
+		$h = $aPos[2]
+	EndIf
+
 	;make sure not set off screen
 	Local $ixCoordMin = _WinAPI_GetSystemMetrics(76)
 	Local $iyCoordMin = _WinAPI_GetSystemMetrics(77)
@@ -64,6 +71,11 @@ Func _formGenerateCode()
 	GUICtrlSetOnEvent(-1, "_onCodeSave")
 	GUICtrlSetResizing(-1, $GUI_DOCKRIGHT + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
 
+	Local Const $accel_selectAll = GUICtrlCreateDummy()
+	Local Const $accelerators[1][2] = [["^a", $accel_selectAll]]
+	GUISetAccelerators($accelerators, $hFormGenerateCode)
+	GUICtrlSetOnEvent($accel_selectAll, "_onSelectAll")
+
 	GUISwitch($hGUI)
 EndFunc   ;==>_formGenerateCode
 #EndRegion formGenerateCode
@@ -100,6 +112,9 @@ Func _onCodeCopy()
 	ClipPut(GUICtrlRead($editCodeGeneration))
 EndFunc   ;==>_onCodeCopy
 
+Func _onSelectAll()
+	_GUICtrlEdit_SetSel($editCodeGeneration, 0, -1)
+EndFunc
 
 ;------------------------------------------------------------------------------
 ; Title...........: _onExitGenerateCode

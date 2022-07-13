@@ -48,7 +48,8 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 			$oNewControl.Type = $oCtrls.CurrentType
 			$oNewControl.Left = $cursor_pos[0]
 			$oNewControl.Top = $cursor_pos[1]
-			$oNewControl.Global = True
+			$oNewControl.Global = $GUI_CHECKED
+			$oNewControl.FontSize = 8.5
 
 	EndSwitch
 
@@ -377,7 +378,7 @@ EndFunc   ;==>_GuiCtrlCreateSlider
 
 Func _onNewTab()
 	_new_tab()
-EndFunc
+EndFunc   ;==>_onNewTab
 
 Func _new_tab($loadGUI = False)
 	Local $oCtrl
@@ -434,11 +435,11 @@ Func _tabClearInactiveSelection($Hwnd)
 		Next
 	Next
 	GUISwitch($hGUI)
-EndFunc
+EndFunc   ;==>_tabClearInactiveSelection
 
 Func _onDeleteTab()
 	_delete_tab()
-EndFunc
+EndFunc   ;==>_onDeleteTab
 
 Func _delete_tab()
 	Local $oCtrl
@@ -478,11 +479,11 @@ Func _delete_tab()
 EndFunc   ;==>_delete_tab
 
 Func _updateIP($oCtrl)
-		Local $prevKey = $oCtrl.Hwnd
-		_GUICtrlIpAddress_Destroy(HWnd($oCtrl.Hwnd))
-		$oCtrl.Hwnd = _GUICtrlIpAddress_Create($hGUI, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
-		_GUICtrlIpAddress_Set($oCtrl.Hwnd, $oCtrl.Text)
-		$oCtrl.parent.ctrls.Key($prevKey) = $oCtrl.Hwnd
+	Local $prevKey = $oCtrl.Hwnd
+	_GUICtrlIpAddress_Destroy(HWnd($oCtrl.Hwnd))
+	$oCtrl.Hwnd = _GUICtrlIpAddress_Create($hGUI, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
+	_GUICtrlIpAddress_Set($oCtrl.Hwnd, $oCtrl.Text)
+	$oCtrl.parent.ctrls.Key($prevKey) = $oCtrl.Hwnd
 ;~ 	_WinAPI_SetWindowPos($oCtrl.Hwnd, $HWND_TOP, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height, $SWP_SHOWWINDOW)
 EndFunc   ;==>_updateIP
 
@@ -564,7 +565,9 @@ EndFunc   ;==>_control_type
 ; Title...........: _delete_ctrl
 ; Description.....: delete control from GUI and remove the data object
 ;------------------------------------------------------------------------------
-Func _delete_ctrl(Const $oCtrl)
+Func _delete_ctrl(Const $oCtrl, $clear = False)
+	If $oCtrl.Locked And Not $clear Then Return
+
 	GUISwitch($hGUI)
 	Switch $oCtrl.Type
 		Case "Updown"
@@ -613,7 +616,7 @@ EndFunc   ;==>_vector_magnitude
 ; Title...........: _left_top_union_rect
 ; Description.....: gets the xy coords of the union of the selected controls rectangles
 ;------------------------------------------------------------------------------
-Func _left_top_union_rect($oObjCtrls=0)
+Func _left_top_union_rect($oObjCtrls = 0)
 	If Not IsObj($oObjCtrls) Then
 		$oObjCtrls = $oSelected
 	EndIf
@@ -674,7 +677,7 @@ EndFunc   ;==>_copy_selected
 Func _cut_selected()
 	_copy_selected()
 	_delete_selected_controls()
-EndFunc   ;==>_copy_selected
+EndFunc   ;==>_cut_selected
 
 
 ;------------------------------------------------------------------------------
@@ -823,9 +826,9 @@ Func _control_intersection(Const $oCtrl, Const $oRect)
 	Local $aMousePos = MouseGetPos()
 	Local $returnVal
 
-	If $aMousePos[0] < $oMouse.StartX Then	;right-to-left
+	If $aMousePos[0] < $oMouse.StartX Then    ;right-to-left
 		$returnVal = _CtrlCrossRect($oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
-	Else	;left-to-right
+	Else    ;left-to-right
 		$returnVal = _CtrlInRect($oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
 	EndIf
 
@@ -949,7 +952,7 @@ Func _add_remove_selected_control(Const $oRect)
 				EndSwitch
 
 			Case False
-				Switch _remove_from_selected($oCtrl)
+				Switch _remove_from_selected($oCtrl, False)
 					Case True
 						Local $sel_count = $oSelected.count
 
@@ -971,7 +974,7 @@ EndFunc   ;==>_add_remove_selected_control
 Func _remove_all_from_selected()
 	_SendMessage($hGUI, $WM_SETREDRAW, False)
 	$oSelected.removeAll()
-	_showProperties($props_Main)
+;~ 	_showProperties($props_Main)
 	_SendMessage($hGUI, $WM_SETREDRAW, True)
 	_WinAPI_RedrawWindow($hGUI)
 
@@ -1017,7 +1020,7 @@ Func _delete_selected_controls()
 
 EndFunc   ;==>_delete_selected_controls
 
-Func _remove_from_selected(Const $oCtrl)
+Func _remove_from_selected(Const $oCtrl, $updateProps = True)
 	If Not IsObj($oCtrl) Then
 		Return
 	EndIf
@@ -1037,10 +1040,12 @@ Func _remove_from_selected(Const $oCtrl)
 
 	$oCtrl.grippies.hide()
 
-	If $oSelected.count > 0 Then
-		_showProperties($props_Ctrls)
-	Else
-		_showProperties($props_Main)
+	If $updateProps Then
+		If $oSelected.count > 0 Then
+			_showProperties($props_Ctrls)
+		Else
+			_showProperties($props_Main)
+		EndIf
 	EndIf
 
 	Return True
@@ -1072,8 +1077,8 @@ Func _display_selection_rect(Const $oRect)
 ;~ 	_GDIPlus_GraphicsClear($hSelectionGraphic)
 ;~ 	_WinAPI_InvalidateRect($hGUI)
 	If IsObj($prevRect) Then
-		Local $rgnOuter = _WinAPI_CreateRectRgn($prevRect.Left, $prevRect.Top, $prevRect.Left + $prevRect.Width+1, $prevRect.Top + $prevRect.Height+1)
-		Local $rgnInner = _WinAPI_CreateRectRgn($prevRect.Left+1, $prevRect.Top+1, $prevRect.Left + $prevRect.Width, $prevRect.Top + $prevRect.Height)
+		Local $rgnOuter = _WinAPI_CreateRectRgn($prevRect.Left, $prevRect.Top, $prevRect.Left + $prevRect.Width + 1, $prevRect.Top + $prevRect.Height + 1)
+		Local $rgnInner = _WinAPI_CreateRectRgn($prevRect.Left + 1, $prevRect.Top + 1, $prevRect.Left + $prevRect.Width, $prevRect.Top + $prevRect.Height)
 		Local $rgnBox = _WinAPI_CreateRectRgn(0, 0, 0, 0)
 		_WinAPI_CombineRgn($rgnBox, $rgnOuter, $rgnInner, $RGN_XOR)
 		_WinAPI_InvalidateRgn($hGUI, $rgnBox)
@@ -1084,7 +1089,7 @@ Func _display_selection_rect(Const $oRect)
 	$prevRect = $oRect
 
 	;draw the updated rect
-    _GDIPlus_GraphicsDrawRect($hSelectionGraphic, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
+	_GDIPlus_GraphicsDrawRect($hSelectionGraphic, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
 EndFunc   ;==>_display_selection_rect
 
 Func _hide_selected_controls()
@@ -1106,6 +1111,8 @@ EndFunc   ;==>_show_selected_controls
 
 #Region ; moving & resizing
 Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, Const $height, $tabChild = False)
+	If $oCtrl.Locked Then Return
+
 	If $width < 1 Or $height < 1 Then
 		Return
 	EndIf
@@ -1120,7 +1127,6 @@ Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, 
 			GUICtrlSetPos($oCtrl.Hwnd, $left, $top, $oCtrl.Width, $oCtrl.Height)
 
 		Case "IP"
-;~ 			ConsoleWrite($oCtrl.Hwnd & @CRLF)
 ;~ 			WinMove($oCtrl.Hwnd, "", $left, $top, $width, $height)
 			_updateIP($oCtrl)
 
@@ -1135,6 +1141,8 @@ Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, 
 EndFunc   ;==>_change_ctrl_size_pos
 
 Func _moveTabCtrls($oCtrl, $delta_x, $delta_y, $width, $height)
+	If $oCtrl.Locked Then Return
+
 	Local $oTab, $left, $top
 
 	For $hTab In $oCtrl.Tabs
@@ -1142,13 +1150,13 @@ Func _moveTabCtrls($oCtrl, $delta_x, $delta_y, $width, $height)
 		For $oTabCtrl In $oTab.ctrls.Items()
 			If $oSelected.exists($oTabCtrl.Hwnd) Then ContinueLoop
 
-			if $delta_x = Default Then
+			If $delta_x = Default Then
 				$left = Default
 			Else
 				$left = $oTabCtrl.Left - $delta_x
 			EndIf
 
-			if $delta_y = Default Then
+			If $delta_y = Default Then
 				$top = Default
 			Else
 				$top = $oTabCtrl.Top - $delta_y
@@ -1158,22 +1166,24 @@ Func _moveTabCtrls($oCtrl, $delta_x, $delta_y, $width, $height)
 		Next
 	Next
 	GUISwitch($hGUI)
-EndFunc
+EndFunc   ;==>_moveTabCtrls
 
 
 Func _moveGroupCtrls($oCtrl, $delta_x, $delta_y, $width, $height)
+	If $oCtrl.Locked Then Return
+
 	Local $left, $top
 
 	For $oThisCtrl In $oCtrl.ctrls.Items()
 		If $oSelected.exists($oThisCtrl.Hwnd) Then ContinueLoop
 
-		if $delta_x = Default Then
+		If $delta_x = Default Then
 			$left = Default
 		Else
 			$left = $oThisCtrl.Left - $delta_x
 		EndIf
 
-		if $delta_y = Default Then
+		If $delta_y = Default Then
 			$top = Default
 		Else
 			$top = $oThisCtrl.Top - $delta_y
@@ -1183,7 +1193,7 @@ Func _moveGroupCtrls($oCtrl, $delta_x, $delta_y, $width, $height)
 	Next
 
 	GUISwitch($hGUI)
-EndFunc
+EndFunc   ;==>_moveGroupCtrls
 
 
 Func _move_mouse_to_grippy(Const $x, Const $y)

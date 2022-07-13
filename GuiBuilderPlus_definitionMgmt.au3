@@ -6,11 +6,11 @@
 
 Func _onSaveGui()
 	_save_gui_definition()
-EndFunc
+EndFunc   ;==>_onSaveGui
 
 Func _onSaveAsGui()
 	_save_gui_definition(True)
-EndFunc
+EndFunc   ;==>_onSaveAsGui
 
 ;------------------------------------------------------------------------------
 ; Title...........: _save_gui_definition
@@ -42,7 +42,7 @@ Func _save_gui_definition($saveAs = False)
 		If @error = 1 Or $OutFile = "" Then
 			$bStatusNewMessage = True
 			_GUICtrlStatusBar_SetText($hStatusbar, "Error saving definition file!")
-			Return
+			Return -1
 		Else
 			$AgdOutFile = $OutFile
 
@@ -70,7 +70,7 @@ Func _save_gui_definition($saveAs = False)
 	If @error Then
 		$bStatusNewMessage = True
 		_GUICtrlStatusBar_SetText($hStatusbar, "Error saving definition file!")
-		Return
+		Return -2
 	EndIf
 
 	Local $mainHeight = $oMain.Height
@@ -88,6 +88,7 @@ Func _save_gui_definition($saveAs = False)
 	Json_Put($objOutput, ".Main.Title", $oMain.Title)
 	Json_Put($objOutput, ".Main.Background", $oMain.Background)
 	Json_Put($objOutput, ".Main.numctrls", $ctrl_count)
+	Json_Put($objOutput, ".Main.styleString", $oMain.styleString)
 
 	$i = 0
 	For $oCtrl In $oCtrls.ctrls.Items()
@@ -107,6 +108,9 @@ Func _save_gui_definition($saveAs = False)
 		Json_Put($objOutput, ".Controls[" & $i & "].Width", $oCtrl.Width)
 		Json_Put($objOutput, ".Controls[" & $i & "].Height", $oCtrl.Height)
 		Json_Put($objOutput, ".Controls[" & $i & "].Global", $oCtrl.Global)
+		Json_Put($objOutput, ".Controls[" & $i & "].Locked", $oCtrl.Locked)
+		Json_Put($objOutput, ".Controls[" & $i & "].styleString", $oCtrl.styleString)
+		Json_Put($objOutput, ".Controls[" & $i & "].FontSize", $oCtrl.FontSize)
 		If $oCtrl.Color = -1 Then
 			Json_Put($objOutput, ".Controls[" & $i & "].Color", -1)
 		Else
@@ -143,6 +147,9 @@ Func _save_gui_definition($saveAs = False)
 							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Width", $oTabCtrl.Width)
 							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Height", $oTabCtrl.Height)
 							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Global", $oTabCtrl.Global)
+							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Locked", $oTabCtrl.Locked)
+							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].styleString", $oTabCtrl.styleString)
+							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].FontSize", $oTabCtrl.FontSize)
 							If $oTabCtrl.Color = -1 Then
 								Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Color", -1)
 							Else
@@ -175,6 +182,9 @@ Func _save_gui_definition($saveAs = False)
 						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Width", $oThisCtrl.Width)
 						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Height", $oThisCtrl.Height)
 						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Global", $oThisCtrl.Global)
+						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Locked", $oThisCtrl.Locked)
+						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].styleString", $oThisCtrl.styleString)
+						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].FontSize", $oThisCtrl.FontSize)
 						If $oThisCtrl.Color = -1 Then
 							Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Color", -1)
 						Else
@@ -307,6 +317,7 @@ Func _load_gui_definition($AgdInfile = '')
 	Else
 		GUISetBkColor($defaultGuiBkColor, $hGUI)
 	EndIf
+	$oMain.styleString = _Json_Get($objInput, ".Main.styleString", "")
 
 	$oProperties_Main.Title.value = $oMain.Title
 	$oProperties_Main.Name.value = $oMain.Name
@@ -333,7 +344,9 @@ Func _load_gui_definition($AgdInfile = '')
 		$oCtrl.Top = _Json_Get($oThisCtrl, ".Top", -1)
 		$oCtrl.Width = _Json_Get($oThisCtrl, ".Width", -1)
 		$oCtrl.Height = _Json_Get($oThisCtrl, ".Height", -1)
-		$oCtrl.Global = (_Json_Get($oThisCtrl, ".Global", False) = "True") ? True : False
+		$oCtrl.Global = _Json_Get($oThisCtrl, ".Global", $GUI_CHECKED)
+		$oCtrl.Locked = _Json_Get($oThisCtrl, ".Locked", $GUI_UNCHECKED)
+		$oCtrl.styleString = _Json_Get($oThisCtrl, ".styleString", "")
 		$oCtrl.Color = _Json_Get($oThisCtrl, ".Color", -1)
 		If $oCtrl.Color <> -1 Then
 			$oCtrl.Color = Dec(StringReplace($oCtrl.Color, "0x", ""))
@@ -342,9 +355,23 @@ Func _load_gui_definition($AgdInfile = '')
 		If $oCtrl.Background <> -1 Then
 			$oCtrl.Background = Dec(StringReplace($oCtrl.Background, "0x", ""))
 		EndIf
+		$oCtrl.FontSize = _Json_Get($oThisCtrl, ".FontSize", 8.5)
 
 		$oNewCtrl = _create_ctrl($oCtrl, True)
+		Local $aStyles = StringSplit($oNewCtrl.styleString, ", ", $STR_ENTIRESPLIT + $STR_NOCOUNT)
+		Local $iOldStyle
+		For $sStyle In $aStyles
+			$iOldStyle = _WinAPI_GetWindowLong(GUICtrlGetHandle($oNewCtrl.Hwnd), $GWL_STYLE)
+			GUICtrlSetStyle($oNewCtrl.Hwnd, BitOR($iOldStyle, Execute($sStyle)))
+		Next
 
+		If $oCtrl.FontSize <> 8.5 Then
+			If $oCtrl.Type = "IP" Then
+				_GUICtrlIpAddress_SetFont($oCtrl.Hwnd, "Arial", $oCtrl.FontSize)
+			Else
+				GUICtrlSetFont($oCtrl.Hwnd, $oCtrl.FontSize)
+			EndIf
+		EndIf
 
 		$oCtrl = $oCtrls.get($oNewCtrl.Hwnd)
 		Local $j, $oCtrl2
@@ -368,7 +395,7 @@ Func _load_gui_definition($AgdInfile = '')
 						Local $aTabCtrls = Json_Get($oThisTab, ".Controls")
 						If Not IsArray($aTabCtrls) Then ContinueLoop
 						GUISwitch($hGUI, $oTab.Hwnd)
-						For $oTabCtrl in $aTabCtrls
+						For $oTabCtrl In $aTabCtrls
 							$oCtrl2 = $oCtrls.createNew()
 
 							$oCtrl2.HwndCount = 1
@@ -381,7 +408,9 @@ Func _load_gui_definition($AgdInfile = '')
 							$oCtrl2.Top = _Json_Get($oTabCtrl, ".Top", -1)
 							$oCtrl2.Width = _Json_Get($oTabCtrl, ".Width", -1)
 							$oCtrl2.Height = _Json_Get($oTabCtrl, ".Height", -1)
-							$oCtrl2.Global = (_Json_Get($oTabCtrl, ".Global", False) = "True") ? True : False
+							$oCtrl2.Global = _Json_Get($oTabCtrl, ".Global", $GUI_CHECKED)
+							$oCtrl2.Locked = _Json_Get($oTabCtrl, ".Locked", $GUI_UNCHECKED)
+							$oCtrl2.styleString = _Json_Get($oTabCtrl, ".styleString", "")
 							$oCtrl2.Color = _Json_Get($oTabCtrl, ".Color", -1)
 							If $oCtrl2.Color <> -1 Then
 								$oCtrl2.Color = Dec(StringReplace($oCtrl2.Color, "0x", ""))
@@ -392,6 +421,11 @@ Func _load_gui_definition($AgdInfile = '')
 							EndIf
 
 							$oNewCtrl = _create_ctrl($oCtrl2, True, -1, -1, $oCtrl.Hwnd)
+							Local $aStyles = StringSplit($oNewCtrl.styleString, ", ", $STR_ENTIRESPLIT + $STR_NOCOUNT)
+							For $sStyle In $aStyles
+								$iOldStyle = _WinAPI_GetWindowLong(GUICtrlGetHandle($oNewCtrl.Hwnd), $GWL_STYLE)
+								GUICtrlSetStyle($oNewCtrl.Hwnd, BitOR($iOldStyle, Execute($sStyle)))
+							Next
 						Next
 						GUICtrlCreateTabItem('')
 						GUISwitch($hGUI)
@@ -403,7 +437,7 @@ Func _load_gui_definition($AgdInfile = '')
 			Case "Group"
 				Local $aCtrls = Json_Get($oThisCtrl, ".Controls")
 				If Not IsArray($aCtrls) Then ContinueLoop
-				For $oGroupCtrl in $aCtrls
+				For $oGroupCtrl In $aCtrls
 					$oCtrl2 = $oCtrls.createNew()
 
 					$oCtrl2.HwndCount = 1
@@ -416,7 +450,9 @@ Func _load_gui_definition($AgdInfile = '')
 					$oCtrl2.Top = _Json_Get($oGroupCtrl, ".Top", -1)
 					$oCtrl2.Width = _Json_Get($oGroupCtrl, ".Width", -1)
 					$oCtrl2.Height = _Json_Get($oGroupCtrl, ".Height", -1)
-					$oCtrl2.Global = (_Json_Get($oGroupCtrl, ".Global", False) = "True") ? True : False
+					$oCtrl2.Global = _Json_Get($oGroupCtrl, ".Global", $GUI_CHECKED)
+					$oCtrl2.Locked = _Json_Get($oGroupCtrl, ".Locked", $GUI_UNCHECKED)
+					$oCtrl2.styleString = _Json_Get($oGroupCtrl, ".styleString", "")
 					$oCtrl2.Color = _Json_Get($oGroupCtrl, ".Color", -1)
 					If $oCtrl2.Color <> -1 Then
 						$oCtrl2.Color = Dec(StringReplace($oCtrl2.Color, "0x", ""))
@@ -427,6 +463,11 @@ Func _load_gui_definition($AgdInfile = '')
 					EndIf
 
 					$oNewCtrl = _create_ctrl($oCtrl2, True, -1, -1, $oCtrl.Hwnd)
+					Local $aStyles = StringSplit($oNewCtrl.styleString, ", ", $STR_ENTIRESPLIT + $STR_NOCOUNT)
+					For $sStyle In $aStyles
+						$iOldStyle = _WinAPI_GetWindowLong(GUICtrlGetHandle($oNewCtrl.Hwnd), $GWL_STYLE)
+						GUICtrlSetStyle($oNewCtrl.Hwnd, BitOR($iOldStyle, Execute($sStyle)))
+					Next
 				Next
 
 		EndSwitch
@@ -448,7 +489,6 @@ Func _load_gui_definition($AgdInfile = '')
 				Next
 			EndIf
 		EndIf
-
 	Next
 
 	_formObjectExplorer_updateList()
@@ -471,7 +511,7 @@ Func _Json_Get(ByRef $obj, $data, $defaultValue = 0)
 	Else
 		Return $val
 	EndIf
-EndFunc
+EndFunc   ;==>_Json_Get
 
 
 
@@ -573,7 +613,8 @@ Func _load_gui_definition_ini($AgdInfile = '')
 		$oCtrl.Top = IniRead($AgdInfile, $Key, "Top", -1)
 		$oCtrl.Width = IniRead($AgdInfile, $Key, "Width", -1)
 		$oCtrl.Height = IniRead($AgdInfile, $Key, "Height", -1)
-		$oCtrl.Global = (IniRead($AgdInfile, $Key, "Global", False) = "True") ? True : False
+		$oCtrl.Global = IniRead($AgdInfile, $Key, "Global", $GUI_CHECKED)
+		$oCtrl.Locked = IniRead($AgdInfile, $Key, "Locked", $GUI_UNCHECKED)
 		$oCtrl.Color = IniRead($AgdInfile, $Key, "Color", -1)
 		If $oCtrl.Color <> -1 Then
 			$oCtrl.Color = Dec(StringReplace($oCtrl.Color, "0x", ""))
@@ -625,4 +666,4 @@ Func _load_gui_definition_ini($AgdInfile = '')
 	_GUICtrlStatusBar_SetText($hStatusbar, "Loaded successfully")
 
 	$oMain.hasChanged = False
-EndFunc   ;==>_load_gui_definition
+EndFunc   ;==>_load_gui_definition_ini
