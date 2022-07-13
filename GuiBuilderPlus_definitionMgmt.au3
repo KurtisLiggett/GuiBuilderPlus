@@ -110,6 +110,7 @@ Func _save_gui_definition($saveAs = False)
 		Json_Put($objOutput, ".Controls[" & $i & "].Global", $oCtrl.Global)
 		Json_Put($objOutput, ".Controls[" & $i & "].Locked", $oCtrl.Locked)
 		Json_Put($objOutput, ".Controls[" & $i & "].styleString", $oCtrl.styleString)
+		Json_Put($objOutput, ".Controls[" & $i & "].FontSize", $oCtrl.FontSize)
 		If $oCtrl.Color = -1 Then
 			Json_Put($objOutput, ".Controls[" & $i & "].Color", -1)
 		Else
@@ -148,6 +149,7 @@ Func _save_gui_definition($saveAs = False)
 							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Global", $oTabCtrl.Global)
 							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Locked", $oTabCtrl.Locked)
 							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].styleString", $oTabCtrl.styleString)
+							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].FontSize", $oTabCtrl.FontSize)
 							If $oTabCtrl.Color = -1 Then
 								Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Color", -1)
 							Else
@@ -182,6 +184,7 @@ Func _save_gui_definition($saveAs = False)
 						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Global", $oThisCtrl.Global)
 						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Locked", $oThisCtrl.Locked)
 						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].styleString", $oThisCtrl.styleString)
+						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].FontSize", $oThisCtrl.FontSize)
 						If $oThisCtrl.Color = -1 Then
 							Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Color", -1)
 						Else
@@ -352,15 +355,23 @@ Func _load_gui_definition($AgdInfile = '')
 		If $oCtrl.Background <> -1 Then
 			$oCtrl.Background = Dec(StringReplace($oCtrl.Background, "0x", ""))
 		EndIf
+		$oCtrl.FontSize = _Json_Get($oThisCtrl, ".FontSize", 8.5)
 
 		$oNewCtrl = _create_ctrl($oCtrl, True)
 		Local $aStyles = StringSplit($oNewCtrl.styleString, ", ", $STR_ENTIRESPLIT + $STR_NOCOUNT)
 		Local $iOldStyle
-;~ 		_ArrayDisplay($aStyles)
 		For $sStyle In $aStyles
 			$iOldStyle = _WinAPI_GetWindowLong(GUICtrlGetHandle($oNewCtrl.Hwnd), $GWL_STYLE)
 			GUICtrlSetStyle($oNewCtrl.Hwnd, BitOR($iOldStyle, Execute($sStyle)))
 		Next
+
+		If $oCtrl.FontSize <> 8.5 Then
+			If $oCtrl.Type = "IP" Then
+				_GUICtrlIpAddress_SetFont($oCtrl.Hwnd, "Arial", $oCtrl.FontSize)
+			Else
+				GUICtrlSetFont($oCtrl.Hwnd, $oCtrl.FontSize)
+			EndIf
+		EndIf
 
 		$oCtrl = $oCtrls.get($oNewCtrl.Hwnd)
 		Local $j, $oCtrl2

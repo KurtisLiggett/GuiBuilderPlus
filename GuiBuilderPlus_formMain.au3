@@ -2278,7 +2278,7 @@ EndFunc   ;==>_ctrl_change_global
 Func _ctrl_change_FontSize()
 	Local $new_data = $oProperties_Ctrls.properties.FontSize.value
 	If $new_data = "" or $new_data = "8.5" Then
-;~ 		$oProperties_Ctrls.properties.FontSize.value = $new_data
+		$oProperties_Ctrls.properties.FontSize.value = 8.5
 		$new_data = -1
 	ElseIf Not StringRegExp($new_data, '^[1-9]\d*(\.\d+)?$') Then
 		$oProperties_Ctrls.properties.FontSize.value = ""
