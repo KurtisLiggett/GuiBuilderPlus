@@ -585,7 +585,19 @@ Func _onExit()
 		Switch MsgBox($MB_SYSTEMMODAL + $MB_YESNOCANCEL, "Quit?", "Do you want to save the GUI?")
 			Case $IDYES
 ;~ 				_save_code()
-				_save_gui_definition()
+				$ret = _save_gui_definition()
+				Switch $ret
+					Case -1
+						$bStatusNewMessage = True
+						_GUICtrlStatusBar_SetText($hStatusbar, "Save cancelled.")
+						Return
+
+					Case -2
+						$bStatusNewMessage = True
+						_GUICtrlStatusBar_SetText($hStatusbar, "Save failed.")
+						Return
+
+				EndSwitch
 
 			Case $IDCANCEL
 				Return

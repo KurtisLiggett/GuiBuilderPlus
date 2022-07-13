@@ -42,7 +42,7 @@ Func _save_gui_definition($saveAs = False)
 		If @error = 1 Or $OutFile = "" Then
 			$bStatusNewMessage = True
 			_GUICtrlStatusBar_SetText($hStatusbar, "Error saving definition file!")
-			Return
+			Return -1
 		Else
 			$AgdOutFile = $OutFile
 
@@ -70,7 +70,7 @@ Func _save_gui_definition($saveAs = False)
 	If @error Then
 		$bStatusNewMessage = True
 		_GUICtrlStatusBar_SetText($hStatusbar, "Error saving definition file!")
-		Return
+		Return -2
 	EndIf
 
 	Local $mainHeight = $oMain.Height

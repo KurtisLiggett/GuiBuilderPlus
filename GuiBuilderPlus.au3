@@ -13,6 +13,7 @@
 ;
 ; Revisions
 ;  07/12/2022 ...:	- FIXED:	Crash when using Ctrl+O shortcut key
+;					- FIXED:	GUI should not close when cancelling the save dialog
 ;					- ADDED:	Ability to add child controls to Tabs
 ;					- ADDED:	Ability to add child controls to Groups
 ;					- ADDED:	Ability to lock controls to prevent from moving, resizing, deleting
