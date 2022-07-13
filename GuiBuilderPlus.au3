@@ -17,7 +17,9 @@
 ;					- ADDED:	Ability to add child controls to Groups
 ;					- ADDED:	Ability to lock controls to prevent from moving, resizing, deleting
 ;					- ADDED:	New Styles tab to set GUI and control styles
+;					- ADDED:	Font size property
 ;					- ADDED:	Shortcut key Ctrl+A to select all in code preview
+;					- CHANGED:	Properties list is now in alphabetical order
 ;
 ;  07/03/2022 ...:	- FIXED:	Color and Background values of 0x000000 were saved as -1
 ;					- FIXED:	Setting "Paste at mouse position" incorrect behavior when turned off

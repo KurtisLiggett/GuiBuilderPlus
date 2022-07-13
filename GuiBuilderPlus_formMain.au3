@@ -1282,6 +1282,7 @@ Func _onMousePrimaryUp()
 			_log("** PrimaryUp: draw **")
 			GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 			_set_default_mode()
+			_showProperties()
 			$initDraw = False
 
 		Case $mode_init_move
@@ -1808,6 +1809,12 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 	$oProperties_Ctrls.properties.Width.value = $oCtrl.Width
 	$oProperties_Ctrls.properties.Height.value = $oCtrl.Height
 
+	If $oCtrl.FontSize <> -1 Then
+		$oProperties_Ctrls.properties.FontSize.value = $oCtrl.FontSize
+	Else
+		$oProperties_Ctrls.properties.FontSize.value = 8.5
+	EndIf
+
 	If $oCtrl.Background <> -1 Then
 		$oProperties_Ctrls.properties.Background.value = "0x" & Hex($oCtrl.Background, 6)
 	Else
@@ -2265,6 +2272,40 @@ Func _ctrl_change_global()
 
 	_refreshGenerateCode()
 	$oMain.hasChanged = True
+EndFunc   ;==>_ctrl_change_global
+
+
+Func _ctrl_change_FontSize()
+	Local $new_data = $oProperties_Ctrls.properties.FontSize.value
+	If $new_data = "" or $new_data = "8.5" Then
+		$oProperties_Ctrls.properties.FontSize.value = 8.5
+		$new_data = -1
+	ElseIf Not StringRegExp($new_data, '^[1-9]\d*(\.\d+)?$') Then
+		$oProperties_Ctrls.properties.FontSize.value = ""
+		Return -1
+	EndIf
+
+	Local Const $sel_count = $oSelected.count
+
+	Switch $sel_count >= 1
+		Case True
+			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
+				;update the selected control
+				If $oCtrl.Type = "IP" Then
+					_GUICtrlIpAddress_SetFont($oCtrl.Hwnd, "Arial", $new_data)
+				Else
+					GUICtrlSetFont($oCtrl.Hwnd, $new_data)
+				EndIf
+
+				;update the selected property
+				$oCtrl.FontSize = $new_data
+
+			Next
+	EndSwitch
+
+	_refreshGenerateCode()
 EndFunc   ;==>_ctrl_change_global
 
 

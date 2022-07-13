@@ -4,7 +4,7 @@
 ; ===============================================================================================================================
 
 
-Global Enum $typeHeading, $typeText, $typeNumber, $typeCheck, $typeColor, $getHeight
+Global Enum $typeHeading, $typeText, $typeNumber, $typeCheck, $typeColor, $getHeight, $typeReal
 ;------------------------------------------------------------------------------
 ; Title...........: formGenerateCode
 ; Description.....:	Create the code generation GUI
@@ -55,13 +55,13 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
 	;items
-	$oProperties_Main.properties.Title.Hwnd = _formPropertyInspector_newitem("Title", $typeText, 0, 1, $w - $iScrollbarWidth - 1, 20)
-	$oProperties_Main.properties.Name.Hwnd = _formPropertyInspector_newitem("Name", $typeText)
+	$oProperties_Main.properties.Background.Hwnd = _formPropertyInspector_newitem("Background Color", $typeColor, 0, 1, $w - $iScrollbarWidth - 1, 20, "_main_pick_bkColor")
+	$oProperties_Main.properties.Height.Hwnd = _formPropertyInspector_newitem("Height", $typeNumber)
 	$oProperties_Main.properties.Left.Hwnd = _formPropertyInspector_newitem("Left", $typeNumber)
+	$oProperties_Main.properties.Name.Hwnd = _formPropertyInspector_newitem("Name", $typeText)
+	$oProperties_Main.properties.Title.Hwnd = _formPropertyInspector_newitem("Title", $typeText)
 	$oProperties_Main.properties.Top.Hwnd = _formPropertyInspector_newitem("Top", $typeNumber)
 	$oProperties_Main.properties.Width.Hwnd = _formPropertyInspector_newitem("Width", $typeNumber)
-	$oProperties_Main.properties.Height.Hwnd = _formPropertyInspector_newitem("Height", $typeNumber)
-	$oProperties_Main.properties.Background.Hwnd = _formPropertyInspector_newitem("Background", $typeColor, -1, -1, -1, -1, "_main_pick_bkColor")
 
 	;vertical line
 	Local $itemsHeight = _formPropertyInspector_newitem("", $getHeight)
@@ -108,15 +108,16 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
 	;items
-	$oProperties_Ctrls.properties.Text.Hwnd = _formPropertyInspector_newitem("Text", $typeText, 0, 1, $w - $iScrollbarWidth - 1, 20)
-	$oProperties_Ctrls.properties.Name.Hwnd = _formPropertyInspector_newitem("Name", $typeText)
+	$oProperties_Ctrls.properties.Background.Hwnd = _formPropertyInspector_newitem("Background Color", $typeColor, 0, 1, $w - $iScrollbarWidth - 1, 20, "_ctrl_pick_bkColor")
+	$oProperties_Ctrls.properties.Color.Hwnd = _formPropertyInspector_newitem("Font Color", $typeColor, -1, -1, -1, -1, "_ctrl_pick_Color")
+	$oProperties_Ctrls.properties.FontSize.Hwnd = _formPropertyInspector_newitem("Font Size", $typeReal)
+	$oProperties_Ctrls.properties.Global.Hwnd = _formPropertyInspector_newitem("Global", $typeCheck)
+	$oProperties_Ctrls.properties.Height.Hwnd = _formPropertyInspector_newitem("Height", $typeNumber)
 	$oProperties_Ctrls.properties.Left.Hwnd = _formPropertyInspector_newitem("Left", $typeNumber)
+	$oProperties_Ctrls.properties.Name.Hwnd = _formPropertyInspector_newitem("Name", $typeText)
+	$oProperties_Ctrls.properties.Text.Hwnd = _formPropertyInspector_newitem("Text", $typeText)
 	$oProperties_Ctrls.properties.Top.Hwnd = _formPropertyInspector_newitem("Top", $typeNumber)
 	$oProperties_Ctrls.properties.Width.Hwnd = _formPropertyInspector_newitem("Width", $typeNumber)
-	$oProperties_Ctrls.properties.Height.Hwnd = _formPropertyInspector_newitem("Height", $typeNumber)
-	$oProperties_Ctrls.properties.Color.Hwnd = _formPropertyInspector_newitem("Font Color", $typeColor, -1, -1, -1, -1, "_ctrl_pick_Color")
-	$oProperties_Ctrls.properties.Background.Hwnd = _formPropertyInspector_newitem("Background", $typeColor, -1, -1, -1, -1, "_ctrl_pick_bkColor")
-	$oProperties_Ctrls.properties.Global.Hwnd = _formPropertyInspector_newitem("Global", $typeCheck, -1, -1, -1, -1)
 
 	;vertical line
 	Local $itemsHeight = _formPropertyInspector_newitem("", $getHeight)
@@ -130,6 +131,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	GUICtrlSetOnEvent($oProperties_Ctrls.properties.Width.Hwnd, _ctrl_change_width)
 	GUICtrlSetOnEvent($oProperties_Ctrls.properties.Height.Hwnd, _ctrl_change_height)
 	GUICtrlSetOnEvent($oProperties_Ctrls.properties.Color.Hwnd, _ctrl_change_Color)
+	GUICtrlSetOnEvent($oProperties_Ctrls.properties.FontSize.Hwnd, _ctrl_change_FontSize)
 	GUICtrlSetOnEvent($oProperties_Ctrls.properties.Background.Hwnd, _ctrl_change_bkColor)
 	GUICtrlSetOnEvent($oProperties_Ctrls.properties.Global.Hwnd, _ctrl_change_global)
 	#EndRegion ctrl-properties
@@ -205,33 +207,36 @@ Func _formPropertyInspector_newitem($text, $type = -1, $x = -1, $y = -1, $w = -1
 	GUICtrlSetBkColor(-1, 0xFFFFFF)
 	GUICtrlSetTip(-1, $text)
 
-	If $type = $typeNumber Then
-		Local $edit = GUICtrlCreateInput("", $item_x + $item_w - $editWidth, $item_y, $editWidth, $item_h - 1, BitOR($ES_AUTOHSCROLL, $ES_NUMBER, $SS_CENTERIMAGE), $WS_EX_TRANSPARENT)
-		GUICtrlCreateUpdown($edit)
-	ElseIf $type = $typeColor Then
-		Local $edit = GUICtrlCreateInput("", $item_x + $item_w - $editWidth, $item_y, $editWidth - 15, $item_h - 1, BitOR($ES_AUTOHSCROLL, $SS_CENTERIMAGE), $WS_EX_TRANSPARENT)
-		Local $pickButton = GUICtrlCreateButton("...", $item_x + $item_w - 16, $item_y + 2, 18, $item_h - 4)
-		If $funcName <> -1 Then
-			GUICtrlSetOnEvent($pickButton, $funcName)
-		EndIf
-	ElseIf $type = $typeCheck Then
-		GUICtrlCreateLabel("", $item_x + $item_w - $editWidth, $item_y, $editWidth, $item_h - 1)
-		GUICtrlSetBkColor(-1, 0xFFFFFF)
-		GUICtrlSetState(-1, $GUI_DISABLE)
-		Local $edit = GUICtrlCreateCheckbox("", $item_x + $item_w - 45, $item_y, -1, $item_h - 1, BitOR($SS_CENTERIMAGE, $BS_3STATE))
-		GUICtrlSetBkColor(-1, 0xFFFFFF)
-	ElseIf $type = $typeHeading Then
-		Local $aStrings = StringSplit($text, "|", $STR_NOCOUNT)
-		GUICtrlSetData($label, $aStrings[0])
-		GUICtrlSetFont($label, 9, $FW_BOLD)
+	Switch $type
+		Case $typeNumber
+			Local $edit = GUICtrlCreateInput("", $item_x + $item_w - $editWidth, $item_y, $editWidth, $item_h - 1, BitOR($ES_AUTOHSCROLL, $ES_NUMBER, $SS_CENTERIMAGE), $WS_EX_TRANSPARENT)
+			GUICtrlCreateUpdown($edit)
+		Case $typeReal
+			Local $edit = GUICtrlCreateInput("", $item_x + $item_w - $editWidth, $item_y, $editWidth, $item_h - 1, BitOR($ES_AUTOHSCROLL, $SS_CENTERIMAGE), $WS_EX_TRANSPARENT)
+		Case $typeColor
+			Local $edit = GUICtrlCreateInput("", $item_x + $item_w - $editWidth, $item_y, $editWidth - 15, $item_h - 1, BitOR($ES_AUTOHSCROLL, $SS_CENTERIMAGE), $WS_EX_TRANSPARENT)
+			Local $pickButton = GUICtrlCreateButton("...", $item_x + $item_w - 16, $item_y + 2, 18, $item_h - 4)
+			If $funcName <> -1 Then
+				GUICtrlSetOnEvent($pickButton, $funcName)
+			EndIf
+		Case $typeCheck
+			GUICtrlCreateLabel("", $item_x + $item_w - $editWidth, $item_y, $editWidth, $item_h - 1)
+			GUICtrlSetBkColor(-1, 0xFFFFFF)
+			GUICtrlSetState(-1, $GUI_DISABLE)
+			Local $edit = GUICtrlCreateCheckbox("", $item_x + $item_w - 45, $item_y, -1, $item_h - 1, BitOR($SS_CENTERIMAGE, $BS_3STATE))
+			GUICtrlSetBkColor(-1, 0xFFFFFF)
+		Case $typeHeading
+			Local $aStrings = StringSplit($text, "|", $STR_NOCOUNT)
+			GUICtrlSetData($label, $aStrings[0])
+			GUICtrlSetFont($label, 9, $FW_BOLD)
 
-		Local $edit = GUICtrlCreateLabel(" " & $aStrings[1], $item_x + $item_w - $editWidth, $item_y, $editWidth, $item_h - 1, $SS_CENTERIMAGE)
-		GUICtrlSetColor(-1, 0x333333)
-		GUICtrlSetBkColor(-1, 0xFFFFFF)
-		GUICtrlSetFont($edit, 9, $FW_BOLD)
-	Else
-		Local $edit = GUICtrlCreateInput("", $item_x + $item_w - $editWidth, $item_y, $editWidth, $item_h - 1, BitOR($ES_AUTOHSCROLL, $SS_CENTERIMAGE), $WS_EX_TRANSPARENT)
-	EndIf
+			Local $edit = GUICtrlCreateLabel(" " & $aStrings[1], $item_x + $item_w - $editWidth, $item_y, $editWidth, $item_h - 1, $SS_CENTERIMAGE)
+			GUICtrlSetColor(-1, 0x333333)
+			GUICtrlSetBkColor(-1, 0xFFFFFF)
+			GUICtrlSetFont($edit, 9, $FW_BOLD)
+		Case Else
+			Local $edit = GUICtrlCreateInput("", $item_x + $item_w - $editWidth, $item_y, $editWidth, $item_h - 1, BitOR($ES_AUTOHSCROLL, $SS_CENTERIMAGE), $WS_EX_TRANSPARENT)
+	EndSwitch
 
 	Local $labelLine = GUICtrlCreateLabel("", $item_x + 1, $item_y + $item_h - 1, $item_w, 1)
 	GUICtrlSetBkColor(-1, 0xDDDDDD)
