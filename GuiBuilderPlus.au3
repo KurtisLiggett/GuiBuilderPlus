@@ -12,6 +12,9 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
+;  08/28/2022 ...:	- FIXED:	Paste multiple controls into group or tab controls
+;					- FIXED:	"Select all" is more responsive
+;
 ;  07/12/2022 ...:	- FIXED:	Crash when using Ctrl+O shortcut key
 ;					- FIXED:	GUI should not close when cancelling the save dialog
 ;					- ADDED:	Ability to add child controls to Tabs

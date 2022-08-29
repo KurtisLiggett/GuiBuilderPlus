@@ -751,17 +751,23 @@ Func _PasteSelected($bDuplicate = False, $bAtMouse = False)
 
 				$aNewCtrls[$i] = _create_ctrl($oNewCtrl, 0, -1, -1, -1, $bDuplicate)
 
-				;select the new controls
+				$i += 1
+			Next
+
+			;now select the controls
+			$i = 0
+			For $oCtrl In $aNewCtrls
 				If $i = 0 Then    ;select first item
-					_add_to_selected($oNewCtrl, True, True)
-;~ 					_populate_control_properties_gui($oNewCtrl)
+					_add_to_selected($aNewCtrls[$i], True, True)
+		;~ 					_populate_control_properties_gui($oNewCtrl)
 				Else    ;add to selection
-					_add_to_selected($oNewCtrl, False, False)
+					_add_to_selected($aNewCtrls[$i], False, False)
 				EndIf
 
 				$i += 1
 			Next
 	EndSwitch
+
 
 	If Not $bDuplicate And Not $bAtMouse And $setting_paste_pos And $oSelected.count > 0 Then
 		$oCtrls.mode = $mode_paste
@@ -918,8 +924,8 @@ EndFunc   ;==>_add_to_selected
 Func _selectAll()
 	Local $first = True
 
-	_SendMessage($hGUI, $WM_SETREDRAW, False)
 	_remove_all_from_selected()
+	_SendMessage($hGUI, $WM_SETREDRAW, False)
 
 	For $oCtrl In $oCtrls.ctrls.Items()
 		$oSelected.add($oCtrl)
