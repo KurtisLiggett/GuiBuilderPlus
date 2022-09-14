@@ -12,6 +12,8 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
+;  09/14/2022 ...:	- FIXED:	#include's are now more dynamic (don't include constants unless they are needed)
+;
 ;  08/28/2022 ...:	- FIXED:	Paste multiple controls into group or tab controls
 ;					- FIXED:	"Select all" is more responsive
 ;
