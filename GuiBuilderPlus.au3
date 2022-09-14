@@ -12,6 +12,9 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
+;  09/13/2022 ...:	- ADDED:	Button styles BS_LEFT, BS_RIGHT
+;					- ADDED:	First pass at Importing/parsing an existing AU3 file as GUI
+;
 ;  08/28/2022 ...:	- FIXED:	Paste multiple controls into group or tab controls
 ;					- FIXED:	"Select all" is more responsive
 ;
@@ -213,7 +216,7 @@
 #AutoIt3Wrapper_Res_HiDpi=y
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.0.0-beta.exe
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.0.0-beta3.exe
 #AutoIt3Wrapper_Res_Fileversion=1.0.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 1.ico
@@ -379,7 +382,7 @@ Func _main()
 	$oClipboard = _objCtrls()
 	$oMain = _objMain()
 	$oMain.AppName = "GuiBuilderPlus"
-	$oMain.AppVersion = "1.0.0-beta"
+	$oMain.AppVersion = "1.0.0-beta3"
 	$oMain.Title = StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1)
 	$oMain.Name = "hGUI"
 	$oMain.Width = 400
