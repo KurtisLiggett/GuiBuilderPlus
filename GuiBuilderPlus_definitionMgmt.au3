@@ -239,54 +239,59 @@ EndFunc   ;==>_onload_gui_definition
 ; Description.....:	Load GUI definition file
 ; Author..........: Roy
 ;------------------------------------------------------------------------------
-Func _load_gui_definition($AgdInfile = '')
+Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 	Static $firstLoad = True
+	Local $objInput
 
-	If $oCtrls.count > 0 Then
-		Switch MsgBox($MB_ICONWARNING + $MB_YESNO, "Load Gui Definition from file", "Loading a Gui Definition will clear existing controls." & @CRLF & "Are you sure?" & @CRLF)
-			Case $IDNO
-				Return
-		EndSwitch
-	EndIf
-
-	Switch $AgdInfile
-		Case ''
-			; added by: TheSaint
-			$lfld = IniRead($sIniPath, "Save Folder", "Last", "")
-
-			If $lfld = "" Then
-				$lfld = @MyDocumentsDir
-			EndIf
-
-			If Not $CmdLine[0] Then ; mod by: TheSaint
-				$AgdInfile = FileOpenDialog("Load GUI Definition from file?", $lfld, "AutoIt Gui Definitions (*.agd)", $FD_FILEMUSTEXIST)
-
-				If @error Then
+	If Not IsObj($oImportData) Then
+		If $oCtrls.count > 0 Then
+			Switch MsgBox($MB_ICONWARNING + $MB_YESNO, "Load Gui Definition from file", "Loading a Gui Definition will clear existing controls." & @CRLF & "Are you sure?" & @CRLF)
+				Case $IDNO
 					Return
+			EndSwitch
+		EndIf
+
+		Switch $AgdInfile
+			Case ''
+				; added by: TheSaint
+				$lfld = IniRead($sIniPath, "Save Folder", "Last", "")
+
+				If $lfld = "" Then
+					$lfld = @MyDocumentsDir
 				EndIf
-			EndIf
-	EndSwitch
 
-	$AgdOutFile = $AgdInfile
+				If Not $CmdLine[0] Then ; mod by: TheSaint
+					$AgdInfile = FileOpenDialog("Load GUI Definition from file?", $lfld, "AutoIt Gui Definitions (*.agd)", $FD_FILEMUSTEXIST)
 
-	_SendMessage($hGUI, $WM_SETREDRAW, False)
+					If @error Then
+						Return
+					EndIf
+				EndIf
+		EndSwitch
+
+		$AgdOutFile = $AgdInfile
+
+		_SendMessage($hGUI, $WM_SETREDRAW, False)
+
+		Local $sData = FileRead($AgdInfile)
+
+		If StringLeft($sData, 1) = "[" Then
+			_load_gui_definition_ini($AgdInfile)
+			_SendMessage($hGUI, $WM_SETREDRAW, True)
+			_WinAPI_RedrawWindow($hGUI)
+			Return
+		EndIf
+
+		$objInput = Json_Decode($sData)
+	Else
+		$objInput = $oImportData
+	EndIf
 
 	;only wipe if GUI exists already
 	If Not $firstLoad Or Not $CmdLine[0] Then
 		_wipe_current_gui()
 	EndIf
 	If $firstLoad Then $firstLoad = False
-
-	Local $sData = FileRead($AgdInfile)
-
-	If StringLeft($sData, 1) = "[" Then
-		_load_gui_definition_ini($AgdInfile)
-		_SendMessage($hGUI, $WM_SETREDRAW, True)
-		_WinAPI_RedrawWindow($hGUI)
-		Return
-	EndIf
-
-	Local $objInput = Json_Decode($sData)
 
 	$oMain.Name = _Json_Get($objInput, ".Main.Name", "hGUI")
 	$oMain.Title = _Json_Get($objInput, ".Main.Title", StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1))
@@ -328,9 +333,12 @@ Func _load_gui_definition($AgdInfile = '')
 
 	Local Const $numCtrls = _Json_Get($objInput, ".Main.numctrls", -1)
 
-
 	Local $oCtrl, $Key, $oNewCtrl
 	Local $aControls = Json_Get($objInput, ".Controls")
+	If @error Then
+		ConsoleWrite("Error: " & @error & @CRLF)
+	EndIf
+
 	For $oThisCtrl In $aControls
 		$oCtrl = $oCtrls.createNew()
 
@@ -667,3 +675,409 @@ Func _load_gui_definition_ini($AgdInfile = '')
 
 	$oMain.hasChanged = False
 EndFunc   ;==>_load_gui_definition_ini
+
+
+;------------------------------------------------------------------------------
+; Title...........: _onImportMenuItem
+; Description.....: Import au3 file
+; Events..........: file menu item
+;------------------------------------------------------------------------------
+Func _onImportMenuItem()
+	If $oCtrls.count > 0 Then
+		Switch MsgBox($MB_ICONWARNING + $MB_YESNO, "Load Gui Definition from file", "Loading a Gui Definition will clear existing controls." & @CRLF & "Are you sure?" & @CRLF)
+			Case $IDNO
+				Return
+		EndSwitch
+	EndIf
+
+	Local $oFileData = _importAu3File()
+
+	If Not @error Then
+		If IsObj($oFileData) Then
+			_load_gui_definition('', $oFileData)
+		EndIf
+	Else
+		Local $errCode = @error, $lineNo = @extended
+		Switch $errCode
+			Case 2
+				MsgBox(1, "Error", "Error code: " & $errCode & @CRLF & "Error parsing parameters." & @CRLF & "Line number: " & $lineNo)
+
+			Case 3
+				MsgBox(1, "Error", "Error code: " & $errCode & @CRLF & "Cannot parse variables as parameters." & @CRLF & "Line number: " & $lineNo)
+
+			Case Else
+				MsgBox(1, "Error", "Error code: " & $errCode & @CRLF & "Error parsing AU3 file.")
+
+		EndSwitch
+	EndIf
+EndFunc   ;==>_onImportMenuItem
+
+;------------------------------------------------------------------------------
+; Title...........: _importAu3File
+; Description.....: Load au3 file, parse data, return object representing GUI
+;------------------------------------------------------------------------------
+Func _importAu3File()
+	;error codes:
+	;	1:	file read error
+	;	2:	formatting error
+	;	3:	variable used for parameter
+
+	Local $sFileName = FileOpenDialog("Import GUI from AU3 file?", $lfld, "AutoIt Gui Definitions (*.au3)", $FD_FILEMUSTEXIST)
+	If @error Then Return 1
+
+	Local $aFileData = FileReadToArray($sFileName)
+	If @error Then Return SetError(1)
+
+	Local $sFileData = FileRead($sFileName)
+	If @error Then Return SetError(1)
+
+	Local $objOutput, $oVariables = ObjCreate("Scripting.Dictionary")
+	Local $iLineCounter, $iCtrlCounter = -1, $aMatches, $aParams, $sCtrlType, $aParamMatches, $sStyles, $sScope
+	Local $sParam, $iTabParentIndex, $bIsChild, $iChildCounter = -1, $sJsonString, $iTabCounter = -1, $inTab, $inGroup, $iGroupParentIndex
+	Local $iBoxCommentLvl
+
+	For $sLine In $aFileData
+		$iLineCounter += 1
+		$sScope = ""
+
+		;check for box comment
+		If StringRegExp($sLine, '(?im)^\s*(?:#comments-start|#cs)') Then
+			$iBoxCommentLvl += 1
+		ElseIf StringRegExp($sLine, '(?im)^\s*(?:#comments-end|#ce)') Then
+			$iBoxCommentLvl -= 1
+		EndIf
+
+		If $iBoxCommentLvl > 0 Then
+			ContinueLoop
+		EndIf
+
+		;check for line comment
+		If StringRegExp($sLine, '(?im)^\s*;') Then
+			ContinueLoop
+		EndIf
+
+
+		;check for variable declaration
+		$aMatches = StringRegExp($sLine, '(?im)^\s*(Global|Local)\s*(.+?)\s*(?:$|=)', $STR_REGEXPARRAYGLOBALMATCH)
+		If Not @error Then
+			Local $aVars = StringSplit(StringReplace($aMatches[1], "$", ""), ",")
+			If @error Then
+				$oVariables.Item(StringReplace($aMatches[1], "$", "")) = $aMatches[0]
+			Else
+				For $i = 1 To $aVars[0]
+					$oVariables.Item(StringStripWS($aVars[$i], $STR_STRIPLEADING + $STR_STRIPTRAILING)) = $aMatches[0]
+				Next
+			EndIf
+		EndIf
+
+		;check line for GUICtrlSetFont
+		$aMatches = StringRegExp($sLine, '(?im)\s*(?:GUICtrlSetFont)\s*\((.+?),\s*(.+?)\s*(?:,|\))', $STR_REGEXPARRAYGLOBALMATCH)
+		If Not @error Then
+			If $aMatches[0] = "-1" Then
+				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].FontSize", $aMatches[1])
+			Else
+				Local $sName = StringReplace($aMatches[0], "$", "")
+				If $oVariables.Exists($sName) Then
+					For $i = 0 To $iCtrlCounter
+						If Json_Get($objOutput, ".Controls[" & $i & "].Name") = $sName Then
+							Json_Put($objOutput, ".Controls[" & $i & "].FontSize", $aMatches[1])
+							ExitLoop
+						EndIf
+					Next
+				EndIf
+			EndIf
+			ContinueLoop
+		EndIf
+
+		;check line for standard gui/ctrl create format
+		$aMatches = StringRegExp($sLine, '(?i)(?:\s*?(Global|Local)?\s*?(?:\$(\S*?))?\s*?=)?\s*?(\S*?)\s*?\((.*)\)', $STR_REGEXPARRAYGLOBALMATCH)
+		If @error Then ContinueLoop
+
+		;check what this line is
+		If $aMatches[2] = "GUICreate" Then
+			If $oVariables.Exists($aMatches[1]) Then
+				$sScope = $oVariables.Item($aMatches[1])
+			EndIf
+			If $aMatches[0] = "Global" Or $sScope = "Global" Then
+				Json_Put($objOutput, ".Main.Global", 1)
+			Else
+				Json_Put($objOutput, ".Main.Global", 0)
+			EndIf
+
+			Json_Put($objOutput, ".Main.Name", $aMatches[1])
+
+			$aParamMatches = StringRegExp($aMatches[3], '(?im)(.+?)(?:$|(?:,\s*(?:BitOR\()(.*?)\)(?:,\s*(?:BitOR)\((.*?)\))?))', $STR_REGEXPARRAYGLOBALMATCH)
+			If Not @error Then
+				$aParams = StringSplit($aParamMatches[0], ",")
+				If @error Then Return SetError(2, $iLineCounter)
+				If $aParams[0] > 5 Then
+					;do nothing
+				Else
+					If UBound($aParamMatches) > 1 Then
+						$aParams[0] = $aParams[0] + 1
+						ReDim $aParams[$aParams[0] + 1]
+						$aParams[$aParams[0]] = $aParamMatches[1]
+					EndIf
+				EndIf
+			Else
+				$aParams = StringSplit($aMatches[3], ",")
+				If @error Then Return SetError(2, $iLineCounter)
+			EndIf
+
+			Json_Put($objOutput, ".Main.Title", _removeQuotes(StringStripWS($aParams[1], $STR_STRIPLEADING + $STR_STRIPTRAILING)))
+
+			If $aParams[0] > 1 Then
+				$sParam = _FormatParameter($aParams[2])
+				If @error Then Return SetError(3, $iLineCounter)
+				Json_Put($objOutput, ".Main.Width", $sParam)
+			EndIf
+			If $aParams[0] > 2 Then
+				$sParam = _FormatParameter($aParams[3])
+				If @error Then Return SetError(3, $iLineCounter)
+				Json_Put($objOutput, ".Main.Height", $sParam)
+			EndIf
+			If $aParams[0] > 3 Then
+				$sParam = _FormatParameter($aParams[4])
+				If @error Then Return SetError(3, $iLineCounter)
+				Json_Put($objOutput, ".Main.Left", $sParam)
+			EndIf
+			If $aParams[0] > 4 Then
+				$sParam = _FormatParameter($aParams[5])
+				If @error Then Return SetError(3, $iLineCounter)
+				Json_Put($objOutput, ".Main.Top", $sParam)
+			EndIf
+			If $aParams[0] > 5 Then
+				$sParam = _FormatParameter($aParams[6])
+				Json_Put($objOutput, ".Main.styleString", $sParam)
+			EndIf
+
+		ElseIf $aMatches[2] = "GUICtrlCreateTab" Then
+			$iCtrlCounter += 1
+			$sCtrlType = "Tab"
+			$iTabParentIndex = $iCtrlCounter
+			$iTabCounter = -1
+
+			Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Type", $sCtrlType)
+
+			If $oVariables.Exists($aMatches[1]) Then
+				$sScope = $oVariables.Item($aMatches[1])
+			EndIf
+			If $aMatches[0] = "Global" Or $sScope = "Global" Then
+				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Global", 1)
+			Else
+				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Global", 0)
+			EndIf
+
+			Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Name", $aMatches[1])
+
+			$aParamMatches = StringRegExp($aMatches[3], '(?im)(.+?)(?:$|(?:,\s*(?:BitOR\()(.*?)\)(?:,\s*(?:BitOR)\((.*?)\))?))', $STR_REGEXPARRAYGLOBALMATCH)
+			If Not @error Then
+				$aParams = StringSplit($aParamMatches[0], ",")
+				If @error Then Return SetError(2, $iLineCounter)
+				If $aParams[0] > 4 Then
+					;do nothing
+				Else
+					If UBound($aParamMatches) > 1 Then
+						$aParams[0] = $aParams[0] + 1
+						ReDim $aParams[$aParams[0] + 1]
+						$aParams[$aParams[0]] = $aParamMatches[1]
+					EndIf
+				EndIf
+			Else
+				$aParams = StringSplit($aMatches[3], ",")
+				If @error Then Return SetError(2, $iLineCounter)
+			EndIf
+
+			If $aParams[0] < 2 Then
+				Return SetError(2, $iLineCounter)
+			EndIf
+
+			$sParam = _FormatParameter($aParams[1])
+			If @error Then Return SetError(3, $iLineCounter)
+			Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Left", $sParam)
+
+			$sParam = _FormatParameter($aParams[2])
+			If @error Then Return SetError(3, $iLineCounter)
+			Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Top", $sParam)
+
+			If $aParams[0] > 2 Then
+				$sParam = _FormatParameter($aParams[3])
+				If @error Then Return SetError(3, $iLineCounter)
+				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Width", $sParam)
+			EndIf
+			If $aParams[0] > 3 Then
+				$sParam = _FormatParameter($aParams[4])
+				If @error Then Return SetError(3, $iLineCounter)
+				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Height", $sParam)
+			EndIf
+			If $aParams[0] > 4 Then
+				$sParam = _FormatParameter($aParams[6])
+				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].styleString", $sParam)
+			EndIf
+			Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Locked", False)
+			Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].TabCount", 0)
+
+		ElseIf $aMatches[2] = "GUICtrlCreateTabItem" Then
+			If $iTabParentIndex > -1 Then
+				If _removeQuotes($aMatches[3]) = "" Then
+					$inTab = False
+					ContinueLoop
+				Else
+;~ 					$iCtrlCounter += 1
+					$inTab = True
+					$iTabCounter += 1
+					$iChildCounter = -1
+					Json_Put($objOutput, ".Controls[" & $iTabParentIndex & "].TabCount", $iTabCounter + 1)
+					Json_Put($objOutput, ".Controls[" & $iTabParentIndex & "].Tabs[" & $iTabCounter & "].Type", "TabItem")
+					Json_Put($objOutput, ".Controls[" & $iTabParentIndex & "].Tabs[" & $iTabCounter & "].Name", $aMatches[1])
+					Json_Put($objOutput, ".Controls[" & $iTabParentIndex & "].Tabs[" & $iTabCounter & "].Text", _removeQuotes($aMatches[3]))
+				EndIf
+			Else
+				ContinueLoop
+			EndIf
+
+		Else
+			If $aMatches[2] = "GUICtrlCreateButton" Then
+				$sCtrlType = "Button"
+			ElseIf $aMatches[2] = "GUICtrlCreateLabel" Then
+				$sCtrlType = "Label"
+			ElseIf $aMatches[2] = "GUICtrlCreateCheckbox" Then
+				$sCtrlType = "Checkbox"
+			ElseIf $aMatches[2] = "GUICtrlCreateRadio" Then
+				$sCtrlType = "Radio"
+			ElseIf $aMatches[2] = "GUICtrlCreateList" Then
+				$sCtrlType = "List"
+			ElseIf $aMatches[2] = "GUICtrlCreateInput" Then
+				$sCtrlType = "Input"
+			ElseIf $aMatches[2] = "GUICtrlCreateEdit" Then
+				$sCtrlType = "Edit"
+			ElseIf $aMatches[2] = "GUICtrlCreateListView" Then
+				$sCtrlType = "ListView"
+			ElseIf $aMatches[2] = "GUICtrlCreateDate" Then
+				$sCtrlType = "Date"
+			ElseIf $aMatches[2] = "GUICtrlCreateCombo" Then
+				$sCtrlType = "Combo"
+			ElseIf $aMatches[2] = "GUICtrlCreateGroup" Then
+				$sCtrlType = "Group"
+				$inGroup = True
+			Else
+				ContinueLoop
+			EndIf
+
+			If $iTabParentIndex > -1 And $inTab Then
+				$iChildCounter += 1
+				$sJsonString = ".Controls[" & $iTabParentIndex & "].Tabs[" & $iTabCounter & "].Controls[" & $iChildCounter & "]"
+			Else
+				If Not $inGroup Then
+					$iCtrlCounter += 1
+				EndIf
+				$sJsonString = ".Controls[" & $iCtrlCounter & "]"
+			EndIf
+
+			If $inGroup Then
+				If $sCtrlType = "Group" Then
+					Local $aGroupParams = StringSplit($aMatches[3], ",")
+					If @error Then Return SetError(2, $iLineCounter)
+					If $aGroupParams[0] < 3 Then Return SetError(2, $iLineCounter)
+					If _FormatParameter($aGroupParams[2]) = -99 And _FormatParameter($aGroupParams[3]) = -99 Then
+						$inGroup = False
+						ContinueLoop
+					Else
+						$iCtrlCounter += 1
+						$iGroupParentIndex = $iCtrlCounter
+						$iChildCounter = -1
+						$sJsonString = ".Controls[" & $iGroupParentIndex & "]"
+					EndIf
+				Else
+					$iChildCounter += 1
+					$sJsonString = ".Controls[" & $iGroupParentIndex & "].Controls[" & $iChildCounter & "]"
+				EndIf
+			EndIf
+
+			Json_Put($objOutput, $sJsonString & ".Type", $sCtrlType)
+
+			If $oVariables.Exists($aMatches[1]) Then
+				$sScope = $oVariables.Item($aMatches[1])
+			EndIf
+			If $aMatches[0] = "Global" Or $sScope = "Global" Then
+				Json_Put($objOutput, $sJsonString & ".Global", 1)
+			Else
+				Json_Put($objOutput, $sJsonString & ".Global", 0)
+			EndIf
+
+			Json_Put($objOutput, $sJsonString & ".Name", $aMatches[1])
+
+			$aParamMatches = StringRegExp($aMatches[3], '(?im)(.+?)(?:$|(?:,\s*(?:BitOR\()(.*?)\)(?:,\s*(?:BitOR)\((.*?)\))?))', $STR_REGEXPARRAYGLOBALMATCH)
+			If Not @error Then
+				$aParams = StringSplit($aParamMatches[0], ",")
+				If @error Then Return SetError(2, $iLineCounter)
+				If $aParams[0] > 5 Then
+					;do nothing
+				Else
+					If UBound($aParamMatches) > 1 Then
+						$aParams[0] = $aParams[0] + 1
+						ReDim $aParams[$aParams[0] + 1]
+						$aParams[$aParams[0]] = $aParamMatches[1]
+					EndIf
+				EndIf
+			Else
+				$aParams = StringSplit($aMatches[3], ",")
+				If @error Then Return SetError(2, $iLineCounter)
+			EndIf
+
+			Json_Put($objOutput, $sJsonString & ".Text", _removeQuotes(StringStripWS($aParams[1], $STR_STRIPLEADING + $STR_STRIPTRAILING)))
+
+			If $aParams[0] < 3 Then
+				Return SetError(2, $iLineCounter)
+			EndIf
+
+			If $aParams[0] > 1 Then
+				$sParam = _FormatParameter($aParams[2])
+				If @error Then Return SetError(3, $iLineCounter)
+				Json_Put($objOutput, $sJsonString & ".Left", $sParam)
+			EndIf
+			If $aParams[0] > 2 Then
+				$sParam = _FormatParameter($aParams[3])
+				If @error Then Return SetError(3, $iLineCounter)
+				Json_Put($objOutput, $sJsonString & ".Top", $sParam)
+			EndIf
+			If $aParams[0] > 3 Then
+				$sParam = _FormatParameter($aParams[4])
+				If @error Then Return SetError(3, $iLineCounter)
+				Json_Put($objOutput, $sJsonString & ".Width", $sParam)
+			EndIf
+			If $aParams[0] > 4 Then
+				$sParam = _FormatParameter($aParams[5])
+				If @error Then Return SetError(3, $iLineCounter)
+				Json_Put($objOutput, $sJsonString & ".Height", $sParam)
+			EndIf
+			If $aParams[0] > 5 Then
+				$sParam = _FormatParameter($aParams[6])
+				Json_Put($objOutput, $sJsonString & ".styleString", $sParam)
+			EndIf
+			Json_Put($objOutput, $sJsonString & ".Locked", False)
+
+		EndIf
+
+	Next
+	Json_Put($objOutput, ".Main.numctrls", $iCtrlCounter + 1)
+
+;~ 	ConsoleWrite(Json_Encode($objOutput, $Json_PRETTY_PRINT) & @CRLF)
+
+	Return $objOutput
+EndFunc   ;==>_importAu3File
+
+Func _FormatParameter($sParam)
+	$sParam = StringStripWS($sParam, $STR_STRIPLEADING + $STR_STRIPTRAILING)
+	If ($sParam = "0") Or (Number($sParam) <> 0) Then
+		Return $sParam
+	Else
+		Return SetError(1, 0, $sParam)
+	EndIf
+EndFunc   ;==>_FormatParameter
+
+Func _removeQuotes($sParam)
+	Local $sRet = StringRegExpReplace($sParam, '["' & "'" & ']', "")
+	If @error Then Return $sParam
+	Return $sRet
+EndFunc   ;==>_removeQuotes

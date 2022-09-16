@@ -283,9 +283,8 @@ Func _generate_controls(Const $oCtrl, $sDpiScale, $isChild = False)
 				For $oTabCtrl In $oTab.ctrls.Items()
 					$mControls &= _generate_controls($oTabCtrl, $sDpiScale, True)
 				Next
-
-				$mControls &= 'GUICtrlCreateTabItem("")' & @CRLF
 			Next
+			$mControls &= 'GUICtrlCreateTabItem("")' & @CRLF
 
 		Case "Updown"
 			$mControls &= "GUICtrlCreateInput" & '("' & $oCtrl.Text & '", ' & $ltwh & $ctrlStyle & ')' & @CRLF
