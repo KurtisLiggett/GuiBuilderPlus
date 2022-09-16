@@ -734,10 +734,28 @@ Func _importAu3File()
 	Local $objOutput, $oVariables = ObjCreate("Scripting.Dictionary")
 	Local $iLineCounter, $iCtrlCounter = -1, $aMatches, $aParams, $sCtrlType, $aParamMatches, $sStyles, $sScope
 	Local $sParam, $iTabParentIndex, $bIsChild, $iChildCounter = -1, $sJsonString, $iTabCounter = -1, $inTab, $inGroup, $iGroupParentIndex
+	Local $iBoxCommentLvl
 
 	For $sLine In $aFileData
 		$iLineCounter += 1
 		$sScope = ""
+
+		;check for box comment
+		If StringRegExp($sLine, '(?im)^\s*(?:#comments-start|#cs)') Then
+			$iBoxCommentLvl += 1
+		ElseIf StringRegExp($sLine, '(?im)^\s*(?:#comments-end|#ce)') Then
+			$iBoxCommentLvl -= 1
+		EndIf
+
+		If $iBoxCommentLvl > 0 Then
+			ContinueLoop
+		EndIf
+
+		;check for line comment
+		If StringRegExp($sLine, '(?im)^\s*;') Then
+			ContinueLoop
+		EndIf
+
 
 		;check for variable declaration
 		$aMatches = StringRegExp($sLine, '(?im)^\s*(Global|Local)\s*(.+?)\s*(?:$|=)', $STR_REGEXPARRAYGLOBALMATCH)
