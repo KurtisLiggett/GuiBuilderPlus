@@ -12,9 +12,10 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  09/14/2022 ...:	- ADDED:	Button styles BS_LEFT, BS_RIGHT
-;					- ADDED:	First pass at Importing/parsing an existing AU3 file as GUI
-;					- FIXED:	#include's are now more dynamic (don't include constants unless they are needed)
+;  09/14/2022 ...:	- FIXED:	#include's are now more dynamic (don't include constants unless they are needed)
+;					- FIXED:	Extra GuiCreateTabItem("") for each tab
+;					- ADDED:	Button styles BS_LEFT, BS_RIGHT
+;					- ADDED:	Import/parse an existing AU3 file as GUI
 ;
 ;  08/28/2022 ...:	- FIXED:	Paste multiple controls into group or tab controls
 ;					- FIXED:	"Select all" is more responsive

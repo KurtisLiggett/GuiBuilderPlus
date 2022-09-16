@@ -732,8 +732,8 @@ Func _importAu3File()
 	If @error Then Return SetError(1)
 
 	Local $objOutput, $oVariables = ObjCreate("Scripting.Dictionary")
-	Local $iLineCounter, $iCtrlCounter = -1, $aMatches, $aParams, $sCtrlType, $lastCtrlID, $aParamMatches, $sStyles, $sScope, $iPrevID
-	Local $sParam
+	Local $iLineCounter, $iCtrlCounter = -1, $aMatches, $aParams, $sCtrlType, $aParamMatches, $sStyles, $sScope
+	Local $sParam, $iTabParentIndex, $bIsChild, $iChildCounter = -1, $sJsonString, $iTabCounter = -1, $inTab, $inGroup, $iGroupParentIndex
 
 	For $sLine In $aFileData
 		$iLineCounter += 1
@@ -752,7 +752,7 @@ Func _importAu3File()
 			EndIf
 		EndIf
 
-		;check line for GUICtrlSetFont with parameter
+		;check line for GUICtrlSetFont
 		$aMatches = StringRegExp($sLine, '(?im)\s*(?:GUICtrlSetFont)\s*\((.+?),\s*(.+?)\s*(?:,|\))', $STR_REGEXPARRAYGLOBALMATCH)
 		If Not @error Then
 			If $aMatches[0] = "-1" Then
@@ -787,7 +787,6 @@ Func _importAu3File()
 			EndIf
 
 			Json_Put($objOutput, ".Main.Name", $aMatches[1])
-			$lastCtrlID = $aMatches[1]
 
 			$aParamMatches = StringRegExp($aMatches[3], '(?im)(.+?)(?:$|(?:,\s*(?:BitOR\()(.*?)\)(?:,\s*(?:BitOR)\((.*?)\))?))', $STR_REGEXPARRAYGLOBALMATCH)
 			If Not @error Then
@@ -807,7 +806,7 @@ Func _importAu3File()
 				If @error Then Return SetError(2, $iLineCounter)
 			EndIf
 
-			Json_Put($objOutput, ".Main.Title", StringReplace(StringStripWS($aParams[1], $STR_STRIPLEADING + $STR_STRIPTRAILING), '"', ''))
+			Json_Put($objOutput, ".Main.Title", _removeQuotes(StringStripWS($aParams[1], $STR_STRIPLEADING + $STR_STRIPTRAILING)))
 
 			If $aParams[0] > 1 Then
 				$sParam = _FormatParameter($aParams[2])
@@ -834,6 +833,91 @@ Func _importAu3File()
 				Json_Put($objOutput, ".Main.styleString", $sParam)
 			EndIf
 
+		ElseIf $aMatches[2] = "GUICtrlCreateTab" Then
+			$iCtrlCounter += 1
+			$sCtrlType = "Tab"
+			$iTabParentIndex = $iCtrlCounter
+			$iTabCounter = -1
+
+			Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Type", $sCtrlType)
+
+			If $oVariables.Exists($aMatches[1]) Then
+				$sScope = $oVariables.Item($aMatches[1])
+			EndIf
+			If $aMatches[0] = "Global" Or $sScope = "Global" Then
+				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Global", 1)
+			Else
+				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Global", 0)
+			EndIf
+
+			Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Name", $aMatches[1])
+
+			$aParamMatches = StringRegExp($aMatches[3], '(?im)(.+?)(?:$|(?:,\s*(?:BitOR\()(.*?)\)(?:,\s*(?:BitOR)\((.*?)\))?))', $STR_REGEXPARRAYGLOBALMATCH)
+			If Not @error Then
+				$aParams = StringSplit($aParamMatches[0], ",")
+				If @error Then Return SetError(2, $iLineCounter)
+				If $aParams[0] > 4 Then
+					;do nothing
+				Else
+					If UBound($aParamMatches) > 1 Then
+						$aParams[0] = $aParams[0] + 1
+						ReDim $aParams[$aParams[0] + 1]
+						$aParams[$aParams[0]] = $aParamMatches[1]
+					EndIf
+				EndIf
+			Else
+				$aParams = StringSplit($aMatches[3], ",")
+				If @error Then Return SetError(2, $iLineCounter)
+			EndIf
+
+			If $aParams[0] < 2 Then
+				Return SetError(2, $iLineCounter)
+			EndIf
+
+			$sParam = _FormatParameter($aParams[1])
+			If @error Then Return SetError(3, $iLineCounter)
+			Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Left", $sParam)
+
+			$sParam = _FormatParameter($aParams[2])
+			If @error Then Return SetError(3, $iLineCounter)
+			Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Top", $sParam)
+
+			If $aParams[0] > 2 Then
+				$sParam = _FormatParameter($aParams[3])
+				If @error Then Return SetError(3, $iLineCounter)
+				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Width", $sParam)
+			EndIf
+			If $aParams[0] > 3 Then
+				$sParam = _FormatParameter($aParams[4])
+				If @error Then Return SetError(3, $iLineCounter)
+				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Height", $sParam)
+			EndIf
+			If $aParams[0] > 4 Then
+				$sParam = _FormatParameter($aParams[6])
+				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].styleString", $sParam)
+			EndIf
+			Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Locked", False)
+			Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].TabCount", 0)
+
+		ElseIf $aMatches[2] = "GUICtrlCreateTabItem" Then
+			If $iTabParentIndex > -1 Then
+				If _removeQuotes($aMatches[3]) = "" Then
+					$inTab = False
+					ContinueLoop
+				Else
+;~ 					$iCtrlCounter += 1
+					$inTab = True
+					$iTabCounter += 1
+					$iChildCounter = -1
+					Json_Put($objOutput, ".Controls[" & $iTabParentIndex & "].TabCount", $iTabCounter + 1)
+					Json_Put($objOutput, ".Controls[" & $iTabParentIndex & "].Tabs[" & $iTabCounter & "].Type", "TabItem")
+					Json_Put($objOutput, ".Controls[" & $iTabParentIndex & "].Tabs[" & $iTabCounter & "].Name", $aMatches[1])
+					Json_Put($objOutput, ".Controls[" & $iTabParentIndex & "].Tabs[" & $iTabCounter & "].Text", _removeQuotes($aMatches[3]))
+				EndIf
+			Else
+				ContinueLoop
+			EndIf
+
 		Else
 			If $aMatches[2] = "GUICtrlCreateButton" Then
 				$sCtrlType = "Button"
@@ -855,24 +939,55 @@ Func _importAu3File()
 				$sCtrlType = "Date"
 			ElseIf $aMatches[2] = "GUICtrlCreateCombo" Then
 				$sCtrlType = "Combo"
+			ElseIf $aMatches[2] = "GUICtrlCreateGroup" Then
+				$sCtrlType = "Group"
+				$inGroup = True
 			Else
 				ContinueLoop
 			EndIf
 
-			$iCtrlCounter += 1
-			Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Type", $sCtrlType)
+			If $iTabParentIndex > -1 And $inTab Then
+				$iChildCounter += 1
+				$sJsonString = ".Controls[" & $iTabParentIndex & "].Tabs[" & $iTabCounter & "].Controls[" & $iChildCounter & "]"
+			Else
+				If Not $inGroup Then
+					$iCtrlCounter += 1
+				EndIf
+				$sJsonString = ".Controls[" & $iCtrlCounter & "]"
+			EndIf
+
+			If $inGroup Then
+				If $sCtrlType = "Group" Then
+					Local $aGroupParams = StringSplit($aMatches[3], ",")
+					If @error Then Return SetError(2, $iLineCounter)
+					If $aGroupParams[0] < 3 Then Return SetError(2, $iLineCounter)
+					If _FormatParameter($aGroupParams[2]) = -99 And _FormatParameter($aGroupParams[3]) = -99 Then
+						$inGroup = False
+						ContinueLoop
+					Else
+						$iCtrlCounter += 1
+						$iGroupParentIndex = $iCtrlCounter
+						$iChildCounter = -1
+						$sJsonString = ".Controls[" & $iGroupParentIndex & "]"
+					EndIf
+				Else
+					$iChildCounter += 1
+					$sJsonString = ".Controls[" & $iGroupParentIndex & "].Controls[" & $iChildCounter & "]"
+				EndIf
+			EndIf
+
+			Json_Put($objOutput, $sJsonString & ".Type", $sCtrlType)
 
 			If $oVariables.Exists($aMatches[1]) Then
 				$sScope = $oVariables.Item($aMatches[1])
 			EndIf
 			If $aMatches[0] = "Global" Or $sScope = "Global" Then
-				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Global", 1)
+				Json_Put($objOutput, $sJsonString & ".Global", 1)
 			Else
-				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Global", 0)
+				Json_Put($objOutput, $sJsonString & ".Global", 0)
 			EndIf
 
-			Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Name", $aMatches[1])
-			$lastCtrlID = $aMatches[1]
+			Json_Put($objOutput, $sJsonString & ".Name", $aMatches[1])
 
 			$aParamMatches = StringRegExp($aMatches[3], '(?im)(.+?)(?:$|(?:,\s*(?:BitOR\()(.*?)\)(?:,\s*(?:BitOR)\((.*?)\))?))', $STR_REGEXPARRAYGLOBALMATCH)
 			If Not @error Then
@@ -892,7 +1007,7 @@ Func _importAu3File()
 				If @error Then Return SetError(2, $iLineCounter)
 			EndIf
 
-			Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Text", StringReplace(StringStripWS($aParams[1], $STR_STRIPLEADING + $STR_STRIPTRAILING), '"', ''))
+			Json_Put($objOutput, $sJsonString & ".Text", _removeQuotes(StringStripWS($aParams[1], $STR_STRIPLEADING + $STR_STRIPTRAILING)))
 
 			If $aParams[0] < 3 Then
 				Return SetError(2, $iLineCounter)
@@ -901,34 +1016,35 @@ Func _importAu3File()
 			If $aParams[0] > 1 Then
 				$sParam = _FormatParameter($aParams[2])
 				If @error Then Return SetError(3, $iLineCounter)
-				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Left", $sParam)
+				Json_Put($objOutput, $sJsonString & ".Left", $sParam)
 			EndIf
 			If $aParams[0] > 2 Then
 				$sParam = _FormatParameter($aParams[3])
 				If @error Then Return SetError(3, $iLineCounter)
-				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Top", $sParam)
+				Json_Put($objOutput, $sJsonString & ".Top", $sParam)
 			EndIf
 			If $aParams[0] > 3 Then
 				$sParam = _FormatParameter($aParams[4])
 				If @error Then Return SetError(3, $iLineCounter)
-				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Width", $sParam)
+				Json_Put($objOutput, $sJsonString & ".Width", $sParam)
 			EndIf
 			If $aParams[0] > 4 Then
 				$sParam = _FormatParameter($aParams[5])
 				If @error Then Return SetError(3, $iLineCounter)
-				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Height", $sParam)
+				Json_Put($objOutput, $sJsonString & ".Height", $sParam)
 			EndIf
 			If $aParams[0] > 5 Then
 				$sParam = _FormatParameter($aParams[6])
-				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].styleString", $sParam)
+				Json_Put($objOutput, $sJsonString & ".styleString", $sParam)
 			EndIf
-			Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Locked", False)
+			Json_Put($objOutput, $sJsonString & ".Locked", False)
 
 		EndIf
 
 	Next
-	Json_Put($objOutput, ".Main.numctrls", $iCtrlCounter)
-	Local $aKeys = $oVariables.Keys()
+	Json_Put($objOutput, ".Main.numctrls", $iCtrlCounter + 1)
+
+;~ 	ConsoleWrite(Json_Encode($objOutput, $Json_PRETTY_PRINT) & @CRLF)
 
 	Return $objOutput
 EndFunc   ;==>_importAu3File
@@ -941,3 +1057,9 @@ Func _FormatParameter($sParam)
 		Return SetError(1, 0, $sParam)
 	EndIf
 EndFunc   ;==>_FormatParameter
+
+Func _removeQuotes($sParam)
+	Local $sRet = StringRegExpReplace($sParam, '["' & "'" & ']', "")
+	If @error Then Return $sParam
+	Return $sRet
+EndFunc   ;==>_removeQuotes
