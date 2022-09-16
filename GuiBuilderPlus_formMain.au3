@@ -1485,6 +1485,7 @@ Func _onMouseMove()
 					Case "Combo", "Checkbox", "Radio"
 						$pos = ControlGetPos($hGUI, '', $oCtrl.grippies.East)
 
+						$oSelected.StartResizing()
 						$oCtrls.mode = $resize_e
 
 						_move_mouse_to_grippy($pos[0], $pos[1])

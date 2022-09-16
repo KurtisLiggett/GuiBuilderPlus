@@ -13,9 +13,12 @@
 ;
 ; Revisions
 ;  09/14/2022 ...:	- FIXED:	#include's are now more dynamic (don't include constants unless they are needed)
+;					- FIXED:	Removed extra GuiCreateTabItem("") for each tab
 ;					- FIXED:	Extra GuiCreateTabItem("") for each tab
+;					- FIXED:	Radio and Checkbox control size when drawing
 ;					- ADDED:	Button styles BS_LEFT, BS_RIGHT
 ;					- ADDED:	Import/parse an existing AU3 file as GUI
+;					- CHANGED:	Cleaner generated code by spacing Tabs and Groups
 ;
 ;  08/28/2022 ...:	- FIXED:	Paste multiple controls into group or tab controls
 ;					- FIXED:	"Select all" is more responsive
