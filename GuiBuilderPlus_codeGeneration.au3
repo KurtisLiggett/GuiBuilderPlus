@@ -58,7 +58,7 @@ Func _code_generation()
 		$includes &= _generate_includes($oCtrl, $includes)
 
 		;generate controls
-		$controls &= _generate_controls($oCtrl, $sDpiScale)
+		$controls &= _generate_controls($controls, $oCtrl, $sDpiScale)
 	Next
 	If $globals[$globalsIndex] = "Global " Then
 		$globals[$globalsIndex] = ""
@@ -217,7 +217,7 @@ EndFunc   ;==>_functionDoc
 ; Title...........: _generate_controls
 ; Description.....: generate the code for the controls
 ;------------------------------------------------------------------------------
-Func _generate_controls(Const $oCtrl, $sDpiScale, $isChild = False)
+Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = False)
 	If $oCtrl.Type = "TabItem" Then Return ""
 	If Not $isChild And $oCtrl.CtrlParent <> 0 Then Return ""
 
@@ -254,14 +254,21 @@ Func _generate_controls(Const $oCtrl, $sDpiScale, $isChild = False)
 
 	; The general template is GUICtrlCreateXXX( "text", left, top [, width [, height [, style [, exStyle]]] )
 	; but some controls do not use this.... Avi, Icon, Menu, Menuitem, Progress, Tabitem, TreeViewitem, updown
-	Local $mControls
+	Local $mControls = ""
 
 	Local $scopeString = "Global"
 	If Not ($oCtrl.Global = $GUI_CHECKED) Then $scopeString = "Local"
 
+	Switch $oCtrl.Type
+		Case "Tab", "Group"
+			If $sControls <> "" And Not (StringRight($sControls, 4) = (@CRLF & @CRLF)) Then
+				$mControls &= @CRLF
+			EndIf
+	EndSwitch
+
 	Switch StringStripWS($oCtrl.Name, $STR_STRIPALL) <> ''
 		Case True
-			$mControls = $scopeString & " $" & $oCtrl.Name & " = "
+			$mControls &= $scopeString & " $" & $oCtrl.Name & " = "
 	EndSwitch
 
 	Switch $oCtrl.Type
@@ -281,10 +288,10 @@ Func _generate_controls(Const $oCtrl, $sDpiScale, $isChild = False)
 				$mControls &= 'GUICtrlCreateTabItem("' & $oTab.Text & '")' & @CRLF
 
 				For $oTabCtrl In $oTab.ctrls.Items()
-					$mControls &= _generate_controls($oTabCtrl, $sDpiScale, True)
+					$mControls &= _generate_controls($sControls, $oTabCtrl, $sDpiScale, True)
 				Next
 			Next
-			$mControls &= 'GUICtrlCreateTabItem("")' & @CRLF
+			$mControls &= 'GUICtrlCreateTabItem("")' & @CRLF & @CRLF
 
 		Case "Updown"
 			$mControls &= "GUICtrlCreateInput" & '("' & $oCtrl.Text & '", ' & $ltwh & $ctrlStyle & ')' & @CRLF
@@ -311,10 +318,10 @@ Func _generate_controls(Const $oCtrl, $sDpiScale, $isChild = False)
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & $ctrlStyle & ')' & @CRLF
 
 			For $oGroupCtrl In $oCtrl.ctrls.Items()
-				$mControls &= _generate_controls($oGroupCtrl, $sDpiScale, True)
+				$mControls &= _generate_controls($sControls, $oGroupCtrl, $sDpiScale, True)
 			Next
 
-			$mControls &= 'GUICtrlCreateGroup("", -99, -99, 1, 1)' & @CRLF
+			$mControls &= 'GUICtrlCreateGroup("", -99, -99, 1, 1)' & @CRLF & @CRLF
 
 		Case Else
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & $ctrlStyle & ')' & @CRLF
