@@ -756,20 +756,6 @@ Func _importAu3File()
 			ContinueLoop
 		EndIf
 
-
-		;check for variable declaration
-		$aMatches = StringRegExp($sLine, '(?im)^\s*(Global|Local)\s*(.+?)\s*(?:$|=)', $STR_REGEXPARRAYGLOBALMATCH)
-		If Not @error Then
-			Local $aVars = StringSplit(StringReplace($aMatches[1], "$", ""), ",")
-			If @error Then
-				$oVariables.Item(StringReplace($aMatches[1], "$", "")) = $aMatches[0]
-			Else
-				For $i = 1 To $aVars[0]
-					$oVariables.Item(StringStripWS($aVars[$i], $STR_STRIPLEADING + $STR_STRIPTRAILING)) = $aMatches[0]
-				Next
-			EndIf
-		EndIf
-
 		;check line for GUICtrlSetFont
 		$aMatches = StringRegExp($sLine, '(?im)\s*(?:GUICtrlSetFont)\s*\((.+?),\s*(.+?)\s*(?:,|\))', $STR_REGEXPARRAYGLOBALMATCH)
 		If Not @error Then
@@ -787,6 +773,57 @@ Func _importAu3File()
 				EndIf
 			EndIf
 			ContinueLoop
+		EndIf
+
+		;check line for GUICtrlSetBkColor
+		$aMatches = StringRegExp($sLine, '(?im)\s*(?:GUICtrlSetBkColor)\s*\((.+?),\s*(.+?)\s*(?:,|\))', $STR_REGEXPARRAYGLOBALMATCH)
+		If Not @error Then
+			If $aMatches[0] = "-1" Then
+				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Background", $aMatches[1])
+			Else
+				Local $sName = StringReplace($aMatches[0], "$", "")
+				If $oVariables.Exists($sName) Then
+					For $i = 0 To $iCtrlCounter
+						If Json_Get($objOutput, ".Controls[" & $i & "].Name") = $sName Then
+							Json_Put($objOutput, ".Controls[" & $i & "].Background", $aMatches[1])
+							ExitLoop
+						EndIf
+					Next
+				EndIf
+			EndIf
+			ContinueLoop
+		EndIf
+
+		;check line for GUICtrlSetColor
+		$aMatches = StringRegExp($sLine, '(?im)\s*(?:GUICtrlSetColor)\s*\((.+?),\s*(.+?)\s*(?:,|\))', $STR_REGEXPARRAYGLOBALMATCH)
+		If Not @error Then
+			If $aMatches[0] = "-1" Then
+				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Color", $aMatches[1])
+			Else
+				Local $sName = StringReplace($aMatches[0], "$", "")
+				If $oVariables.Exists($sName) Then
+					For $i = 0 To $iCtrlCounter
+						If Json_Get($objOutput, ".Controls[" & $i & "].Name") = $sName Then
+							Json_Put($objOutput, ".Controls[" & $i & "].Color", $aMatches[1])
+							ExitLoop
+						EndIf
+					Next
+				EndIf
+			EndIf
+			ContinueLoop
+		EndIf
+
+		;check for variable declaration
+		$aMatches = StringRegExp($sLine, '(?im)^\s*(Global|Local)\s*(.+?)\s*(?:$|=)', $STR_REGEXPARRAYGLOBALMATCH)
+		If Not @error Then
+			Local $aVars = StringSplit(StringReplace($aMatches[1], "$", ""), ",")
+			If @error Then
+				$oVariables.Item(StringReplace($aMatches[1], "$", "")) = $aMatches[0]
+			Else
+				For $i = 1 To $aVars[0]
+					$oVariables.Item(StringStripWS($aVars[$i], $STR_STRIPLEADING + $STR_STRIPTRAILING)) = $aMatches[0]
+				Next
+			EndIf
 		EndIf
 
 		;check line for standard gui/ctrl create format
