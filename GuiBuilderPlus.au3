@@ -12,7 +12,7 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  09/14/2022 ...:	- FIXED:	#include's are now more dynamic (don't include constants unless they are needed)
+;  09/17/2022 ...:	- FIXED:	#include's are now more dynamic (don't include constants unless they are needed)
 ;					- FIXED:	Removed extra GuiCreateTabItem("") for each tab
 ;					- FIXED:	Extra GuiCreateTabItem("") for each tab
 ;					- FIXED:	Radio and Checkbox control size when drawing
