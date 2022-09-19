@@ -12,208 +12,12 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Revisions
-;  09/17/2022 ...:	- FIXED:	#include's are now more dynamic (don't include constants unless they are needed)
-;					- FIXED:	Removed extra GuiCreateTabItem("") for each tab
-;					- FIXED:	Extra GuiCreateTabItem("") for each tab
-;					- FIXED:	Radio and Checkbox control size when drawing
-;					- ADDED:	Button styles BS_LEFT, BS_RIGHT
-;					- ADDED:	Import/parse an existing AU3 file as GUI
-;					- CHANGED:	Cleaner generated code by spacing Tabs and Groups
-;
-;  08/28/2022 ...:	- FIXED:	Paste multiple controls into group or tab controls
-;					- FIXED:	"Select all" is more responsive
-;
-;  07/12/2022 ...:	- FIXED:	Crash when using Ctrl+O shortcut key
-;					- FIXED:	GUI should not close when cancelling the save dialog
-;					- ADDED:	Ability to add child controls to Tabs
-;					- ADDED:	Ability to add child controls to Groups
-;					- ADDED:	Ability to lock controls to prevent from moving, resizing, deleting
-;					- ADDED:	New Styles tab to set GUI and control styles
-;					- ADDED:	Font size property
-;					- ADDED:	Shortcut key Ctrl+A to select all in code preview
-;					- CHANGED:	Properties list is now in alphabetical order
-;
-;  07/03/2022 ...:	- FIXED:	Color and Background values of 0x000000 were saved as -1
-;					- FIXED:	Setting "Paste at mouse position" incorrect behavior when turned off
-;					- FIXED:	Error when saving GUI to file
-;					- FIXED:	Crash when loading GUI file and resizing control
-;					- FIXED:	Improved GUI file load times
-;					- ADDED:	"Save As..." menu item (File manu)
-;					- ADDED:	Change background color of checkbox and radio controls
-;					- CHANGED:	You can now draw "on top of" other controls (instead of switching to selection)
-;					- CHANGED:	GUI definition files now use json formatting to prepare for future features
-;
-;  06/26/2022 ...: 	- FIXED:	UpDown control shrinks when dragging
-;					- FIXED:	Missing ListView icon in compiled app
-;					- FIXED:	Fixed clicking away from certain controls
-;					- FIXED:	Clicking a blank area should end the drawing, but did not work for some controls (combo, updown)
-;					- FIXED:	Multiple tab controls should not be allowed
-;					- FIXED:	Flickering when selecting and moving controls
-;					- FIXED:	Selection rectangle should not snap to grid
-;					- FIXED:	Grid disappears in some situations when clicking with no controls on the form
-;					- ADDED:	Hide tooltip when selecting more than 4 items
-;					- ADDED:	Allow a select number of keyboard shortcuts from tool window (ex: Press F5 to test the GUI after adjusting properties)
-;					- ADDED:	Better handling of IP control
-;					- MAINT;	Improved selection rectangle (again)
-;					- MAINT:	Improved some of the behind-the-scenes object handling
-;					- MAINT:	Significant speed improvements with object explorer
-;					- MAINT:	Other general speed improvements
-;
-;  06/10/2022 ...: 	- FIXED:	Lots of handling of copy+paste scenarios
-;					- FIXED:	Tooltip when resizing multiple controls
-;					- FIXED:	Changed the selection rectangle so controls don't bounce around during right-to-left selection anymore
-;					- FIXED:	Right-click when multiple controls are selected
-;					- FIXED:	Lagging when dragging many controls at once
-;					- FIXED:	Improved a lot of flickering when dragging things
-;					- FIXED:	Select a control after drawing (instead of drawing on top of it)
-;					- ADDED:	New menu item, shortcut key Ctrl+X, and context menu item to 'Cut' selected controls
-;					- ADDED:	Cut/Copy/Paste will now maintain relative positions and spacing
-;					- ADDED:	When pasting with Ctrl+V, control will follow mouse waiting to be placed by single click
-;								When pasting with menu or right-click, control will be placed at mouse position
-;					- ADDED:	Resizing multiple-selected controls will resize proportionally as a group
-;					- ADDED:	Resize using any of the selected grippies, not just the last selected
-;					- ADDED:	Status messages for changing some settings (F3, F7)
-;					- ADDED:	Tool button icons now built into the exe, so resources folder is not necessary to run
-;					- ADDED:	Improved selection detection
-;									Left-to-right selection requires entire control to be in the rectangle
-;									Right-to-left selection selects anything that crosses the rectangle
-;					- ADDED:	Right-click menu items: Arrange-> Align left/center/right, top/middle/bottom, space vertical/horizontal
-;					- ADDED:	Ask to save (definition) dialog when closing, only when a change was detected since the last save
-;					- MAINT:	Added logging function and debug flag for testing/development
-;					- MAINT:	Downgraded to AutoIT v3.3.14.5 for personal reasons (removed maps)
-;					- UPDATED:	Better startup loading, so windows open at the same time
-;					- UPDATED:	Better redrawing with working with multiple controls
-;					- UPDATED:	Reverted back to standard edit box for code preview due to more issues with rich edit than it was worth
-;					- REMOVED:	DPI scaling - not reliable enough to keep for now
-;
-;  06/04/2022 ...: 	- FIXED:	Window position bugs when no INI file. Also better handling of off-screen situations
-;					- FIXED:	Primary and secondary mouse clicks not detected outside default area if GUI is resized
-;					- ADDED:	Setting to create GUI as a function
-;					- ADDED:	Property to declare control as Global or Local
-;					- ADDED:	Listview control
-;					- ADDED:	IP Address control
-;					- ADDED:	Changed code generation preview to Rich Text with syntax highlighting using RESH UDF by Beege
-;					- UPDATED:	Updated menu layout - settings under tools, About under help, added online support
-;					- UPDATED:	Added Sleep(100) to generated code While loop
-;
-;  06/02/2022 ...: 	- FIXED:	Array subscript error when closing tool windows.
-;					- FIXED:	Multiple selection while holding Ctrl key now works properly.
-;					- FIXED:	Save/load GUI height with menus
-;					- ADDED:	Show grippies on each selected control! Each control object now has a built-in grippy object
-;					- ADDED:	Menu items can not be added and removed from the object explorer only
-;					- REMOVED:	Prompt to save to au3 file. User can always use File menu to save/export
-;					- UPDATED:	modified the About dialog text for a more detailed description and naming history
-;					- MAINT:	cleaned up more global variables
-;					- MAINT:	made control selection much more robust and consistent
-;
-;  05/23/2022 ...: 	- ADDED:	Now you can set properties for the main GUI!
-;					- ADDED:	Added file menu item "Export to au3" for a more convenient and obvious way to save the generated code
-;					- ADDED:	Keyboard shortcuts to save to (Ctrl+S) or load from (Ctrl+O) definition file
-;					- ADDED:	Keyboard shortcut (Ctrl+A) and edit menu item to select all controls
-;					- ADDED:	Save window positions
-;					- ADDED:	Started implementation of main menu controls (no menu items yet)
-;					- ADDED:	Setting to generate code using OnEvent mode or Msg mode
-;					- ADDED:	Move control's creation order up or down the tree
-;					- ADDED:	Selecting a control will also highlight it in the object explorer (single select only, for now)
-;					- FIXED:	Wrong GUI width and height displayed in the titlebar at startup
-;					- FIXED:	Control names not applied when loading from agd definition file
-;					- FIXED:	Text looked slightly different in design vs runtime
-;					- FIXED:	Property Inspector window did not minimize/restore with the main GUI
-;					- FIXED:	Inconsistencies with displayed vs saved vs loaded GUI sizes
-;					- FIXED:	Controls not cleared when re-loading agd file
-;					- FIXED:	Sanitized some of the property inputs for invalid entry or removal (ex: -1 or "")
-;					- UPDATE:	More code generation improvements
-;
-;  05/19/2022 ...: 	- UPDATE:	Converted maps to objects using AutoItObject UDF
-;					- UPDATE:	Changed to new style of property inspector using GUIScrollBars_Ex UDF by Melba23
-;					- FIXED:	Better handling in Object Explorer for controls with no name
-;					- FIXED:	Delete certain tab items caused a program crash
-;					- FIXED:	Pasted control was offset from mouse position
-;					- FIXED:	Paste from Edit menu pasted off-screen, now pastes offset from copied control
-;					- ADDED:	Added setting to apply a DPI scaling factor to the size and position properties (includes function to get DPI factor)
-;					- ADDED:	Added 'New Tab' and 'Delete Tab' items in Object Explorer right-click context menu
-;					- MAINT:	Cleaned up old commented-out code
-;					- KNOWN ISSUE: Property tabs other than 'Main' are temporarily removed
-;
-;  05/13/2022 ...: 	- FIXED:	Tab control not showing when grid is on
-;					- FIXED:	Tab control and tab item creation now should work properly
-;					- FIXED:	Right-click menu deletes wrong item
-;					- FIXED:	Right-click context menu showing wrong/duplicate items
-;					- FIXED:	Fixed crash when changing properties of multiple controls at once (now works great for aligning controls!)
-;					- FIXED:	Text and name properties were limited to only the characters that could fit in the box
-;					- FIXED:	Spaces in Name property will now be replaced with underscores _
-;					- ADDED:	New tab and delete tab context menu items
-;					- ADDED:	Text color property for labels (works on multiple selection)
-;					- ADDED:	Background color property for labels (works on multiple selection)
-;					- ADDED:	New statusbar to show messages instead of popups and splash screens
-;					- UPDATED:	Better positioning of extra tool windows
-;					- UPDATED:	Arrow keys will now "nudge" the controls by 1 px, Ctrl+arrow key will move the controls by 10px
-;					- UPDATED:	Copy+Paste should not change the control text
-;					- UPDATED:	Changed object explorer from listview to treeview to show tab items
-;					- KNOWN ISSUE:	Deleting a Tab control also deletes the property inspector!
-;
-;  05/11/2022 ...: 	- FIXED: object explorer and code viewer not updated after .agd load
-;					- FIXED: object explorer not updated after copy/paste
-;					- FIXED: properties not disabled after finish drawing (also caused property crash)
-;					- FIXED: All "Main" properties now function properly - other tabs still not implemented yet (will most likely crash)
-;					- FIXED: skipped mouse click after closing one of the tool windows
-;					- FIXED: Drag move of selection broken after last update
-;					- ADDED: Copy menu item (edit menu)
-;					- ADDED: Paste menu item (edit menu)
-;					- ADDED: Duplicate menu item (edit menu or Ctrl+D) <- copy+paste with offset (try it and see)
-;					- ADDED: Minimize/restore the program
-;					- ADDED: Increase/decrease properties with arrow keys or mouse scroll
-;					- ADDED: Keyboard shortcut (F5) to run/test the form
-;					- ADDED: First pass at function description template (insert comment for function title based on template file)
-;					- UPDATED: Changed the look of the properties inspector (still a work in progress)
-;					- UPDATED: Changed icon to be more in line with original GuiBuilder
-;					- UPDATED: Modified code generation to cleaner layout (in my opinion)
-;					- UPDATED: Modified test function to use _TempFile()
-;					- REMOVED: Vals menu item (edit menu) - superseded by new object explorer
-;
-;  05/10/2022 ...: 	- ADDED: Object Explorer window to display the list of objects (view, select, and delete from list)
-;					- ADDED: Last tool stays selected for multiple creation. Clicking away stops drawing.
-;					- ADDED: "_" back for default control names
-;					- FIXED: Issue with controls getting mixed up after deleting
-;					- FIXED: More intuitive/responsive clicking on and away from controls
-;					- FIXED: Graphic glitch when creating a new combobox
-;					- FIXED: Graphic glitch when clearing all controls
-;					- FIXED: Updown control invalid generated code
-;					- FIXED: Weird selection behavior when Updown control exists
-;					- FIXED: Pic control not showing the bitmap on drawing or generated GUI
-;					- FIXED: View Code dialog state not saved when clicking close[X] button
-;					- Other: Changed default text from Button1 to Button 1 (space)
-;
-;  05/08/2022 ...: 	- FIXED BUG: last control was always selected and moved after resizing or moving the GUI
-;					- FIXED BUG: minor formatting issues with generated GUICtrlCreate function names
-;					- FIXED BUG: crash/failure when dragging .adb definition file onto compiled exe
-;					- FIXED BUG: cannot properly change text or name properties
-;					- FIXED BUG(?): generated code did not match control names in the properties toolbar
-;					- FIXED BUG: if ini directory did not exist, could not write to ini file
-;					- ADDED: Live Generated Code dialog to view/save the generated code (View menu)
-;					- ADDED: Test GUI to preview the GUI (Tools menu)
-;					- ADDED: Nudge controls by 1 pixel (or nearest grid space) with arrow keys
-;					- ADDED: Keyboard shortcut to turn grid on/off
-;					- ADDED: Keyboard shortcut to turn grid snap on/off
-;					- More efficient INI file reading
-;					- New program icon
-;					- Removed MouseOnEvent UDF for now, causing crashes when clicking on anything - didn't want to investigate
-;					- Updated/cleaned up AutoIt3Wrapper options
-;					- Fixed some Local Const declaration issues
-;					- Fixed 'state' tab vertical spacing
-;					- Tidy'd code
-;					- Started organizing code, breaking up into manageable chunks
-;					- Started reigning in the sporadic use of Global/local variables
-;					- Started documenting functions
-;					- Removed/updated some antiquated references and functions
-;					- Updated to latest StringSize UDF
+;  09/19/2022 ...:	- CHANGED:	More sophisticated handling of AutoIt3.exe location
 ;
 ; Roadmap .......:	- Support for Msg or OnEvent mode attached to controls
-;					- Add control alignment buttons (left, right, top, bottom)
 ;					- Finish control properties tabs
-;					- creating controls on top of TAB will place them inside the tab
-;					- creating controls on top of GROUP will place them inside the group
 ;					- Undo / Redo functionality
+;					- Windows' theme support
 ;
 ; ===============================================================================================================================
 
@@ -221,7 +25,7 @@
 #AutoIt3Wrapper_Res_HiDpi=y
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.0.0-beta3.exe
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.0.0-beta4.exe
 #AutoIt3Wrapper_Res_Fileversion=1.0.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 1.ico
@@ -387,7 +191,7 @@ Func _main()
 	$oClipboard = _objCtrls()
 	$oMain = _objMain()
 	$oMain.AppName = "GuiBuilderPlus"
-	$oMain.AppVersion = "1.0.0-beta3"
+	$oMain.AppVersion = "1.0.0-beta4"
 	$oMain.Title = StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1)
 	$oMain.Name = "hGUI"
 	$oMain.Width = 400
