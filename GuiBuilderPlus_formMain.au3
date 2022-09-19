@@ -1743,12 +1743,17 @@ Func _onTestGUI()
 
 	;run the temporary file
 	If Not FileExists($au3InstallPath) Then
-		Local $sFileOpenDialog = FileOpenDialog("Select AutoIt3.exe", @ProgramFilesDir, "(*.exe)", $FD_FILEMUSTEXIST, "AutoIt3.exe")
-		If @error Then
-			MsgBox(1, "Error", "Could not find AutoIt3.exe")
-			Return
+		If Not FileExists(@ProgramFilesDir & "\AutoIt3\AutoIt3.exe") Then
+			Local $sFileOpenDialog = FileOpenDialog("Select AutoIt3.exe", @ProgramFilesDir, "(*.exe)", $FD_FILEMUSTEXIST, "AutoIt3.exe")
+			If @error Then
+				MsgBox(1, "Error", "Could not find AutoIt3.exe")
+				Return
+			Else
+				$au3InstallPath = $sFileOpenDialog
+				IniWrite($sIniPath, "Settings", "AutoIt3FullPath", $au3InstallPath)
+			EndIf
 		Else
-			$au3InstallPath = $sFileOpenDialog
+			$au3InstallPath = @ProgramFilesDir & "\AutoIt3\AutoIt3.exe"
 		EndIf
 	EndIf
 ;~ 	Local $filename = StringRegExpReplace($testFileName, "^.*\\", "")
@@ -2292,7 +2297,7 @@ EndFunc   ;==>_ctrl_change_global
 
 Func _ctrl_change_FontSize()
 	Local $new_data = $oProperties_Ctrls.properties.FontSize.value
-	If $new_data = "" or $new_data = "8.5" Then
+	If $new_data = "" Or $new_data = "8.5" Then
 		$oProperties_Ctrls.properties.FontSize.value = 8.5
 		$new_data = -1
 	ElseIf Not StringRegExp($new_data, '^[1-9]\d*(\.\d+)?$') Then
@@ -2321,7 +2326,7 @@ Func _ctrl_change_FontSize()
 	EndSwitch
 
 	_refreshGenerateCode()
-EndFunc   ;==>_ctrl_change_global
+EndFunc   ;==>_ctrl_change_FontSize
 
 
 Func _ctrl_pick_Color()

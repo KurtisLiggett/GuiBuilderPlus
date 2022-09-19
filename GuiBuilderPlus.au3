@@ -295,7 +295,7 @@ Global $right_click = False
 Global $left_click = False
 Global $bResizedFlag
 Global $testFileName, $TestFilePID = 0, $bReTest = 0, $aTestGuiPos, $hTestGui
-Global $au3InstallPath = @ProgramFilesDir & "\AutoIt3\AutoIt3.exe"
+Global $au3InstallPath
 Global $initDraw, $initResize
 Global $hSelectionGraphic = -1
 
@@ -433,6 +433,10 @@ Func _main()
 	GUISetState(@SW_SHOWNOACTIVATE, $hFormGenerateCode)
 	_GUICtrlEdit_SetSel($editCodeGeneration, 0, 0)
 	GUISwitch($hGUI)
+
+	;check au3 exe path
+	$au3InstallPath = IniRead($sIniPath, "Settings", "AutoIt3FullPath", "")
+	If StringInStr(@AutoItExe, "\AutoIt3.exe") Or StringInStr(@AutoItExe, "\AutoIt3_x64.exe") Then $au3InstallPath = @AutoItExe
 
 	Local $statusDelay = 3000
 	Static $startTimer = False
