@@ -1142,6 +1142,7 @@ Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, 
 
 	If Not $tabChild Then
 		$oCtrl.grippies.show()
+
 	EndIf
 	$oMain.hasChanged = True
 EndFunc   ;==>_change_ctrl_size_pos
@@ -1227,3 +1228,76 @@ Func _recall_overlay()
 		$hSelectionGraphic = -1
 	EndIf
 EndFunc   ;==>_recall_overlay
+
+
+;_objAction()_updateActionStacks
+Func _updateActionStacks($oActionObject = 0)
+	Local $aTemp[0]
+
+	;if not an object, clear the stacks
+	If Not IsObj($oActionObject) Then
+		$aStackUndo = $aTemp
+		$aStackRedo = $aTemp
+		Return
+	EndIf
+
+	;add this action to the undo stack
+	_ArrayAdd($aStackUndo, $oActionObject)
+
+	;clear the redo stack
+	$aStackRedo = $aTemp
+EndFunc
+
+
+Func _undo()
+	ConsoleWrite("Undo" & @CRLF)
+	Local $size = UBound($aStackUndo)
+
+
+	If $size > 0 Then
+		;perform the inverse of the saved action
+		Local $oAction = $aStackUndo[$size-1]
+		Switch $oAction.action
+			Case $action_nudgeCtrl
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+;~ 				_ArrayDisplay($aActionParams)
+;~ 				_change_ctrl_size_pos($aActionCtrls[0], -1 * $aActionParams[0], -1 * $aActionParams[1], Default, Default)
+;~ 				$oCtrl = $aActionCtrls[0]
+;~ 				_change_ctrl_size_pos($oCtrl, $oCtrl.Left - $aActionParams[0], $oCtrl.Top - $aActionParams[1], $oCtrl.Width, $oCtrl.Height)
+				_nudgeSelected(-1 * $aActionParams[0], -1 * $aActionParams[1], $aActionCtrls)
+
+		EndSwitch
+
+		;move from undo stack to redo stack
+		_ArrayAdd($aStackRedo, $aStackUndo[$size-1])
+		_ArrayDelete($aStackUndo, $size-1)
+	EndIf
+EndFunc
+
+
+Func _redo()
+	ConsoleWrite("Redo" & @CRLF)
+	Local $size = UBound($aStackRedo)
+
+
+	If $size > 0 Then
+		;perform the action
+		Local $oAction = $aStackRedo[$size-1]
+		Switch $oAction.action
+			Case $action_nudgeCtrl
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+;~ 				$oCtrl = $aActionCtrls[0]
+;~ 				_change_ctrl_size_pos($oCtrl, $oCtrl.Left + $aActionParams[0], $oCtrl.Top + $aActionParams[1], $oCtrl.Width, $oCtrl.Height)
+				_nudgeSelected($aActionParams[0], $aActionParams[1], $aActionCtrls)
+
+		EndSwitch
+
+		;move from redo stack to undo stack
+		_ArrayAdd($aStackUndo, $aStackRedo[$size-1])
+		_ArrayDelete($aStackRedo, $size-1)
+	EndIf
+EndFunc
+
+

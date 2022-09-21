@@ -91,6 +91,7 @@ Global Enum $mode_default, $mode_draw, $mode_drawing, $mode_init_move, $mode_ini
 Global Enum $props_Main, $props_Ctrls
 ; Cursor Consts - added by: Jaberwacky
 Global Const $ARROW = 2, $CROSS = 3, $SIZE_ALL = 9, $SIZENESW = 10, $SIZENS = 11, $SIZENWSE = 12, $SIZEWS = 13
+Global Enum $action_nudgeCtrl
 
 
 ;other variables
@@ -105,6 +106,7 @@ Global $hSelectionGraphic = -1
 
 ;Control Objects
 Global $oMain, $oCtrls, $oSelected, $oClipboard, $oMouse
+Global $aStackUndo[0], $aStackRedo[0]
 
 ; added by: TheSaint (most are my own, others just not declared)
 Global $AgdOutFile, $lfld, $mygui

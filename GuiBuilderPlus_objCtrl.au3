@@ -1423,3 +1423,21 @@ Func _Styles_ListView()
 
 	Return $oDict
 EndFunc   ;==>_Styles_ListView
+
+
+
+;------------------------------------------------------------------------------
+; Title...........: _objAction
+; Description.....:	action object for undo/redo
+;------------------------------------------------------------------------------
+Func _objAction()
+	Local $oObject = _AutoItObject_Create()
+
+	Local $aTemp[0]
+	_AutoItObject_AddProperty($oObject, "action", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, $aTemp)
+	_AutoItObject_AddProperty($oObject, "parameters", $ELSCOPE_PUBLIC, $aTemp)
+
+	Return $oObject
+EndFunc   ;==>_objCtrls
+

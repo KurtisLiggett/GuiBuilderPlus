@@ -184,6 +184,9 @@ Func _formToolbar()
 
 	;create the Edit menu
 	Local $menu_edit = GUICtrlCreateMenu("Edit")
+	Local $menu_undo = GUICtrlCreateMenuItem("Undo" & @TAB & "Ctrl+Z", $menu_edit)
+	Local $menu_redo = GUICtrlCreateMenuItem("Redo" & @TAB & "Ctrl+Y", $menu_edit)
+	GUICtrlCreateMenuItem("", $menu_edit)
 	Local $menu_cut = GUICtrlCreateMenuItem("Cut" & @TAB & "Ctrl+X", $menu_edit)
 	Local $menu_copy = GUICtrlCreateMenuItem("Copy" & @TAB & "Ctrl+C", $menu_edit)
 	Local $menu_paste = GUICtrlCreateMenuItem("Paste" & @TAB & "Ctrl+V", $menu_edit)
@@ -194,7 +197,8 @@ Func _formToolbar()
 
 	GUICtrlSetState($menu_wipe, $GUI_DISABLE)
 
-	GUICtrlSetOnEvent($menu_cut, "_cut_selected")
+	GUICtrlSetOnEvent($menu_undo, "_onUndo")
+	GUICtrlSetOnEvent($menu_redo, "_onRedo")
 	GUICtrlSetOnEvent($menu_copy, "_copy_selected")
 	GUICtrlSetOnEvent($menu_paste, "_onMenuPasteSelected")
 	GUICtrlSetOnEvent($menu_duplicate, "_onDuplicate")
@@ -450,8 +454,10 @@ Func _set_accelerators()
 	Local Const $accel_s = GUICtrlCreateDummy()
 	Local Const $accel_o = GUICtrlCreateDummy()
 	Local Const $accel_F5 = GUICtrlCreateDummy()
+	Local Const $accel_z = GUICtrlCreateDummy()
+	Local Const $accel_y = GUICtrlCreateDummy()
 
-	Local Const $accelerators[19][2] = _
+	Local Const $accelerators[21][2] = _
 			[ _
 			["{Delete}", $accel_delete], _
 			["^x", $accel_x], _
@@ -471,7 +477,9 @@ Func _set_accelerators()
 			["{F7}", $menu_show_grid], _
 			["{F5}", $accel_F5], _
 			["^s", $accel_s], _
-			["^o", $accel_o] _
+			["^o", $accel_o], _
+			["^z", $accel_z], _
+			["^y", $accel_y] _
 			]
 	GUISetAccelerators($accelerators, $hGUI)
 
@@ -503,6 +511,8 @@ Func _set_accelerators()
 	GUICtrlSetOnEvent($accel_s, "_onSaveGui")
 	GUICtrlSetOnEvent($accel_o, "_onload_gui_definition")
 	GUICtrlSetOnEvent($accel_F5, "_onTestGUI")
+	GUICtrlSetOnEvent($accel_z, "_onUndo")
+	GUICtrlSetOnEvent($accel_y, "_onRedo")
 EndFunc   ;==>_set_accelerators
 #EndRegion formMain
 
@@ -864,16 +874,22 @@ EndFunc   ;==>_onKeyCtrlRight
 ; Title...........: _nudgeSelected
 ; Description.....: nudge control 1 space
 ;------------------------------------------------------------------------------
-Func _nudgeSelected($x = 0, $y = 0)
+Func _nudgeSelected($x = 0, $y = 0, $aUndoCtrls = 0)
 	GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 	$oCtrls.mode = $mode_default
 
 ;~ 	Local $nudgeAmount = ($setting_snap_grid) ? $grid_ticks : 1
 	Local $nudgeAmount = 1
 	Local $adjustmentX = 0, $adjustmentX = 0
-	Local $count = $oSelected.count
-	For $oCtrl In $oSelected.ctrls.Items()
 
+	Local $aCtrls
+	If IsArray($aUndoCtrls) Then
+		$aCtrls = $aUndoCtrls
+	Else
+		$aCtrls = $oSelected.ctrls.Items()
+	EndIf
+
+	For $oCtrl In $aCtrls
 		$adjustmentX = Mod($oCtrl.Left, $nudgeAmount)
 		If $adjustmentX > 0 Then
 			If $x = 1 Then
@@ -905,6 +921,16 @@ Func _nudgeSelected($x = 0, $y = 0)
 	;get last control
 	Local $oCtrlLast = $oSelected.getLast()
 	_populate_control_properties_gui($oCtrlLast)
+
+	;store the undo action
+	If Not IsArray($aUndoCtrls) Then
+		Local $oAction = _objAction()
+		$oAction.action = $action_nudgeCtrl
+		$oAction.ctrls = $aCtrls
+		Local $aParams[2] = [$x, $y]
+		$oAction.parameters = $aParams
+		_updateActionStacks($oAction)
+	EndIf
 
 	_refreshGenerateCode()
 EndFunc   ;==>_nudgeSelected
@@ -1136,6 +1162,17 @@ EndFunc   ;==>_onContextMenuPasteSelected
 Func _onMenuSelectAll()
 	_selectAll()
 EndFunc   ;==>_onMenuSelectAll
+
+
+Func _onUndo()
+	_undo()
+EndFunc
+
+Func _onRedo()
+	_redo()
+EndFunc
+
+
 
 
 #Region mouse events
@@ -2473,6 +2510,8 @@ Func _wipe_current_gui()
 
 	_refreshGenerateCode()
 	_formObjectExplorer_updateList()
+
+	_updateActionStacks()
 EndFunc   ;==>_wipe_current_gui
 
 
