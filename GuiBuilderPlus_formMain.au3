@@ -1350,6 +1350,7 @@ Func _onMousePrimaryUp()
 
 		Case $mode_init_move
 			_log("** PrimaryUp: init_move **")
+			ToolTip('')
 
 			ConsoleWrite("Start [" & $oMouse.StartX & ", " & $oMouse.StartY & @CRLF)
 			Local $aMousePos = MouseGetPos()
@@ -1364,6 +1365,7 @@ Func _onMousePrimaryUp()
 			_updateActionStacks($oAction)
 
 ;~ 			_set_default_mode()
+			$oCtrls.mode = $mode_default
 
 			;we don't care what was dragged, we just want to populate based on latest selection
 			;to prevent mouse 'falling off' of control when dropped
@@ -1588,6 +1590,8 @@ Func _onMouseMove()
 		Case $mode_default
 			If IsObj($oCtrls.clickedCtrl) Then
 				$oCtrls.mode = $mode_init_move
+				$oMouse.X = $oMouse.StartX
+				$oMouse.Y = $oMouse.StartY
 			EndIf
 
 		Case $mode_init_move, $mode_paste
