@@ -69,7 +69,7 @@ Func _formMain()
 
 	;create the background and context menu
 	$background = GUICtrlCreateGraphic(0, 0, $oMain.Width, $oMain.Height) ; used to show a grid --- GUICtrlCreatePic($blank_bmp, 0, 0, 0, 0) ; used to show a grid
-	GUICtrlSetState($background, $GUI_DISABLE)
+;~ 	GUICtrlSetState($background, $GUI_DISABLE)
 	$background_contextmenu = GUICtrlCreateContextMenu(GUICtrlCreateDummy())
 	$background_contextmenu_paste = GUICtrlCreateMenuItem("Paste", $background_contextmenu)
 	;menu events
@@ -1189,6 +1189,7 @@ Func _onMousePrimaryDown()
 
 	Local $aDrawStartPos = GUIGetCursorInfo($hGUI)
 	Local $ctrl_hwnd = $aDrawStartPos[4]
+	ConsoleWrite("ID " & $ctrl_hwnd & @CRLF)
 
 	Local $aMousePos = MouseGetPos()
 	;check if over an IP control as it has no ID
@@ -1266,6 +1267,8 @@ Func _onMousePrimaryDown()
 					_set_default_mode()
 					_set_current_mouse_pos(1)
 
+					$oCtrls.clickedCtrl = 0
+
 					$oCtrls.mode = $mode_init_selection
 
 					Local $aMousePos = MouseGetPos()
@@ -1273,7 +1276,15 @@ Func _onMousePrimaryDown()
 					$oMouse.StartY = $aMousePos[1]
 
 				Case Else
-					If Not $oCtrls.exists($ctrl_hwnd) Then Return
+;~ 					_log("  other control")
+					If Not $oCtrls.exists($ctrl_hwnd) Then
+						$oCtrls.clickedCtrl = 0
+						Return
+					EndIf
+
+					Local $aMousePos = MouseGetPos()
+					$oMouse.StartX = $aMousePos[0]
+					$oMouse.StartY = $aMousePos[1]
 
 					Local $oCtrl = $oCtrls.get($ctrl_hwnd)
 
@@ -1327,6 +1338,7 @@ EndFunc   ;==>_onMousePrimaryDown
 Func _onMousePrimaryUp()
 	$left_click = False
 	Local $ctrl_hwnd, $oCtrl, $updateObjectExplorer
+	$oCtrls.clickedCtrl = 0
 
 	Switch $oCtrls.mode
 		Case $mode_drawing
@@ -1338,7 +1350,32 @@ Func _onMousePrimaryUp()
 
 		Case $mode_init_move
 			_log("** PrimaryUp: init_move **")
-			_set_default_mode()
+
+			ConsoleWrite("Start [" & $oMouse.StartX & ", " & $oMouse.StartY & @CRLF)
+			Local $aMousePos = MouseGetPos()
+			ConsoleWrite("End [" & $aMousePos[0] & ", " & $aMousePos[1] & "]" & @CRLF)
+
+			;update the undo action stack
+			Local $oAction = _objAction()
+			$oAction.action = $action_moveCtrl
+			$oAction.ctrls = $oSelected.ctrls.Items()
+			Local $aParams[2] = [$aMousePos[0] - $oMouse.StartX, $aMousePos[1] - $oMouse.StartY]
+			$oAction.parameters = $aParams
+			_updateActionStacks($oAction)
+
+;~ 			_set_default_mode()
+
+			;we don't care what was dragged, we just want to populate based on latest selection
+			;to prevent mouse 'falling off' of control when dropped
+			$oCtrl = $oSelected.getLast()
+			If IsObj($oCtrl) Then
+				_populate_control_properties_gui($oCtrl)
+			EndIf
+
+			If $oSelected.count > 0 Then
+				_refreshGenerateCode()
+			EndIf
+			_showProperties()
 
 		Case $mode_init_selection
 			_log("** PrimaryUp: init_selection **")
@@ -1548,7 +1585,12 @@ Func _onMouseMove()
 				$oCtrls.mode = $mode_default
 			EndIf
 
-		Case $mode_init_move, $mode_default, $mode_paste
+		Case $mode_default
+			If IsObj($oCtrls.clickedCtrl) Then
+				$oCtrls.mode = $mode_init_move
+			EndIf
+
+		Case $mode_init_move, $mode_paste
 ;~ 			_log("MOVE:  Moving")
 			Local Const $mouse_pos = _mouse_snap_pos()
 
@@ -1602,9 +1644,9 @@ Func _onMouseMove()
 				ToolTip("")
 			EndIf
 
-			If Not $oCtrls.mode = $mode_paste Then
-				$oCtrls.mode = $mode_default
-			EndIf
+;~ 			If Not $oCtrls.mode = $mode_paste Then
+;~ 				$oCtrls.mode = $mode_default
+;~ 			EndIf
 
 		Case $mode_init_selection
 ;~ 			_log("MOVE:  Selection")

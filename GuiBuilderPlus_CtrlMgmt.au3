@@ -1261,10 +1261,11 @@ Func _undo()
 			Case $action_nudgeCtrl
 				Local $aActionCtrls = $oAction.ctrls
 				Local $aActionParams = $oAction.parameters
-;~ 				_ArrayDisplay($aActionParams)
-;~ 				_change_ctrl_size_pos($aActionCtrls[0], -1 * $aActionParams[0], -1 * $aActionParams[1], Default, Default)
-;~ 				$oCtrl = $aActionCtrls[0]
-;~ 				_change_ctrl_size_pos($oCtrl, $oCtrl.Left - $aActionParams[0], $oCtrl.Top - $aActionParams[1], $oCtrl.Width, $oCtrl.Height)
+				_nudgeSelected(-1 * $aActionParams[0], -1 * $aActionParams[1], $aActionCtrls)
+
+			Case $action_moveCtrl
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
 				_nudgeSelected(-1 * $aActionParams[0], -1 * $aActionParams[1], $aActionCtrls)
 
 		EndSwitch
@@ -1288,8 +1289,11 @@ Func _redo()
 			Case $action_nudgeCtrl
 				Local $aActionCtrls = $oAction.ctrls
 				Local $aActionParams = $oAction.parameters
-;~ 				$oCtrl = $aActionCtrls[0]
-;~ 				_change_ctrl_size_pos($oCtrl, $oCtrl.Left + $aActionParams[0], $oCtrl.Top + $aActionParams[1], $oCtrl.Width, $oCtrl.Height)
+				_nudgeSelected($aActionParams[0], $aActionParams[1], $aActionCtrls)
+
+			Case $action_moveCtrl
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
 				_nudgeSelected($aActionParams[0], $aActionParams[1], $aActionCtrls)
 
 		EndSwitch
