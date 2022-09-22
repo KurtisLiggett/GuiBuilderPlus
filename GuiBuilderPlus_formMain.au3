@@ -1352,9 +1352,7 @@ Func _onMousePrimaryUp()
 			_log("** PrimaryUp: init_move **")
 			ToolTip('')
 
-			ConsoleWrite("Start [" & $oMouse.StartX & ", " & $oMouse.StartY & @CRLF)
 			Local $aMousePos = MouseGetPos()
-			ConsoleWrite("End [" & $aMousePos[0] & ", " & $aMousePos[1] & "]" & @CRLF)
 
 			;update the undo action stack
 			Local $oAction = _objAction()
@@ -1392,6 +1390,7 @@ Func _onMousePrimaryUp()
 
 		Case $resize_nw, $resize_n, $resize_ne, $resize_e, $resize_se, $resize_s, $resize_sw, $resize_w
 			_log("** PrimaryUp: Resize **")
+
 			ToolTip('')
 
 			For $oCtrl In $oSelected.ctrls.Items()
@@ -1415,6 +1414,22 @@ Func _onMousePrimaryUp()
 					_delete_selected_controls()
 					_set_default_mode()
 				EndIf
+			Else
+				;update the undo action stack
+				Local $oAction = _objAction()
+				$oAction.action = $action_resizeCtrl
+				$oAction.ctrls = $oSelected.ctrls.Items()
+				Local $aParams[$oSelected.ctrls.Count]
+				Local $aParam[4]
+				For $i=0 To UBound($oAction.ctrls)-1
+					$aParam[0] = $oAction.ctrls[$i].PrevWidth
+					$aParam[1] = $oAction.ctrls[$i].PrevHeight
+					$aParam[2] = $oAction.ctrls[$i].Width
+					$aParam[3] = $oAction.ctrls[$i].Height
+					$aParams[$i] = $aParam
+				Next
+				$oAction.parameters = $aParams
+				_updateActionStacks($oAction)
 			EndIf
 
 			If $oCtrlSelectedFirst.Type = 'Pic' Then

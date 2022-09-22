@@ -1268,6 +1268,20 @@ Func _undo()
 				Local $aActionParams = $oAction.parameters
 				_nudgeSelected(-1 * $aActionParams[0], -1 * $aActionParams[1], $aActionCtrls)
 
+			Case $action_resizeCtrl
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				_SendMessage($hGUI, $WM_SETREDRAW, False)
+				Local $aParams
+				For $i=0 To UBound($aActionCtrls)-1
+					$aParams = $aActionParams[$i]
+					_change_ctrl_size_pos($aActionCtrls[$i], Default, Default, $aParams[0], $aParams[1])
+				Next
+				_SendMessage($hGUI, $WM_SETREDRAW, True)
+				_WinAPI_RedrawWindow($hGUI)
+				_populate_control_properties_gui($oSelected.getFirst())
+
 		EndSwitch
 
 		;move from undo stack to redo stack
@@ -1295,6 +1309,20 @@ Func _redo()
 				Local $aActionCtrls = $oAction.ctrls
 				Local $aActionParams = $oAction.parameters
 				_nudgeSelected($aActionParams[0], $aActionParams[1], $aActionCtrls)
+
+			Case $action_resizeCtrl
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				_SendMessage($hGUI, $WM_SETREDRAW, False)
+				Local $aParams
+				For $i=0 To UBound($aActionCtrls)-1
+					$aParams = $aActionParams[$i]
+					_change_ctrl_size_pos($aActionCtrls[$i], Default, Default, $aParams[2], $aParams[3])
+				Next
+				_SendMessage($hGUI, $WM_SETREDRAW, True)
+				_WinAPI_RedrawWindow($hGUI)
+				_populate_control_properties_gui($oSelected.getFirst())
 
 		EndSwitch
 
