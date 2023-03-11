@@ -1261,6 +1261,7 @@ Func _onMousePrimaryDown()
 
 		Case $mode_default
 			_log("** PrimaryDown: default **")
+			ConsoleWrite($ctrl_hwnd & @CRLF)
 			Switch $ctrl_hwnd
 				Case $background
 					_log("  background")
