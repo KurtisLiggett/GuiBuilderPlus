@@ -521,6 +521,8 @@ Func _objCtrls_startResizing($oSelf)
 		$oCtrl.resizePrevTop = $mouse_pos[1]
 		$oCtrl.PrevWidth = $oCtrl.Width
 		$oCtrl.PrevHeight = $oCtrl.Height
+		$oCtrl.PrevLeft = $oCtrl.Left
+		$oCtrl.PrevTop = $oCtrl.Top
 	Next
 EndFunc   ;==>_objCtrls_startResizing
 #EndRegion objCtrls
@@ -552,6 +554,8 @@ Func _objCtrl($oParent)
 	_AutoItObject_AddProperty($oObject, "Height", $ELSCOPE_PUBLIC, 1)
 	_AutoItObject_AddProperty($oObject, "PrevWidth", $ELSCOPE_PUBLIC, 1)
 	_AutoItObject_AddProperty($oObject, "PrevHeight", $ELSCOPE_PUBLIC, 1)
+	_AutoItObject_AddProperty($oObject, "PrevLeft", $ELSCOPE_PUBLIC, 1)
+	_AutoItObject_AddProperty($oObject, "PrevTop", $ELSCOPE_PUBLIC, 1)
 	_AutoItObject_AddProperty($oObject, "Visible", $ELSCOPE_PUBLIC, True)
 	_AutoItObject_AddProperty($oObject, "Enabled", $ELSCOPE_PUBLIC, True)
 	_AutoItObject_AddProperty($oObject, "Focus", $ELSCOPE_PUBLIC, False)

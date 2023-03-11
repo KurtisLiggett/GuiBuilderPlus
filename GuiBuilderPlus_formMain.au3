@@ -1421,12 +1421,16 @@ Func _onMousePrimaryUp()
 				$oAction.action = $action_resizeCtrl
 				$oAction.ctrls = $oSelected.ctrls.Items()
 				Local $aParams[$oSelected.ctrls.Count]
-				Local $aParam[4]
+				Local $aParam[8]
 				For $i=0 To UBound($oAction.ctrls)-1
 					$aParam[0] = $oAction.ctrls[$i].PrevWidth
 					$aParam[1] = $oAction.ctrls[$i].PrevHeight
 					$aParam[2] = $oAction.ctrls[$i].Width
 					$aParam[3] = $oAction.ctrls[$i].Height
+					$aParam[4] = $oAction.ctrls[$i].PrevLeft
+					$aParam[5] = $oAction.ctrls[$i].PrevTop
+					$aParam[6] = $oAction.ctrls[$i].Left
+					$aParam[7] = $oAction.ctrls[$i].Top
 					$aParams[$i] = $aParam
 				Next
 				$oAction.parameters = $aParams

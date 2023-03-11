@@ -1303,7 +1303,7 @@ Func _undo()
 				Local $aParams
 				For $i=0 To UBound($aActionCtrls)-1
 					$aParams = $aActionParams[$i]
-					_change_ctrl_size_pos($aActionCtrls[$i], Default, Default, $aParams[0], $aParams[1])
+					_change_ctrl_size_pos($aActionCtrls[$i], $aParams[4], $aParams[5], $aParams[0], $aParams[1])
 				Next
 				_SendMessage($hGUI, $WM_SETREDRAW, True)
 				_WinAPI_RedrawWindow($hGUI)
@@ -1376,7 +1376,7 @@ Func _redo()
 				Local $aParams
 				For $i=0 To UBound($aActionCtrls)-1
 					$aParams = $aActionParams[$i]
-					_change_ctrl_size_pos($aActionCtrls[$i], Default, Default, $aParams[2], $aParams[3])
+					_change_ctrl_size_pos($aActionCtrls[$i], $aParams[6], $aParams[7], $aParams[2], $aParams[3])
 				Next
 				_SendMessage($hGUI, $WM_SETREDRAW, True)
 				_WinAPI_RedrawWindow($hGUI)
