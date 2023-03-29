@@ -639,6 +639,17 @@ Func _left_top_union_rect($oObjCtrls = 0)
 		EndIf
 	Next
 
+	For $oCtrl In $oObjCtrls.ctrls.Items()
+
+		If Int(($oCtrl.Left - $smallest.Left) + $oCtrl.Width) > Int($smallest.Width) Then
+			$smallest.Width = Int(($oCtrl.Left - $smallest.Left) + $oCtrl.Width)
+		EndIf
+
+		If Int(($oCtrl.Top - $smallest.Top) + $oCtrl.Height) > Int($smallest.Height) Then
+			$smallest.Height = Int(($oCtrl.Top - $smallest.Top)  + $oCtrl.Height)
+		EndIf
+	Next
+
 	Return $smallest
 EndFunc   ;==>_left_top_union_rect
 
@@ -730,6 +741,7 @@ Func _PasteSelected($bDuplicate = False, $bAtMouse = False)
 	Switch $clipboard_count >= 1
 		Case True
 			Local $oNewCtrl, $i = 0
+			Local $iPosX = -1, $iPosY = -1
 
 			For $oCtrl In $oClipboard.ctrls.Items()
 				;create a copy, so we don't overwrite the original!
@@ -745,11 +757,14 @@ Func _PasteSelected($bDuplicate = False, $bAtMouse = False)
 					$oNewCtrl.Left = $oMouse.StartX
 					$oNewCtrl.Top = $oMouse.StartY
 				Else
-					$oNewCtrl.Left = ($oMouse.X - $topLeftRect.Left) + $oNewCtrl.Left
-					$oNewCtrl.Top = ($oMouse.Y - $topLeftRect.Top) + $oNewCtrl.Top
+					Local $mouse_pos = _mouse_snap_pos()
+					$oNewCtrl.Left = ($mouse_pos[0] - $topLeftRect.Left) + $oNewCtrl.Left
+					$oNewCtrl.Top = ($mouse_pos[1] - $topLeftRect.Height) + ($oNewCtrl.Top - $topLeftRect.Top)
+;~ 					$iPosX = $oMouse.X
+;~ 					$iPosY = $oMouse.Y
 				EndIf
 
-				$aNewCtrls[$i] = _create_ctrl($oNewCtrl, 0, -1, -1, -1, $bDuplicate)
+				$aNewCtrls[$i] = _create_ctrl($oNewCtrl, 0, $iPosX, $iPosY, -1, $bDuplicate)
 
 				$i += 1
 			Next
@@ -768,10 +783,15 @@ Func _PasteSelected($bDuplicate = False, $bAtMouse = False)
 			Next
 	EndSwitch
 
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_pasteCtrl
+	$oAction.ctrls = $aNewCtrls
+	_updateActionStacks($oAction)
 
-	If Not $bDuplicate And Not $bAtMouse And $setting_paste_pos And $oSelected.count > 0 Then
-		$oCtrls.mode = $mode_paste
-	EndIf
+;~ 	If Not $bDuplicate And Not $bAtMouse And $setting_paste_pos And $oSelected.count > 0 Then
+;~ 		$oCtrls.mode = $mode_paste
+;~ 	EndIf
 
 ;~ 	If $bDuplicate Then
 ;~ 		For $i = 0 To UBound($aNewCtrls) - 1
@@ -1347,6 +1367,11 @@ Func _undo()
 				_formObjectExplorer_updateList()
 				_refreshGenerateCode()
 
+			Case $action_pasteCtrl
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+				_deleteCtrls($aActionCtrls)
+
 			Case $action_changeBkColor
 				Local $aActionCtrls = $oAction.ctrls
 				Local $aActionParams = $oAction.parameters
@@ -1457,6 +1482,24 @@ Func _redo()
 				Local $aActionCtrls = $oAction.ctrls
 				Local $aActionParams = $oAction.parameters
 				_deleteCtrls($aActionCtrls)
+
+			Case $action_pasteCtrl
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				_SendMessage($hGUI, $WM_SETREDRAW, False)
+				Local $prevHwnd, $oNewCtrl
+				For $i=0 To UBound($aActionCtrls)-1
+					ConsoleWrite("$i: " & $i & @CRLF)
+					$prevHwnd = $aActionCtrls[$i].Hwnd
+					$oNewCtrl = _create_ctrl($aActionCtrls[$i])
+					ConsoleWrite(Hex($oNewCtrl.Hwnd,8) & @CRLF)
+					_remove_all_from_selected()
+				Next
+				_SendMessage($hGUI, $WM_SETREDRAW, True)
+				_WinAPI_RedrawWindow($hGUI)
+				_formObjectExplorer_updateList()
+				_refreshGenerateCode()
 
 			Case $action_changeBkColor
 				Local $aActionCtrls = $oAction.ctrls
