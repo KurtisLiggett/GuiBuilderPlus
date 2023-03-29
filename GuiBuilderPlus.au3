@@ -13,10 +13,10 @@
 ;
 ; Revisions
 ;  09/19/2022 ...:	- CHANGED:	More sophisticated handling of AutoIt3.exe location
+;  03/29/2023 ...:	- Added:	Undo / redo functionality
 ;
 ; Roadmap .......:	- Support for Msg or OnEvent mode attached to controls
 ;					- Finish control properties tabs
-;					- Undo / Redo functionality
 ;					- Windows' theme support
 ;
 ; ===============================================================================================================================
