@@ -988,16 +988,36 @@ Func _remove_all_from_selected()
 EndFunc   ;==>_remove_all_from_selected
 
 Func _delete_selected_controls()
+	_deleteCtrls()
+EndFunc
+
+Func _deleteCtrls($aCtrlsIn = 0)
 	GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 	$oCtrls.mode = $mode_default
 
-	Local Const $sel_count = $oSelected.count
+	Local $undo
+	If IsArray($aCtrlsIn) Then
+		$undo = True
+	Else
+		$aCtrlsIn = $oSelected.ctrls.Items()
+	EndIf
+	Local $Count = UBound($aCtrlsIn)
 
-	Switch $sel_count >= 1
+	Switch $Count >= 1
 		Case True
 			_SendMessage($hGUI, $WM_SETREDRAW, False)
-			For $oCtrl In $oSelected.ctrls.Items()
+
+			Local $oAction = _objAction()
+			$oAction.action = $action_deleteCtrl
+			Local $aCtrls[UBound($aCtrlsIn)]
+
+			Local $i
+			For $oCtrl In $aCtrlsIn
+				If not $undo Then
+					$aCtrls[$i] = $oSelected.getCopy($oCtrl.Hwnd)
+				EndIf
 				_delete_ctrl($oCtrl)
+				$i += 1
 			Next
 
 			_formObjectExplorer_updateList()
@@ -1008,7 +1028,7 @@ Func _delete_selected_controls()
 
 			_refreshGenerateCode()
 
-			If $oSelected.count > 0 Then
+			If $Count > 0 Then
 				_populate_control_properties_gui($oSelected.getFirst())
 				_showProperties($props_Ctrls)
 			Else
@@ -1017,6 +1037,12 @@ Func _delete_selected_controls()
 
 			_SendMessage($hGUI, $WM_SETREDRAW, True)
 			_WinAPI_RedrawWindow($hGUI)
+
+			If not $undo Then
+				;update the undo action stack
+				$oAction.ctrls = $aCtrls
+				_updateActionStacks($oAction)
+			EndIf
 
 			Return True
 
@@ -1142,6 +1168,7 @@ Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, 
 
 	If Not $tabChild Then
 		$oCtrl.grippies.show()
+
 	EndIf
 	$oMain.hasChanged = True
 EndFunc   ;==>_change_ctrl_size_pos
@@ -1227,3 +1254,272 @@ Func _recall_overlay()
 		$hSelectionGraphic = -1
 	EndIf
 EndFunc   ;==>_recall_overlay
+
+
+;_objAction()_updateActionStacks
+Func _updateActionStacks($oActionObject = 0)
+	Local $aTemp[0]
+
+	;if not an object, clear the stacks
+	If Not IsObj($oActionObject) Then
+		$aStackUndo = $aTemp
+		$aStackRedo = $aTemp
+		Return
+	EndIf
+
+	;add this action to the undo stack
+	_ArrayAdd($aStackUndo, $oActionObject)
+
+	;clear the redo stack
+	$aStackRedo = $aTemp
+EndFunc
+
+
+Func _undo()
+	ConsoleWrite("Undo" & @CRLF)
+	Local $size = UBound($aStackUndo)
+
+	If $size > 0 Then
+		;perform the inverse of the saved action
+		Local $oAction = $aStackUndo[$size-1]
+		Switch $oAction.action
+			Case $action_renameCtrl
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+				$aActionCtrls[0].Name = $aActionParams[0]
+				_populate_control_properties_gui($oSelected.getFirst())
+				_formObjectExplorer_updateList()
+				_refreshGenerateCode()
+
+			Case $action_nudgeCtrl
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+				_nudgeSelected(-1 * $aActionParams[0], -1 * $aActionParams[1], $aActionCtrls)
+
+			Case $action_moveCtrl
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+				_nudgeSelected(-1 * $aActionParams[0], -1 * $aActionParams[1], $aActionCtrls)
+
+			Case $action_resizeCtrl
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				_SendMessage($hGUI, $WM_SETREDRAW, False)
+				Local $aParams
+				For $i=0 To UBound($aActionCtrls)-1
+					$aParams = $aActionParams[$i]
+					_change_ctrl_size_pos($aActionCtrls[$i], $aParams[4], $aParams[5], $aParams[0], $aParams[1])
+				Next
+				_SendMessage($hGUI, $WM_SETREDRAW, True)
+				_WinAPI_RedrawWindow($hGUI)
+				_populate_control_properties_gui($oSelected.getFirst())
+				_refreshGenerateCode()
+
+			Case $action_deleteCtrl
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				_SendMessage($hGUI, $WM_SETREDRAW, False)
+				Local $prevHwnd, $oNewCtrl
+				For $i=0 To UBound($aActionCtrls)-1
+					ConsoleWrite("$i: " & $i & @CRLF)
+					$prevHwnd = $aActionCtrls[$i].Hwnd
+					$oNewCtrl = _create_ctrl($aActionCtrls[$i])
+					ConsoleWrite(Hex($oNewCtrl.Hwnd,8) & @CRLF)
+					_remove_all_from_selected()
+;~ 					For $oActionObject In $aStackUndo
+;~ 						For $oActionCtrl In $oActionObject.ctrls
+;~ 							ConsoleWrite("  name: " & $oActionCtrl.Name & @CRLF)
+;~ 							ConsoleWrite("  hwnd: " & $oActionCtrl.Hwnd & @CRLF)
+;~ 							If $oActionCtrl.Hwnd = $prevHwnd Then
+;~ 								ConsoleWrite("  new hwnd: " & $oNewCtrl.Hwnd & @CRLF)
+;~ 								$oActionCtrl.Hwnd = $oNewCtrl.Hwnd
+;~ 								$oActionCtrl.grippies.parent = $oNewCtrl.Hwnd
+;~ 							Else
+;~ 								ConsoleWrite("  no match: " & $oActionCtrl.Hwnd & @CRLF)
+;~ 							EndIf
+;~ 						Next
+;~ 					Next
+				Next
+				_SendMessage($hGUI, $WM_SETREDRAW, True)
+				_WinAPI_RedrawWindow($hGUI)
+				_formObjectExplorer_updateList()
+				_refreshGenerateCode()
+
+			Case $action_changeBkColor
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				_SendMessage($hGUI, $WM_SETREDRAW, False)
+				Local $aParams
+				For $i=0 To UBound($aActionCtrls)-1
+					$aParams = $aActionParams[$i]
+					Local $newColor = $aParams[0]
+					Switch $aActionCtrls[$i].Type
+						Case "Label", "Checkbox", "Radio"
+							If $newColor <> -1 Then
+								GUICtrlSetBkColor($aActionCtrls[$i].Hwnd, $newColor)
+								$aActionCtrls[$i].Background = $newColor
+							Else
+								GUICtrlSetBkColor($aActionCtrls[$i].Hwnd, $defaultGuiBkColor)
+								$aActionCtrls[$i].Background = -1
+							EndIf
+
+					EndSwitch
+				Next
+				_SendMessage($hGUI, $WM_SETREDRAW, True)
+				_WinAPI_RedrawWindow($hGUI)
+				_populate_control_properties_gui($oSelected.getFirst())
+				_refreshGenerateCode()
+
+			Case $action_changeColor
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				_SendMessage($hGUI, $WM_SETREDRAW, False)
+				Local $aParams
+				For $i=0 To UBound($aActionCtrls)-1
+					$aParams = $aActionParams[$i]
+					Local $newColor = $aParams[0]
+
+					If $aActionCtrls[$i].Type = "Label" Then
+						If $newColor <> -1 Then
+							GUICtrlSetColor($aActionCtrls[$i].Hwnd, $newColor)
+						Else
+							GUICtrlDelete($aActionCtrls[$i].Hwnd)
+							$aActionCtrls[$i].Hwnd = GUICtrlCreateLabel($aActionCtrls[$i].Text, $aActionCtrls[$i].Left, $aActionCtrls[$i].Top, $aActionCtrls[$i].Width, $aActionCtrls[$i].Height)
+							$aActionCtrls[$i].Color = -1
+							If $aActionCtrls[$i].Background <> -1 Then
+								GUICtrlSetBkColor($aActionCtrls[$i].Hwnd, $aActionCtrls[$i].Background)
+							EndIf
+						EndIf
+
+						$aActionCtrls[$i].Color = $newColor
+					EndIf
+				Next
+				_SendMessage($hGUI, $WM_SETREDRAW, True)
+				_WinAPI_RedrawWindow($hGUI)
+				_populate_control_properties_gui($oSelected.getFirst())
+				_refreshGenerateCode()
+
+		EndSwitch
+
+		;move from undo stack to redo stack
+		_ArrayAdd($aStackRedo, $aStackUndo[$size-1])
+		_ArrayDelete($aStackUndo, $size-1)
+	EndIf
+EndFunc
+
+
+Func _redo()
+	ConsoleWrite("Redo" & @CRLF)
+	Local $size = UBound($aStackRedo)
+
+	If $size > 0 Then
+		;perform the action
+		Local $oAction = $aStackRedo[$size-1]
+		Switch $oAction.action
+			Case $action_renameCtrl
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+				$aActionCtrls[0].Name = $aActionParams[1]
+				_populate_control_properties_gui($oSelected.getFirst())
+				_formObjectExplorer_updateList()
+				_refreshGenerateCode()
+
+			Case $action_nudgeCtrl
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+				_nudgeSelected($aActionParams[0], $aActionParams[1], $aActionCtrls)
+
+			Case $action_moveCtrl
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+				_nudgeSelected($aActionParams[0], $aActionParams[1], $aActionCtrls)
+
+			Case $action_resizeCtrl
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				_SendMessage($hGUI, $WM_SETREDRAW, False)
+				Local $aParams
+				For $i=0 To UBound($aActionCtrls)-1
+					$aParams = $aActionParams[$i]
+					_change_ctrl_size_pos($aActionCtrls[$i], $aParams[6], $aParams[7], $aParams[2], $aParams[3])
+				Next
+				_SendMessage($hGUI, $WM_SETREDRAW, True)
+				_WinAPI_RedrawWindow($hGUI)
+				_populate_control_properties_gui($oSelected.getFirst())
+				_refreshGenerateCode()
+
+			Case $action_deleteCtrl
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+				_deleteCtrls($aActionCtrls)
+
+			Case $action_changeBkColor
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				_SendMessage($hGUI, $WM_SETREDRAW, False)
+				Local $aParams
+				For $i=0 To UBound($aActionCtrls)-1
+					$aParams = $aActionParams[$i]
+					Local $newColor = $aParams[1]
+					Switch $aActionCtrls[$i].Type
+						Case "Label", "Checkbox", "Radio"
+							If $newColor <> -1 Then
+								GUICtrlSetBkColor($aActionCtrls[$i].Hwnd, $newColor)
+								$aActionCtrls[$i].Background = $newColor
+							Else
+								GUICtrlSetBkColor($aActionCtrls[$i].Hwnd, $defaultGuiBkColor)
+								$aActionCtrls[$i].Background = -1
+							EndIf
+
+					EndSwitch
+				Next
+				_SendMessage($hGUI, $WM_SETREDRAW, True)
+				_WinAPI_RedrawWindow($hGUI)
+				_populate_control_properties_gui($oSelected.getFirst())
+				_refreshGenerateCode()
+
+			Case $action_changeColor
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				_SendMessage($hGUI, $WM_SETREDRAW, False)
+				Local $aParams
+				For $i=0 To UBound($aActionCtrls)-1
+					$aParams = $aActionParams[$i]
+					Local $newColor = $aParams[1]
+
+					If $aActionCtrls[$i].Type = "Label" Then
+						If $newColor <> -1 Then
+							GUICtrlSetColor($aActionCtrls[$i].Hwnd, $newColor)
+						Else
+							GUICtrlDelete($aActionCtrls[$i].Hwnd)
+							$aActionCtrls[$i].Hwnd = GUICtrlCreateLabel($aActionCtrls[$i].Text, $aActionCtrls[$i].Left, $aActionCtrls[$i].Top, $aActionCtrls[$i].Width, $aActionCtrls[$i].Height)
+							$aActionCtrls[$i].Color = -1
+							If $aActionCtrls[$i].Background <> -1 Then
+								GUICtrlSetBkColor($aActionCtrls[$i].Hwnd, $aActionCtrls[$i].Background)
+							EndIf
+						EndIf
+
+						$aActionCtrls[$i].Color = $newColor
+					EndIf
+				Next
+				_SendMessage($hGUI, $WM_SETREDRAW, True)
+				_WinAPI_RedrawWindow($hGUI)
+				_populate_control_properties_gui($oSelected.getFirst())
+				_refreshGenerateCode()
+
+		EndSwitch
+
+		;move from redo stack to undo stack
+		_ArrayAdd($aStackUndo, $aStackRedo[$size-1])
+		_ArrayDelete($aStackRedo, $size-1)
+	EndIf
+EndFunc
+
+

@@ -519,6 +519,10 @@ Func _objCtrls_startResizing($oSelf)
 	For $oCtrl In $oSelf.ctrls.Items()
 		$oCtrl.resizePrevLeft = $mouse_pos[0]
 		$oCtrl.resizePrevTop = $mouse_pos[1]
+		$oCtrl.PrevWidth = $oCtrl.Width
+		$oCtrl.PrevHeight = $oCtrl.Height
+		$oCtrl.PrevLeft = $oCtrl.Left
+		$oCtrl.PrevTop = $oCtrl.Top
 	Next
 EndFunc   ;==>_objCtrls_startResizing
 #EndRegion objCtrls
@@ -537,6 +541,7 @@ Func _objCtrl($oParent)
 	_AutoItObject_AddProperty($oObject, "resizePrevLeft", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "resizePrevTop", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "Hwnd", $ELSCOPE_PUBLIC)
+	_AutoItObject_AddProperty($oObject, "Hwnd", $ELSCOPE_PUBLIC)
 	_AutoItObject_AddProperty($oObject, "Hwnd1", $ELSCOPE_PUBLIC)
 	_AutoItObject_AddProperty($oObject, "Hwnd2", $ELSCOPE_PUBLIC)
 	_AutoItObject_AddProperty($oObject, "Name", $ELSCOPE_PUBLIC, "")
@@ -547,6 +552,10 @@ Func _objCtrl($oParent)
 	_AutoItObject_AddProperty($oObject, "Top", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "Width", $ELSCOPE_PUBLIC, 1)
 	_AutoItObject_AddProperty($oObject, "Height", $ELSCOPE_PUBLIC, 1)
+	_AutoItObject_AddProperty($oObject, "PrevWidth", $ELSCOPE_PUBLIC, 1)
+	_AutoItObject_AddProperty($oObject, "PrevHeight", $ELSCOPE_PUBLIC, 1)
+	_AutoItObject_AddProperty($oObject, "PrevLeft", $ELSCOPE_PUBLIC, 1)
+	_AutoItObject_AddProperty($oObject, "PrevTop", $ELSCOPE_PUBLIC, 1)
 	_AutoItObject_AddProperty($oObject, "Visible", $ELSCOPE_PUBLIC, True)
 	_AutoItObject_AddProperty($oObject, "Enabled", $ELSCOPE_PUBLIC, True)
 	_AutoItObject_AddProperty($oObject, "Focus", $ELSCOPE_PUBLIC, False)
@@ -1423,3 +1432,21 @@ Func _Styles_ListView()
 
 	Return $oDict
 EndFunc   ;==>_Styles_ListView
+
+
+
+;------------------------------------------------------------------------------
+; Title...........: _objAction
+; Description.....:	action object for undo/redo
+;------------------------------------------------------------------------------
+Func _objAction()
+	Local $oObject = _AutoItObject_Create()
+
+	Local $aTemp[0]
+	_AutoItObject_AddProperty($oObject, "action", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "ctrls", $ELSCOPE_PUBLIC, $aTemp)
+	_AutoItObject_AddProperty($oObject, "parameters", $ELSCOPE_PUBLIC, $aTemp)
+
+	Return $oObject
+EndFunc   ;==>_objCtrls
+

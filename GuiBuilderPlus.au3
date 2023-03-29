@@ -13,10 +13,10 @@
 ;
 ; Revisions
 ;  09/19/2022 ...:	- CHANGED:	More sophisticated handling of AutoIt3.exe location
+;  03/29/2023 ...:	- Added:	Undo / redo functionality
 ;
 ; Roadmap .......:	- Support for Msg or OnEvent mode attached to controls
 ;					- Finish control properties tabs
-;					- Undo / Redo functionality
 ;					- Windows' theme support
 ;
 ; ===============================================================================================================================
@@ -91,12 +91,13 @@ Global Enum $mode_default, $mode_draw, $mode_drawing, $mode_init_move, $mode_ini
 Global Enum $props_Main, $props_Ctrls
 ; Cursor Consts - added by: Jaberwacky
 Global Const $ARROW = 2, $CROSS = 3, $SIZE_ALL = 9, $SIZENESW = 10, $SIZENS = 11, $SIZENWSE = 12, $SIZEWS = 13
+Global Enum $action_nudgeCtrl, $action_moveCtrl, $action_resizeCtrl, $action_deleteCtrl, $action_createCtrl, $action_renameCtrl, $action_changeColor, $action_changeBkColor
 
 
 ;other variables
 Global $bStatusNewMessage
 Global $right_click = False
-Global $left_click = False
+Global $left_click = False, $ctrlClicked = False
 Global $bResizedFlag
 Global $testFileName, $TestFilePID = 0, $bReTest = 0, $aTestGuiPos, $hTestGui
 Global $au3InstallPath
@@ -105,6 +106,7 @@ Global $hSelectionGraphic = -1
 
 ;Control Objects
 Global $oMain, $oCtrls, $oSelected, $oClipboard, $oMouse
+Global $aStackUndo[0], $aStackRedo[0]
 
 ; added by: TheSaint (most are my own, others just not declared)
 Global $AgdOutFile, $lfld, $mygui

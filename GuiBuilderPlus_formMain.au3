@@ -69,7 +69,7 @@ Func _formMain()
 
 	;create the background and context menu
 	$background = GUICtrlCreateGraphic(0, 0, $oMain.Width, $oMain.Height) ; used to show a grid --- GUICtrlCreatePic($blank_bmp, 0, 0, 0, 0) ; used to show a grid
-	GUICtrlSetState($background, $GUI_DISABLE)
+;~ 	GUICtrlSetState($background, $GUI_DISABLE)
 	$background_contextmenu = GUICtrlCreateContextMenu(GUICtrlCreateDummy())
 	$background_contextmenu_paste = GUICtrlCreateMenuItem("Paste", $background_contextmenu)
 	;menu events
@@ -184,6 +184,9 @@ Func _formToolbar()
 
 	;create the Edit menu
 	Local $menu_edit = GUICtrlCreateMenu("Edit")
+	Local $menu_undo = GUICtrlCreateMenuItem("Undo" & @TAB & "Ctrl+Z", $menu_edit)
+	Local $menu_redo = GUICtrlCreateMenuItem("Redo" & @TAB & "Ctrl+Y", $menu_edit)
+	GUICtrlCreateMenuItem("", $menu_edit)
 	Local $menu_cut = GUICtrlCreateMenuItem("Cut" & @TAB & "Ctrl+X", $menu_edit)
 	Local $menu_copy = GUICtrlCreateMenuItem("Copy" & @TAB & "Ctrl+C", $menu_edit)
 	Local $menu_paste = GUICtrlCreateMenuItem("Paste" & @TAB & "Ctrl+V", $menu_edit)
@@ -194,7 +197,8 @@ Func _formToolbar()
 
 	GUICtrlSetState($menu_wipe, $GUI_DISABLE)
 
-	GUICtrlSetOnEvent($menu_cut, "_cut_selected")
+	GUICtrlSetOnEvent($menu_undo, "_onUndo")
+	GUICtrlSetOnEvent($menu_redo, "_onRedo")
 	GUICtrlSetOnEvent($menu_copy, "_copy_selected")
 	GUICtrlSetOnEvent($menu_paste, "_onMenuPasteSelected")
 	GUICtrlSetOnEvent($menu_duplicate, "_onDuplicate")
@@ -450,8 +454,10 @@ Func _set_accelerators()
 	Local Const $accel_s = GUICtrlCreateDummy()
 	Local Const $accel_o = GUICtrlCreateDummy()
 	Local Const $accel_F5 = GUICtrlCreateDummy()
+	Local Const $accel_z = GUICtrlCreateDummy()
+	Local Const $accel_y = GUICtrlCreateDummy()
 
-	Local Const $accelerators[19][2] = _
+	Local Const $accelerators[21][2] = _
 			[ _
 			["{Delete}", $accel_delete], _
 			["^x", $accel_x], _
@@ -471,7 +477,9 @@ Func _set_accelerators()
 			["{F7}", $menu_show_grid], _
 			["{F5}", $accel_F5], _
 			["^s", $accel_s], _
-			["^o", $accel_o] _
+			["^o", $accel_o], _
+			["^z", $accel_z], _
+			["^y", $accel_y] _
 			]
 	GUISetAccelerators($accelerators, $hGUI)
 
@@ -503,6 +511,8 @@ Func _set_accelerators()
 	GUICtrlSetOnEvent($accel_s, "_onSaveGui")
 	GUICtrlSetOnEvent($accel_o, "_onload_gui_definition")
 	GUICtrlSetOnEvent($accel_F5, "_onTestGUI")
+	GUICtrlSetOnEvent($accel_z, "_onUndo")
+	GUICtrlSetOnEvent($accel_y, "_onRedo")
 EndFunc   ;==>_set_accelerators
 #EndRegion formMain
 
@@ -864,16 +874,22 @@ EndFunc   ;==>_onKeyCtrlRight
 ; Title...........: _nudgeSelected
 ; Description.....: nudge control 1 space
 ;------------------------------------------------------------------------------
-Func _nudgeSelected($x = 0, $y = 0)
+Func _nudgeSelected($x = 0, $y = 0, $aUndoCtrls = 0)
 	GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 	$oCtrls.mode = $mode_default
 
 ;~ 	Local $nudgeAmount = ($setting_snap_grid) ? $grid_ticks : 1
 	Local $nudgeAmount = 1
 	Local $adjustmentX = 0, $adjustmentX = 0
-	Local $count = $oSelected.count
-	For $oCtrl In $oSelected.ctrls.Items()
 
+	Local $aCtrls
+	If IsArray($aUndoCtrls) Then
+		$aCtrls = $aUndoCtrls
+	Else
+		$aCtrls = $oSelected.ctrls.Items()
+	EndIf
+
+	For $oCtrl In $aCtrls
 		$adjustmentX = Mod($oCtrl.Left, $nudgeAmount)
 		If $adjustmentX > 0 Then
 			If $x = 1 Then
@@ -905,6 +921,16 @@ Func _nudgeSelected($x = 0, $y = 0)
 	;get last control
 	Local $oCtrlLast = $oSelected.getLast()
 	_populate_control_properties_gui($oCtrlLast)
+
+	;store the undo action
+	If Not IsArray($aUndoCtrls) Then
+		Local $oAction = _objAction()
+		$oAction.action = $action_nudgeCtrl
+		$oAction.ctrls = $aCtrls
+		Local $aParams[2] = [$x, $y]
+		$oAction.parameters = $aParams
+		_updateActionStacks($oAction)
+	EndIf
 
 	_refreshGenerateCode()
 EndFunc   ;==>_nudgeSelected
@@ -1138,6 +1164,17 @@ Func _onMenuSelectAll()
 EndFunc   ;==>_onMenuSelectAll
 
 
+Func _onUndo()
+	_undo()
+EndFunc
+
+Func _onRedo()
+	_redo()
+EndFunc
+
+
+
+
 #Region mouse events
 Func _onMousePrimaryDown()
 ;~ 	_WinAPI_Window($hGUI)
@@ -1223,11 +1260,14 @@ Func _onMousePrimaryDown()
 
 		Case $mode_default
 			_log("** PrimaryDown: default **")
+			ConsoleWrite($ctrl_hwnd & @CRLF)
 			Switch $ctrl_hwnd
 				Case $background
 					_log("  background")
 					_set_default_mode()
 					_set_current_mouse_pos(1)
+
+					$oCtrls.clickedCtrl = 0
 
 					$oCtrls.mode = $mode_init_selection
 
@@ -1236,7 +1276,15 @@ Func _onMousePrimaryDown()
 					$oMouse.StartY = $aMousePos[1]
 
 				Case Else
-					If Not $oCtrls.exists($ctrl_hwnd) Then Return
+;~ 					_log("  other control")
+					If Not $oCtrls.exists($ctrl_hwnd) Then
+						$oCtrls.clickedCtrl = 0
+						Return
+					EndIf
+
+					Local $aMousePos = MouseGetPos()
+					$oMouse.StartX = $aMousePos[0]
+					$oMouse.StartY = $aMousePos[1]
 
 					Local $oCtrl = $oCtrls.get($ctrl_hwnd)
 
@@ -1290,6 +1338,7 @@ EndFunc   ;==>_onMousePrimaryDown
 Func _onMousePrimaryUp()
 	$left_click = False
 	Local $ctrl_hwnd, $oCtrl, $updateObjectExplorer
+	$oCtrls.clickedCtrl = 0
 
 	Switch $oCtrls.mode
 		Case $mode_drawing
@@ -1301,7 +1350,32 @@ Func _onMousePrimaryUp()
 
 		Case $mode_init_move
 			_log("** PrimaryUp: init_move **")
-			_set_default_mode()
+			ToolTip('')
+
+			Local $aMousePos = MouseGetPos()
+
+			;update the undo action stack
+			Local $oAction = _objAction()
+			$oAction.action = $action_moveCtrl
+			$oAction.ctrls = $oSelected.ctrls.Items()
+			Local $aParams[2] = [$aMousePos[0] - $oMouse.StartX, $aMousePos[1] - $oMouse.StartY]
+			$oAction.parameters = $aParams
+			_updateActionStacks($oAction)
+
+;~ 			_set_default_mode()
+			$oCtrls.mode = $mode_default
+
+			;we don't care what was dragged, we just want to populate based on latest selection
+			;to prevent mouse 'falling off' of control when dropped
+			$oCtrl = $oSelected.getLast()
+			If IsObj($oCtrl) Then
+				_populate_control_properties_gui($oCtrl)
+			EndIf
+
+			If $oSelected.count > 0 Then
+				_refreshGenerateCode()
+			EndIf
+			_showProperties()
 
 		Case $mode_init_selection
 			_log("** PrimaryUp: init_selection **")
@@ -1316,6 +1390,7 @@ Func _onMousePrimaryUp()
 
 		Case $resize_nw, $resize_n, $resize_ne, $resize_e, $resize_se, $resize_s, $resize_sw, $resize_w
 			_log("** PrimaryUp: Resize **")
+
 			ToolTip('')
 
 			For $oCtrl In $oSelected.ctrls.Items()
@@ -1339,6 +1414,26 @@ Func _onMousePrimaryUp()
 					_delete_selected_controls()
 					_set_default_mode()
 				EndIf
+			Else
+				;update the undo action stack
+				Local $oAction = _objAction()
+				$oAction.action = $action_resizeCtrl
+				$oAction.ctrls = $oSelected.ctrls.Items()
+				Local $aParams[$oSelected.ctrls.Count]
+				Local $aParam[8]
+				For $i=0 To UBound($oAction.ctrls)-1
+					$aParam[0] = $oAction.ctrls[$i].PrevWidth
+					$aParam[1] = $oAction.ctrls[$i].PrevHeight
+					$aParam[2] = $oAction.ctrls[$i].Width
+					$aParam[3] = $oAction.ctrls[$i].Height
+					$aParam[4] = $oAction.ctrls[$i].PrevLeft
+					$aParam[5] = $oAction.ctrls[$i].PrevTop
+					$aParam[6] = $oAction.ctrls[$i].Left
+					$aParam[7] = $oAction.ctrls[$i].Top
+					$aParams[$i] = $aParam
+				Next
+				$oAction.parameters = $aParams
+				_updateActionStacks($oAction)
 			EndIf
 
 			If $oCtrlSelectedFirst.Type = 'Pic' Then
@@ -1511,7 +1606,14 @@ Func _onMouseMove()
 				$oCtrls.mode = $mode_default
 			EndIf
 
-		Case $mode_init_move, $mode_default, $mode_paste
+		Case $mode_default
+			If IsObj($oCtrls.clickedCtrl) Then
+				$oCtrls.mode = $mode_init_move
+				$oMouse.X = $oMouse.StartX
+				$oMouse.Y = $oMouse.StartY
+			EndIf
+
+		Case $mode_init_move, $mode_paste
 ;~ 			_log("MOVE:  Moving")
 			Local Const $mouse_pos = _mouse_snap_pos()
 
@@ -1565,9 +1667,9 @@ Func _onMouseMove()
 				ToolTip("")
 			EndIf
 
-			If Not $oCtrls.mode = $mode_paste Then
-				$oCtrls.mode = $mode_default
-			EndIf
+;~ 			If Not $oCtrls.mode = $mode_paste Then
+;~ 				$oCtrls.mode = $mode_default
+;~ 			EndIf
 
 		Case $mode_init_selection
 ;~ 			_log("MOVE:  Selection")
@@ -2017,6 +2119,14 @@ Func _ctrl_change_name()
 
 	Local Const $sel_count = $oSelected.count
 
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_renameCtrl
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[2] = [$oAction.ctrls[0].Name, $oProperties_Ctrls.properties.Name.value]
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
+
 	If $sel_count = 1 Then
 		Local $oCtrl = $oSelected.getFirst()
 		If $oCtrl.Locked Then Return
@@ -2062,6 +2172,14 @@ Func _ctrl_change_left()
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
+
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_moveCtrl
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[2] = [$oProperties_Ctrls.properties.Left.value - $oAction.ctrls[0].Left, 0]
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
 
 	Switch $sel_count >= 1
 		Case True
@@ -2109,6 +2227,14 @@ Func _ctrl_change_top()
 
 	Local Const $sel_count = $oSelected.count
 
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_moveCtrl
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[2] = [0, $oProperties_Ctrls.properties.Top.value - $oAction.ctrls[0].Top]
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
+
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
@@ -2154,6 +2280,26 @@ Func _ctrl_change_width()
 
 	Local Const $sel_count = $oSelected.count
 
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_resizeCtrl
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[8]
+	For $i=0 To UBound($oAction.ctrls)-1
+		$aParam[0] = $oAction.ctrls[$i].Width
+		$aParam[1] = $oAction.ctrls[$i].Height
+		$aParam[2] = $oProperties_Ctrls.properties.Width.value
+		$aParam[3] = $oAction.ctrls[$i].Height
+		$aParam[4] = $oAction.ctrls[$i].Left
+		$aParam[5] = $oAction.ctrls[$i].Top
+		$aParam[6] = $oAction.ctrls[$i].Left
+		$aParam[7] = $oAction.ctrls[$i].Top
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
+
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
@@ -2189,6 +2335,26 @@ Func _ctrl_change_height()
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
+
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_resizeCtrl
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[8]
+	For $i=0 To UBound($oAction.ctrls)-1
+		$aParam[0] = $oAction.ctrls[$i].Width
+		$aParam[1] = $oAction.ctrls[$i].Height
+		$aParam[2] = $oAction.ctrls[$i].Width
+		$aParam[3] = $oProperties_Ctrls.properties.Height.value
+		$aParam[4] = $oAction.ctrls[$i].Left
+		$aParam[5] = $oAction.ctrls[$i].Top
+		$aParam[6] = $oAction.ctrls[$i].Left
+		$aParam[7] = $oAction.ctrls[$i].Top
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
 
 	Switch $sel_count >= 1
 		Case True
@@ -2230,6 +2396,7 @@ EndFunc   ;==>_ctrl_pick_bkColor
 
 Func _ctrl_change_bkColor()
 	Local $colorInput = $oProperties_Ctrls.properties.Background.value
+	Local $newColor = $colorInput
 	If $colorInput = "" Then
 		$colorInput = -1
 		$oProperties_Ctrls.properties.Background.value = -1
@@ -2238,6 +2405,20 @@ Func _ctrl_change_bkColor()
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
+
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_changeBkColor
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[2]
+	For $i=0 To UBound($oAction.ctrls)-1
+		$aParam[0] = $oAction.ctrls[$i].Background
+		$aParam[1] = $colorInput
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
 
 	Switch $sel_count >= 1
 		Case True
@@ -2341,6 +2522,7 @@ EndFunc   ;==>_ctrl_pick_Color
 
 Func _ctrl_change_Color()
 	Local $colorInput = $oProperties_Ctrls.properties.Color.value
+	Local $newColor = $colorInput
 	If $colorInput = "" Then
 		$colorInput = -1
 		$oProperties_Ctrls.properties.Color.value = -1
@@ -2349,6 +2531,20 @@ Func _ctrl_change_Color()
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
+
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_changeColor
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[2]
+	For $i=0 To UBound($oAction.ctrls)-1
+		$aParam[0] = $oAction.ctrls[$i].Color
+		$aParam[1] = $colorInput
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
 
 	Switch $sel_count >= 1
 		Case True
@@ -2473,6 +2669,8 @@ Func _wipe_current_gui()
 
 	_refreshGenerateCode()
 	_formObjectExplorer_updateList()
+
+	_updateActionStacks()
 EndFunc   ;==>_wipe_current_gui
 
 
