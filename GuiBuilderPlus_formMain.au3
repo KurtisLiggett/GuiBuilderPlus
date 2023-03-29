@@ -2066,6 +2066,20 @@ Func _ctrl_change_text()
 
 	Local Const $sel_count = $oSelected.count
 
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_changeText
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[2]
+	For $i=0 To UBound($oAction.ctrls)-1
+		$aParam[0] = $oAction.ctrls[$i].Text
+		$aParam[1] = $oProperties_Ctrls.properties.Text.value
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
+
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
@@ -2175,9 +2189,21 @@ Func _ctrl_change_left()
 
 	;update the undo action stack
 	Local $oAction = _objAction()
-	$oAction.action = $action_moveCtrl
+	$oAction.action = $action_resizeCtrl
 	$oAction.ctrls = $oSelected.ctrls.Items()
-	Local $aParams[2] = [$oProperties_Ctrls.properties.Left.value - $oAction.ctrls[0].Left, 0]
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[8]
+	For $i=0 To UBound($oAction.ctrls)-1
+		$aParam[0] = $oAction.ctrls[$i].Width
+		$aParam[1] = $oAction.ctrls[$i].Height
+		$aParam[2] = $oAction.ctrls[$i].Width
+		$aParam[3] = $oAction.ctrls[$i].Height
+		$aParam[4] = $oAction.ctrls[$i].Left
+		$aParam[5] = $oAction.ctrls[$i].Top
+		$aParam[6] = $oProperties_Ctrls.properties.Left.value
+		$aParam[7] = $oAction.ctrls[$i].Top
+		$aParams[$i] = $aParam
+	Next
 	$oAction.parameters = $aParams
 	_updateActionStacks($oAction)
 
@@ -2229,9 +2255,21 @@ Func _ctrl_change_top()
 
 	;update the undo action stack
 	Local $oAction = _objAction()
-	$oAction.action = $action_moveCtrl
+	$oAction.action = $action_resizeCtrl
 	$oAction.ctrls = $oSelected.ctrls.Items()
-	Local $aParams[2] = [0, $oProperties_Ctrls.properties.Top.value - $oAction.ctrls[0].Top]
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[8]
+	For $i=0 To UBound($oAction.ctrls)-1
+		$aParam[0] = $oAction.ctrls[$i].Width
+		$aParam[1] = $oAction.ctrls[$i].Height
+		$aParam[2] = $oAction.ctrls[$i].Width
+		$aParam[3] = $oAction.ctrls[$i].Height
+		$aParam[4] = $oAction.ctrls[$i].Left
+		$aParam[5] = $oAction.ctrls[$i].Top
+		$aParam[6] = $oAction.ctrls[$i].Left
+		$aParam[7] = $oProperties_Ctrls.properties.Top.value
+		$aParams[$i] = $aParam
+	Next
 	$oAction.parameters = $aParams
 	_updateActionStacks($oAction)
 

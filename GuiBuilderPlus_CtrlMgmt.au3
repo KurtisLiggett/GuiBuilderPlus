@@ -1303,6 +1303,22 @@ Func _undo()
 		;perform the inverse of the saved action
 		Local $oAction = $aStackUndo[$size-1]
 		Switch $oAction.action
+			Case $action_changeText
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				_SendMessage($hGUI, $WM_SETREDRAW, False)
+				Local $aParams
+				For $i=0 To UBound($aActionCtrls)-1
+					$aParams = $aActionParams[$i]
+					GUICtrlSetData($aActionCtrls[$i].Hwnd, $aParams[0])
+					$aActionCtrls[$i].Text = $aParams[0]
+				Next
+				_SendMessage($hGUI, $WM_SETREDRAW, True)
+				_WinAPI_RedrawWindow($hGUI)
+				_populate_control_properties_gui($oSelected.getFirst())
+				_refreshGenerateCode()
+
 			Case $action_renameCtrl
 				Local $aActionCtrls = $oAction.ctrls
 				Local $aActionParams = $oAction.parameters
@@ -1445,6 +1461,22 @@ Func _redo()
 		;perform the action
 		Local $oAction = $aStackRedo[$size-1]
 		Switch $oAction.action
+			Case $action_changeText
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				_SendMessage($hGUI, $WM_SETREDRAW, False)
+				Local $aParams
+				For $i=0 To UBound($aActionCtrls)-1
+					$aParams = $aActionParams[$i]
+					GUICtrlSetData($aActionCtrls[$i].Hwnd, $aParams[1])
+					$aActionCtrls[$i].Text = $aParams[1]
+				Next
+				_SendMessage($hGUI, $WM_SETREDRAW, True)
+				_WinAPI_RedrawWindow($hGUI)
+				_populate_control_properties_gui($oSelected.getFirst())
+				_refreshGenerateCode()
+
 			Case $action_renameCtrl
 				Local $aActionCtrls = $oAction.ctrls
 				Local $aActionParams = $oAction.parameters
