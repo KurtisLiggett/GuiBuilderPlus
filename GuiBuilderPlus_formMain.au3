@@ -1261,7 +1261,6 @@ Func _onMousePrimaryDown()
 
 		Case $mode_default
 			_log("** PrimaryDown: default **")
-			ConsoleWrite($ctrl_hwnd & @CRLF)
 			Switch $ctrl_hwnd
 				Case $background
 					_log("  background")
@@ -1277,7 +1276,7 @@ Func _onMousePrimaryDown()
 					$oMouse.StartY = $aMousePos[1]
 
 				Case Else
-;~ 					_log("  other control")
+					_log("  other control")
 					If Not $oCtrls.exists($ctrl_hwnd) Then
 						$oCtrls.clickedCtrl = 0
 						Return
@@ -1289,7 +1288,7 @@ Func _onMousePrimaryDown()
 
 					Local $oCtrl = $oCtrls.get($ctrl_hwnd)
 
-					;if ctrl is pressed, add/remove form selection
+					;if ctrl is pressed, add/remove from selection
 					Switch _IsPressed("11")
 						Case False ; single select
 							If Not $oSelected.exists($ctrl_hwnd) Then
@@ -1335,6 +1334,7 @@ Func _onMousePrimaryDown()
 
 		Case Else
 			_log("** PrimaryDown: case else **")
+			GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 			_set_current_mouse_pos()
 	EndSwitch
 
@@ -1621,15 +1621,17 @@ Func _onMouseMove()
 			EndIf
 
 		Case $mode_init_move, $mode_paste
-;~ 			_log("MOVE:  Moving")
+			_log("MOVE:  Moving")
+			Local $mouse_prevpos[2] = [$oMouse.X, $oMouse.Y]
+			$mouse_prevpos = _snap_to_grid($mouse_prevpos)
+
 			Local Const $mouse_pos = _mouse_snap_pos()
 
-			Local Const $delta_x = $oMouse.X - $mouse_pos[0]
+			Local Const $delta_x = $mouse_prevpos[0] - $mouse_pos[0]
 
-			Local Const $delta_y = $oMouse.Y - $mouse_pos[1]
+			Local Const $delta_y = $mouse_prevpos[1] - $mouse_pos[1]
 
 			$oMouse.X = $mouse_pos[0]
-
 			$oMouse.Y = $mouse_pos[1]
 
 			If Not $left_click And Not $oCtrls.mode = $mode_paste Then
@@ -1679,7 +1681,7 @@ Func _onMouseMove()
 ;~ 			EndIf
 
 		Case $mode_init_selection
-;~ 			_log("MOVE:  Selection")
+			_log("MOVE:  Selection")
 			Local Const $oRect = _rect_from_points($oMouse.X, $oMouse.Y, MouseGetPos(0), MouseGetPos(1))
 			_display_selection_rect($oRect)
 			_add_remove_selected_control($oRect)
