@@ -1189,7 +1189,6 @@ Func _onMousePrimaryDown()
 
 	Local $aDrawStartPos = GUIGetCursorInfo($hGUI)
 	Local $ctrl_hwnd = $aDrawStartPos[4]
-	ConsoleWrite("ID " & $ctrl_hwnd & @CRLF)
 
 	Local $aMousePos = MouseGetPos()
 	;check if over an IP control as it has no ID
@@ -2120,6 +2119,14 @@ Func _ctrl_change_name()
 
 	Local Const $sel_count = $oSelected.count
 
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_renameCtrl
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[2] = [$oAction.ctrls[0].Name, $oProperties_Ctrls.properties.Name.value]
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
+
 	If $sel_count = 1 Then
 		Local $oCtrl = $oSelected.getFirst()
 		If $oCtrl.Locked Then Return
@@ -2165,6 +2172,14 @@ Func _ctrl_change_left()
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
+
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_moveCtrl
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[2] = [$oProperties_Ctrls.properties.Left.value - $oAction.ctrls[0].Left, 0]
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
 
 	Switch $sel_count >= 1
 		Case True
@@ -2212,6 +2227,14 @@ Func _ctrl_change_top()
 
 	Local Const $sel_count = $oSelected.count
 
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_moveCtrl
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[2] = [0, $oProperties_Ctrls.properties.Top.value - $oAction.ctrls[0].Top]
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
+
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
@@ -2257,6 +2280,26 @@ Func _ctrl_change_width()
 
 	Local Const $sel_count = $oSelected.count
 
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_resizeCtrl
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[8]
+	For $i=0 To UBound($oAction.ctrls)-1
+		$aParam[0] = $oAction.ctrls[$i].Width
+		$aParam[1] = $oAction.ctrls[$i].Height
+		$aParam[2] = $oProperties_Ctrls.properties.Width.value
+		$aParam[3] = $oAction.ctrls[$i].Height
+		$aParam[4] = $oAction.ctrls[$i].Left
+		$aParam[5] = $oAction.ctrls[$i].Top
+		$aParam[6] = $oAction.ctrls[$i].Left
+		$aParam[7] = $oAction.ctrls[$i].Top
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
+
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
@@ -2292,6 +2335,26 @@ Func _ctrl_change_height()
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
+
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_resizeCtrl
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[8]
+	For $i=0 To UBound($oAction.ctrls)-1
+		$aParam[0] = $oAction.ctrls[$i].Width
+		$aParam[1] = $oAction.ctrls[$i].Height
+		$aParam[2] = $oAction.ctrls[$i].Width
+		$aParam[3] = $oProperties_Ctrls.properties.Height.value
+		$aParam[4] = $oAction.ctrls[$i].Left
+		$aParam[5] = $oAction.ctrls[$i].Top
+		$aParam[6] = $oAction.ctrls[$i].Left
+		$aParam[7] = $oAction.ctrls[$i].Top
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
 
 	Switch $sel_count >= 1
 		Case True
@@ -2333,6 +2396,7 @@ EndFunc   ;==>_ctrl_pick_bkColor
 
 Func _ctrl_change_bkColor()
 	Local $colorInput = $oProperties_Ctrls.properties.Background.value
+	Local $newColor = $colorInput
 	If $colorInput = "" Then
 		$colorInput = -1
 		$oProperties_Ctrls.properties.Background.value = -1
@@ -2341,6 +2405,20 @@ Func _ctrl_change_bkColor()
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
+
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_changeBkColor
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[2]
+	For $i=0 To UBound($oAction.ctrls)-1
+		$aParam[0] = $oAction.ctrls[$i].Background
+		$aParam[1] = $colorInput
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
 
 	Switch $sel_count >= 1
 		Case True
@@ -2444,6 +2522,7 @@ EndFunc   ;==>_ctrl_pick_Color
 
 Func _ctrl_change_Color()
 	Local $colorInput = $oProperties_Ctrls.properties.Color.value
+	Local $newColor = $colorInput
 	If $colorInput = "" Then
 		$colorInput = -1
 		$oProperties_Ctrls.properties.Color.value = -1
@@ -2452,6 +2531,20 @@ Func _ctrl_change_Color()
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
+
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_changeColor
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[2]
+	For $i=0 To UBound($oAction.ctrls)-1
+		$aParam[0] = $oAction.ctrls[$i].Color
+		$aParam[1] = $colorInput
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
 
 	Switch $sel_count >= 1
 		Case True
