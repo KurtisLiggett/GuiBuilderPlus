@@ -1181,6 +1181,7 @@ Func _onMousePrimaryDown()
 
 	;if main window was resized or moved, then don't process mouse down event
 	If $bResizedFlag Then
+		_log("** PrimaryDown: resizedflag **")
 		$bResizedFlag = 0
 		Return
 	EndIf
@@ -1326,10 +1327,15 @@ Func _onMousePrimaryDown()
 			EndSwitch
 
 		Case $mode_paste
+			_log("** PrimaryDown: paste **")
 			$left_click = False
 			ToolTip('')
 			_recall_overlay()
 			$oCtrls.mode = $mode_default
+
+		Case Else
+			_log("** PrimaryDown: case else **")
+			_set_current_mouse_pos()
 	EndSwitch
 
 EndFunc   ;==>_onMousePrimaryDown
@@ -1607,6 +1613,7 @@ Func _onMouseMove()
 			EndIf
 
 		Case $mode_default
+;~ 			_log("MOVE:  Default")
 			If IsObj($oCtrls.clickedCtrl) Then
 				$oCtrls.mode = $mode_init_move
 				$oMouse.X = $oMouse.StartX

@@ -756,6 +756,9 @@ EndFunc   ;==>_objGrippies_mouseClickEvent
 Func _objGrippies_mouseClick($oSelf, $CtrlID)
 	If $oSelf.parent.Locked Then Return
 
+	$oSelf.parent.resizePrevLeft = $oMouse.X
+	$oSelf.parent.resizePrevTop = $oMouse.Y
+
 	Switch $CtrlID
 		Case $oSelf.NW
 			$oSelf.parent.parent.mode = $resize_nw

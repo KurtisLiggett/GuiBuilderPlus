@@ -13,7 +13,8 @@
 ;
 ; Revisions
 ;  09/19/2022 ...:	- CHANGED:	More sophisticated handling of AutoIt3.exe location
-;  03/29/2023 ...:	- Added:	Undo / redo functionality
+;  03/29/2023 ...:	- ADDED:	Undo / redo functionality
+;  03/29/2023 ...:	- FIXED:	Jumping while resizing
 ;
 ; Roadmap .......:	- Support for Msg or OnEvent mode attached to controls
 ;					- Finish control properties tabs
