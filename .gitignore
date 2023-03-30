@@ -12,3 +12,4 @@
 # information for Eclipse / Flash Builder.
 storage/GUIBuilderPlus.ini
 *.agd
+output/
