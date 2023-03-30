@@ -1,3 +1,6 @@
+#AutoIt3Wrapper_Run_Au3Stripper=y
+#Au3Stripper_Parameters=/MO
+
 ; #HEADER# ======================================================================================================================
 ; Title .........: GUIBuilderPlus
 ; AutoIt Version : 3.3.14.5
