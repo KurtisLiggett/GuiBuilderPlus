@@ -37,12 +37,12 @@ Func _formMain()
 
 	$oMain.Left = $main_left
 	$oMain.Top = $main_top
-	$hGUI = GUICreate($oMain.AppName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ')', $oMain.Width, $oMain.Height, $main_left, $main_top, BitOR($WS_SIZEBOX, $WS_SYSMENU, $WS_MINIMIZEBOX), $WS_EX_ACCEPTFILES)
+	$hGUI = GUICreate($oMain.Title & " - Form (" & $oMain.Width & ", " & $oMain.Height & ')', $oMain.Width, $oMain.Height, $main_left, $main_top, BitOR($WS_SIZEBOX, $WS_SYSMENU, $WS_MINIMIZEBOX), $WS_EX_ACCEPTFILES)
 
 	_getGuiFrameSize()
 	WinMove($hGUI, "", Default, Default, $oMain.Width + $iGuiFrameW, $oMain.Height + $iGuiFrameH)
 
-	WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
+	WinSetTitle($hGUI, "", $oMain.Title & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
 
 
 
@@ -69,7 +69,7 @@ Func _formMain()
 
 	;create the background and context menu
 	$background = GUICtrlCreateGraphic(0, 0, $oMain.Width, $oMain.Height) ; used to show a grid --- GUICtrlCreatePic($blank_bmp, 0, 0, 0, 0) ; used to show a grid
-	GUICtrlSetState($background, $GUI_DISABLE)
+;~ 	GUICtrlSetState($background, $GUI_DISABLE)
 	$background_contextmenu = GUICtrlCreateContextMenu(GUICtrlCreateDummy())
 	$background_contextmenu_paste = GUICtrlCreateMenuItem("Paste", $background_contextmenu)
 	;menu events
@@ -184,6 +184,9 @@ Func _formToolbar()
 
 	;create the Edit menu
 	Local $menu_edit = GUICtrlCreateMenu("Edit")
+	Local $menu_undo = GUICtrlCreateMenuItem("Undo" & @TAB & "Ctrl+Z", $menu_edit)
+	Local $menu_redo = GUICtrlCreateMenuItem("Redo" & @TAB & "Ctrl+Y", $menu_edit)
+	GUICtrlCreateMenuItem("", $menu_edit)
 	Local $menu_cut = GUICtrlCreateMenuItem("Cut" & @TAB & "Ctrl+X", $menu_edit)
 	Local $menu_copy = GUICtrlCreateMenuItem("Copy" & @TAB & "Ctrl+C", $menu_edit)
 	Local $menu_paste = GUICtrlCreateMenuItem("Paste" & @TAB & "Ctrl+V", $menu_edit)
@@ -194,7 +197,8 @@ Func _formToolbar()
 
 	GUICtrlSetState($menu_wipe, $GUI_DISABLE)
 
-	GUICtrlSetOnEvent($menu_cut, "_cut_selected")
+	GUICtrlSetOnEvent($menu_undo, "_onUndo")
+	GUICtrlSetOnEvent($menu_redo, "_onRedo")
 	GUICtrlSetOnEvent($menu_copy, "_copy_selected")
 	GUICtrlSetOnEvent($menu_paste, "_onMenuPasteSelected")
 	GUICtrlSetOnEvent($menu_duplicate, "_onDuplicate")
@@ -450,8 +454,10 @@ Func _set_accelerators()
 	Local Const $accel_s = GUICtrlCreateDummy()
 	Local Const $accel_o = GUICtrlCreateDummy()
 	Local Const $accel_F5 = GUICtrlCreateDummy()
+	Local Const $accel_z = GUICtrlCreateDummy()
+	Local Const $accel_y = GUICtrlCreateDummy()
 
-	Local Const $accelerators[19][2] = _
+	Local Const $accelerators[21][2] = _
 			[ _
 			["{Delete}", $accel_delete], _
 			["^x", $accel_x], _
@@ -471,7 +477,9 @@ Func _set_accelerators()
 			["{F7}", $menu_show_grid], _
 			["{F5}", $accel_F5], _
 			["^s", $accel_s], _
-			["^o", $accel_o] _
+			["^o", $accel_o], _
+			["^z", $accel_z], _
+			["^y", $accel_y] _
 			]
 	GUISetAccelerators($accelerators, $hGUI)
 
@@ -503,6 +511,8 @@ Func _set_accelerators()
 	GUICtrlSetOnEvent($accel_s, "_onSaveGui")
 	GUICtrlSetOnEvent($accel_o, "_onload_gui_definition")
 	GUICtrlSetOnEvent($accel_F5, "_onTestGUI")
+	GUICtrlSetOnEvent($accel_z, "_onUndo")
+	GUICtrlSetOnEvent($accel_y, "_onRedo")
 EndFunc   ;==>_set_accelerators
 #EndRegion formMain
 
@@ -748,7 +758,7 @@ Func _onResize()
 	Else
 		$oProperties_Main.properties.Height.value = $oMain.Height
 	EndIf
-	WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $oProperties_Main.properties.Width.value & ", " & $oProperties_Main.properties.Height.value & ")")
+	WinSetTitle($hGUI, "", $oMain.Title & " - Form (" & $oProperties_Main.properties.Width.value & ", " & $oProperties_Main.properties.Height.value & ")")
 
 ;~ 	$oSelected.getFirst().grippies.show()
 EndFunc   ;==>_onResize
@@ -864,16 +874,22 @@ EndFunc   ;==>_onKeyCtrlRight
 ; Title...........: _nudgeSelected
 ; Description.....: nudge control 1 space
 ;------------------------------------------------------------------------------
-Func _nudgeSelected($x = 0, $y = 0)
+Func _nudgeSelected($x = 0, $y = 0, $aUndoCtrls = 0)
 	GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 	$oCtrls.mode = $mode_default
 
 ;~ 	Local $nudgeAmount = ($setting_snap_grid) ? $grid_ticks : 1
 	Local $nudgeAmount = 1
 	Local $adjustmentX = 0, $adjustmentX = 0
-	Local $count = $oSelected.count
-	For $oCtrl In $oSelected.ctrls.Items()
 
+	Local $aCtrls
+	If IsArray($aUndoCtrls) Then
+		$aCtrls = $aUndoCtrls
+	Else
+		$aCtrls = $oSelected.ctrls.Items()
+	EndIf
+
+	For $oCtrl In $aCtrls
 		$adjustmentX = Mod($oCtrl.Left, $nudgeAmount)
 		If $adjustmentX > 0 Then
 			If $x = 1 Then
@@ -905,6 +921,16 @@ Func _nudgeSelected($x = 0, $y = 0)
 	;get last control
 	Local $oCtrlLast = $oSelected.getLast()
 	_populate_control_properties_gui($oCtrlLast)
+
+	;store the undo action
+	If Not IsArray($aUndoCtrls) Then
+		Local $oAction = _objAction()
+		$oAction.action = $action_nudgeCtrl
+		$oAction.ctrls = $aCtrls
+		Local $aParams[2] = [$x, $y]
+		$oAction.parameters = $aParams
+		_updateActionStacks($oAction)
+	EndIf
 
 	_refreshGenerateCode()
 EndFunc   ;==>_nudgeSelected
@@ -1138,12 +1164,24 @@ Func _onMenuSelectAll()
 EndFunc   ;==>_onMenuSelectAll
 
 
+Func _onUndo()
+	_undo()
+EndFunc
+
+Func _onRedo()
+	_redo()
+EndFunc
+
+
+
+
 #Region mouse events
 Func _onMousePrimaryDown()
 ;~ 	_WinAPI_Window($hGUI)
 
 	;if main window was resized or moved, then don't process mouse down event
 	If $bResizedFlag Then
+		_log("** PrimaryDown: resizedflag **")
 		$bResizedFlag = 0
 		Return
 	EndIf
@@ -1229,6 +1267,8 @@ Func _onMousePrimaryDown()
 					_set_default_mode()
 					_set_current_mouse_pos(1)
 
+					$oCtrls.clickedCtrl = 0
+
 					$oCtrls.mode = $mode_init_selection
 
 					Local $aMousePos = MouseGetPos()
@@ -1236,11 +1276,19 @@ Func _onMousePrimaryDown()
 					$oMouse.StartY = $aMousePos[1]
 
 				Case Else
-					If Not $oCtrls.exists($ctrl_hwnd) Then Return
+					_log("  other control")
+					If Not $oCtrls.exists($ctrl_hwnd) Then
+						$oCtrls.clickedCtrl = 0
+						Return
+					EndIf
+
+					Local $aMousePos = MouseGetPos()
+					$oMouse.StartX = $aMousePos[0]
+					$oMouse.StartY = $aMousePos[1]
 
 					Local $oCtrl = $oCtrls.get($ctrl_hwnd)
 
-					;if ctrl is pressed, add/remove form selection
+					;if ctrl is pressed, add/remove from selection
 					Switch _IsPressed("11")
 						Case False ; single select
 							If Not $oSelected.exists($ctrl_hwnd) Then
@@ -1278,10 +1326,16 @@ Func _onMousePrimaryDown()
 			EndSwitch
 
 		Case $mode_paste
+			_log("** PrimaryDown: paste **")
 			$left_click = False
 			ToolTip('')
 			_recall_overlay()
 			$oCtrls.mode = $mode_default
+
+		Case Else
+			_log("** PrimaryDown: case else **")
+			GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
+			_set_current_mouse_pos()
 	EndSwitch
 
 EndFunc   ;==>_onMousePrimaryDown
@@ -1290,6 +1344,7 @@ EndFunc   ;==>_onMousePrimaryDown
 Func _onMousePrimaryUp()
 	$left_click = False
 	Local $ctrl_hwnd, $oCtrl, $updateObjectExplorer
+	$oCtrls.clickedCtrl = 0
 
 	Switch $oCtrls.mode
 		Case $mode_drawing
@@ -1301,7 +1356,32 @@ Func _onMousePrimaryUp()
 
 		Case $mode_init_move
 			_log("** PrimaryUp: init_move **")
-			_set_default_mode()
+			ToolTip('')
+
+			Local $aMousePos = MouseGetPos()
+
+			;update the undo action stack
+			Local $oAction = _objAction()
+			$oAction.action = $action_moveCtrl
+			$oAction.ctrls = $oSelected.ctrls.Items()
+			Local $aParams[2] = [$aMousePos[0] - $oMouse.StartX, $aMousePos[1] - $oMouse.StartY]
+			$oAction.parameters = $aParams
+			_updateActionStacks($oAction)
+
+;~ 			_set_default_mode()
+			$oCtrls.mode = $mode_default
+
+			;we don't care what was dragged, we just want to populate based on latest selection
+			;to prevent mouse 'falling off' of control when dropped
+			$oCtrl = $oSelected.getLast()
+			If IsObj($oCtrl) Then
+				_populate_control_properties_gui($oCtrl)
+			EndIf
+
+			If $oSelected.count > 0 Then
+				_refreshGenerateCode()
+			EndIf
+			_showProperties()
 
 		Case $mode_init_selection
 			_log("** PrimaryUp: init_selection **")
@@ -1316,6 +1396,7 @@ Func _onMousePrimaryUp()
 
 		Case $resize_nw, $resize_n, $resize_ne, $resize_e, $resize_se, $resize_s, $resize_sw, $resize_w
 			_log("** PrimaryUp: Resize **")
+
 			ToolTip('')
 
 			For $oCtrl In $oSelected.ctrls.Items()
@@ -1339,6 +1420,26 @@ Func _onMousePrimaryUp()
 					_delete_selected_controls()
 					_set_default_mode()
 				EndIf
+			Else
+				;update the undo action stack
+				Local $oAction = _objAction()
+				$oAction.action = $action_resizeCtrl
+				$oAction.ctrls = $oSelected.ctrls.Items()
+				Local $aParams[$oSelected.ctrls.Count]
+				Local $aParam[8]
+				For $i=0 To UBound($oAction.ctrls)-1
+					$aParam[0] = $oAction.ctrls[$i].PrevWidth
+					$aParam[1] = $oAction.ctrls[$i].PrevHeight
+					$aParam[2] = $oAction.ctrls[$i].Width
+					$aParam[3] = $oAction.ctrls[$i].Height
+					$aParam[4] = $oAction.ctrls[$i].PrevLeft
+					$aParam[5] = $oAction.ctrls[$i].PrevTop
+					$aParam[6] = $oAction.ctrls[$i].Left
+					$aParam[7] = $oAction.ctrls[$i].Top
+					$aParams[$i] = $aParam
+				Next
+				$oAction.parameters = $aParams
+				_updateActionStacks($oAction)
 			EndIf
 
 			If $oCtrlSelectedFirst.Type = 'Pic' Then
@@ -1511,16 +1612,26 @@ Func _onMouseMove()
 				$oCtrls.mode = $mode_default
 			EndIf
 
-		Case $mode_init_move, $mode_default, $mode_paste
-;~ 			_log("MOVE:  Moving")
+		Case $mode_default
+;~ 			_log("MOVE:  Default")
+			If IsObj($oCtrls.clickedCtrl) Then
+				$oCtrls.mode = $mode_init_move
+				$oMouse.X = $oMouse.StartX
+				$oMouse.Y = $oMouse.StartY
+			EndIf
+
+		Case $mode_init_move, $mode_paste
+			_log("MOVE:  Moving")
+			Local $mouse_prevpos[2] = [$oMouse.X, $oMouse.Y]
+			$mouse_prevpos = _snap_to_grid($mouse_prevpos)
+
 			Local Const $mouse_pos = _mouse_snap_pos()
 
-			Local Const $delta_x = $oMouse.X - $mouse_pos[0]
+			Local Const $delta_x = $mouse_prevpos[0] - $mouse_pos[0]
 
-			Local Const $delta_y = $oMouse.Y - $mouse_pos[1]
+			Local Const $delta_y = $mouse_prevpos[1] - $mouse_pos[1]
 
 			$oMouse.X = $mouse_pos[0]
-
 			$oMouse.Y = $mouse_pos[1]
 
 			If Not $left_click And Not $oCtrls.mode = $mode_paste Then
@@ -1565,12 +1676,12 @@ Func _onMouseMove()
 				ToolTip("")
 			EndIf
 
-			If Not $oCtrls.mode = $mode_paste Then
-				$oCtrls.mode = $mode_default
-			EndIf
+;~ 			If Not $oCtrls.mode = $mode_paste Then
+;~ 				$oCtrls.mode = $mode_default
+;~ 			EndIf
 
 		Case $mode_init_selection
-;~ 			_log("MOVE:  Selection")
+			_log("MOVE:  Selection")
 			Local Const $oRect = _rect_from_points($oMouse.X, $oMouse.Y, MouseGetPos(0), MouseGetPos(1))
 			_display_selection_rect($oRect)
 			_add_remove_selected_control($oRect)
@@ -1677,7 +1788,7 @@ Func _onResetLayout()
 	$oMain.Top = (@DesktopHeight / 2) - ($oMain.Height / 2)
 
 	WinMove($hGUI, "", $oMain.Left, $oMain.Top, $oMain.Width + $iGuiFrameW, $oMain.Height + $iGuiFrameH)
-	WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
+	WinSetTitle($hGUI, "", $oMain.Title & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
 
 	;toolbar
 	Local Const $toolbar_width = 215
@@ -1858,6 +1969,8 @@ Func _main_change_title()
 
 	_refreshGenerateCode()
 	$oMain.hasChanged = True
+
+	WinSetTitle($hGUI, "", $oMain.Title & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
 EndFunc   ;==>_main_change_title
 
 
@@ -1897,7 +2010,7 @@ Func _main_change_width()
 	WinMove($hGUI, "", Default, Default, $newValue + $iGuiFrameW, Default)
 
 	Local $aWinPos = WinGetClientSize($hGUI)
-	WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $aWinPos[0] & ", " & $aWinPos[1] & ")")
+	WinSetTitle($hGUI, "", $oMain.Title & " - Form (" & $aWinPos[0] & ", " & $aWinPos[1] & ")")
 
 	$oMain.Width = $aWinPos[0]
 
@@ -1916,7 +2029,7 @@ Func _main_change_height()
 	WinMove($hGUI, "", Default, Default, Default, $newValue + $iGuiFrameH)
 
 	Local $aWinPos = WinGetClientSize($hGUI)
-	WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $aWinPos[0] & ", " & $aWinPos[1] & ")")
+	WinSetTitle($hGUI, "", $oMain.Title & " - Form (" & $aWinPos[0] & ", " & $aWinPos[1] & ")")
 
 	$oMain.Height = $aWinPos[1]
 
@@ -1963,6 +2076,20 @@ Func _ctrl_change_text()
 	Local Const $new_text = $oProperties_Ctrls.properties.Text.value
 
 	Local Const $sel_count = $oSelected.count
+
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_changeText
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[2]
+	For $i=0 To UBound($oAction.ctrls)-1
+		$aParam[0] = $oAction.ctrls[$i].Text
+		$aParam[1] = $oProperties_Ctrls.properties.Text.value
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
 
 	Switch $sel_count >= 1
 		Case True
@@ -2017,6 +2144,14 @@ Func _ctrl_change_name()
 
 	Local Const $sel_count = $oSelected.count
 
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_renameCtrl
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[2] = [$oAction.ctrls[0].Name, $oProperties_Ctrls.properties.Name.value]
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
+
 	If $sel_count = 1 Then
 		Local $oCtrl = $oSelected.getFirst()
 		If $oCtrl.Locked Then Return
@@ -2062,6 +2197,26 @@ Func _ctrl_change_left()
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
+
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_resizeCtrl
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[8]
+	For $i=0 To UBound($oAction.ctrls)-1
+		$aParam[0] = $oAction.ctrls[$i].Width
+		$aParam[1] = $oAction.ctrls[$i].Height
+		$aParam[2] = $oAction.ctrls[$i].Width
+		$aParam[3] = $oAction.ctrls[$i].Height
+		$aParam[4] = $oAction.ctrls[$i].Left
+		$aParam[5] = $oAction.ctrls[$i].Top
+		$aParam[6] = $oProperties_Ctrls.properties.Left.value
+		$aParam[7] = $oAction.ctrls[$i].Top
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
 
 	Switch $sel_count >= 1
 		Case True
@@ -2109,6 +2264,26 @@ Func _ctrl_change_top()
 
 	Local Const $sel_count = $oSelected.count
 
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_resizeCtrl
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[8]
+	For $i=0 To UBound($oAction.ctrls)-1
+		$aParam[0] = $oAction.ctrls[$i].Width
+		$aParam[1] = $oAction.ctrls[$i].Height
+		$aParam[2] = $oAction.ctrls[$i].Width
+		$aParam[3] = $oAction.ctrls[$i].Height
+		$aParam[4] = $oAction.ctrls[$i].Left
+		$aParam[5] = $oAction.ctrls[$i].Top
+		$aParam[6] = $oAction.ctrls[$i].Left
+		$aParam[7] = $oProperties_Ctrls.properties.Top.value
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
+
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
@@ -2154,6 +2329,26 @@ Func _ctrl_change_width()
 
 	Local Const $sel_count = $oSelected.count
 
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_resizeCtrl
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[8]
+	For $i=0 To UBound($oAction.ctrls)-1
+		$aParam[0] = $oAction.ctrls[$i].Width
+		$aParam[1] = $oAction.ctrls[$i].Height
+		$aParam[2] = $oProperties_Ctrls.properties.Width.value
+		$aParam[3] = $oAction.ctrls[$i].Height
+		$aParam[4] = $oAction.ctrls[$i].Left
+		$aParam[5] = $oAction.ctrls[$i].Top
+		$aParam[6] = $oAction.ctrls[$i].Left
+		$aParam[7] = $oAction.ctrls[$i].Top
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
+
 	Switch $sel_count >= 1
 		Case True
 			For $oCtrl In $oSelected.ctrls.Items()
@@ -2189,6 +2384,26 @@ Func _ctrl_change_height()
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
+
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_resizeCtrl
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[8]
+	For $i=0 To UBound($oAction.ctrls)-1
+		$aParam[0] = $oAction.ctrls[$i].Width
+		$aParam[1] = $oAction.ctrls[$i].Height
+		$aParam[2] = $oAction.ctrls[$i].Width
+		$aParam[3] = $oProperties_Ctrls.properties.Height.value
+		$aParam[4] = $oAction.ctrls[$i].Left
+		$aParam[5] = $oAction.ctrls[$i].Top
+		$aParam[6] = $oAction.ctrls[$i].Left
+		$aParam[7] = $oAction.ctrls[$i].Top
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
 
 	Switch $sel_count >= 1
 		Case True
@@ -2230,6 +2445,7 @@ EndFunc   ;==>_ctrl_pick_bkColor
 
 Func _ctrl_change_bkColor()
 	Local $colorInput = $oProperties_Ctrls.properties.Background.value
+	Local $newColor = $colorInput
 	If $colorInput = "" Then
 		$colorInput = -1
 		$oProperties_Ctrls.properties.Background.value = -1
@@ -2238,6 +2454,20 @@ Func _ctrl_change_bkColor()
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
+
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_changeBkColor
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[2]
+	For $i=0 To UBound($oAction.ctrls)-1
+		$aParam[0] = $oAction.ctrls[$i].Background
+		$aParam[1] = $colorInput
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
 
 	Switch $sel_count >= 1
 		Case True
@@ -2341,6 +2571,7 @@ EndFunc   ;==>_ctrl_pick_Color
 
 Func _ctrl_change_Color()
 	Local $colorInput = $oProperties_Ctrls.properties.Color.value
+	Local $newColor = $colorInput
 	If $colorInput = "" Then
 		$colorInput = -1
 		$oProperties_Ctrls.properties.Color.value = -1
@@ -2349,6 +2580,20 @@ Func _ctrl_change_Color()
 	EndIf
 
 	Local Const $sel_count = $oSelected.count
+
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_changeColor
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[2]
+	For $i=0 To UBound($oAction.ctrls)-1
+		$aParam[0] = $oAction.ctrls[$i].Color
+		$aParam[1] = $colorInput
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
 
 	Switch $sel_count >= 1
 		Case True
@@ -2473,6 +2718,8 @@ Func _wipe_current_gui()
 
 	_refreshGenerateCode()
 	_formObjectExplorer_updateList()
+
+	_updateActionStacks()
 EndFunc   ;==>_wipe_current_gui
 
 
@@ -2920,7 +3167,7 @@ EndFunc   ;==>_onGithubItem
 ;------------------------------------------------------------------------------
 Func _menu_about()
 	$w = 350
-	$h = 290
+	$h = 265
 
 	$hAbout = GUICreate("About " & $oMain.AppName, $w, $h, Default, Default, $WS_CAPTION, -1, $hGUI)
 	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExitChild")
@@ -2934,19 +3181,25 @@ Func _menu_about()
 	GUICtrlCreateLabel("", 0, $h - 32, $w, 1)
 	GUICtrlSetBkColor(-1, 0x000000)
 
-	GUICtrlCreateLabel($oMain.AppName, 10, 10, $w - 15)
+	Local $pic = GUICtrlCreatePic("", 10, 10, 48, 48)
+	_memoryToPic($pic, GetIconData(0))
+
+	GUICtrlCreateLabel($oMain.AppName, 70, 10, $w - 15)
 	GUICtrlSetFont(-1, 13, 800)
 
 	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlCreateLabel("Version:", 5, 38, 60, -1, $SS_RIGHT)
+	GUICtrlCreateLabel("Version:", 60, 30, 60, -1, $SS_RIGHT)
 	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlCreateLabel($oMain.AppVersion, 70, 38, 65, -1)
+	GUICtrlCreateLabel($oMain.AppVersion, 125, 30, 65, -1)
 	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
 
-	GUICtrlCreateLabel("License:", 5, 55, 60, -1, $SS_RIGHT)
+	GUICtrlCreateLabel("License:", 60, 46, 60, -1, $SS_RIGHT)
 	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlCreateLabel("GNU GPL v3", 70, 55, 65, -1)
+	GUICtrlCreateLabel("GNU GPL v3", 125, 46, 65, -1)
 	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
+
+	GUICtrlCreateLabel("", 0, 75, $w, 1)
+	GUICtrlSetBkColor(-1, 0x000000)
 
 	$desc = "GuiBuilderPlus is a small, easy to use GUI designer for AutoIt." & @CRLF & @CRLF & _
 			"Originally created as AutoBuilder by the user CyberSlug," & @CRLF & _
@@ -2955,7 +3208,7 @@ Func _menu_about()
 			"with additional modifications by kurtykurtyboy as GuiBuilderPlus," & @CRLF & @CRLF & _
 			"GuiBuilderPlus is a continuation of the great work started by others," & @CRLF & _
 			"with a focus on increased stability and usability followed by new features."
-	GUICtrlCreateLabel($desc, 10, 90, $w - 16, 135)
+	GUICtrlCreateLabel($desc, 10, 85, $w - 16, 135)
 	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
 
 ;~ 	$desc = "Originally created as AutoBuilder by the user CyberSlug," & @CRLF & _
@@ -3059,3 +3312,86 @@ Func _setIconFromResource($ctrlID, $sIconName, $iIcon)
 		GUICtrlSetImage($ctrlID, $iconset & "\" & $sIconName)
 	EndIf
 EndFunc   ;==>_setIconFromResource
+
+Func GetIconData($iconSel)
+	Local $icondData
+	Switch $iconSel
+		Case 0
+			$icondData = '' & _
+					'iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAByFBMVEX///8AAP8A' & _
+					'AAAACwAAqgAABwD+/v8DA//5+f/09PTx8fHCwsJeYF7q6uri4uJrbWtZWVm2tv+m' & _
+					'pqaOjo6C1YJoamixsf+Z3ZkOrw729v+trf/8/f3X8tdmZmYCAgLU1P/R0f+hof8u' & _
+					'Lv8hIf8TE/8PD//39/cGBgb7+//z8//t7f/X1//Hx/92dv9OTv/5+fnc3NxjY2NR' & _
+					'UVFKSkobGxsKCgrv7//r6//e3v/a2v/Ly/+lpf+Jif95ef9YWP86Ov8zM/8pKf8e' & _
+					'Hv8MDP8KCv8HB/+8vLwuLi7n5//i4v+/v/+pqf+dnf9wcP9jY/9LS/8lJf8bG/8W' & _
+					'Fv/m5ubU79TOzs6RkZGLi4uIiIhBQUE+Pj4SEhLOzv+4uP+Tk/+Ojv99ff9zc/9n' & _
+					'Z/9cXP9RUf83N/8ZGf/Y2NjV1dXR0dHIyMi3t7etra2hoaGampqVlZWEhIRycnJp' & _
+					'aWlVVVU4ODg1NTUiIiIWFhYAoA8IqwuGhv+EhP9AQP8NDf9fYfzs7OwADezg7uDg' & _
+					'4ODe3t7O6M7A2sA9bbe1tbUAM7Oy5bKysrIAOKpSlpkARJkAU4M0h4J/1H9Wx1ZO' & _
+					'xE5BwEE1vDUAijAnJycApwXm4IuGAAADT0lEQVRIx72W11rbQBCFR46QRAlghyhg' & _
+					'E2yKwdh003sJmN57SWih9xIgvfdeXzdnJQtJxjZ3/De738452pnRymu6CjpuMkoo' & _
+					'KrmKaJsYN66BmHjSSXPO2e3W2UrSiYthqoQwBqG7L0vkVAb75bRLDGl3szkTOQ2d' & _
+					'UQxC5oomvNOmbdP2UAo1xABmqBpQFEOLdT5JEDzV8kKLspDlYwaGaoi9zigmVysH' & _
+					'HlsF0qltFNkmMgmKKI4MFLgRyrZSCK77WBbr6AJOpm/MV5s+ZhufGN9adRBwvP30' & _
+					'nBNlCsHLutPAshE6DissKjMJHQ5K5/mvyMpHZhqhLyQwdmQxcrQGwzcRlUtkRIa+' & _
+					'iD1/N4/J8gL+Q39AmZ6M8nzKPMKPyIBnkONWvJhMMs2DnVi1fTZ/hsXyBgZPE95M' & _
+					'J+nU4QmsEVtMn5SrB8am817DQC6RZazThByR0PUZ6PfIiFCSzgy0hFOSRho12CAT' & _
+					'4z70Zbr4e6oCz5+lpp6dnv6xk8Y9ZJiP1492Vozohh+8iX9PSaMILcKwgw0OSGf0' & _
+					'FiOF539i+PzlfStpDHFcPYYyGOIpFLUGmkPaVdoHhrkVYzkyckQydEJUQCrVmDvR' & _
+					'dmxwTJEMAhqrVe2CoYuoxNCjzWQNW9BAOeik2bAOQzKpJFs08kaDBjcM5pTWDDuU' & _
+					'Ws558ev3By0lc9EvEZ0mlUSbwhSWYkmhy1A0tSptzcVJKycTt3WDFQav4cUNYPiL' & _
+					'8KtIhgZ8v+ajoSY+EcmQxXH9RIaqe4k+sm+hOLyhFhJ76PEuLkd8MryhEcdb0gM9' & _
+					'6vneZX2PD2eYRVMbSMeDn7jhKnIcQ1Dx7qJBwo/Tk+DR05s24KGSEygyElYFYjji' & _
+					'A0FDIccab2IJS30CraMMWAIHk+N7CeocXehFsFkiE5WDWFwQaMRvMZFRCj0KcNdQ' & _
+					'CL4cOJYrSdicyjiXz5RukMTyEa10gVrmGJKR/ohtv2xq2l86sVGM5WYst/eQgbhE' & _
+					'Ri45sznQJBuSFQqWRay5reRQRM/MF4q3iGMM92e6KiUp32fvwyNAc41+oYRcWT2t' & _
+					'XJD2dm3mrpeiXootnInhee9l125BYXPw6WLLolWKcu3qSDXdstztzI9wsXckMS77' & _
+					'66CItukK+A86y3aCrkROIwAAAABJRU5ErkJggg=='
+
+	EndSwitch
+
+	Return _Base64Decode($icondData)
+EndFunc   ;==>GetIconData
+
+Func _Base64Decode($input_string)
+
+	Local $struct = DllStructCreate("int")
+
+	$a_Call = DllCall("Crypt32.dll", "int", "CryptStringToBinary", _
+			"str", $input_string, _
+			"int", 0, _
+			"int", 1, _
+			"ptr", 0, _
+			"ptr", DllStructGetPtr($struct, 1), _
+			"ptr", 0, _
+			"ptr", 0)
+
+	If @error Or Not $a_Call[0] Then
+		Return SetError(1, 0, "") ; error calculating the length of the buffer needed
+	EndIf
+
+	Local $a = DllStructCreate("byte[" & DllStructGetData($struct, 1) & "]")
+
+	$a_Call = DllCall("Crypt32.dll", "int", "CryptStringToBinary", _
+			"str", $input_string, _
+			"int", 0, _
+			"int", 1, _
+			"ptr", DllStructGetPtr($a), _
+			"ptr", DllStructGetPtr($struct, 1), _
+			"ptr", 0, _
+			"ptr", 0)
+
+	If @error Or Not $a_Call[0] Then
+		Return SetError(2, 0, "") ; error decoding
+	EndIf
+
+	Return DllStructGetData($a, 1)
+
+EndFunc   ;==>_Base64Decode
+
+Func _memoryToPic($idPic, $name)
+	$hBmp = _GDIPlus_BitmapCreateFromMemory(Binary($name), 1)
+	_WinAPI_DeleteObject(GUICtrlSendMsg($idPic, 0x0172, 0, $hBmp))
+	_WinAPI_DeleteObject($hBmp)
+	Return 0
+EndFunc   ;==>_memoryToPic
