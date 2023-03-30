@@ -11,14 +11,17 @@
 ; Credit(s) .....: 	- jaberwacky: updates to create GUIBuilderNxt ( August 17, 2016 )
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
-; Revisions
+; Latest Revisions
 ;  09/19/2022 ...:	- CHANGED:	More sophisticated handling of AutoIt3.exe location
 ;  03/29/2023 ...:	- ADDED:	Undo / redo functionality
-;  03/29/2023 ...:	- FIXED:	Jumping while resizing
+;					- ADDED:	Change window title to match Title property
+;					- FIXED:	Jumping while resizing
+;					- UPDATED:	Updated About dialog
 ;
 ; Roadmap .......:	- Support for Msg or OnEvent mode attached to controls
 ;					- Finish control properties tabs
 ;					- Windows' theme support
+;					- Use single resize box for multiple selected controls
 ;
 ; ===============================================================================================================================
 

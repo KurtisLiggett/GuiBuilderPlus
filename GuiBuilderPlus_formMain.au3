@@ -37,12 +37,12 @@ Func _formMain()
 
 	$oMain.Left = $main_left
 	$oMain.Top = $main_top
-	$hGUI = GUICreate($oMain.AppName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ')', $oMain.Width, $oMain.Height, $main_left, $main_top, BitOR($WS_SIZEBOX, $WS_SYSMENU, $WS_MINIMIZEBOX), $WS_EX_ACCEPTFILES)
+	$hGUI = GUICreate($oMain.Title & " - Form (" & $oMain.Width & ", " & $oMain.Height & ')', $oMain.Width, $oMain.Height, $main_left, $main_top, BitOR($WS_SIZEBOX, $WS_SYSMENU, $WS_MINIMIZEBOX), $WS_EX_ACCEPTFILES)
 
 	_getGuiFrameSize()
 	WinMove($hGUI, "", Default, Default, $oMain.Width + $iGuiFrameW, $oMain.Height + $iGuiFrameH)
 
-	WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
+	WinSetTitle($hGUI, "", $oMain.Title & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
 
 
 
@@ -758,7 +758,7 @@ Func _onResize()
 	Else
 		$oProperties_Main.properties.Height.value = $oMain.Height
 	EndIf
-	WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $oProperties_Main.properties.Width.value & ", " & $oProperties_Main.properties.Height.value & ")")
+	WinSetTitle($hGUI, "", $oMain.Title & " - Form (" & $oProperties_Main.properties.Width.value & ", " & $oProperties_Main.properties.Height.value & ")")
 
 ;~ 	$oSelected.getFirst().grippies.show()
 EndFunc   ;==>_onResize
@@ -1788,7 +1788,7 @@ Func _onResetLayout()
 	$oMain.Top = (@DesktopHeight / 2) - ($oMain.Height / 2)
 
 	WinMove($hGUI, "", $oMain.Left, $oMain.Top, $oMain.Width + $iGuiFrameW, $oMain.Height + $iGuiFrameH)
-	WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
+	WinSetTitle($hGUI, "", $oMain.Title & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
 
 	;toolbar
 	Local Const $toolbar_width = 215
@@ -1969,6 +1969,8 @@ Func _main_change_title()
 
 	_refreshGenerateCode()
 	$oMain.hasChanged = True
+
+	WinSetTitle($hGUI, "", $oMain.Title & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
 EndFunc   ;==>_main_change_title
 
 
@@ -2008,7 +2010,7 @@ Func _main_change_width()
 	WinMove($hGUI, "", Default, Default, $newValue + $iGuiFrameW, Default)
 
 	Local $aWinPos = WinGetClientSize($hGUI)
-	WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $aWinPos[0] & ", " & $aWinPos[1] & ")")
+	WinSetTitle($hGUI, "", $oMain.Title & " - Form (" & $aWinPos[0] & ", " & $aWinPos[1] & ")")
 
 	$oMain.Width = $aWinPos[0]
 
@@ -2027,7 +2029,7 @@ Func _main_change_height()
 	WinMove($hGUI, "", Default, Default, Default, $newValue + $iGuiFrameH)
 
 	Local $aWinPos = WinGetClientSize($hGUI)
-	WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $aWinPos[0] & ", " & $aWinPos[1] & ")")
+	WinSetTitle($hGUI, "", $oMain.Title & " - Form (" & $aWinPos[0] & ", " & $aWinPos[1] & ")")
 
 	$oMain.Height = $aWinPos[1]
 
@@ -3165,7 +3167,7 @@ EndFunc   ;==>_onGithubItem
 ;------------------------------------------------------------------------------
 Func _menu_about()
 	$w = 350
-	$h = 290
+	$h = 265
 
 	$hAbout = GUICreate("About " & $oMain.AppName, $w, $h, Default, Default, $WS_CAPTION, -1, $hGUI)
 	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExitChild")
@@ -3179,19 +3181,25 @@ Func _menu_about()
 	GUICtrlCreateLabel("", 0, $h - 32, $w, 1)
 	GUICtrlSetBkColor(-1, 0x000000)
 
-	GUICtrlCreateLabel($oMain.AppName, 10, 10, $w - 15)
+	Local $pic = GUICtrlCreatePic("", 10, 10, 48, 48)
+	_memoryToPic($pic, GetIconData(0))
+
+	GUICtrlCreateLabel($oMain.AppName, 70, 10, $w - 15)
 	GUICtrlSetFont(-1, 13, 800)
 
 	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlCreateLabel("Version:", 5, 38, 60, -1, $SS_RIGHT)
+	GUICtrlCreateLabel("Version:", 60, 30, 60, -1, $SS_RIGHT)
 	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlCreateLabel($oMain.AppVersion, 70, 38, 65, -1)
+	GUICtrlCreateLabel($oMain.AppVersion, 125, 30, 65, -1)
 	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
 
-	GUICtrlCreateLabel("License:", 5, 55, 60, -1, $SS_RIGHT)
+	GUICtrlCreateLabel("License:", 60, 46, 60, -1, $SS_RIGHT)
 	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlCreateLabel("GNU GPL v3", 70, 55, 65, -1)
+	GUICtrlCreateLabel("GNU GPL v3", 125, 46, 65, -1)
 	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
+
+	GUICtrlCreateLabel("", 0, 75, $w, 1)
+	GUICtrlSetBkColor(-1, 0x000000)
 
 	$desc = "GuiBuilderPlus is a small, easy to use GUI designer for AutoIt." & @CRLF & @CRLF & _
 			"Originally created as AutoBuilder by the user CyberSlug," & @CRLF & _
@@ -3200,7 +3208,7 @@ Func _menu_about()
 			"with additional modifications by kurtykurtyboy as GuiBuilderPlus," & @CRLF & @CRLF & _
 			"GuiBuilderPlus is a continuation of the great work started by others," & @CRLF & _
 			"with a focus on increased stability and usability followed by new features."
-	GUICtrlCreateLabel($desc, 10, 90, $w - 16, 135)
+	GUICtrlCreateLabel($desc, 10, 85, $w - 16, 135)
 	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
 
 ;~ 	$desc = "Originally created as AutoBuilder by the user CyberSlug," & @CRLF & _
@@ -3304,3 +3312,86 @@ Func _setIconFromResource($ctrlID, $sIconName, $iIcon)
 		GUICtrlSetImage($ctrlID, $iconset & "\" & $sIconName)
 	EndIf
 EndFunc   ;==>_setIconFromResource
+
+Func GetIconData($iconSel)
+	Local $icondData
+	Switch $iconSel
+		Case 0
+			$icondData = '' & _
+					'iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAByFBMVEX///8AAP8A' & _
+					'AAAACwAAqgAABwD+/v8DA//5+f/09PTx8fHCwsJeYF7q6uri4uJrbWtZWVm2tv+m' & _
+					'pqaOjo6C1YJoamixsf+Z3ZkOrw729v+trf/8/f3X8tdmZmYCAgLU1P/R0f+hof8u' & _
+					'Lv8hIf8TE/8PD//39/cGBgb7+//z8//t7f/X1//Hx/92dv9OTv/5+fnc3NxjY2NR' & _
+					'UVFKSkobGxsKCgrv7//r6//e3v/a2v/Ly/+lpf+Jif95ef9YWP86Ov8zM/8pKf8e' & _
+					'Hv8MDP8KCv8HB/+8vLwuLi7n5//i4v+/v/+pqf+dnf9wcP9jY/9LS/8lJf8bG/8W' & _
+					'Fv/m5ubU79TOzs6RkZGLi4uIiIhBQUE+Pj4SEhLOzv+4uP+Tk/+Ojv99ff9zc/9n' & _
+					'Z/9cXP9RUf83N/8ZGf/Y2NjV1dXR0dHIyMi3t7etra2hoaGampqVlZWEhIRycnJp' & _
+					'aWlVVVU4ODg1NTUiIiIWFhYAoA8IqwuGhv+EhP9AQP8NDf9fYfzs7OwADezg7uDg' & _
+					'4ODe3t7O6M7A2sA9bbe1tbUAM7Oy5bKysrIAOKpSlpkARJkAU4M0h4J/1H9Wx1ZO' & _
+					'xE5BwEE1vDUAijAnJycApwXm4IuGAAADT0lEQVRIx72W11rbQBCFR46QRAlghyhg' & _
+					'E2yKwdh003sJmN57SWih9xIgvfdeXzdnJQtJxjZ3/De738452pnRymu6CjpuMkoo' & _
+					'KrmKaJsYN66BmHjSSXPO2e3W2UrSiYthqoQwBqG7L0vkVAb75bRLDGl3szkTOQ2d' & _
+					'UQxC5oomvNOmbdP2UAo1xABmqBpQFEOLdT5JEDzV8kKLspDlYwaGaoi9zigmVysH' & _
+					'HlsF0qltFNkmMgmKKI4MFLgRyrZSCK77WBbr6AJOpm/MV5s+ZhufGN9adRBwvP30' & _
+					'nBNlCsHLutPAshE6DissKjMJHQ5K5/mvyMpHZhqhLyQwdmQxcrQGwzcRlUtkRIa+' & _
+					'iD1/N4/J8gL+Q39AmZ6M8nzKPMKPyIBnkONWvJhMMs2DnVi1fTZ/hsXyBgZPE95M' & _
+					'J+nU4QmsEVtMn5SrB8am817DQC6RZazThByR0PUZ6PfIiFCSzgy0hFOSRho12CAT' & _
+					'4z70Zbr4e6oCz5+lpp6dnv6xk8Y9ZJiP1492Vozohh+8iX9PSaMILcKwgw0OSGf0' & _
+					'FiOF539i+PzlfStpDHFcPYYyGOIpFLUGmkPaVdoHhrkVYzkyckQydEJUQCrVmDvR' & _
+					'dmxwTJEMAhqrVe2CoYuoxNCjzWQNW9BAOeik2bAOQzKpJFs08kaDBjcM5pTWDDuU' & _
+					'Ws558ev3By0lc9EvEZ0mlUSbwhSWYkmhy1A0tSptzcVJKycTt3WDFQav4cUNYPiL' & _
+					'8KtIhgZ8v+ajoSY+EcmQxXH9RIaqe4k+sm+hOLyhFhJ76PEuLkd8MryhEcdb0gM9' & _
+					'6vneZX2PD2eYRVMbSMeDn7jhKnIcQ1Dx7qJBwo/Tk+DR05s24KGSEygyElYFYjji' & _
+					'A0FDIccab2IJS30CraMMWAIHk+N7CeocXehFsFkiE5WDWFwQaMRvMZFRCj0KcNdQ' & _
+					'CL4cOJYrSdicyjiXz5RukMTyEa10gVrmGJKR/ohtv2xq2l86sVGM5WYst/eQgbhE' & _
+					'Ri45sznQJBuSFQqWRay5reRQRM/MF4q3iGMM92e6KiUp32fvwyNAc41+oYRcWT2t' & _
+					'XJD2dm3mrpeiXootnInhee9l125BYXPw6WLLolWKcu3qSDXdstztzI9wsXckMS77' & _
+					'66CItukK+A86y3aCrkROIwAAAABJRU5ErkJggg=='
+
+	EndSwitch
+
+	Return _Base64Decode($icondData)
+EndFunc   ;==>GetIconData
+
+Func _Base64Decode($input_string)
+
+	Local $struct = DllStructCreate("int")
+
+	$a_Call = DllCall("Crypt32.dll", "int", "CryptStringToBinary", _
+			"str", $input_string, _
+			"int", 0, _
+			"int", 1, _
+			"ptr", 0, _
+			"ptr", DllStructGetPtr($struct, 1), _
+			"ptr", 0, _
+			"ptr", 0)
+
+	If @error Or Not $a_Call[0] Then
+		Return SetError(1, 0, "") ; error calculating the length of the buffer needed
+	EndIf
+
+	Local $a = DllStructCreate("byte[" & DllStructGetData($struct, 1) & "]")
+
+	$a_Call = DllCall("Crypt32.dll", "int", "CryptStringToBinary", _
+			"str", $input_string, _
+			"int", 0, _
+			"int", 1, _
+			"ptr", DllStructGetPtr($a), _
+			"ptr", DllStructGetPtr($struct, 1), _
+			"ptr", 0, _
+			"ptr", 0)
+
+	If @error Or Not $a_Call[0] Then
+		Return SetError(2, 0, "") ; error decoding
+	EndIf
+
+	Return DllStructGetData($a, 1)
+
+EndFunc   ;==>_Base64Decode
+
+Func _memoryToPic($idPic, $name)
+	$hBmp = _GDIPlus_BitmapCreateFromMemory(Binary($name), 1)
+	_WinAPI_DeleteObject(GUICtrlSendMsg($idPic, 0x0172, 0, $hBmp))
+	_WinAPI_DeleteObject($hBmp)
+	Return 0
+EndFunc   ;==>_memoryToPic
