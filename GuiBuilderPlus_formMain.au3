@@ -98,6 +98,9 @@ Func _formMain()
 	GUICtrlCreateMenuItem("", $contextmenu_arrange)
 	Local $contextmenu_arrange_spaceVertical = GUICtrlCreateMenuItem("Space Vertical", $contextmenu_arrange)
 	Local $contextmenu_arrange_spaceHorizontal = GUICtrlCreateMenuItem("Space Horizontal", $contextmenu_arrange)
+	GUICtrlCreateMenuItem("", $overlay_contextmenu)
+	Local $contextmenu_event = GUICtrlCreateMenuItem("Set control event", $overlay_contextmenu)
+
 	;menu events
 	GUICtrlSetOnEvent($overlay_contextmenu_cut, _cut_selected)
 	GUICtrlSetOnEvent($overlay_contextmenu_copy, _copy_selected)
@@ -114,6 +117,7 @@ Func _formMain()
 	GUICtrlSetOnEvent($contextmenu_arrange_centerPoints, "_onAlignMenu_CenterPoints")
 	GUICtrlSetOnEvent($contextmenu_arrange_spaceVertical, "_onAlignMenu_SpaceVertical")
 	GUICtrlSetOnEvent($contextmenu_arrange_spaceHorizontal, "_onAlignMenu_SpaceHorizontal")
+	GUICtrlSetOnEvent($contextmenu_event, "_onContextMenu_Event")
 
 	;special menu for tab control
 	$overlay_contextmenutab = GUICtrlCreateContextMenu(GUICtrlCreateDummy())
@@ -1166,11 +1170,11 @@ EndFunc   ;==>_onMenuSelectAll
 
 Func _onUndo()
 	_undo()
-EndFunc
+EndFunc   ;==>_onUndo
 
 Func _onRedo()
 	_redo()
-EndFunc
+EndFunc   ;==>_onRedo
 
 
 
@@ -1427,7 +1431,7 @@ Func _onMousePrimaryUp()
 				$oAction.ctrls = $oSelected.ctrls.Items()
 				Local $aParams[$oSelected.ctrls.Count]
 				Local $aParam[8]
-				For $i=0 To UBound($oAction.ctrls)-1
+				For $i = 0 To UBound($oAction.ctrls) - 1
 					$aParam[0] = $oAction.ctrls[$i].PrevWidth
 					$aParam[1] = $oAction.ctrls[$i].PrevHeight
 					$aParam[2] = $oAction.ctrls[$i].Width
@@ -2083,7 +2087,7 @@ Func _ctrl_change_text()
 	$oAction.ctrls = $oSelected.ctrls.Items()
 	Local $aParams[$oSelected.ctrls.Count]
 	Local $aParam[2]
-	For $i=0 To UBound($oAction.ctrls)-1
+	For $i = 0 To UBound($oAction.ctrls) - 1
 		$aParam[0] = $oAction.ctrls[$i].Text
 		$aParam[1] = $oProperties_Ctrls.properties.Text.value
 		$aParams[$i] = $aParam
@@ -2204,7 +2208,7 @@ Func _ctrl_change_left()
 	$oAction.ctrls = $oSelected.ctrls.Items()
 	Local $aParams[$oSelected.ctrls.Count]
 	Local $aParam[8]
-	For $i=0 To UBound($oAction.ctrls)-1
+	For $i = 0 To UBound($oAction.ctrls) - 1
 		$aParam[0] = $oAction.ctrls[$i].Width
 		$aParam[1] = $oAction.ctrls[$i].Height
 		$aParam[2] = $oAction.ctrls[$i].Width
@@ -2270,7 +2274,7 @@ Func _ctrl_change_top()
 	$oAction.ctrls = $oSelected.ctrls.Items()
 	Local $aParams[$oSelected.ctrls.Count]
 	Local $aParam[8]
-	For $i=0 To UBound($oAction.ctrls)-1
+	For $i = 0 To UBound($oAction.ctrls) - 1
 		$aParam[0] = $oAction.ctrls[$i].Width
 		$aParam[1] = $oAction.ctrls[$i].Height
 		$aParam[2] = $oAction.ctrls[$i].Width
@@ -2335,7 +2339,7 @@ Func _ctrl_change_width()
 	$oAction.ctrls = $oSelected.ctrls.Items()
 	Local $aParams[$oSelected.ctrls.Count]
 	Local $aParam[8]
-	For $i=0 To UBound($oAction.ctrls)-1
+	For $i = 0 To UBound($oAction.ctrls) - 1
 		$aParam[0] = $oAction.ctrls[$i].Width
 		$aParam[1] = $oAction.ctrls[$i].Height
 		$aParam[2] = $oProperties_Ctrls.properties.Width.value
@@ -2391,7 +2395,7 @@ Func _ctrl_change_height()
 	$oAction.ctrls = $oSelected.ctrls.Items()
 	Local $aParams[$oSelected.ctrls.Count]
 	Local $aParam[8]
-	For $i=0 To UBound($oAction.ctrls)-1
+	For $i = 0 To UBound($oAction.ctrls) - 1
 		$aParam[0] = $oAction.ctrls[$i].Width
 		$aParam[1] = $oAction.ctrls[$i].Height
 		$aParam[2] = $oAction.ctrls[$i].Width
@@ -2461,7 +2465,7 @@ Func _ctrl_change_bkColor()
 	$oAction.ctrls = $oSelected.ctrls.Items()
 	Local $aParams[$oSelected.ctrls.Count]
 	Local $aParam[2]
-	For $i=0 To UBound($oAction.ctrls)-1
+	For $i = 0 To UBound($oAction.ctrls) - 1
 		$aParam[0] = $oAction.ctrls[$i].Background
 		$aParam[1] = $colorInput
 		$aParams[$i] = $aParam
@@ -2587,7 +2591,7 @@ Func _ctrl_change_Color()
 	$oAction.ctrls = $oSelected.ctrls.Items()
 	Local $aParams[$oSelected.ctrls.Count]
 	Local $aParam[2]
-	For $i=0 To UBound($oAction.ctrls)-1
+	For $i = 0 To UBound($oAction.ctrls) - 1
 		$aParam[0] = $oAction.ctrls[$i].Color
 		$aParam[1] = $colorInput
 		$aParams[$i] = $aParam
@@ -3170,7 +3174,7 @@ Func _menu_about()
 	$h = 265
 
 	$hAbout = GUICreate("About " & $oMain.AppName, $w, $h, Default, Default, $WS_CAPTION, -1, $hGUI)
-	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExitChild")
+	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExitAbout")
 
 	; top section
 
@@ -3253,6 +3257,75 @@ EndFunc   ;==>_menu_vals
 
 
 #EndRegion ; menu bar items
+
+
+#Region event-item
+;------------------------------------------------------------------------------
+; Title...........: _onContextMenu_Event
+; Description.....: Call the context menu event function
+; Events..........: Context menu item
+;------------------------------------------------------------------------------
+Func _onContextMenu_Event()
+	_formEventEntry()
+EndFunc   ;==>_onContextMenu_Event
+
+;------------------------------------------------------------------------------
+; Title...........: _formEventEntry
+; Description.....: Create the event form to enter custom code
+;------------------------------------------------------------------------------
+Func _formEventEntry()
+	$w = 350
+	$h = 265
+	$footH = 32
+
+	$hEvent = GUICreate("Event Code", $w, $h, Default, Default, $WS_CAPTION, -1, $hGUI)
+	GUISetOnEvent($GUI_EVENT_CLOSE, "_onEventExit")
+
+	; top section
+
+	GUICtrlCreateLabel("", 0, 0, $w, $h - 32)
+	GUICtrlSetBkColor(-1, 0xFFFFFF)
+	GUICtrlSetState(-1, $GUI_DISABLE)
+
+	GUICtrlCreateLabel("", 5, 5, $w - 10, $h - $footH - 10)
+	GUICtrlSetBkColor(-1, 0x555555)
+	GUICtrlSetState(-1, $GUI_DISABLE)
+	$editEventCode = GUICtrlCreateEdit($oSelected.getFirst().CodeString, 5+1, 5+1, $w - 12, $h - $footH - 12, Bitor($ES_WANTRETURN, $WS_VSCROLL, $ES_AUTOVSCROLL), 0)
+
+
+	; bottom section
+
+	GUICtrlCreateLabel("", 0, $h - $footH, $w, 1)
+	GUICtrlSetBkColor(-1, 0x000000)
+
+	Local $bt_Save = GUICtrlCreateButton("Save", $w - 55, $h - $footH + 5, 50, 22)
+	GUICtrlSetOnEvent(-1, "_onEventSave")
+
+	Local $bt_Exit = GUICtrlCreateButton("Cancel", $w - 55 - 55, $h - $footH + 5, 50, 22)
+	GUICtrlSetOnEvent(-1, "_onEventExit")
+
+	GUISetState(@SW_DISABLE, $hGUI)
+	GUISetState(@SW_SHOW, $hEvent)
+
+EndFunc   ;==>_formEventEntry
+
+Func _onEventSave()
+	Local $sCode = GUICtrlRead($editEventCode)
+	For $oCtrl In $oSelected.ctrls.Items()
+		$oCtrl.CodeString = $sCode
+	Next
+
+	_onEventExit()
+	_refreshGenerateCode()
+EndFunc   ;==>_onEventExit
+
+Func _onEventExit()
+	GUIDelete($hEvent)
+	GUISetState(@SW_ENABLE, $hGUI)
+	GUISwitch($hGUI)
+EndFunc   ;==>_onEventExit
+
+#EndRegion
 
 
 ; #FUNCTION# ====================================================================================================================
