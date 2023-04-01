@@ -10,7 +10,7 @@
 ; Return..........: code as string
 ;------------------------------------------------------------------------------
 Func _code_generation()
-	Local $controls, $globals[2]
+	Local $controls, $controlEvents, $globals[2]
 
 	;get options
 ;~ 	Local $bAddDpiScale = $setting_dpi_scaling
@@ -42,9 +42,11 @@ Func _code_generation()
 	EndIf
 	$globals[1] = "Global "
 	Local $globalsIndex = 1
+
+	Local $aCtrlCode
 	For $oCtrl In $oCtrls.ctrls.Items()
 		;generate globals for controls
-		If ($oCtrl.Name <> "") And ($oCtrl.Global = $GUI_CHECKED) Then
+		If (($oCtrl.Name <> "") And ($oCtrl.Global = $GUI_CHECKED)) Or (Not $bOnEventMode And $bGuiFunction And $oCtrl.CodeString <> "") Then
 			If StringLen($globals[$globalsIndex]) > 100 Then
 				$globals[$globalsIndex] = StringTrimRight($globals[$globalsIndex], 2) & @CRLF
 				$globalsIndex += 1
@@ -58,7 +60,9 @@ Func _code_generation()
 		$includes &= _generate_includes($oCtrl, $includes)
 
 		;generate controls
-		$controls &= _generate_controls($controls, $oCtrl, $sDpiScale)
+		$aCtrlCode = _generate_controls($controls, $oCtrl, $sDpiScale, False, $bOnEventMode, Not $bOnEventMode And $bGuiFunction And $oCtrl.CodeString <> "")
+		$controls &= $aCtrlCode[0]
+		$controlEvents &= $aCtrlCode[1]
 	Next
 	If $globals[$globalsIndex] = "Global " Then
 		$globals[$globalsIndex] = ""
@@ -173,6 +177,9 @@ Func _code_generation()
 	$guiBodyCode &= $setOnEvent & _
 			$background & _
 			@CRLF & $controls
+	If $controlEvents <> "" Then
+		$guiBodyCode &= @CRLF & $controlEvents
+	EndIf
 
 	If $bGuiFunction Then
 		$guiBodyCode = StringReplace($guiBodyCode, "Global ", "")
@@ -192,6 +199,14 @@ Func _code_generation()
 	If $bAddDpiScale Then
 		$code &= @CRLF & $FuncDpiScaling
 	EndIf
+
+	If $bOnEventMode Then
+		For $oCtrl In $oCtrls.ctrls.Items()
+			If $oCtrl.CodeString = "" Then ContinueLoop
+			$code &= @CRLF & _getFuncCtrl($oCtrl)
+		Next
+	EndIf
+
 	Return $code
 EndFunc   ;==>_code_generation
 
@@ -217,7 +232,9 @@ EndFunc   ;==>_functionDoc
 ; Title...........: _generate_controls
 ; Description.....: generate the code for the controls
 ;------------------------------------------------------------------------------
-Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = False)
+Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = False, $bOnEventMode = False, $useCodeString = False)
+	Local $aRet[2]
+
 	If $oCtrl.Type = "TabItem" Then Return ""
 	If Not $isChild And $oCtrl.CtrlParent <> 0 Then Return ""
 
@@ -255,9 +272,10 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 	; The general template is GUICtrlCreateXXX( "text", left, top [, width [, height [, style [, exStyle]]] )
 	; but some controls do not use this.... Avi, Icon, Menu, Menuitem, Progress, Tabitem, TreeViewitem, updown
 	Local $mControls = ""
+	Local $sEvents = ""
 
-	Local $scopeString = "Global"
-	If Not ($oCtrl.Global = $GUI_CHECKED) Then $scopeString = "Local"
+	Local $scopeString = "Local"
+	If ($oCtrl.Global = $GUI_CHECKED) Or $useCodeString Then $scopeString = "Global"
 
 	Switch $oCtrl.Type
 		Case "Tab", "Group"
@@ -288,7 +306,7 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 				$mControls &= 'GUICtrlCreateTabItem("' & $oTab.Text & '")' & @CRLF
 
 				For $oTabCtrl In $oTab.ctrls.Items()
-					$mControls &= _generate_controls($sControls, $oTabCtrl, $sDpiScale, True)
+					$mControls &= _generate_controls($sControls, $oTabCtrl, $sDpiScale, True, $bOnEventMode, $useCodeString)
 				Next
 			Next
 			$mControls &= 'GUICtrlCreateTabItem("")' & @CRLF & @CRLF
@@ -318,7 +336,7 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & $ctrlStyle & ')' & @CRLF
 
 			For $oGroupCtrl In $oCtrl.ctrls.Items()
-				$mControls &= _generate_controls($sControls, $oGroupCtrl, $sDpiScale, True)
+				$mControls &= _generate_controls($sControls, $oGroupCtrl, $sDpiScale, True, $bOnEventMode, $useCodeString)
 			Next
 
 			$mControls &= 'GUICtrlCreateGroup("", -99, -99, 1, 1)' & @CRLF & @CRLF
@@ -326,6 +344,12 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 		Case Else
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & $ctrlStyle & ')' & @CRLF
 	EndSwitch
+
+	If $bOnEventMode Then
+		If $oCtrl.CodeString <> "" Then
+			$sEvents &= 'GUICtrlSetOnEvent($' & $oCtrl.Name & ', "_on' & $oCtrl.Name & '")' & @CRLF
+		EndIf
+	EndIf
 
 	If $oCtrl.FontSize <> "" And $oCtrl.FontSize <> -1 And $oCtrl.FontSize <> 8.5 Then
 		If $oCtrl.Type = "IP" Then
@@ -342,7 +366,10 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 		$mControls &= "GUICtrlSetBkColor(-1, 0x" & Hex($oCtrl.Background, 6) & ")" & @CRLF
 	EndIf
 
-	Return $mControls
+	$aRet[0] = $mControls
+	$aRet[1] = $sEvents
+
+	Return $aRet
 EndFunc   ;==>_generate_controls
 
 
@@ -459,7 +486,7 @@ Func _generate_includes(Const $oCtrl, Const $includes)
 		EndIf
 	EndIf
 
-	If StringInStr($oCtrl.styleString, "DTS_") OR StringInStr($oCtrl.styleString, "MCS_") Then
+	If StringInStr($oCtrl.styleString, "DTS_") Or StringInStr($oCtrl.styleString, "MCS_") Then
 		If Not StringInStr($includes, "<DateTimeConstants.au3>") Then
 			Return @CRLF & "#include <DateTimeConstants.au3>"
 		EndIf
@@ -551,7 +578,17 @@ Func _getFuncMain($bOnEventMode, $bGuiFunction)
 		$code &= '' & _
 				@TAB & @TAB & "Switch GUIGetMsg()" & @CRLF & _
 				@TAB & @TAB & @TAB & "Case $GUI_EVENT_CLOSE" & @CRLF & _
-				@TAB & @TAB & @TAB & @TAB & "ExitLoop" & @CRLF & @CRLF & _
+				@TAB & @TAB & @TAB & @TAB & "ExitLoop" & @CRLF & @CRLF
+
+		For $oCtrl In $oCtrls.ctrls.Items()
+			If $oCtrl.CodeString <> "" Then
+				$code &= '' & _
+						@TAB & @TAB & @TAB & "Case $" & $oCtrl.Name & @CRLF & _
+						@TAB & @TAB & @TAB & @TAB & _formatCodeString($oCtrl.CodeString) & @CRLF & @CRLF
+			EndIf
+		Next
+
+		$code &= '' & _
 				@TAB & @TAB & @TAB & "Case Else" & @CRLF & _
 				@TAB & @TAB & @TAB & @TAB & ";" & @CRLF & _
 				@TAB & @TAB & "EndSwitch" & @CRLF
@@ -625,3 +662,34 @@ Func _objDocData()
 
 	Return $oObject
 EndFunc   ;==>_objDocData
+
+
+Func _getFuncCtrl($oCtrl)
+	Local $sCodeString = _formatCodeString($oCtrl.CodeString)
+
+	If $sCodeString = "" Then Return ""
+
+	;function documentation template
+	Local $mDocData = _objDocData()
+	$mDocData.name = "_on" & $oCtrl.Name
+	$mDocData.description = ""
+	Local $FuncDoc = _functionDoc($mDocData) & @CRLF
+
+	Local $code = '' & _
+			$FuncDoc & _
+			"Func _on" & $oCtrl.Name & "()" & @CRLF
+
+	$code &= @TAB & _formatCodeString($oCtrl.CodeString) & @CRLF
+	$code &= '' & _
+			"EndFunc   ;==>_on" & $oCtrl.Name & @CRLF
+
+	Return $code
+EndFunc   ;==>_getFuncCtrl
+
+Func _formatCodeString($sCodeString)
+	Local $sNewString
+
+	$sNewString = StringReplace($sCodeString, @CRLF, @CRLF & @TAB & @TAB & @TAB & @TAB)
+
+	Return $sNewString
+EndFunc   ;==>_formatCodeString

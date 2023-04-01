@@ -15,14 +15,15 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
+;  03/31/2023 ...:	- ADDED:	Add events to controls (right-click context menu)
+;
 ;  09/19/2022 ...:	- CHANGED:	More sophisticated handling of AutoIt3.exe location
 ;  03/29/2023 ...:	- ADDED:	Undo / redo functionality
 ;					- ADDED:	Change window title to match Title property
 ;					- FIXED:	Jumping while resizing
 ;					- UPDATED:	Updated About dialog
 ;
-; Roadmap .......:	- Support for Msg or OnEvent mode attached to controls
-;					- Finish control properties tabs
+; Roadmap .......:	- Finish control properties tabs
 ;					- Windows' theme support
 ;					- Use single resize box for multiple selected controls
 ;
@@ -32,7 +33,7 @@
 #AutoIt3Wrapper_Res_HiDpi=y
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.0.0-beta4.exe
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.0.0-beta5.exe
 #AutoIt3Wrapper_Res_Fileversion=1.0.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 1.ico
@@ -70,7 +71,7 @@ Global $debug = True
 
 #Region ; globals
 ;GUI components
-Global $hGUI, $hToolbar, $hFormGenerateCode, $hFormObjectExplorer, $hStatusbar, $hAbout
+Global $hGUI, $hToolbar, $hFormGenerateCode, $hFormObjectExplorer, $hStatusbar, $hAbout, $hEvent
 Global $iGuiFrameH, $iGuiFrameW, $defaultGuiBkColor = 0xF0F0F0
 Global $menu_wipe, $contextmenu_lock
 ;Settings menu
@@ -86,6 +87,8 @@ Global $overlay = -1, $overlay_contextmenu, $overlay_contextmenutab
 Global $editCodeGeneration
 ;object explorer popup
 Global $lvObjects, $labelObjectCount, $childSelected
+;control events popup
+Global $editEventCode
 
 ;Property Inspector
 Global $oProperties_Main, $oProperties_Ctrls, $tabSelected, $tabProperties, $tabStyles, $tabStylesHwnd
@@ -99,7 +102,6 @@ Global Enum $props_Main, $props_Ctrls
 ; Cursor Consts - added by: Jaberwacky
 Global Const $ARROW = 2, $CROSS = 3, $SIZE_ALL = 9, $SIZENESW = 10, $SIZENS = 11, $SIZENWSE = 12, $SIZEWS = 13
 Global Enum $action_nudgeCtrl, $action_moveCtrl, $action_resizeCtrl, $action_deleteCtrl, $action_createCtrl, $action_renameCtrl, $action_changeColor, $action_changeBkColor, $action_pasteCtrl, $action_changeText
-
 
 ;other variables
 Global $bStatusNewMessage
