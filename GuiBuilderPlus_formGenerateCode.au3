@@ -11,11 +11,11 @@
 ;------------------------------------------------------------------------------
 Func _formGenerateCode()
 	Local $w = 450
-	Local $h = 550
+	Local $h = 575
 
 	Local $currentWinPos = WinGetPos($hToolbar)
 	Local $x = $currentWinPos[0] + 100
-		$y = $currentWinPos[1] - 50
+	$y = $currentWinPos[1] - 50
 
 	Local $sPos = IniRead($sIniPath, "Settings", "posGenerateCode", $x & "," & $y)
 	Local $aPos = StringSplit($sPos, ",")
@@ -52,24 +52,47 @@ Func _formGenerateCode()
 
 	Local $titleBarHeight = _WinAPI_GetSystemMetrics($SM_CYCAPTION) + 3
 
-	GUICtrlCreateLabel("", 0, 0, $w, $h - $titleBarHeight - 32)
+	GUICtrlCreateLabel("", 0, 0, $w, $h - $titleBarHeight - 57)
 	GUICtrlSetState(-1, $GUI_DISABLE)
 	GUICtrlSetBkColor(-1, 0xFFFFFF)
 	GUICtrlSetResizing(-1, $GUI_DOCKBORDERS)
 
-	$editCodeGeneration = GUICtrlCreateEdit("", 10, 10, $w - 20, $h - $titleBarHeight - 53)
+	$editCodeGeneration = GUICtrlCreateEdit("", 10, 10, $w - 20, $h - $titleBarHeight - 78)
 	GUICtrlSetResizing(-1, $GUI_DOCKBORDERS)
 	GUICtrlSetFont(-1, 9, -1, -1, "Courier New")
 	_GUICtrlEdit_SetTabStops($editCodeGeneration, 4)
 	GUICtrlSetData($editCodeGeneration, _code_generation())
 
 
-	GUICtrlCreateButton("Copy", $w - 20 - 75 * 2 - 5 * 1, $h - 27 - $titleBarHeight, 75, 22)
+	GUICtrlCreateButton("Copy", $w - 15 - 75 * 2 - 5, $h - 27 - $titleBarHeight, 75, 22)
 	GUICtrlSetOnEvent(-1, "_onCodeCopy")
 	GUICtrlSetResizing(-1, $GUI_DOCKRIGHT + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
-	GUICtrlCreateButton("Save to file", $w - 20 - 75 - 5, $h - 27 - $titleBarHeight, 75, 22)
+	GUICtrlCreateButton("Save to file", $w - 15 - 75, $h - 27 - $titleBarHeight, 75, 22)
 	GUICtrlSetOnEvent(-1, "_onCodeSave")
 	GUICtrlSetResizing(-1, $GUI_DOCKRIGHT + $GUI_DOCKBOTTOM + $GUI_DOCKWIDTH + $GUI_DOCKHEIGHT)
+
+	$radio_msgMode = GUICtrlCreateRadio("Msg Mode", 10, $h - 27 - $titleBarHeight - 25, 75, 22)
+	GUICtrlSetOnEvent(-1, "_radio_onMsgMode")
+	GUICtrlSetResizing(-1, $GUI_DOCKLEFT + $GUI_DOCKBOTTOM + $GUI_DOCKSIZE)
+	$radio_eventMode = GUICtrlCreateRadio("OnEvent Mode", 10 + 75 + 5, $h - 27 - $titleBarHeight - 25, 100, 22)
+	GUICtrlSetOnEvent(-1, "_radio_onEventMode")
+	GUICtrlSetResizing(-1, $GUI_DOCKLEFT + $GUI_DOCKBOTTOM + $GUI_DOCKSIZE)
+
+	$check_guiFunc = GUICtrlCreateCheckbox("Create GUI in a function", 10, $h - 27 - $titleBarHeight, 150, 22)
+	GUICtrlSetOnEvent(-1, "_menu_gui_function")
+	GUICtrlSetResizing(-1, $GUI_DOCKLEFT + $GUI_DOCKBOTTOM + $GUI_DOCKSIZE)
+
+	If $setting_onEvent_mode Then
+		GUICtrlSetState($radio_eventMode, $GUI_CHECKED)
+	Else
+		GUICtrlSetState($radio_msgMode, $GUI_CHECKED)
+	EndIf
+
+	If $setting_gui_function Then
+		GUICtrlSetState($check_guiFunc, $GUI_CHECKED)
+	Else
+		GUICtrlSetState($check_guiFunc, $GUI_UNCHECKED)
+	EndIf
 
 	Local Const $accel_selectAll = GUICtrlCreateDummy()
 	Local Const $accelerators[1][2] = [["^a", $accel_selectAll]]
@@ -114,7 +137,7 @@ EndFunc   ;==>_onCodeCopy
 
 Func _onSelectAll()
 	_GUICtrlEdit_SetSel($editCodeGeneration, 0, -1)
-EndFunc
+EndFunc   ;==>_onSelectAll
 
 ;------------------------------------------------------------------------------
 ; Title...........: _onExitGenerateCode

@@ -3107,26 +3107,50 @@ EndFunc   ;==>_menu_dpi_scaling
 ; Events..........: settings menu item
 ;------------------------------------------------------------------------------
 Func _menu_onEvent_mode()
-	Switch BitAND(GUICtrlRead($menu_onEvent_mode), $GUI_CHECKED) = $GUI_CHECKED
-		Case True
-			GUICtrlSetState($menu_onEvent_mode, $GUI_UNCHECKED)
-
-			IniWrite($sIniPath, "Settings", "OnEventMode", 0)
-
-			$setting_onEvent_mode = False
-
-
-		Case False
-			GUICtrlSetState($menu_onEvent_mode, $GUI_CHECKED)
-
-			IniWrite($sIniPath, "Settings", "OnEventMode", 1)
-
-			$setting_onEvent_mode = True
-
-	EndSwitch
-
-	_refreshGenerateCode()
+	_set_onEvent_mode()
 EndFunc   ;==>_menu_onEvent_mode
+
+Func _radio_onMsgMode()
+	_set_onEvent_mode(0)
+EndFunc   ;==>_radio_onMsgMode
+
+Func _radio_onEventMode()
+	_set_onEvent_mode(1)
+EndFunc   ;==>_radio_onEventMode
+
+Func _set_onEvent_mode($iState = -1)
+	Local $checkedState, $IniState
+
+	If $iState = -1 Then
+		Switch BitAND(GUICtrlRead($menu_onEvent_mode), $GUI_CHECKED) = $GUI_CHECKED
+			Case True
+				$checkedState = $GUI_UNCHECKED
+				$IniState = 0
+				$setting_onEvent_mode = False
+
+			Case False
+				$checkedState = $GUI_CHECKED
+				$IniState = 1
+				$setting_onEvent_mode = True
+		EndSwitch
+	ElseIf $iState = 0 Then
+		$checkedState = $GUI_UNCHECKED
+		$IniState = 0
+		$setting_onEvent_mode = False
+	ElseIf $iState = 1 Then
+		$checkedState = $GUI_CHECKED
+		$IniState = 1
+		$setting_onEvent_mode = True
+	EndIf
+
+	GUICtrlSetState($menu_onEvent_mode, $checkedState)
+	GUICtrlSetState($radio_eventMode, $checkedState)
+	If $checkedState = $GUI_UNCHECKED Then
+		GUICtrlSetState($radio_msgMode, $GUI_CHECKED)
+	EndIf
+	IniWrite($sIniPath, "Settings", "OnEventMode", $IniState)
+	_refreshGenerateCode()
+EndFunc   ;==>_set_onEvent_mode
 
 
 ;------------------------------------------------------------------------------
@@ -3138,6 +3162,7 @@ Func _menu_gui_function()
 	Switch BitAND(GUICtrlRead($menu_gui_function), $GUI_CHECKED) = $GUI_CHECKED
 		Case True
 			GUICtrlSetState($menu_gui_function, $GUI_UNCHECKED)
+			GUICtrlSetState($check_guiFunc, $GUI_UNCHECKED)
 
 			IniWrite($sIniPath, "Settings", "GuiInFunction", 0)
 
@@ -3146,6 +3171,7 @@ Func _menu_gui_function()
 
 		Case False
 			GUICtrlSetState($menu_gui_function, $GUI_CHECKED)
+			GUICtrlSetState($check_guiFunc, $GUI_CHECKED)
 
 			IniWrite($sIniPath, "Settings", "GuiInFunction", 1)
 
@@ -3290,7 +3316,7 @@ Func _formEventEntry()
 	GUICtrlCreateLabel("", 5, 5, $w - 10, $h - $footH - 10)
 	GUICtrlSetBkColor(-1, 0x555555)
 	GUICtrlSetState(-1, $GUI_DISABLE)
-	$editEventCode = GUICtrlCreateEdit($oSelected.getFirst().CodeString, 5+1, 5+1, $w - 12, $h - $footH - 12, Bitor($ES_WANTRETURN, $WS_VSCROLL, $ES_AUTOVSCROLL), 0)
+	$editEventCode = GUICtrlCreateEdit($oSelected.getFirst().CodeString, 5 + 1, 5 + 1, $w - 12, $h - $footH - 12, BitOR($ES_WANTRETURN, $WS_VSCROLL, $ES_AUTOVSCROLL), 0)
 
 
 	; bottom section
@@ -3317,7 +3343,7 @@ Func _onEventSave()
 
 	_onEventExit()
 	_refreshGenerateCode()
-EndFunc   ;==>_onEventExit
+EndFunc   ;==>_onEventSave
 
 Func _onEventExit()
 	GUIDelete($hEvent)
@@ -3325,7 +3351,7 @@ Func _onEventExit()
 	GUISwitch($hGUI)
 EndFunc   ;==>_onEventExit
 
-#EndRegion
+#EndRegion event-item
 
 
 ; #FUNCTION# ====================================================================================================================

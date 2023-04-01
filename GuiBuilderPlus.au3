@@ -16,6 +16,7 @@
 ;
 ; Latest Revisions
 ;  03/31/2023 ...:	- ADDED:	Add events to controls (right-click context menu)
+;					- ADDED:	Add options to code preview for convenience
 ;
 ;  09/19/2022 ...:	- CHANGED:	More sophisticated handling of AutoIt3.exe location
 ;  03/29/2023 ...:	- ADDED:	Undo / redo functionality
@@ -84,7 +85,7 @@ Global $overlay = -1, $overlay_contextmenu, $overlay_contextmenutab
 ;grippys
 ;~ Global $NorthWest_Grippy, $North_Grippy, $NorthEast_Grippy, $West_Grippy, $East_Grippy, $SouthWest_Grippy, $South_Grippy, $SouthEast_Grippy
 ;code generation popup
-Global $editCodeGeneration
+Global $editCodeGeneration, $radio_msgMode, $radio_eventMode, $check_guiFunc
 ;object explorer popup
 Global $lvObjects, $labelObjectCount, $childSelected
 ;control events popup
