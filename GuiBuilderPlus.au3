@@ -15,7 +15,7 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  03/31/2023 ...:	- ADDED:	Add events to controls (right-click context menu)
+;  03/31/2023 ...:	- ADDED:	Add events to controls (right-click menu or double click)
 ;					- ADDED:	Add options to code preview for convenience
 ;
 ;  09/19/2022 ...:	- CHANGED:	More sophisticated handling of AutoIt3.exe location
@@ -113,6 +113,7 @@ Global $testFileName, $TestFilePID = 0, $bReTest = 0, $aTestGuiPos, $hTestGui
 Global $au3InstallPath
 Global $initDraw, $initResize
 Global $hSelectionGraphic = -1
+Global $dblClickTime
 
 ;Control Objects
 Global $oMain, $oCtrls, $oSelected, $oClipboard, $oMouse
@@ -194,6 +195,7 @@ _main()
 Func _main()
 	_log("Startup")
 	_GDIPlus_Startup()
+	$dblClickTime = _GetDoubleClickTime()
 
 	;create the main program data objects
 	$oMouse = _objCreateMouse()

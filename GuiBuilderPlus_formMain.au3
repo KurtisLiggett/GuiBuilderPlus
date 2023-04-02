@@ -1180,6 +1180,11 @@ EndFunc   ;==>_onRedo
 
 
 #Region mouse events
+Func _GetDoubleClickTime()
+   Local $aDllRet = DllCall("user32.dll", "uint", "GetDoubleClickTime")
+   If Not @error Then Return $aDllRet[0]
+EndFunc
+
 Func _onMousePrimaryDown()
 ;~ 	_WinAPI_Window($hGUI)
 
@@ -1289,6 +1294,15 @@ Func _onMousePrimaryDown()
 					Local $aMousePos = MouseGetPos()
 					$oMouse.StartX = $aMousePos[0]
 					$oMouse.StartY = $aMousePos[1]
+
+					;handle double click detection
+					Static Local $clickTime, $prevCtrl
+					If $ctrl_hwnd = $prevCtrl And TimerDiff($clickTime) <= $dblClickTime Then
+						_formEventEntry()
+						Return
+					EndIf
+					$prevCtrl = $ctrl_hwnd
+					$clickTime = TimerInit()
 
 					Local $oCtrl = $oCtrls.get($ctrl_hwnd)
 
