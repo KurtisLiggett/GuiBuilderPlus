@@ -233,10 +233,10 @@ EndFunc   ;==>_functionDoc
 ; Description.....: generate the code for the controls
 ;------------------------------------------------------------------------------
 Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = False, $bOnEventMode = False, $useCodeString = False)
-	Local $aRet[2]
+	Local $aRet[2] = ["", ""]
 
-	If $oCtrl.Type = "TabItem" Then Return ""
-	If Not $isChild And $oCtrl.CtrlParent <> 0 Then Return ""
+	If $oCtrl.Type = "TabItem" Then Return $aRet
+	If Not $isChild And $oCtrl.CtrlParent <> 0 Then Return $aRet
 
 	;apply the DPI scaling factor
 	Local $left = $oCtrl.Left
@@ -299,14 +299,16 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 		Case "Tab"
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '(' & $ltwh & $ctrlStyle & ')' & @CRLF
 
-			Local $oTab
+			Local $oTab, $aCtrlCode
 			For $hTab In $oCtrl.Tabs
 				$oTab = $oCtrls.get($hTab)
 				$mControls &= $scopeString & " $" & $oTab.Name & " = "
 				$mControls &= 'GUICtrlCreateTabItem("' & $oTab.Text & '")' & @CRLF
 
 				For $oTabCtrl In $oTab.ctrls.Items()
-					$mControls &= _generate_controls($sControls, $oTabCtrl, $sDpiScale, True, $bOnEventMode, $useCodeString)
+					$aCtrlCode = _generate_controls($sControls, $oTabCtrl, $sDpiScale, True, $bOnEventMode, $useCodeString)
+					$mControls &= $aCtrlCode[0]
+					$sEvents &= $aCtrlCode[1]
 				Next
 			Next
 			$mControls &= 'GUICtrlCreateTabItem("")' & @CRLF & @CRLF
@@ -335,8 +337,11 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 		Case "Group"
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & $ctrlStyle & ')' & @CRLF
 
+			Local $aCtrlCode
 			For $oGroupCtrl In $oCtrl.ctrls.Items()
-				$mControls &= _generate_controls($sControls, $oGroupCtrl, $sDpiScale, True, $bOnEventMode, $useCodeString)
+				$aCtrlCode = _generate_controls($sControls, $oGroupCtrl, $sDpiScale, True, $bOnEventMode, $useCodeString)
+				$mControls &= $aCtrlCode[0]
+				$sEvents &= $aCtrlCode[1]
 			Next
 
 			$mControls &= 'GUICtrlCreateGroup("", -99, -99, 1, 1)' & @CRLF & @CRLF
