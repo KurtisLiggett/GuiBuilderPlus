@@ -3351,6 +3351,22 @@ EndFunc   ;==>_formEventEntry
 
 Func _onEventSave()
 	Local $sCode = GUICtrlRead($editEventCode)
+
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_changeCode
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[2]
+	For $i = 0 To UBound($oAction.ctrls) - 1
+		$aParam[0] = $oAction.ctrls[$i].CodeString
+		$aParam[1] = $sCode
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
+
+
 	For $oCtrl In $oSelected.ctrls.Items()
 		$oCtrl.CodeString = $sCode
 	Next

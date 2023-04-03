@@ -1444,6 +1444,17 @@ Func _undo()
 				_populate_control_properties_gui($oSelected.getFirst())
 				_refreshGenerateCode()
 
+			Case $action_changeCode
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				Local $aParams
+				For $i=0 To UBound($aActionCtrls)-1
+					$aParams = $aActionParams[$i]
+					$aActionCtrls[$i].CodeString = $aParams[0]
+				Next
+				_refreshGenerateCode()
+
 		EndSwitch
 
 		;move from undo stack to redo stack
@@ -1587,6 +1598,17 @@ Func _redo()
 				_SendMessage($hGUI, $WM_SETREDRAW, True)
 				_WinAPI_RedrawWindow($hGUI)
 				_populate_control_properties_gui($oSelected.getFirst())
+				_refreshGenerateCode()
+
+			Case $action_changeCode
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				Local $aParams
+				For $i=0 To UBound($aActionCtrls)-1
+					$aParams = $aActionParams[$i]
+					$aActionCtrls[$i].CodeString = $aParams[1]
+				Next
 				_refreshGenerateCode()
 
 		EndSwitch

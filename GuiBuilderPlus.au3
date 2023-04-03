@@ -102,7 +102,7 @@ Global Enum $mode_default, $mode_draw, $mode_drawing, $mode_init_move, $mode_ini
 Global Enum $props_Main, $props_Ctrls
 ; Cursor Consts - added by: Jaberwacky
 Global Const $ARROW = 2, $CROSS = 3, $SIZE_ALL = 9, $SIZENESW = 10, $SIZENS = 11, $SIZENWSE = 12, $SIZEWS = 13
-Global Enum $action_nudgeCtrl, $action_moveCtrl, $action_resizeCtrl, $action_deleteCtrl, $action_createCtrl, $action_renameCtrl, $action_changeColor, $action_changeBkColor, $action_pasteCtrl, $action_changeText
+Global Enum $action_nudgeCtrl, $action_moveCtrl, $action_resizeCtrl, $action_deleteCtrl, $action_createCtrl, $action_renameCtrl, $action_changeColor, $action_changeBkColor, $action_pasteCtrl, $action_changeText, $action_changeCode
 
 ;other variables
 Global $bStatusNewMessage
