@@ -1437,8 +1437,22 @@ Func _onMousePrimaryUp()
 					GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 					_delete_selected_controls()
 					_set_default_mode()
+				Else
+					;update the undo action stack
+					Local $oAction = _objAction()
+					$oAction.action = $action_drawCtrl
+					$oAction.ctrls = $oSelected.ctrls.Items()
+					Local $aParams[$oSelected.ctrls.Count]
+					Local $aParam[1]
+					For $i = 0 To UBound($oAction.ctrls) - 1
+						$aParam[0] = $oAction.ctrls[$i].Hwnd
+						$aParams[$i] = $aParam
+					Next
+					$oAction.parameters = $aParams
+					_updateActionStacks($oAction)
 				EndIf
 			Else
+				_log("** PrimaryUp: Else **")
 				;update the undo action stack
 				Local $oAction = _objAction()
 				$oAction.action = $action_resizeCtrl

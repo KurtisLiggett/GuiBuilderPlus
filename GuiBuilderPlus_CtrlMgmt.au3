@@ -1352,6 +1352,11 @@ Func _undo()
 				_populate_control_properties_gui($oSelected.getFirst())
 				_refreshGenerateCode()
 
+			Case $action_drawCtrl
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+				_deleteCtrls($aActionCtrls)
+
 			Case $action_deleteCtrl
 				Local $aActionCtrls = $oAction.ctrls
 				Local $aActionParams = $oAction.parameters
@@ -1519,6 +1524,37 @@ Func _redo()
 				_SendMessage($hGUI, $WM_SETREDRAW, True)
 				_WinAPI_RedrawWindow($hGUI)
 				_populate_control_properties_gui($oSelected.getFirst())
+				_refreshGenerateCode()
+
+			Case $action_drawCtrl
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				_SendMessage($hGUI, $WM_SETREDRAW, False)
+				Local $prevHwnd, $oNewCtrl
+				For $i=0 To UBound($aActionCtrls)-1
+					ConsoleWrite("$i: " & $i & @CRLF)
+					$prevHwnd = $aActionCtrls[$i].Hwnd
+					$oNewCtrl = _create_ctrl($aActionCtrls[$i])
+					ConsoleWrite(Hex($oNewCtrl.Hwnd,8) & @CRLF)
+					_remove_all_from_selected()
+;~ 					For $oActionObject In $aStackUndo
+;~ 						For $oActionCtrl In $oActionObject.ctrls
+;~ 							ConsoleWrite("  name: " & $oActionCtrl.Name & @CRLF)
+;~ 							ConsoleWrite("  hwnd: " & $oActionCtrl.Hwnd & @CRLF)
+;~ 							If $oActionCtrl.Hwnd = $prevHwnd Then
+;~ 								ConsoleWrite("  new hwnd: " & $oNewCtrl.Hwnd & @CRLF)
+;~ 								$oActionCtrl.Hwnd = $oNewCtrl.Hwnd
+;~ 								$oActionCtrl.grippies.parent = $oNewCtrl.Hwnd
+;~ 							Else
+;~ 								ConsoleWrite("  no match: " & $oActionCtrl.Hwnd & @CRLF)
+;~ 							EndIf
+;~ 						Next
+;~ 					Next
+				Next
+				_SendMessage($hGUI, $WM_SETREDRAW, True)
+				_WinAPI_RedrawWindow($hGUI)
+				_formObjectExplorer_updateList()
 				_refreshGenerateCode()
 
 			Case $action_deleteCtrl
