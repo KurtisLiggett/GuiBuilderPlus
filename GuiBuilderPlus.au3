@@ -15,7 +15,7 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  03/31/2023 ...:	- ADDED:	Add events to controls (right-click menu or double click)
+;  04/03/2023 ...:	- ADDED:	Add events to controls (right-click menu or double click)
 ;					- ADDED:	Add options to code preview window for convenience
 ;					- FIXED:	Could not 'undo' drawing of new control
 ;
