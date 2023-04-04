@@ -1,3 +1,6 @@
+#Region ; *** Dynamically added Include files ***
+#include <GuiRichEdit.au3>                                   ; added:04/03/23 22:31:21
+#EndRegion ; *** Dynamically added Include files ***
 ; #HEADER# ======================================================================================================================
 ; Title .........: GuiBuilderPlus_formGenerateCode.au3
 ; Description ...: Create the code generation popup GUI
@@ -57,11 +60,12 @@ Func _formGenerateCode()
 	GUICtrlSetBkColor(-1, 0xFFFFFF)
 	GUICtrlSetResizing(-1, $GUI_DOCKBORDERS)
 
-	$editCodeGeneration = GUICtrlCreateEdit("", 10, 10, $w - 20, $h - $titleBarHeight - 78)
+	$editCodeGeneration = _GUICtrlRichEdit_Create($hFormGenerateCode, "", 10, 10, $w - 20, $h - $titleBarHeight - 78, BitOR($ES_MULTILINE, $WS_VSCROLL, $WS_HSCROLL, $ES_AUTOVSCROLL))
 	GUICtrlSetResizing(-1, $GUI_DOCKBORDERS)
 	GUICtrlSetFont(-1, 9, -1, -1, "Courier New")
-	_GUICtrlEdit_SetTabStops($editCodeGeneration, 4)
-	GUICtrlSetData($editCodeGeneration, _code_generation())
+;~ 	_GUICtrlEdit_SetTabStops($editCodeGeneration, 4)
+;~ 	GUICtrlSetData($editCodeGeneration, _code_generation())
+	_RESH_SyntaxHighlight($editCodeGeneration, 0, _code_generation())
 
 
 	GUICtrlCreateButton("Copy", $w - 15 - 75 * 2 - 5, $h - 27 - $titleBarHeight, 75, 22)
@@ -111,8 +115,9 @@ EndFunc   ;==>_formGenerateCode
 ; Events..........: Refresh button in code generation dialog
 ;------------------------------------------------------------------------------
 Func _onCodeRefresh()
-	GUICtrlSetData($editCodeGeneration, _code_generation())
-	_GUICtrlEdit_SetSel($editCodeGeneration, 0, 0)
+;~ 	GUICtrlSetData($editCodeGeneration, _code_generation())
+	_RESH_SyntaxHighlight($editCodeGeneration, 0, _code_generation())
+;~ 	_GUICtrlEdit_SetSel($editCodeGeneration, 0, 0)
 EndFunc   ;==>_onCodeRefresh
 
 
@@ -165,6 +170,7 @@ EndFunc   ;==>_onExitGenerateCode
 ;------------------------------------------------------------------------------
 Func _refreshGenerateCode()
 	If IsHWnd($hFormGenerateCode) Then
-		GUICtrlSetData($editCodeGeneration, _code_generation())
+;~ 		GUICtrlSetData($editCodeGeneration, _code_generation())
+		_RESH_SyntaxHighlight($editCodeGeneration, 0, _code_generation())
 	EndIf
 EndFunc   ;==>_refreshGenerateCode

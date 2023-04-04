@@ -15,15 +15,7 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  04/03/2023 ...:	- ADDED:	Add events to controls (right-click menu or double click)
-;					- ADDED:	Add options to code preview window for convenience
-;					- FIXED:	Could not 'undo' drawing of new control
-;
-;  09/19/2022 ...:	- CHANGED:	More sophisticated handling of AutoIt3.exe location
-;  03/29/2023 ...:	- ADDED:	Undo / redo functionality
-;					- ADDED:	Change window title to match Title property
-;					- FIXED:	Jumping while resizing
-;					- UPDATED:	Updated About dialog
+;  04/04/2023 ...:	- ADDED:	Syntax Highlighting in code window (RESH UDF by Beege)
 ;
 ; Roadmap .......:	- Finish control properties tabs
 ;					- Windows' theme support
@@ -35,7 +27,7 @@
 #AutoIt3Wrapper_Res_HiDpi=y
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.0.0-beta5.exe
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.0.0-beta6.exe
 #AutoIt3Wrapper_Res_Fileversion=1.0.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 1.ico
@@ -165,6 +157,7 @@ _AutoItObject_StartUp()
 #include "UDFS\Json\json.au3"
 #include "UDFS\GUIScrollbars_Ex.au3"
 #include "UDFs\StringSize.au3"
+#include "UDFs\RESH.au3"
 #include "GuiBuilderPlus_objCtrl.au3"
 #include "GuiBuilderPlus_objProperties.au3"
 #include "GuiBuilderPlus_CtrlMgmt.au3"
