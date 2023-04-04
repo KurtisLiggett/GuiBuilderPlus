@@ -1298,7 +1298,7 @@ Func _onMousePrimaryDown()
 					;handle double click detection
 					Static Local $clickTime, $prevCtrl
 					If $ctrl_hwnd = $prevCtrl And TimerDiff($clickTime) <= $dblClickTime Then
-						_formEventEntry()
+						_formEventCode()
 						Return
 					EndIf
 					$prevCtrl = $ctrl_hwnd
@@ -3224,178 +3224,19 @@ EndFunc   ;==>_onGithubItem
 ; Description.....: Display popup with program description
 ;------------------------------------------------------------------------------
 Func _menu_about()
-	$w = 350
-	$h = 265
-
-	$hAbout = GUICreate("About " & $oMain.AppName, $w, $h, Default, Default, $WS_CAPTION, -1, $hGUI)
-	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExitAbout")
-
-	; top section
-
-	GUICtrlCreateLabel("", 0, 0, $w, $h - 32)
-	GUICtrlSetBkColor(-1, 0xFFFFFF)
-	GUICtrlSetState(-1, $GUI_DISABLE)
-
-	GUICtrlCreateLabel("", 0, $h - 32, $w, 1)
-	GUICtrlSetBkColor(-1, 0x000000)
-
-	Local $pic = GUICtrlCreatePic("", 10, 10, 48, 48)
-	_memoryToPic($pic, GetIconData(0))
-
-	GUICtrlCreateLabel($oMain.AppName, 70, 10, $w - 15)
-	GUICtrlSetFont(-1, 13, 800)
-
-	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlCreateLabel("Version:", 60, 30, 60, -1, $SS_RIGHT)
-	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlCreateLabel($oMain.AppVersion, 125, 30, 65, -1)
-	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
-
-	GUICtrlCreateLabel("License:", 60, 46, 60, -1, $SS_RIGHT)
-	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlCreateLabel("GNU GPL v3", 125, 46, 65, -1)
-	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
-
-	GUICtrlCreateLabel("", 0, 75, $w, 1)
-	GUICtrlSetBkColor(-1, 0x000000)
-
-	$desc = "GuiBuilderPlus is a small, easy to use GUI designer for AutoIt." & @CRLF & @CRLF & _
-			"Originally created as AutoBuilder by the user CyberSlug," & @CRLF & _
-			"enhanced as GuiBuilder by TheSaint," & @CRLF & _
-			"and further enhanced and expanded as GuiBuilderNxt by jaberwacky," & @CRLF & _
-			"with additional modifications by kurtykurtyboy as GuiBuilderPlus," & @CRLF & @CRLF & _
-			"GuiBuilderPlus is a continuation of the great work started by others," & @CRLF & _
-			"with a focus on increased stability and usability followed by new features."
-	GUICtrlCreateLabel($desc, 10, 85, $w - 16, 135)
-	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
-
-;~ 	$desc = "Originally created as AutoBuilder by the user CyberSlug," & @CRLF & _
-;~ 		"enhanced as GuiBuilder by TheSaint," & @CRLF & _
-;~ 		"and further enhanced and expanded as GuiBuilderNxt by jaberwacky," & @CRLF & _
-;~ 		"with additional modifications by kurtykurtyboy as GuiBuilderPlus," & @CRLF & _
-;~ 		"GuiBuilderPlus is a continuation of the great work started by others," & @CRLF & _
-;~ 		"with a focus on increased stability and usability followed by new features."
-;~ 	GUICtrlCreateLabel($desc, 10, 115, $w - 16, 100)
-;~ 	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
-
-	; bottom section
-
-	$bt_AboutOk = GUICtrlCreateButton("OK", $w - 55, $h - 27, 50, 22)
-	GUICtrlSetOnEvent(-1, "_onExitAbout")
-
-	GUISetState(@SW_DISABLE, $hGUI)
-	GUISetState(@SW_SHOW, $hAbout)
-
+	_formAbout()
 EndFunc   ;==>_menu_about
 
-Func _onExitAbout()
-	GUIDelete($hAbout)
-	GUISetState(@SW_ENABLE, $hGUI)
-	GUISwitch($hGUI)
-EndFunc   ;==>_onExitAbout
-
-Func _menu_vals()
-	Local Const $ctrl_count = $oCtrls.count
-
-	Local $values = "Total Of Controls = " & $ctrl_count & @CRLF & @CRLF
-
-	For $oCtrl In $oCtrls.ctrls.Items()
-
-		$values &= "Handle = " & Hex($oCtrl.Hwnd) & @CRLF & _
-				"Type   = " & $oCtrl.Type & @CRLF & _
-				"Name   = " & $oCtrl.Name & @CRLF & @CRLF
-	Next
-
-	MsgBox($MB_ICONINFORMATION, "Current Code Values", $values)
-EndFunc   ;==>_menu_vals
-
-
-#EndRegion ; menu bar items
-
-
-#Region event-item
 ;------------------------------------------------------------------------------
 ; Title...........: _onContextMenu_Event
 ; Description.....: Call the context menu event function
 ; Events..........: Context menu item
 ;------------------------------------------------------------------------------
 Func _onContextMenu_Event()
-	_formEventEntry()
+	_formEventCode()
 EndFunc   ;==>_onContextMenu_Event
 
-;------------------------------------------------------------------------------
-; Title...........: _formEventEntry
-; Description.....: Create the event form to enter custom code
-;------------------------------------------------------------------------------
-Func _formEventEntry()
-	$w = 350
-	$h = 265
-	$footH = 32
-
-	$hEvent = GUICreate("Event Code", $w, $h, Default, Default, $WS_CAPTION, -1, $hGUI)
-	GUISetOnEvent($GUI_EVENT_CLOSE, "_onEventExit")
-
-	; top section
-
-	GUICtrlCreateLabel("", 0, 0, $w, $h - 32)
-	GUICtrlSetBkColor(-1, 0xFFFFFF)
-	GUICtrlSetState(-1, $GUI_DISABLE)
-
-	GUICtrlCreateLabel("", 5, 5, $w - 10, $h - $footH - 10)
-	GUICtrlSetBkColor(-1, 0x555555)
-	GUICtrlSetState(-1, $GUI_DISABLE)
-	$editEventCode = GUICtrlCreateEdit($oSelected.getFirst().CodeString, 5 + 1, 5 + 1, $w - 12, $h - $footH - 12, BitOR($ES_WANTRETURN, $WS_VSCROLL, $ES_AUTOVSCROLL), 0)
-
-
-	; bottom section
-
-	GUICtrlCreateLabel("", 0, $h - $footH, $w, 1)
-	GUICtrlSetBkColor(-1, 0x000000)
-
-	Local $bt_Save = GUICtrlCreateButton("Save", $w - 55, $h - $footH + 5, 50, 22)
-	GUICtrlSetOnEvent(-1, "_onEventSave")
-
-	Local $bt_Exit = GUICtrlCreateButton("Cancel", $w - 55 - 55, $h - $footH + 5, 50, 22)
-	GUICtrlSetOnEvent(-1, "_onEventExit")
-
-	GUISetState(@SW_DISABLE, $hGUI)
-	GUISetState(@SW_SHOW, $hEvent)
-
-EndFunc   ;==>_formEventEntry
-
-Func _onEventSave()
-	Local $sCode = GUICtrlRead($editEventCode)
-
-	;update the undo action stack
-	Local $oAction = _objAction()
-	$oAction.action = $action_changeCode
-	$oAction.ctrls = $oSelected.ctrls.Items()
-	Local $aParams[$oSelected.ctrls.Count]
-	Local $aParam[2]
-	For $i = 0 To UBound($oAction.ctrls) - 1
-		$aParam[0] = $oAction.ctrls[$i].CodeString
-		$aParam[1] = $sCode
-		$aParams[$i] = $aParam
-	Next
-	$oAction.parameters = $aParams
-	_updateActionStacks($oAction)
-
-
-	For $oCtrl In $oSelected.ctrls.Items()
-		$oCtrl.CodeString = $sCode
-	Next
-
-	_onEventExit()
-	_refreshGenerateCode()
-EndFunc   ;==>_onEventSave
-
-Func _onEventExit()
-	GUIDelete($hEvent)
-	GUISetState(@SW_ENABLE, $hGUI)
-	GUISwitch($hGUI)
-EndFunc   ;==>_onEventExit
-
-#EndRegion event-item
+#EndRegion ; menu bar items
 
 
 ; #FUNCTION# ====================================================================================================================

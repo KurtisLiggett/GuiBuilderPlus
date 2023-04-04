@@ -167,6 +167,8 @@ _AutoItObject_StartUp()
 #include "GuiBuilderPlus_formPropertyInspector.au3"
 #include "GuiBuilderPlus_formGenerateCode.au3"
 #include "GuiBuilderPlus_formObjectExplorer.au3"
+#include "GuiBuilderPlus_formAbout.au3"
+#include "GuiBuilderPlus_formEventCode.au3"
 #EndRegion ; includes
 
 
