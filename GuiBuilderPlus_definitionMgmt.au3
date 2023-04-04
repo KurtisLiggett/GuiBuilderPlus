@@ -121,6 +121,7 @@ Func _save_gui_definition($saveAs = False)
 		Else
 			Json_Put($objOutput, ".Controls[" & $i & "].Background", "0x" & Hex($oCtrl.Background, 6))
 		EndIf
+		Json_Put($objOutput, ".Controls[" & $i & "].CodeString", $oCtrl.CodeString)
 
 		Switch $oCtrl.Type
 			Case "Tab"
@@ -160,6 +161,7 @@ Func _save_gui_definition($saveAs = False)
 							Else
 								Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Background", "0x" & Hex($oTabCtrl.Background, 6))
 							EndIf
+							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].CodeString", $oTabCtrl.CodeString)
 							$k += 1
 						Next
 
@@ -195,6 +197,7 @@ Func _save_gui_definition($saveAs = False)
 						Else
 							Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Background", "0x" & Hex($oThisCtrl.Background, 6))
 						EndIf
+						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].CodeString", $oThisCtrl.CodeString)
 						$k += 1
 					Next
 				EndIf
@@ -364,6 +367,7 @@ Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 			$oCtrl.Background = Dec(StringReplace($oCtrl.Background, "0x", ""))
 		EndIf
 		$oCtrl.FontSize = _Json_Get($oThisCtrl, ".FontSize", 8.5)
+		$oCtrl.CodeString = _Json_Get($oThisCtrl, ".CodeString", "")
 
 		$oNewCtrl = _create_ctrl($oCtrl, True)
 		Local $aStyles = StringSplit($oNewCtrl.styleString, ", ", $STR_ENTIRESPLIT + $STR_NOCOUNT)
@@ -419,6 +423,7 @@ Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 							$oCtrl2.Global = _Json_Get($oTabCtrl, ".Global", $GUI_CHECKED)
 							$oCtrl2.Locked = _Json_Get($oTabCtrl, ".Locked", $GUI_UNCHECKED)
 							$oCtrl2.styleString = _Json_Get($oTabCtrl, ".styleString", "")
+							$oCtrl2.CodeString = _Json_Get($oTabCtrl, ".CodeString", "")
 							$oCtrl2.Color = _Json_Get($oTabCtrl, ".Color", -1)
 							If $oCtrl2.Color <> -1 Then
 								$oCtrl2.Color = Dec(StringReplace($oCtrl2.Color, "0x", ""))
@@ -461,6 +466,7 @@ Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 					$oCtrl2.Global = _Json_Get($oGroupCtrl, ".Global", $GUI_CHECKED)
 					$oCtrl2.Locked = _Json_Get($oGroupCtrl, ".Locked", $GUI_UNCHECKED)
 					$oCtrl2.styleString = _Json_Get($oGroupCtrl, ".styleString", "")
+					$oCtrl2.CodeString = _Json_Get($oGroupCtrl, ".CodeString", "")
 					$oCtrl2.Color = _Json_Get($oGroupCtrl, ".Color", -1)
 					If $oCtrl2.Color <> -1 Then
 						$oCtrl2.Color = Dec(StringReplace($oCtrl2.Color, "0x", ""))

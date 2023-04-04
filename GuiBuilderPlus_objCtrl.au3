@@ -575,6 +575,7 @@ Func _objCtrl($oParent)
 	_AutoItObject_AddProperty($oObject, "Locked", $ELSCOPE_PUBLIC, False)
 	_AutoItObject_AddProperty($oObject, "styleString", $ELSCOPE_PUBLIC, "")
 	_AutoItObject_AddProperty($oObject, "styles", $ELSCOPE_PUBLIC, ObjCreate("Scripting.Dictionary"))
+	_AutoItObject_AddProperty($oObject, "CodeString", $ELSCOPE_PUBLIC, "")
 
 	Return $oObject
 EndFunc   ;==>_objCtrl

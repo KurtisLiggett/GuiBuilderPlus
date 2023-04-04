@@ -15,14 +15,17 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
+;  04/03/2023 ...:	- ADDED:	Add events to controls (right-click menu or double click)
+;					- ADDED:	Add options to code preview window for convenience
+;					- FIXED:	Could not 'undo' drawing of new control
+;
 ;  09/19/2022 ...:	- CHANGED:	More sophisticated handling of AutoIt3.exe location
 ;  03/29/2023 ...:	- ADDED:	Undo / redo functionality
 ;					- ADDED:	Change window title to match Title property
 ;					- FIXED:	Jumping while resizing
 ;					- UPDATED:	Updated About dialog
 ;
-; Roadmap .......:	- Support for Msg or OnEvent mode attached to controls
-;					- Finish control properties tabs
+; Roadmap .......:	- Finish control properties tabs
 ;					- Windows' theme support
 ;					- Use single resize box for multiple selected controls
 ;
@@ -32,7 +35,7 @@
 #AutoIt3Wrapper_Res_HiDpi=y
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.0.0-beta4.exe
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.0.0-beta5.exe
 #AutoIt3Wrapper_Res_Fileversion=1.0.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 1.ico
@@ -70,7 +73,7 @@ Global $debug = True
 
 #Region ; globals
 ;GUI components
-Global $hGUI, $hToolbar, $hFormGenerateCode, $hFormObjectExplorer, $hStatusbar, $hAbout
+Global $hGUI, $hToolbar, $hFormGenerateCode, $hFormObjectExplorer, $hStatusbar, $hAbout, $hEvent
 Global $iGuiFrameH, $iGuiFrameW, $defaultGuiBkColor = 0xF0F0F0
 Global $menu_wipe, $contextmenu_lock
 ;Settings menu
@@ -83,9 +86,11 @@ Global $overlay = -1, $overlay_contextmenu, $overlay_contextmenutab
 ;grippys
 ;~ Global $NorthWest_Grippy, $North_Grippy, $NorthEast_Grippy, $West_Grippy, $East_Grippy, $SouthWest_Grippy, $South_Grippy, $SouthEast_Grippy
 ;code generation popup
-Global $editCodeGeneration
+Global $editCodeGeneration, $radio_msgMode, $radio_eventMode, $check_guiFunc
 ;object explorer popup
 Global $lvObjects, $labelObjectCount, $childSelected
+;control events popup
+Global $editEventCode
 
 ;Property Inspector
 Global $oProperties_Main, $oProperties_Ctrls, $tabSelected, $tabProperties, $tabStyles, $tabStylesHwnd
@@ -98,8 +103,7 @@ Global Enum $mode_default, $mode_draw, $mode_drawing, $mode_init_move, $mode_ini
 Global Enum $props_Main, $props_Ctrls
 ; Cursor Consts - added by: Jaberwacky
 Global Const $ARROW = 2, $CROSS = 3, $SIZE_ALL = 9, $SIZENESW = 10, $SIZENS = 11, $SIZENWSE = 12, $SIZEWS = 13
-Global Enum $action_nudgeCtrl, $action_moveCtrl, $action_resizeCtrl, $action_deleteCtrl, $action_createCtrl, $action_renameCtrl, $action_changeColor, $action_changeBkColor, $action_pasteCtrl, $action_changeText
-
+Global Enum $action_nudgeCtrl, $action_moveCtrl, $action_resizeCtrl, $action_deleteCtrl, $action_createCtrl, $action_renameCtrl, $action_changeColor, $action_changeBkColor, $action_pasteCtrl, $action_changeText, $action_changeCode, $action_drawCtrl
 
 ;other variables
 Global $bStatusNewMessage
@@ -110,6 +114,7 @@ Global $testFileName, $TestFilePID = 0, $bReTest = 0, $aTestGuiPos, $hTestGui
 Global $au3InstallPath
 Global $initDraw, $initResize
 Global $hSelectionGraphic = -1
+Global $dblClickTime
 
 ;Control Objects
 Global $oMain, $oCtrls, $oSelected, $oClipboard, $oMouse
@@ -191,6 +196,7 @@ _main()
 Func _main()
 	_log("Startup")
 	_GDIPlus_Startup()
+	$dblClickTime = _GetDoubleClickTime()
 
 	;create the main program data objects
 	$oMouse = _objCreateMouse()
