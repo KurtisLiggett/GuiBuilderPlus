@@ -72,9 +72,9 @@ Global Const $g_cPreProc = 'cf12'
 Global Const $g_cComObjects = 'cf13'
 
 #EndRegion Global Variables and Constants
-$time = TimerInit()
+;~ $time = TimerInit()
 _CheckUDFs(0)
-ConsoleWrite('startup = ' & TimerDiff($time) & @LF)
+;~ ConsoleWrite('startup = ' & TimerDiff($time) & @LF)
 #Region Public Functions
 ; #FUNCTION# ====================================================================================================
 ; Name...........:	_RESH_SyntaxHighlight
@@ -306,7 +306,7 @@ Func __RESH_ASM_MC(ByRef $sSource);$sArray, ByRef $tSource, ByRef $tPtrTable)
 
 	$sSource = DllStructGetData($tOutput, 1)
 
-	ConsoleWrite('RESH ASM = ' & TimerDiff($timer) & @LF)
+;~ 	ConsoleWrite('RESH ASM = ' & TimerDiff($timer) & @LF)
 EndFunc   ;==>__RESH_ASM_MC
 
 #EndRegion Machine Code Function
@@ -425,7 +425,7 @@ Func __RESH_ReplaceRichEditTags(ByRef $sCode)
 	$sCode = StringReplace($sCode, @CR, '\par' & @CRLF, 0, 1)
 	$sCode = StringReplace($sCode, @TAB, '\tab ', 0, 1)
 
-	If $g_RESH_VIEW_TIMES Then ConsoleWrite('ReplaceRichEditTags = ' & TimerDiff($time) & @LF)
+;~ 	If $g_RESH_VIEW_TIMES Then ConsoleWrite('ReplaceRichEditTags = ' & TimerDiff($time) & @LF)
 EndFunc   ;==>__RESH_ReplaceRichEditTags
 Func __RESH_HeaderFooter(ByRef $sCode)
 #Tidy_Off
