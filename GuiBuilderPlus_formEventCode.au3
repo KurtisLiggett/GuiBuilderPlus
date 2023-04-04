@@ -24,8 +24,8 @@ Func _formEventCode()
 	GUICtrlCreateLabel("", 5, 5, $w - 10, $h - $footH - 10)
 	GUICtrlSetBkColor(-1, 0x555555)
 	GUICtrlSetState(-1, $GUI_DISABLE)
-	$editEventCode = GUICtrlCreateEdit($oSelected.getFirst().CodeString, 5 + 1, 5 + 1, $w - 12, $h - $footH - 12, BitOR($ES_WANTRETURN, $WS_VSCROLL, $ES_AUTOVSCROLL), 0)
 
+	$editEventCode = GUICtrlCreateEdit($oSelected.getFirst().CodeString, 5 + 1, 5 + 1, $w - 12, $h - $footH - 12, BitOR($ES_WANTRETURN, $WS_VSCROLL, $ES_AUTOVSCROLL), 0)
 
 	; bottom section
 
@@ -38,8 +38,22 @@ Func _formEventCode()
 	Local $bt_Exit = GUICtrlCreateButton("Cancel", $w - 55 - 55, $h - $footH + 5, 50, 22)
 	GUICtrlSetOnEvent(-1, "_onEventExit")
 
+	Local $bt_InsertCode = GUICtrlCreateButton("Insert ConsoleWrite", 5, $h - $footH + 5, 100, 22)
+	GUICtrlSetOnEvent(-1, "_onEventInsert1")
+
+	Local $bt_InsertMsgBox = GUICtrlCreateButton("Insert MsgBox", 110, $h - $footH + 5, 85, 22)
+	GUICtrlSetOnEvent(-1, "_onEventInsert2")
+
 	GUISetState(@SW_DISABLE, $hGUI)
 	GUISetState(@SW_SHOW, $hEvent)
+EndFunc
+
+Func _onEventInsert1()
+	_GUICtrlEdit_AppendText(GUICtrlGetHandle($editEventCode), 'ConsoleWrite("Event: $' & $oSelected.getFirst().Name & '" & @CRLF)')
+EndFunc
+
+Func _onEventInsert2()
+	_GUICtrlEdit_AppendText(GUICtrlGetHandle($editEventCode), 'MsgBox(0, "Event Message", "Event: $' & $oSelected.getFirst().Name & '")')
 EndFunc
 
 Func _onEventSave()

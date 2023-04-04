@@ -104,11 +104,12 @@ Func _RESH_SyntaxHighlight($hRichEdit, $sUpdateFunction = 0, $sNewData = "")
 	Else
 		$sCode = _RESH_GenerateRTFCode($sNewData, $sUpdateFunction)
 	EndIf
+
 	_GUICtrlRichEdit_ReplaceText($hRichEdit, '')
 	_GUICtrlRichEdit_SetLimitOnText($hRichEdit, Round(StringLen($sCode) * 1.5))
 
 	_GUICtrlRichEdit_StreamFromVar($hRichEdit, $sCode)
-	_GUICtrlRichEdit_AppendTextNoFocus($hRichEdit, $sCode)
+;~ 	_GUICtrlRichEdit_AppendTextNoFocus($hRichEdit, $sCode)
 
 	_GUICtrlRichEdit_GotoCharPosNoFocus($hRichEdit, $iStart)
 	_GUICtrlRichEdit_SetScrollPos($hRichEdit, $aScroll[0], $aScroll[1])
