@@ -127,7 +127,7 @@ EndFunc   ;==>_onCodeRefresh
 ; Events..........: Save button in code generation dialog
 ;------------------------------------------------------------------------------
 Func _onCodeSave()
-	_copy_code_to_output(GUICtrlRead($editCodeGeneration))
+	_copy_code_to_output(_GUICtrlRichEdit_GetText($editCodeGeneration))
 EndFunc   ;==>_onCodeSave
 
 
