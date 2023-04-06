@@ -281,11 +281,13 @@ Func _formToolbar()
 ;~ 	GUICtrlSetState($menu_dpi_scaling, $GUI_UNCHECKED)
 
 	Local $menu_help = GUICtrlCreateMenu("Help")
+	$menu_helpchm = GUICtrlCreateMenuItem("Help" & @TAB & "F1", $menu_help)
 	Local $menu_github = GUICtrlCreateMenuItem("Github Repository", $menu_help)
 	Local $menu_about = GUICtrlCreateMenuItem("About", $menu_help)         ; added by: TheSaint
 
 	GUICtrlSetOnEvent($menu_about, _menu_about)
 	GUICtrlSetOnEvent($menu_github, _onGithubItem)
+	GUICtrlSetOnEvent($menu_helpchm, _onHelpItem)
 
 	#EndRegion create-menu
 
@@ -460,8 +462,9 @@ Func _set_accelerators()
 	Local Const $accel_F5 = GUICtrlCreateDummy()
 	Local Const $accel_z = GUICtrlCreateDummy()
 	Local Const $accel_y = GUICtrlCreateDummy()
+	Local Const $accel_F1 = GUICtrlCreateDummy()
 
-	Local Const $accelerators[21][2] = _
+	Local Const $accelerators[22][2] = _
 			[ _
 			["{Delete}", $accel_delete], _
 			["^x", $accel_x], _
@@ -483,17 +486,19 @@ Func _set_accelerators()
 			["^s", $accel_s], _
 			["^o", $accel_o], _
 			["^z", $accel_z], _
-			["^y", $accel_y] _
+			["^y", $accel_y], _
+			["{F1}", $menu_helpchm] _
 			]
 	GUISetAccelerators($accelerators, $hGUI)
 
-	Local Const $acceleratorsToolbar[5][2] = _
+	Local Const $acceleratorsToolbar[6][2] = _
 			[ _
 			["{F3}", $menu_grid_snap], _
 			["{F7}", $menu_show_grid], _
 			["{F5}", $accel_F5], _
 			["^s", $accel_s], _
-			["^o", $accel_o] _
+			["^o", $accel_o], _
+			["{F1}", $menu_helpchm] _
 			]
 	GUISetAccelerators($accelerators, $hToolbar)
 	GUISetAccelerators($accelerators, $oProperties_Main.properties.Hwnd)
@@ -3210,6 +3215,14 @@ Func _menu_gui_function()
 	_refreshGenerateCode()
 EndFunc   ;==>_menu_gui_function
 
+
+;------------------------------------------------------------------------------
+; Title...........: _onHelpItem
+; Description.....: Open the help file
+;------------------------------------------------------------------------------
+Func _onHelpItem()
+	ShellExecute(@ScriptDir & "\storage\GuiBuilderPlus.chm")
+EndFunc   ;==>_onHelpItem
 
 ;------------------------------------------------------------------------------
 ; Title...........: _onGithubItem
