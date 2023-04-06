@@ -65,7 +65,7 @@ Global $debug = True
 
 #Region ; globals
 ;GUI components
-Global $hGUI, $hToolbar, $hFormGenerateCode, $hFormObjectExplorer, $hStatusbar, $hAbout, $hEvent
+Global $hGUI, $hToolbar, $hFormGenerateCode, $hFormObjectExplorer, $hStatusbar, $hAbout, $hEvent, $hSettings
 Global $iGuiFrameH, $iGuiFrameW, $defaultGuiBkColor = 0xF0F0F0
 Global $menu_wipe, $contextmenu_lock, $menu_helpchm
 ;Settings menu
@@ -83,6 +83,8 @@ Global $editCodeGeneration, $radio_msgMode, $radio_eventMode, $check_guiFunc
 Global $lvObjects, $labelObjectCount, $childSelected
 ;control events popup
 Global $editEventCode
+;settings popup
+Global $settingsChk_snapgrid, $settingsChk_pasteatmouse, $settingsChk_guifunction, $settingsChk_eventmode, $label_gridsize, $settingsInput_gridsize
 
 ;Property Inspector
 Global $oProperties_Main, $oProperties_Ctrls, $tabSelected, $tabProperties, $tabStyles, $tabStylesHwnd
@@ -169,6 +171,7 @@ _AutoItObject_StartUp()
 #include "GuiBuilderPlus_formObjectExplorer.au3"
 #include "GuiBuilderPlus_formAbout.au3"
 #include "GuiBuilderPlus_formEventCode.au3"
+#include "GuiBuilderPlus_formSettings.au3"
 #EndRegion ; includes
 
 
