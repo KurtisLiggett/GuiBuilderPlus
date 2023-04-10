@@ -47,7 +47,7 @@ Func _formObjectExplorer()
 		$y = 1
 	EndIf
 
-	$hFormObjectExplorer = GUICreate("Object Explorer", $w, $h, $x, $y, $WS_SIZEBOX, -1, $hGUI)
+	$hFormObjectExplorer = GUICreate("Object Explorer", $w, $h, $x, $y, $WS_SIZEBOX, -1, $hToolbar)
 	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExitObjectExplorer")
 	Local $titleBarHeight = _WinAPI_GetSystemMetrics($SM_CYCAPTION) + 3
 

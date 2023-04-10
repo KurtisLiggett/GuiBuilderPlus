@@ -10,6 +10,7 @@ Global Enum $typeHeading, $typeText, $typeNumber, $typeCheck, $typeColor, $getHe
 ; Description.....:	Create the code generation GUI
 ;------------------------------------------------------------------------------
 Func _formPropertyInspector($x, $y, $w, $h)
+	$w = $w - $__g_aSB_WindowInfo[0][5]/2
 	;tabs
 	Local $labelLine = GUICtrlCreateLabel("", $x, $y, 70 + 50, 1)
 	GUICtrlSetBkColor(-1, 0xC5C5C5)

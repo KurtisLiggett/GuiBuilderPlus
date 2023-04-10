@@ -22,6 +22,7 @@
 ;					- ADDED:	Syntax Highlighting in code window (RESH UDF by Beege)
 ;					- ADDED:	Full help file
 ;					- UPDATED:	Moved "Show grid" from Settings menu to View menu
+;					- UPDATED:	Control selection window is now the parent (main) window
 ;					- UPDATED:	Code improvements
 ;
 ; Roadmap .......:	- Finish control properties tabs
@@ -227,11 +228,11 @@ Func _main()
 	;create options object
 	$oOptions = _objOptions()
 
-	;make the main program GUI
-	_formMain()
-
 	;make the toolbar/properties GUI
 	_formToolbar()
+
+	;make the form GUI
+	_formMain()
 
 	_set_accelerators()
 

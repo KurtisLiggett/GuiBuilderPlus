@@ -37,7 +37,7 @@ Func _formMain()
 
 	$oMain.Left = $main_left
 	$oMain.Top = $main_top
-	$hGUI = GUICreate($oMain.Title & " - Form (" & $oMain.Width & ", " & $oMain.Height & ')', $oMain.Width, $oMain.Height, $main_left, $main_top, BitOR($WS_SIZEBOX, $WS_SYSMENU, $WS_MINIMIZEBOX), BitOR($WS_EX_ACCEPTFILES, $WS_EX_COMPOSITED))
+	$hGUI = GUICreate($oMain.Title & " - Form (" & $oMain.Width & ", " & $oMain.Height & ')', $oMain.Width, $oMain.Height, $main_left, $main_top, $WS_SIZEBOX, BitOR($WS_EX_ACCEPTFILES, $WS_EX_COMPOSITED), $hToolbar)
 
 	_getGuiFrameSize()
 	WinMove($hGUI, "", Default, Default, $oMain.Width + $iGuiFrameW, $oMain.Height + $iGuiFrameH)
@@ -47,9 +47,7 @@ Func _formMain()
 
 
 	;GUI events
-	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExit", $hGUI)
-	GUISetOnEvent($GUI_EVENT_MINIMIZE, "_onMinimize", $hGUI)
-	GUISetOnEvent($GUI_EVENT_RESTORE, "_onRestore")
+	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExitForm", $hGUI)
 	GUISetOnEvent($GUI_EVENT_RESIZED, "_onResize", $hGUI)
 	GUISetOnEvent($GUI_EVENT_PRIMARYDOWN, "_onMousePrimaryDown", $hGUI)
 	GUISetOnEvent($GUI_EVENT_PRIMARYUP, "_onMousePrimaryUp", $hGUI)
@@ -165,7 +163,11 @@ Func _formToolbar()
 		$toolbar_top = 0
 	EndIf
 
-	$hToolbar = GUICreate("Choose Control Type", $toolbar_width, $toolbar_height, $toolbar_left, $toolbar_top, $WS_CAPTION, -1, $hGUI)
+	$hToolbar = GUICreate($oMain.AppName, $toolbar_width, $toolbar_height, $toolbar_left, $toolbar_top, BitOR($WS_SYSMENU, $WS_MINIMIZEBOX))
+
+	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExit", $hToolbar)
+	GUISetOnEvent($GUI_EVENT_MINIMIZE, "_onMinimize", $hToolbar)
+	GUISetOnEvent($GUI_EVENT_RESTORE, "_onRestore", $hToolbar)
 
 	#Region create-menu
 	;create up the File menu
@@ -408,7 +410,7 @@ Func _formToolbar()
 
 
 	;create property inspector
-	_formPropertyInspector(0, 215, $toolbar_width, 222)
+	_formPropertyInspector(0, 210, $toolbar_width, 222)
 
 
 	$hStatusbar = _GUICtrlStatusBar_Create($hToolbar)
@@ -621,6 +623,11 @@ Func _onExit()
 	Exit
 EndFunc   ;==>_onExit
 
+Func _onExitForm()
+	;for now, close the program. In the future, close this form.
+	_onExit()
+EndFunc
+
 
 ;------------------------------------------------------------------------------
 ; Title...........: _onMinimize
@@ -630,10 +637,11 @@ EndFunc   ;==>_onExit
 Func _onMinimize()
 	_saveWinPositions()
 
-	GUISetState(@SW_MINIMIZE, $hGUI)
+	GUISetState(@SW_MINIMIZE, $hToolbar)
 	GUISetState(@SW_HIDE, $oProperties_Main.properties.Hwnd)
 	GUISetState(@SW_HIDE, $oProperties_Ctrls.properties.Hwnd)
 	GUISetState(@SW_HIDE, $tabStylesHwnd)
+;~ 	GUISetState(@SW_HIDE, $hGUI)
 EndFunc   ;==>_onMinimize
 
 
@@ -643,7 +651,7 @@ EndFunc   ;==>_onMinimize
 ; Event...........: taskbar button
 ;------------------------------------------------------------------------------
 Func _onRestore()
-	GUISetState(@SW_RESTORE, $hGUI)
+	GUISetState(@SW_RESTORE, $hToolbar)
 	If $oSelected.count > 0 Then
 		Switch $tabSelected
 			Case "Properties"
@@ -661,7 +669,8 @@ Func _onRestore()
 				GUISetState(@SW_SHOWNOACTIVATE, $tabStylesHwnd)
 		EndSwitch
 	EndIf
-	GUISetState(@SW_SHOWNORMAL, $hGUI)
+	GUISetState(@SW_SHOWNORMAL, $hToolbar)
+;~ 	GUISetState(@SW_SHOWNORMAL, $hGUI)
 	GUISwitch($hGUI)
 
 	$bResizedFlag = False

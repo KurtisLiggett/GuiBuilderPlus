@@ -47,7 +47,7 @@ Func _formGenerateCode()
 		$y = 1
 	EndIf
 
-	$hFormGenerateCode = GUICreate("Live Generated Code", $w, $h, $x, $y, $WS_SIZEBOX, -1, $hGUI)
+	$hFormGenerateCode = GUICreate("Live Generated Code", $w, $h, $x, $y, $WS_SIZEBOX, -1, $hToolbar)
 	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExitGenerateCode")
 
 	Local $titleBarHeight = _WinAPI_GetSystemMetrics($SM_CYCAPTION) + 3
