@@ -313,7 +313,7 @@ Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 		WinMove($hGUI, "", $newLeft, $newTop, $oMain.Width + $iGuiFrameW, $oMain.Height + $iGuiFrameH)
 		WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
 
-		If _setting_show_grid() Then
+		If $oOptions.showGrid Then
 			_display_grid($background, $oMain.Width, $oMain.Height)
 		EndIf
 	EndIf
@@ -588,7 +588,7 @@ Func _load_gui_definition_ini($AgdInfile = '')
 		WinMove($hGUI, "", $newLeft, $newTop, $oMain.Width + $iGuiFrameW, $oMain.Height + $iGuiFrameH)
 		WinSetTitle($hGUI, "", $oMain.AppName & " - Form (" & $oMain.Width & ", " & $oMain.Height & ")")
 
-		If _setting_show_grid() Then
+		If $oOptions.showGrid Then
 			_display_grid($background, $oMain.Width, $oMain.Height)
 		EndIf
 	EndIf

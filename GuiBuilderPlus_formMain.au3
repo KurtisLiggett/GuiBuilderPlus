@@ -237,7 +237,7 @@ Func _formToolbar()
 	;create the View menu
 	Local $menu_view = GUICtrlCreateMenu("View")
 	$menu_show_grid = GUICtrlCreateMenuItem("Show grid" & @TAB & "F7", $menu_view)
-	GUICtrlSetOnEvent($menu_show_grid, _showgrid)
+	GUICtrlSetOnEvent($menu_show_grid, _onShowGrid)
 	GUICtrlSetState($menu_show_grid, $GUI_CHECKED)
 	$menu_generateCode = GUICtrlCreateMenuItem("Live Generated Code", $menu_view)
 	GUICtrlSetOnEvent($menu_generateCode, "_onGenerateCode")
@@ -546,22 +546,22 @@ EndFunc   ;==>_hide_grid
 Func _display_grid(Const $grid_ctrl, Const $width, Const $height)
 	Local Const $iColor = 0xDEDEDE
 	Local $penSize = 1
-	Local Const $width_steps = $width / $grid_ticks
-	Local Const $height_steps = $height / $grid_ticks
+	Local Const $width_steps = $width / $oOptions.gridSize
+	Local Const $height_steps = $height / $oOptions.gridSize
 
 	GUICtrlSetGraphic($grid_ctrl, $GUI_GR_PENSIZE, $penSize)
 	GUICtrlSetGraphic($grid_ctrl, $GUI_GR_COLOR, $iColor)
 
 	;draw vertical lines
 	For $x = 0 To $width_steps
-		GUICtrlSetGraphic($grid_ctrl, $GUI_GR_MOVE, $x * $grid_ticks, 0)
-		GUICtrlSetGraphic($grid_ctrl, $GUI_GR_LINE, $x * $grid_ticks, $height)
+		GUICtrlSetGraphic($grid_ctrl, $GUI_GR_MOVE, $x * $oOptions.gridSize, 0)
+		GUICtrlSetGraphic($grid_ctrl, $GUI_GR_LINE, $x * $oOptions.gridSize, $height)
 	Next
 
 	;draw horizontal lines
 	For $x = 0 To $height_steps
-		GUICtrlSetGraphic($grid_ctrl, $GUI_GR_MOVE, 0, $x * $grid_ticks)
-		GUICtrlSetGraphic($grid_ctrl, $GUI_GR_LINE, $width, $x * $grid_ticks)
+		GUICtrlSetGraphic($grid_ctrl, $GUI_GR_MOVE, 0, $x * $oOptions.gridSize)
+		GUICtrlSetGraphic($grid_ctrl, $GUI_GR_LINE, $width, $x * $oOptions.gridSize)
 	Next
 
 	;refresh the graphic display
@@ -734,7 +734,7 @@ EndFunc   ;==>WM_NOTIFY
 Func _onResize()
 	Local $win_client_size = WinGetClientSize($hGUI)
 
-	If _setting_show_grid() Then
+	If $oOptions.showGrid Then
 		_display_grid($background, $win_client_size[0], $win_client_size[1])
 	EndIf
 
@@ -867,7 +867,7 @@ Func _nudgeSelected($x = 0, $y = 0, $aUndoCtrls = 0)
 	GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 	$oCtrls.mode = $mode_default
 
-;~ 	Local $nudgeAmount = ($oOptions.snapGrid) ? $grid_ticks : 1
+;~ 	Local $nudgeAmount = ($oOptions.snapGrid) ? $oOptions.gridSize : 1
 	Local $nudgeAmount = 1
 	Local $adjustmentX = 0, $adjustmentX = 0
 
@@ -2042,7 +2042,7 @@ Func _main_change_width()
 
 	$oMain.Width = $aWinPos[0]
 
-	If _setting_show_grid() Then
+	If $oOptions.showGrid Then
 		_display_grid($background, $aWinPos[0], $aWinPos[1])
 	EndIf
 
@@ -2061,7 +2061,7 @@ Func _main_change_height()
 
 	$oMain.Height = $aWinPos[1]
 
-	If _setting_show_grid() Then
+	If $oOptions.showGrid Then
 		_display_grid($background, $aWinPos[0], $aWinPos[1])
 	EndIf
 
@@ -2774,9 +2774,9 @@ EndFunc   ;==>_mouse_snap_pos
 
 Func _snap_to_grid($coords)
 	If $oOptions.snapGrid Then
-		$coords[0] = $grid_ticks * Int($coords[0] / $grid_ticks - 0.5) + $grid_ticks
+		$coords[0] = $oOptions.gridSize * Int($coords[0] / $oOptions.gridSize - 0.5) + $oOptions.gridSize
 
-		$coords[1] = $grid_ticks * Int($coords[1] / $grid_ticks - 0.5) + $grid_ticks
+		$coords[1] = $oOptions.gridSize * Int($coords[1] / $oOptions.gridSize - 0.5) + $oOptions.gridSize
 	EndIf
 
 	Return $coords
@@ -2911,20 +2911,6 @@ Func _rect_from_points(Const $a1, Const $a2, Const $b1, Const $b2)
 	Return $oRect
 EndFunc   ;==>_rect_from_points
 #EndRegion ; rectangle management
-
-
-Func _setting_show_grid(Const $toggle = False, Const $value = '')
-	Local Static $setting_show_grid = False
-
-	Switch $toggle
-		Case True
-			$setting_show_grid = $value
-	EndSwitch
-
-	Return $setting_show_grid
-EndFunc   ;==>_setting_show_grid
-
-
 
 #EndRegion functions
 

@@ -25,7 +25,7 @@ Func _formSettings()
 	GUICtrlSetBkColor(-1, 0xFFFFFF)
 	$label_gridsize = GUICtrlCreateLabel("Grid size:", 10, 103, 55, 21)
 	GUICtrlSetBkColor(-1, 0xFFFFFF)
-	$settingsInput_gridsize = GUICtrlCreateInput("", 60, 100, 71, 21)
+	$settingsInput_gridsize = GUICtrlCreateInput($oOptions.gridSize, 60, 100, 71, 21, $ES_NUMBER)
 
 	If $oOptions.snapGrid Then
 		GUICtrlSetState($settingsChk_snapgrid, $GUI_CHECKED)
@@ -59,36 +59,58 @@ Func _onSaveSettings()
 	Local $bPasteatmouse = (BitAND(GUICtrlRead($settingsChk_pasteatmouse), $GUI_CHECKED) = $GUI_CHECKED)
 	Local $bGuifunction = (BitAND(GUICtrlRead($settingsChk_guifunction), $GUI_CHECKED) = $GUI_CHECKED)
 	Local $bEventmode = (BitAND(GUICtrlRead($settingsChk_eventmode), $GUI_CHECKED) = $GUI_CHECKED)
-	Local $iGridsize = GUICtrlRead($label_gridsize)
+	Local $iGridsize = GUICtrlRead($settingsInput_gridsize)
+
+	If $iGridsize < 2 Then
+		$bStatusNewMessage = True
+		_GUICtrlStatusBar_SetText($hStatusbar, "Grid size too small!")
+		Return 0
+	EndIf
 
 	GUIDelete($hSettings)
 	GUISetState(@SW_ENABLE, $hGUI)
 	GUISwitch($hGUI)
 
 	;snap grid
-	_gridsnap($bSnapgrid)
+	If $oOptions.snapGrid <> $bSnapgrid Then
+		_gridsnap($bSnapgrid)
+	EndIf
 
 	;paste at mouse
-	If $bPasteatmouse Then
-		IniWrite($sIniPath, "Settings", "PastePos", 1)
-	Else
-		IniWrite($sIniPath, "Settings", "PastePos", 0)
+	If $oOptions.pasteAtMouse <> $bPasteatmouse Then
+		If $bPasteatmouse Then
+			IniWrite($sIniPath, "Settings", "PastePos", 1)
+		Else
+			IniWrite($sIniPath, "Settings", "PastePos", 0)
+		EndIf
+		$oOptions.pasteAtMouse = $bPasteatmouse
 	EndIf
-	$oOptions.pasteAtMouse = $bPasteatmouse
 
 	;gui in function
-	If $bGuifunction Then
-		GUICtrlSetState($check_guiFunc, $GUI_CHECKED)
-		IniWrite($sIniPath, "Settings", "GuiInFunction", 1)
-	Else
-		GUICtrlSetState($check_guiFunc, $GUI_UNCHECKED)
-		IniWrite($sIniPath, "Settings", "GuiInFunction", 0)
+	If $oOptions.guiInFunction <> $bGuifunction Then
+		If $bGuifunction Then
+			GUICtrlSetState($check_guiFunc, $GUI_CHECKED)
+			IniWrite($sIniPath, "Settings", "GuiInFunction", 1)
+		Else
+			GUICtrlSetState($check_guiFunc, $GUI_UNCHECKED)
+			IniWrite($sIniPath, "Settings", "GuiInFunction", 0)
+		EndIf
+		$oOptions.guiInFunction = $bGuifunction
+		_refreshGenerateCode()
 	EndIf
-	$oOptions.guiInFunction = $bGuifunction
-	_refreshGenerateCode()
 
 	;event mode
-	_set_onEvent_mode($bEventmode)
+	If $oOptions.eventMode <> $bEventmode Then
+		_set_onEvent_mode($bEventmode)
+	EndIf
+
+	;grid size
+	If $oOptions.gridSize <> $iGridsize Then
+		$oOptions.gridSize = $iGridsize
+		_showgrid(True)
+		IniWrite($sIniPath, "Settings", "GridSize", $iGridsize)
+	EndIf
+
 
 EndFunc   ;==>_onSaveSettings
 
@@ -99,35 +121,41 @@ Func _onExitSettings()
 EndFunc   ;==>_onExitSettings
 
 
+Func _onShowGrid()
+	_showgrid()
+EndFunc
 ;------------------------------------------------------------------------------
 ; Title...........: _showgrid
 ; Description.....: Show (or hide) the background grid and update INI file
 ; Events..........: settings menu item select
 ;------------------------------------------------------------------------------
-Func _showgrid()
-	Local Const $show_grid_data = GUICtrlRead($menu_show_grid)
+Func _showgrid($state = Default)
 	Local $message = "Grid: "
+	Local $newState
+	If $state = Default Then
+		$newState = Not $oOptions.showGrid
+	else
+		$newState = $state
+	EndIf
 
-	Select
-		Case BitAND($show_grid_data, $GUI_CHECKED) = $GUI_CHECKED
-			GUICtrlSetState($menu_show_grid, $GUI_UNCHECKED)
+	If Not $newState Then
+		GUICtrlSetState($menu_show_grid, $GUI_UNCHECKED)
+		_hide_grid($background)
+		IniWrite($sIniPath, "Settings", "ShowGrid", 0)
+		$message &= "OFF"
+	Else
+		GUICtrlSetState($menu_show_grid, $GUI_CHECKED)
+		_show_grid($background, $oMain.Width, $oMain.Height)
+		IniWrite($sIniPath, "Settings", "ShowGrid", 1)
+		$message &= "ON"
+	EndIf
 
-			_hide_grid($background)
+	$oOptions.showGrid = $newState
 
-			IniWrite($sIniPath, "Settings", "ShowGrid", 0)
-			$message &= "OFF"
-
-		Case BitAND($show_grid_data, $GUI_UNCHECKED) = $GUI_UNCHECKED
-			GUICtrlSetState($menu_show_grid, $GUI_CHECKED)
-
-			_show_grid($background, $oMain.Width, $oMain.Height)
-
-			IniWrite($sIniPath, "Settings", "ShowGrid", 1)
-			$message &= "ON"
-	EndSelect
-
-	$bStatusNewMessage = True
-	_GUICtrlStatusBar_SetText($hStatusbar, $message)
+	If $state = Default Then
+		$bStatusNewMessage = True
+		_GUICtrlStatusBar_SetText($hStatusbar, $message)
+	EndIf
 EndFunc   ;==>_showgrid
 
 

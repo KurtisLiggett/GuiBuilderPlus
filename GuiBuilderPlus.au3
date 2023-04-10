@@ -17,8 +17,10 @@
 ; Latest Revisions
 ;  04/09/2023 ...:
 ;					- ADDED:	New settings dialog
+;					- ADDED:	Adjustable grid size setting
 ;					- ADDED:	Syntax Highlighting in code window (RESH UDF by Beege)
 ;					- ADDED:	Full help file
+;					- UPDATED:	Moved "Show grid" from Settings menu to View menu
 ;					- UPDATED:	Code improvements
 ;
 ; Roadmap .......:	- Finish control properties tabs
@@ -88,13 +90,12 @@ Global $lvObjects, $labelObjectCount, $childSelected
 ;control events popup
 Global $editEventCode
 ;settings popup
-Global $settingsChk_snapgrid, $settingsChk_pasteatmouse, $settingsChk_guifunction, $settingsChk_eventmode, $label_gridsize, $settingsInput_gridsize
+Global $settingsChk_snapgrid, $settingsChk_pasteatmouse, $settingsChk_guifunction, $settingsChk_eventmode, $settingsInput_gridsize
 
 ;Property Inspector
 Global $oProperties_Main, $oProperties_Ctrls, $tabSelected, $tabProperties, $tabStyles, $tabStylesHwnd
 
 ;GUI Constants
-Global Const $grid_ticks = 10
 Global Const $iconset = @ScriptDir & "\resources\Icons\" ; Added by: TheSaint
 Global Enum $mode_default, $mode_draw, $mode_drawing, $mode_init_move, $mode_init_selection, $mode_paste, _
 		$resize_nw, $resize_n, $resize_ne, $resize_e, $resize_se, $resize_s, $resize_sw, $resize_w
@@ -363,7 +364,9 @@ EndFunc   ;==>_get_script_title
 ;------------------------------------------------------------------------------
 Func _initialize_settings()
 
+	$oOptions.GridSize = 10
 	Local $aSettings = IniReadSection($sIniPath, "Settings")
+
 	If Not @error Then
 		For $i = 1 To $aSettings[0][0]
 			Switch $aSettings[$i][0]
@@ -381,8 +384,15 @@ Func _initialize_settings()
 					$oOptions.guiInFunction = ($aSettings[$i][1] = 1) ? True : False
 				Case "OnEventMode"
 					$oOptions.eventMode = ($aSettings[$i][1] = 1) ? True : False
+				Case "GridSize"
+					$oOptions.GridSize = $aSettings[$i][1]
 			EndSwitch
 		Next
+	Else
+		$oOptions.showGrid = True
+		$oOptions.pasteAtMouse = True
+		$oOptions.guiInFunction = True
+		$oOptions.eventMode = False
 	EndIf
 
 	If $oOptions.showGrid Then
@@ -390,7 +400,6 @@ Func _initialize_settings()
 	Else
 		_hide_grid($background)
 	EndIf
-	_setting_show_grid(True, $oOptions.showGrid)
 
 	_setCheckedState($menu_show_grid, $oOptions.showGrid)
 	_setCheckedState($menu_generateCode, $oOptions.showCodeViewer)
