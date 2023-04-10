@@ -335,7 +335,9 @@ Func _generateStyles($w = Default, $h = Default, $x = Default, $y = Default)
 	EndIf
 
 	;items - generated dynamically based on current selection
-	_SendMessage($tabStylesHwnd, $WM_SETREDRAW, False)
+	If BitAND( WinGetState($tabStylesHwnd), $WIN_STATE_VISIBLE) Then
+		_SendMessage($tabStylesHwnd, $WM_SETREDRAW, False)
+	EndIf
 
 	;loop through and generate common styles
 	Switch $props
@@ -431,8 +433,10 @@ Func _generateStyles($w = Default, $h = Default, $x = Default, $y = Default)
 	$labelLine = GUICtrlCreateLabel("", $width - $iScrollbarWidth - 1 - 81, 0, 1, $itemsHeight)
 	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
-	_SendMessage($tabStylesHwnd, $WM_SETREDRAW, True)
-	_WinAPI_RedrawWindow($tabStylesHwnd)
+	If BitAND( WinGetState($tabStylesHwnd), $WIN_STATE_VISIBLE) Then
+		_SendMessage($tabStylesHwnd, $WM_SETREDRAW, True)
+		_WinAPI_RedrawWindow($tabStylesHwnd)
+	EndIf
 
 	GUISwitch($hGUI)
 ;~ 	GUISwitch($hToolbar)

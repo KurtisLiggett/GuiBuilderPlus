@@ -37,7 +37,7 @@ Func _formMain()
 
 	$oMain.Left = $main_left
 	$oMain.Top = $main_top
-	$hGUI = GUICreate($oMain.Title & " - Form (" & $oMain.Width & ", " & $oMain.Height & ')', $oMain.Width, $oMain.Height, $main_left, $main_top, BitOR($WS_SIZEBOX, $WS_SYSMENU, $WS_MINIMIZEBOX), $WS_EX_ACCEPTFILES)
+	$hGUI = GUICreate($oMain.Title & " - Form (" & $oMain.Width & ", " & $oMain.Height & ')', $oMain.Width, $oMain.Height, $main_left, $main_top, BitOR($WS_SIZEBOX, $WS_SYSMENU, $WS_MINIMIZEBOX), BitOR($WS_EX_ACCEPTFILES, $WS_EX_COMPOSITED))
 
 	_getGuiFrameSize()
 	WinMove($hGUI, "", Default, Default, $oMain.Width + $iGuiFrameW, $oMain.Height + $iGuiFrameH)

@@ -3,7 +3,7 @@
 
 ; #HEADER# ======================================================================================================================
 ; Title .........: GUIBuilderPlus
-; AutoIt Version : 3.3.14.5
+; AutoIt Version : 3.3.16.0
 ; Description ...: Build GUI with GUI based heavily on GuiBuilderNxt
 ;
 ; Remarks .......:
@@ -15,7 +15,8 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  04/09/2023 ...:
+;  04/10/2023 ...:
+;					- FIXED:	HUGE reduction in flickering overall
 ;					- ADDED:	New settings dialog
 ;					- ADDED:	Adjustable grid size setting
 ;					- ADDED:	Syntax Highlighting in code window (RESH UDF by Beege)
@@ -256,7 +257,6 @@ Func _main()
 	$bResizedFlag = 0
 	GUISetState(@SW_SHOWNOACTIVATE, $hFormObjectExplorer)
 	GUISetState(@SW_SHOWNOACTIVATE, $hFormGenerateCode)
-	_GUICtrlEdit_SetSel($editCodeGeneration, 0, 0)
 	GUISwitch($hGUI)
 
 	;check au3 exe path

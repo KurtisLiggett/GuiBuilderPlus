@@ -440,7 +440,10 @@ Func _formObjectExplorer_updateList()
 
 	Local $lvItem, $lvMenu, $lvMenuDelete, $childItem, $tabMenu, $tabMenuDelete, $lvMenuNewTab, $lvMenuDeleteTab, $sName, $childTabCtrl
 	Local $lvMenuNewMenuItem, $menuItemMenu
-	_SendMessage($hFormObjectExplorer, $WM_SETREDRAW, False)
+
+	If BitAND( WinGetState($hFormObjectExplorer), $WIN_STATE_VISIBLE) Then
+		_SendMessage($hFormObjectExplorer, $WM_SETREDRAW, False)
+	EndIf
 	_GUICtrlTreeView_DeleteAll($lvObjects)
 	For $oCtrl In $oCtrls.ctrls.Items()
 		If $oCtrl.Type = "TabItem" Then ContinueLoop
@@ -527,8 +530,10 @@ Func _formObjectExplorer_updateList()
 		EndSwitch
 	Next
 
-	_SendMessage($hFormObjectExplorer, $WM_SETREDRAW, True)
-	_WinAPI_RedrawWindow($hFormObjectExplorer)
+	If BitAND( WinGetState($hFormObjectExplorer), $WIN_STATE_VISIBLE) Then
+		_SendMessage($hFormObjectExplorer, $WM_SETREDRAW, True)
+		_WinAPI_RedrawWindow($hFormObjectExplorer)
+	EndIf
 
 	If StringStripWS($count, $STR_STRIPALL) = "" Then $count = 0
 	GUICtrlSetData($labelObjectCount, "Object Count: " & $count)
