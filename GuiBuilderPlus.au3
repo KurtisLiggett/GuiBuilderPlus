@@ -73,7 +73,7 @@ Global $debug = True
 
 #Region ; globals
 ;GUI components
-Global $hGUI, $hToolbar, $hFormGenerateCode, $hFormObjectExplorer, $hStatusbar, $hAbout, $hEvent, $hSettings
+Global $hGUI, $hToolbar, $hFormGenerateCode, $hFormObjectExplorer, $hStatusbar, $hAbout, $hEvent, $hSettings, $hFormHolder
 Global $iGuiFrameH, $iGuiFrameW, $defaultGuiBkColor = 0xF0F0F0
 Global $menu_wipe, $contextmenu_lock, $menu_helpchm
 ;Settings menu
