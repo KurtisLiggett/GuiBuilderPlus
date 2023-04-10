@@ -15,8 +15,8 @@ Func _code_generation()
 	;get options
 ;~ 	Local $bAddDpiScale = $setting_dpi_scaling
 	Local $bAddDpiScale = False
-	Local $bOnEventMode = $setting_onEvent_mode
-	Local $bGuiFunction = $setting_gui_function
+	Local $bOnEventMode = $oOptions.eventMode
+	Local $bGuiFunction = $oOptions.guiInFunction
 
 	Local $sDpiScale = ""
 	If $bAddDpiScale Then

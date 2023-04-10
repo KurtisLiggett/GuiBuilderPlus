@@ -236,6 +236,9 @@ Func _formToolbar()
 
 	;create the View menu
 	Local $menu_view = GUICtrlCreateMenu("View")
+	$menu_show_grid = GUICtrlCreateMenuItem("Show grid" & @TAB & "F7", $menu_view)
+	GUICtrlSetOnEvent($menu_show_grid, _showgrid)
+	GUICtrlSetState($menu_show_grid, $GUI_CHECKED)
 	$menu_generateCode = GUICtrlCreateMenuItem("Live Generated Code", $menu_view)
 	GUICtrlSetOnEvent($menu_generateCode, "_onGenerateCode")
 	GUICtrlSetState($menu_generateCode, $GUI_UNCHECKED)
@@ -245,41 +248,16 @@ Func _formToolbar()
 ;~ 	GUICtrlCreateMenuItem("", $menu_view)
 ;~ 	Local $menu_resetLayout = GUICtrlCreateMenuItem("Reset window layout", $menu_view)
 
-;~ 	GUICtrlSetOnEvent($menu_resetLayout, "_onResetLayout")
 
 	;create the Tools menu
 	Local $menu_tools = GUICtrlCreateMenu("Tools")
 	Local $menu_testForm = GUICtrlCreateMenuItem("Test GUI" & @TAB & "F5", $menu_tools)
+	Local $menu_settings = GUICtrlCreateMenuItem("Settings", $menu_tools)
 
 	GUICtrlSetOnEvent($menu_testForm, "_onTestGUI")
+	GUICtrlSetOnEvent($menu_settings, "_onSettings")
 
-	;create the Settings menu
-	Local $menu_settings = GUICtrlCreateMenu("Settings", $menu_tools)
-	$menu_show_grid = GUICtrlCreateMenuItem("Show grid" & @TAB & "F7", $menu_settings)
-	$menu_grid_snap = GUICtrlCreateMenuItem("Snap to grid" & @TAB & "F3", $menu_settings)
-	$menu_paste_pos = GUICtrlCreateMenuItem("Paste at mouse position", $menu_settings)
-	$menu_show_ctrl = GUICtrlCreateMenuItem("Show control when moving", $menu_settings)
-	$menu_show_hidden = GUICtrlCreateMenuItem("Show hidden controls", $menu_settings)
-	$menu_gui_function = GUICtrlCreateMenuItem("Create GUI in a function", $menu_settings)
-	$menu_onEvent_mode = GUICtrlCreateMenuItem("Enable OnEvent mode", $menu_settings)
-;~ 	$menu_dpi_scaling = GUICtrlCreateMenuItem("Apply DPI scaling factor", $menu_settings)
-
-	GUICtrlSetOnEvent($menu_show_grid, _showgrid)
-	GUICtrlSetOnEvent($menu_grid_snap, _gridsnap)
-	GUICtrlSetOnEvent($menu_paste_pos, _pastepos)
-	GUICtrlSetOnEvent($menu_show_ctrl, _show_control)
-	GUICtrlSetOnEvent($menu_show_hidden, _menu_show_hidden)
-	GUICtrlSetOnEvent($menu_gui_function, "_menu_gui_function")
-	GUICtrlSetOnEvent($menu_onEvent_mode, "_menu_onEvent_mode")
-;~ 	GUICtrlSetOnEvent($menu_dpi_scaling, "_menu_dpi_scaling")
-
-	GUICtrlSetState($menu_show_grid, $GUI_CHECKED)
-	GUICtrlSetState($menu_grid_snap, $GUI_CHECKED)
-	GUICtrlSetState($menu_paste_pos, $GUI_CHECKED)
-	GUICtrlSetState($menu_show_ctrl, $GUI_CHECKED)
-	GUICtrlSetState($menu_show_hidden, $GUI_UNCHECKED)
-;~ 	GUICtrlSetState($menu_dpi_scaling, $GUI_UNCHECKED)
-
+	;create the Help menu
 	Local $menu_help = GUICtrlCreateMenu("Help")
 	$menu_helpchm = GUICtrlCreateMenuItem("Help" & @TAB & "F1", $menu_help)
 	Local $menu_github = GUICtrlCreateMenuItem("Github Repository", $menu_help)
@@ -459,6 +437,7 @@ Func _set_accelerators()
 	Local Const $accel_Ctrlright = GUICtrlCreateDummy()
 	Local Const $accel_s = GUICtrlCreateDummy()
 	Local Const $accel_o = GUICtrlCreateDummy()
+	Local Const $accel_F3 = GUICtrlCreateDummy()
 	Local Const $accel_F5 = GUICtrlCreateDummy()
 	Local Const $accel_z = GUICtrlCreateDummy()
 	Local Const $accel_y = GUICtrlCreateDummy()
@@ -480,7 +459,7 @@ Func _set_accelerators()
 			["^{DOWN}", $accel_Ctrldown], _
 			["^{LEFT}", $accel_Ctrlleft], _
 			["^{RIGHT}", $accel_Ctrlright], _
-			["{F3}", $menu_grid_snap], _
+			["{F3}", $accel_F3], _
 			["{F7}", $menu_show_grid], _
 			["{F5}", $accel_F5], _
 			["^s", $accel_s], _
@@ -493,7 +472,7 @@ Func _set_accelerators()
 
 	Local Const $acceleratorsToolbar[6][2] = _
 			[ _
-			["{F3}", $menu_grid_snap], _
+			["{F3}", $accel_F3], _
 			["{F7}", $menu_show_grid], _
 			["{F5}", $accel_F5], _
 			["^s", $accel_s], _
@@ -520,6 +499,7 @@ Func _set_accelerators()
 	GUICtrlSetOnEvent($accel_s, "_onSaveGui")
 	GUICtrlSetOnEvent($accel_o, "_onload_gui_definition")
 	GUICtrlSetOnEvent($accel_F5, "_onTestGUI")
+	GUICtrlSetOnEvent($accel_F3, "_onGridsnap")
 	GUICtrlSetOnEvent($accel_z, "_onUndo")
 	GUICtrlSetOnEvent($accel_y, "_onRedo")
 EndFunc   ;==>_set_accelerators
@@ -887,7 +867,7 @@ Func _nudgeSelected($x = 0, $y = 0, $aUndoCtrls = 0)
 	GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 	$oCtrls.mode = $mode_default
 
-;~ 	Local $nudgeAmount = ($setting_snap_grid) ? $grid_ticks : 1
+;~ 	Local $nudgeAmount = ($oOptions.snapGrid) ? $grid_ticks : 1
 	Local $nudgeAmount = 1
 	Local $adjustmentX = 0, $adjustmentX = 0
 
@@ -1778,9 +1758,12 @@ Func _onGenerateCode()
 	Switch BitAND(GUICtrlRead($menu_generateCode), $GUI_CHECKED) = $GUI_CHECKED
 		Case True
 			IniWrite($sIniPath, "Settings", "ShowCode", 1)
+			$oOptions.showCodeViewer = True
 
 		Case False
 			IniWrite($sIniPath, "Settings", "ShowCode", 0)
+			$oOptions.showCodeViewer = False
+
 	EndSwitch
 EndFunc   ;==>_onGenerateCode
 
@@ -1804,9 +1787,12 @@ Func _onShowObjectExplorer()
 	Switch BitAND(GUICtrlRead($menu_ObjectExplorer), $GUI_CHECKED) = $GUI_CHECKED
 		Case True
 			IniWrite($sIniPath, "Settings", "ShowObjectExplorer", 1)
+			$oOptions.ShowObjectExplorer = True
 
 		Case False
 			IniWrite($sIniPath, "Settings", "ShowObjectExplorer", 0)
+			$oOptions.ShowObjectExplorer = False
+
 	EndSwitch
 EndFunc   ;==>_onShowObjectExplorer
 
@@ -1910,6 +1896,11 @@ Func _onTestGUI()
 	;monitor process from main loop
 
 EndFunc   ;==>_onTestGUI
+
+Func _onSettings()
+	_formSettings()
+EndFunc
+
 
 ;Smoke_N's WinGetByPID
 Func _WinGetByPID($iPID, $nArray = 1) ;0 will return 1 base array; leaving it 1 will return the first visible window it finds
@@ -2782,7 +2773,7 @@ Func _mouse_snap_pos()
 EndFunc   ;==>_mouse_snap_pos
 
 Func _snap_to_grid($coords)
-	If $setting_snap_grid Then
+	If $oOptions.snapGrid Then
 		$coords[0] = $grid_ticks * Int($coords[0] / $grid_ticks - 0.5) + $grid_ticks
 
 		$coords[1] = $grid_ticks * Int($coords[1] / $grid_ticks - 0.5) + $grid_ticks
@@ -2960,260 +2951,6 @@ Func ShowMenu(Const $context, $x, $y)
 
 	_GUICtrlMenu_TrackPopupMenu($hMenu, $hGUI, $x, $y)
 EndFunc   ;==>ShowMenu
-
-
-;------------------------------------------------------------------------------
-; Title...........: _showgrid
-; Description.....: Show (or hide) the background grid and update INI file
-; Events..........: settings menu item select
-;------------------------------------------------------------------------------
-Func _showgrid()
-	Local Const $show_grid_data = GUICtrlRead($menu_show_grid)
-	Local $message = "Grid: "
-
-	Select
-		Case BitAND($show_grid_data, $GUI_CHECKED) = $GUI_CHECKED
-			GUICtrlSetState($menu_show_grid, $GUI_UNCHECKED)
-
-			_hide_grid($background)
-
-			IniWrite($sIniPath, "Settings", "ShowGrid", 0)
-			$message &= "OFF"
-
-		Case BitAND($show_grid_data, $GUI_UNCHECKED) = $GUI_UNCHECKED
-			GUICtrlSetState($menu_show_grid, $GUI_CHECKED)
-
-			_show_grid($background, $oMain.Width, $oMain.Height)
-
-			IniWrite($sIniPath, "Settings", "ShowGrid", 1)
-			$message &= "ON"
-	EndSelect
-
-	$bStatusNewMessage = True
-	_GUICtrlStatusBar_SetText($hStatusbar, $message)
-EndFunc   ;==>_showgrid
-
-
-;------------------------------------------------------------------------------
-; Title...........: _pastepos
-; Description.....: Update INI setting for paste at mouse position
-; Events..........: settings menu item select
-;------------------------------------------------------------------------------
-Func _pastepos()
-	If BitAND(GUICtrlRead($menu_paste_pos), $GUI_CHECKED) = $GUI_CHECKED Then
-		GUICtrlSetState($menu_paste_pos, $GUI_UNCHECKED)
-
-		IniWrite($sIniPath, "Settings", "PastePos", 0)
-	Else
-		GUICtrlSetState($menu_paste_pos, $GUI_CHECKED)
-
-		IniWrite($sIniPath, "Settings", "PastePos", 1)
-	EndIf
-
-	$setting_paste_pos = Not $setting_paste_pos
-EndFunc   ;==>_pastepos
-
-
-;------------------------------------------------------------------------------
-; Title...........: _gridsnap
-; Description.....: Update INI setting for grid snap
-; Events..........: settings menu item select
-;------------------------------------------------------------------------------
-Func _gridsnap()
-	Local $message = "Grid snap: "
-	If BitAND(GUICtrlRead($menu_grid_snap), $GUI_CHECKED) = $GUI_CHECKED Then
-		GUICtrlSetState($menu_grid_snap, $GUI_UNCHECKED)
-
-		IniWrite($sIniPath, "Settings", "GridSnap", 0)
-		$message &= "OFF"
-	Else
-		GUICtrlSetState($menu_grid_snap, $GUI_CHECKED)
-
-		IniWrite($sIniPath, "Settings", "GridSnap", 1)
-		$message &= "ON"
-	EndIf
-
-	$setting_snap_grid = Not $setting_snap_grid
-
-	$bStatusNewMessage = True
-	_GUICtrlStatusBar_SetText($hStatusbar, $message)
-EndFunc   ;==>_gridsnap
-
-
-;------------------------------------------------------------------------------
-; Title...........: _show_control
-; Description.....: Update INI setting for show control
-; Events..........: settings menu item select
-;------------------------------------------------------------------------------
-Func _show_control()
-	Switch BitAND(GUICtrlRead($menu_show_ctrl), $GUI_CHECKED) = $GUI_CHECKED
-		Case True
-			GUICtrlSetState($menu_show_ctrl, $GUI_UNCHECKED)
-
-			IniWrite($sIniPath, "Settings", "ShowControl", 0)
-
-			$setting_show_control = False
-
-		Case False
-			GUICtrlSetState($menu_show_ctrl, $GUI_CHECKED)
-
-			IniWrite($sIniPath, "Settings", "ShowControl", 1)
-
-			$setting_show_control = True
-	EndSwitch
-EndFunc   ;==>_show_control
-
-
-;------------------------------------------------------------------------------
-; Title...........: _menu_show_hidden
-; Description.....: Update INI setting for show hidden
-;					show/hide controls based on setting
-; Events..........: settings menu item select
-;------------------------------------------------------------------------------
-Func _menu_show_hidden()
-	Switch BitAND(GUICtrlRead($menu_show_hidden), $GUI_CHECKED) = $GUI_CHECKED
-		Case True
-			GUICtrlSetState($menu_show_hidden, $GUI_UNCHECKED)
-
-			IniWrite($sIniPath, "Settings", "ShowHidden", 0)
-
-			$setting_show_hidden = False
-
-			For $oCtrl In $oCtrls.ctrls.Items()
-
-				If Not $oCtrl.Visible Then
-					GUICtrlSetState($oCtrl.Hwnd, $GUI_HIDE)
-				EndIf
-			Next
-
-			_recall_overlay()
-
-		Case False
-			GUICtrlSetState($menu_show_hidden, $GUI_CHECKED)
-
-			IniWrite($sIniPath, "Settings", "ShowHidden", 1)
-
-			$setting_show_hidden = True
-
-			For $oCtrl In $oCtrls.ctrls.Items()
-
-				If Not $oCtrl.Visible Then
-					GUICtrlSetState($oCtrl.Hwnd, $GUI_SHOW)
-				EndIf
-			Next
-
-	EndSwitch
-EndFunc   ;==>_menu_show_hidden
-
-
-;------------------------------------------------------------------------------
-; Title...........: _menu_dpi_scaling
-; Description.....: Update INI setting for dpi scaling
-; Events..........: settings menu item select
-;------------------------------------------------------------------------------
-Func _menu_dpi_scaling()
-	Switch BitAND(GUICtrlRead($menu_dpi_scaling), $GUI_CHECKED) = $GUI_CHECKED
-		Case True
-			GUICtrlSetState($menu_dpi_scaling, $GUI_UNCHECKED)
-
-			IniWrite($sIniPath, "Settings", "DpiScaling", 0)
-
-			$setting_dpi_scaling = False
-
-
-		Case False
-			GUICtrlSetState($menu_dpi_scaling, $GUI_CHECKED)
-
-			IniWrite($sIniPath, "Settings", "DpiScaling", 1)
-
-			$setting_dpi_scaling = True
-
-	EndSwitch
-
-	_refreshGenerateCode()
-EndFunc   ;==>_menu_dpi_scaling
-
-
-;------------------------------------------------------------------------------
-; Title...........: _menu_onEvent_mode
-; Description.....: Update INI setting
-; Events..........: settings menu item
-;------------------------------------------------------------------------------
-Func _menu_onEvent_mode()
-	_set_onEvent_mode()
-EndFunc   ;==>_menu_onEvent_mode
-
-Func _radio_onMsgMode()
-	_set_onEvent_mode(0)
-EndFunc   ;==>_radio_onMsgMode
-
-Func _radio_onEventMode()
-	_set_onEvent_mode(1)
-EndFunc   ;==>_radio_onEventMode
-
-Func _set_onEvent_mode($iState = -1)
-	Local $checkedState, $IniState
-
-	If $iState = -1 Then
-		Switch BitAND(GUICtrlRead($menu_onEvent_mode), $GUI_CHECKED) = $GUI_CHECKED
-			Case True
-				$checkedState = $GUI_UNCHECKED
-				$IniState = 0
-				$setting_onEvent_mode = False
-
-			Case False
-				$checkedState = $GUI_CHECKED
-				$IniState = 1
-				$setting_onEvent_mode = True
-		EndSwitch
-	ElseIf $iState = 0 Then
-		$checkedState = $GUI_UNCHECKED
-		$IniState = 0
-		$setting_onEvent_mode = False
-	ElseIf $iState = 1 Then
-		$checkedState = $GUI_CHECKED
-		$IniState = 1
-		$setting_onEvent_mode = True
-	EndIf
-
-	GUICtrlSetState($menu_onEvent_mode, $checkedState)
-	GUICtrlSetState($radio_eventMode, $checkedState)
-	If $checkedState = $GUI_UNCHECKED Then
-		GUICtrlSetState($radio_msgMode, $GUI_CHECKED)
-	EndIf
-	IniWrite($sIniPath, "Settings", "OnEventMode", $IniState)
-	_refreshGenerateCode()
-EndFunc   ;==>_set_onEvent_mode
-
-
-;------------------------------------------------------------------------------
-; Title...........: _menu_gui_function
-; Description.....: Update INI setting
-; Events..........: settings menu item
-;------------------------------------------------------------------------------
-Func _menu_gui_function()
-	Switch BitAND(GUICtrlRead($menu_gui_function), $GUI_CHECKED) = $GUI_CHECKED
-		Case True
-			GUICtrlSetState($menu_gui_function, $GUI_UNCHECKED)
-			GUICtrlSetState($check_guiFunc, $GUI_UNCHECKED)
-
-			IniWrite($sIniPath, "Settings", "GuiInFunction", 0)
-
-			$setting_gui_function = False
-
-
-		Case False
-			GUICtrlSetState($menu_gui_function, $GUI_CHECKED)
-			GUICtrlSetState($check_guiFunc, $GUI_CHECKED)
-
-			IniWrite($sIniPath, "Settings", "GuiInFunction", 1)
-
-			$setting_gui_function = True
-
-	EndSwitch
-
-	_refreshGenerateCode()
-EndFunc   ;==>_menu_gui_function
 
 
 ;------------------------------------------------------------------------------

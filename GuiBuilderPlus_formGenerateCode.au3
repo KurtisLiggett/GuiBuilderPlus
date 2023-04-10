@@ -1,6 +1,3 @@
-#Region ; *** Dynamically added Include files ***
-#include <GuiRichEdit.au3>                                   ; added:04/03/23 22:31:21
-#EndRegion ; *** Dynamically added Include files ***
 ; #HEADER# ======================================================================================================================
 ; Title .........: GuiBuilderPlus_formGenerateCode.au3
 ; Description ...: Create the code generation popup GUI
@@ -86,13 +83,13 @@ Func _formGenerateCode()
 	GUICtrlSetOnEvent(-1, "_menu_gui_function")
 	GUICtrlSetResizing(-1, $GUI_DOCKLEFT + $GUI_DOCKBOTTOM + $GUI_DOCKSIZE)
 
-	If $setting_onEvent_mode Then
+	If $oOptions.eventMode Then
 		GUICtrlSetState($radio_eventMode, $GUI_CHECKED)
 	Else
 		GUICtrlSetState($radio_msgMode, $GUI_CHECKED)
 	EndIf
 
-	If $setting_gui_function Then
+	If $oOptions.guiInFunction Then
 		GUICtrlSetState($check_guiFunc, $GUI_CHECKED)
 	Else
 		GUICtrlSetState($check_guiFunc, $GUI_UNCHECKED)

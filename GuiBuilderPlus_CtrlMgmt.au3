@@ -33,7 +33,7 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 			If $startY <> -1 Then $cursor_pos[1] = $startY
 
 			; control will be inserted at current mouse position UNLESS out-of-bounds mouse
-			If $setting_paste_pos Or $oCtrls.mode = $mode_drawing Then
+			If $oOptions.pasteAtMouse Or $oCtrls.mode = $mode_drawing Then
 				If _cursor_out_of_bounds($cursor_pos) Then
 					ContinueCase
 				EndIf
@@ -747,7 +747,7 @@ Func _PasteSelected($bDuplicate = False, $bAtMouse = False)
 				;create a copy, so we don't overwrite the original!
 				$oNewCtrl = $oClipboard.getCopy($oCtrl.Hwnd)
 
-				If Not $setting_paste_pos And Not $bDuplicate Then
+				If Not $oOptions.pasteAtMouse And Not $bDuplicate Then
 					$oNewCtrl.Left = 0
 					$oNewCtrl.Top = 0
 				ElseIf $bDuplicate Then
@@ -1144,21 +1144,21 @@ Func _display_selection_rect(Const $oRect)
 	_GDIPlus_GraphicsDrawRect($hSelectionGraphic, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
 EndFunc   ;==>_display_selection_rect
 
-Func _hide_selected_controls()
-	For $oCtrl In $oSelected.ctrls.Items()
-		If Not $setting_show_control Then
-			GUICtrlSetState($oCtrl.Hwnd, $GUI_HIDE)
-		EndIf
-	Next
-EndFunc   ;==>_hide_selected_controls
+;~ Func _hide_selected_controls()
+;~ 	For $oCtrl In $oSelected.ctrls.Items()
+;~ 		If Not $setting_show_control Then
+;~ 			GUICtrlSetState($oCtrl.Hwnd, $GUI_HIDE)
+;~ 		EndIf
+;~ 	Next
+;~ EndFunc   ;==>_hide_selected_controls
 
-Func _show_selected_controls()
-	For $oCtrl In $oSelected.ctrls.Items()
-		If Not $setting_show_control Then
-			GUICtrlSetState($oCtrl.Hwnd, $GUI_SHOW)
-		EndIf
-	Next
-EndFunc   ;==>_show_selected_controls
+;~ Func _show_selected_controls()
+;~ 	For $oCtrl In $oSelected.ctrls.Items()
+;~ 		If Not $setting_show_control Then
+;~ 			GUICtrlSetState($oCtrl.Hwnd, $GUI_SHOW)
+;~ 		EndIf
+;~ 	Next
+;~ EndFunc   ;==>_show_selected_controls
 
 
 #Region ; moving & resizing

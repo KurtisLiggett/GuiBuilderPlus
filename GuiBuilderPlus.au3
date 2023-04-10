@@ -15,7 +15,11 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  04/04/2023 ...:	- ADDED:	Syntax Highlighting in code window (RESH UDF by Beege)
+;  04/09/2023 ...:
+;					- ADDED:	New settings dialog
+;					- ADDED:	Syntax Highlighting in code window (RESH UDF by Beege)
+;					- ADDED:	Full help file
+;					- UPDATED:	Code improvements
 ;
 ; Roadmap .......:	- Finish control properties tabs
 ;					- Windows' theme support
@@ -69,7 +73,7 @@ Global $hGUI, $hToolbar, $hFormGenerateCode, $hFormObjectExplorer, $hStatusbar, 
 Global $iGuiFrameH, $iGuiFrameW, $defaultGuiBkColor = 0xF0F0F0
 Global $menu_wipe, $contextmenu_lock, $menu_helpchm
 ;Settings menu
-Global $menu_show_grid, $menu_grid_snap, $menu_paste_pos, $menu_show_ctrl, $menu_show_hidden, $menu_dpi_scaling, $menu_gui_function, $menu_onEvent_mode
+Global $menu_show_grid
 ;View menu
 Global $menu_generateCode, $menu_ObjectExplorer
 ;Background
@@ -111,12 +115,11 @@ Global $hSelectionGraphic = -1
 Global $dblClickTime
 
 ;Control Objects
-Global $oMain, $oCtrls, $oSelected, $oClipboard, $oMouse
+Global $oMain, $oCtrls, $oSelected, $oClipboard, $oMouse, $oOptions
 Global $aStackUndo[0], $aStackRedo[0]
 
 ; added by: TheSaint (most are my own, others just not declared)
 Global $AgdOutFile, $lfld, $mygui
-Global $setting_snap_grid, $setting_paste_pos, $setting_show_control, $setting_show_hidden, $setting_dpi_scaling, $setting_gui_function, $setting_onEvent_mode
 
 Global $sampleavi = @ScriptDir & "\resources\sampleAVI.avi"
 Global $samplebmp = @ScriptDir & "\resources\SampleImage.bmp"
@@ -160,6 +163,7 @@ _AutoItObject_StartUp()
 #include "UDFS\GUIScrollbars_Ex.au3"
 #include "UDFs\StringSize.au3"
 #include "UDFs\RESH.au3"
+#include "GuiBuilderPlus_objOptions.au3"
 #include "GuiBuilderPlus_objCtrl.au3"
 #include "GuiBuilderPlus_objProperties.au3"
 #include "GuiBuilderPlus_CtrlMgmt.au3"
@@ -218,6 +222,9 @@ Func _main()
 	$oProperties_Main = _objProperties()
 	$oProperties_Ctrls = _objProperties()
 
+	;create options object
+	$oOptions = _objOptions()
+
 	;make the main program GUI
 	_formMain()
 
@@ -233,11 +240,11 @@ Func _main()
 
 
 	;load the extra toolbars
-	If BitAND(GUICtrlRead($menu_ObjectExplorer), $GUI_CHECKED) = $GUI_CHECKED Then
+	If $oOptions.ShowObjectExplorer Then
 		_formObjectExplorer()
 	EndIf
 
-	If BitAND(GUICtrlRead($menu_generateCode), $GUI_CHECKED) = $GUI_CHECKED Then
+	If $oOptions.showCodeViewer Then
 		_formGenerateCode()
 	EndIf
 
@@ -355,72 +362,39 @@ EndFunc   ;==>_get_script_title
 ; Description.....: Read and initialize INI file settings
 ;------------------------------------------------------------------------------
 Func _initialize_settings()
-;~ 	_disable_control_properties_gui()
-
-	Local $bShowGrid = True
-	Local $bPastePos = True
-	Local $bGridSnap = True
-	Local $bShowControl = True
-	Local $bShowHidden = False
-	Local $bShowCode = False
-	Local $bShowObjectExplorer = False
-	Local $bDpiScaling = False
-	Local $bGuiFunction = False
-	Local $bOnEventMode = False
 
 	Local $aSettings = IniReadSection($sIniPath, "Settings")
 	If Not @error Then
 		For $i = 1 To $aSettings[0][0]
 			Switch $aSettings[$i][0]
 				Case "ShowGrid"
-					$bShowGrid = ($aSettings[$i][1] = 1) ? True : False
+					$oOptions.showGrid = ($aSettings[$i][1] = 1) ? True : False
 				Case "PastePos"
-					$bPastePos = ($aSettings[$i][1] = 1) ? True : False
+					$oOptions.pasteAtMouse = ($aSettings[$i][1] = 1) ? True : False
 				Case "GridSnap"
-					$bGridSnap = ($aSettings[$i][1] = 1) ? True : False
-				Case "ShowControl"
-					$bShowControl = ($aSettings[$i][1] = 1) ? True : False
-				Case "ShowHidden"
-					$bShowHidden = ($aSettings[$i][1] = 1) ? True : False
+					$oOptions.snapGrid = ($aSettings[$i][1] = 1) ? True : False
 				Case "ShowCode"
-					$bShowCode = ($aSettings[$i][1] = 1) ? True : False
+					$oOptions.showCodeViewer = ($aSettings[$i][1] = 1) ? True : False
 				Case "ShowObjectExplorer"
-					$bShowObjectExplorer = ($aSettings[$i][1] = 1) ? True : False
-				Case "DpiScaling"
-					$bDpiScaling = ($aSettings[$i][1] = 1) ? True : False
+					$oOptions.showObjectExplorer = ($aSettings[$i][1] = 1) ? True : False
 				Case "GuiInFunction"
-					$bGuiFunction = ($aSettings[$i][1] = 1) ? True : False
+					$oOptions.guiInFunction = ($aSettings[$i][1] = 1) ? True : False
 				Case "OnEventMode"
-					$bOnEventMode = ($aSettings[$i][1] = 1) ? True : False
+					$oOptions.eventMode = ($aSettings[$i][1] = 1) ? True : False
 			EndSwitch
 		Next
 	EndIf
 
-	If $bShowGrid Then
+	If $oOptions.showGrid Then
 		_show_grid($background, $oMain.Width, $oMain.Height)
 	Else
 		_hide_grid($background)
 	EndIf
-	_setting_show_grid(True, $bShowGrid)
+	_setting_show_grid(True, $oOptions.showGrid)
 
-	_setCheckedState($menu_show_grid, $bShowGrid)
-	_setCheckedState($menu_paste_pos, $bPastePos)
-	_setCheckedState($menu_grid_snap, $bGridSnap)
-	_setCheckedState($menu_show_ctrl, $bShowControl)
-	_setCheckedState($menu_show_hidden, $bShowHidden)
-	_setCheckedState($menu_generateCode, $bShowCode)
-	_setCheckedState($menu_ObjectExplorer, $bShowObjectExplorer)
-	_setCheckedState($menu_dpi_scaling, $bDpiScaling)
-	_setCheckedState($menu_onEvent_mode, $bOnEventMode)
-	_setCheckedState($menu_gui_function, $bGuiFunction)
-
-	$setting_paste_pos = $bPastePos
-	$setting_snap_grid = $bGridSnap
-	$setting_show_control = $bShowControl
-	$setting_show_hidden = $bShowHidden
-	$setting_dpi_scaling = $bDpiScaling
-	$setting_onEvent_mode = $bOnEventMode
-	$setting_gui_function = $bGuiFunction
+	_setCheckedState($menu_show_grid, $oOptions.showGrid)
+	_setCheckedState($menu_generateCode, $oOptions.showCodeViewer)
+	_setCheckedState($menu_ObjectExplorer, $oOptions.ShowObjectExplorer)
 
 	If Not FileExists("storage") Then
 		DirCreate("storage")

@@ -23,9 +23,22 @@ Func _formSettings()
 	GUICtrlSetBkColor(-1, 0xFFFFFF)
 	$settingsChk_eventmode = GUICtrlCreateCheckbox("Enable OnEvent mode", 10, 77.5, 151, 20)
 	GUICtrlSetBkColor(-1, 0xFFFFFF)
-	$label_gridsize = GUICtrlCreateLabel("Grid size:", 10, 103, 141, 21)
+	$label_gridsize = GUICtrlCreateLabel("Grid size:", 10, 103, 55, 21)
 	GUICtrlSetBkColor(-1, 0xFFFFFF)
 	$settingsInput_gridsize = GUICtrlCreateInput("", 60, 100, 71, 21)
+
+	If $oOptions.snapGrid Then
+		GUICtrlSetState($settingsChk_snapgrid, $GUI_CHECKED)
+	EndIf
+	If $oOptions.pasteAtMouse Then
+		GUICtrlSetState($settingsChk_pasteatmouse, $GUI_CHECKED)
+	EndIf
+	If $oOptions.guiInFunction Then
+		GUICtrlSetState($settingsChk_guifunction, $GUI_CHECKED)
+	EndIf
+	If $oOptions.eventMode Then
+		GUICtrlSetState($settingsChk_eventmode, $GUI_CHECKED)
+	EndIf
 
 	$line = GUICtrlCreateLabel("", 0, 139, 211, 1)
 	GUICtrlSetBkColor(-1, 0x333333)
@@ -42,9 +55,41 @@ Func _formSettings()
 EndFunc   ;==>_formSettings
 
 Func _onSaveSettings()
+	Local $bSnapgrid = (BitAND(GUICtrlRead($settingsChk_snapgrid), $GUI_CHECKED) = $GUI_CHECKED)
+	Local $bPasteatmouse = (BitAND(GUICtrlRead($settingsChk_pasteatmouse), $GUI_CHECKED) = $GUI_CHECKED)
+	Local $bGuifunction = (BitAND(GUICtrlRead($settingsChk_guifunction), $GUI_CHECKED) = $GUI_CHECKED)
+	Local $bEventmode = (BitAND(GUICtrlRead($settingsChk_eventmode), $GUI_CHECKED) = $GUI_CHECKED)
+	Local $iGridsize = GUICtrlRead($label_gridsize)
+
 	GUIDelete($hSettings)
 	GUISetState(@SW_ENABLE, $hGUI)
 	GUISwitch($hGUI)
+
+	;snap grid
+	_gridsnap($bSnapgrid)
+
+	;paste at mouse
+	If $bPasteatmouse Then
+		IniWrite($sIniPath, "Settings", "PastePos", 1)
+	Else
+		IniWrite($sIniPath, "Settings", "PastePos", 0)
+	EndIf
+	$oOptions.pasteAtMouse = $bPasteatmouse
+
+	;gui in function
+	If $bGuifunction Then
+		GUICtrlSetState($check_guiFunc, $GUI_CHECKED)
+		IniWrite($sIniPath, "Settings", "GuiInFunction", 1)
+	Else
+		GUICtrlSetState($check_guiFunc, $GUI_UNCHECKED)
+		IniWrite($sIniPath, "Settings", "GuiInFunction", 0)
+	EndIf
+	$oOptions.guiInFunction = $bGuifunction
+	_refreshGenerateCode()
+
+	;event mode
+	_set_onEvent_mode($bEventmode)
+
 EndFunc   ;==>_onSaveSettings
 
 Func _onExitSettings()
@@ -52,3 +97,162 @@ Func _onExitSettings()
 	GUISetState(@SW_ENABLE, $hGUI)
 	GUISwitch($hGUI)
 EndFunc   ;==>_onExitSettings
+
+
+;------------------------------------------------------------------------------
+; Title...........: _showgrid
+; Description.....: Show (or hide) the background grid and update INI file
+; Events..........: settings menu item select
+;------------------------------------------------------------------------------
+Func _showgrid()
+	Local Const $show_grid_data = GUICtrlRead($menu_show_grid)
+	Local $message = "Grid: "
+
+	Select
+		Case BitAND($show_grid_data, $GUI_CHECKED) = $GUI_CHECKED
+			GUICtrlSetState($menu_show_grid, $GUI_UNCHECKED)
+
+			_hide_grid($background)
+
+			IniWrite($sIniPath, "Settings", "ShowGrid", 0)
+			$message &= "OFF"
+
+		Case BitAND($show_grid_data, $GUI_UNCHECKED) = $GUI_UNCHECKED
+			GUICtrlSetState($menu_show_grid, $GUI_CHECKED)
+
+			_show_grid($background, $oMain.Width, $oMain.Height)
+
+			IniWrite($sIniPath, "Settings", "ShowGrid", 1)
+			$message &= "ON"
+	EndSelect
+
+	$bStatusNewMessage = True
+	_GUICtrlStatusBar_SetText($hStatusbar, $message)
+EndFunc   ;==>_showgrid
+
+
+;------------------------------------------------------------------------------
+; Title...........: _pastepos
+; Description.....: Update INI setting for paste at mouse position
+; Events..........: settings menu item select
+;------------------------------------------------------------------------------
+Func _pastepos()
+	If $oOptions.pasteAtMouse Then
+		IniWrite($sIniPath, "Settings", "PastePos", 0)
+	Else
+		IniWrite($sIniPath, "Settings", "PastePos", 1)
+	EndIf
+
+	$oOptions.pasteAtMouse = Not $oOptions.pasteAtMouse
+EndFunc   ;==>_pastepos
+
+
+;------------------------------------------------------------------------------
+; Title...........: _gridsnap
+; Description.....: Update INI setting for grid snap
+; Events..........: settings menu item select
+;------------------------------------------------------------------------------
+Func _onGridsnap()
+	_gridsnap()
+EndFunc
+Func _gridsnap($state = Default)
+	Local $message = "Grid snap: "
+	Local $newState
+	If $state = Default Then
+		$newState = Not $oOptions.snapGrid
+	else
+		$newState = $state
+	EndIf
+
+	If Not $newState Then
+		IniWrite($sIniPath, "Settings", "GridSnap", 0)
+		$message &= "OFF"
+	Else
+		IniWrite($sIniPath, "Settings", "GridSnap", 1)
+		$message &= "ON"
+	EndIf
+
+	$oOptions.snapGrid = $newState
+
+	If $state = Default Then
+		$bStatusNewMessage = True
+		_GUICtrlStatusBar_SetText($hStatusbar, $message)
+	EndIf
+EndFunc   ;==>_gridsnap
+
+;------------------------------------------------------------------------------
+; Title...........: _menu_onEvent_mode
+; Description.....: Update INI setting
+; Events..........: settings menu item
+;------------------------------------------------------------------------------
+Func _menu_onEvent_mode()
+	_set_onEvent_mode()
+EndFunc   ;==>_menu_onEvent_mode
+
+Func _radio_onMsgMode()
+	_set_onEvent_mode(0)
+EndFunc   ;==>_radio_onMsgMode
+
+Func _radio_onEventMode()
+	_set_onEvent_mode(1)
+EndFunc   ;==>_radio_onEventMode
+
+Func _set_onEvent_mode($iState = Default)
+	Local $newState, $IniState
+
+	If $iState = Default Then
+		Switch $oOptions.eventMode
+			Case True
+				$newState = $GUI_UNCHECKED
+				$IniState = 0
+				$oOptions.eventMode = False
+
+			Case False
+				$newState = $GUI_CHECKED
+				$IniState = 1
+				$oOptions.eventMode = True
+		EndSwitch
+	ElseIf $iState = 0 Then
+		$newState = $GUI_UNCHECKED
+		$IniState = 0
+		$oOptions.eventMode = False
+	ElseIf $iState = 1 Then
+		$newState = $GUI_CHECKED
+		$IniState = 1
+		$oOptions.eventMode = True
+	EndIf
+	GUICtrlSetState($radio_eventMode, $newState)
+	If $newState = $GUI_UNCHECKED Then
+		GUICtrlSetState($radio_msgMode, $GUI_CHECKED)
+	EndIf
+	IniWrite($sIniPath, "Settings", "OnEventMode", $IniState)
+	_refreshGenerateCode()
+EndFunc   ;==>_set_onEvent_mode
+
+
+;------------------------------------------------------------------------------
+; Title...........: _menu_gui_function
+; Description.....: Update INI setting
+; Events..........: settings menu item
+;------------------------------------------------------------------------------
+Func _menu_gui_function()
+	Switch $oOptions.guiInFunction
+		Case True
+			GUICtrlSetState($check_guiFunc, $GUI_UNCHECKED)
+
+			IniWrite($sIniPath, "Settings", "GuiInFunction", 0)
+
+			$oOptions.guiInFunction = False
+
+
+		Case False
+			GUICtrlSetState($check_guiFunc, $GUI_CHECKED)
+
+			IniWrite($sIniPath, "Settings", "GuiInFunction", 1)
+
+			$oOptions.guiInFunction = True
+
+	EndSwitch
+
+	_refreshGenerateCode()
+EndFunc   ;==>_menu_gui_function
