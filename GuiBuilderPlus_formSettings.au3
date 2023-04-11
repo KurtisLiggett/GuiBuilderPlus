@@ -8,7 +8,11 @@
 ; Description.....: Display popup window
 ;------------------------------------------------------------------------------
 Func _formSettings()
-	$hSettings = GUICreate("Settings", 210, 178, 763, 361)
+	Local $w = 210
+	Local $h = 178
+
+	Local $aGuiPos = WinGetPos($hToolbar)
+	$hSettings = GUICreate("Settings", $w, $h, $aGuiPos[0] + 50, $aGuiPos[1] + 50)
 	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExitSettings")
 
 	$label_bg = GUICtrlCreateLabel("", 0, 0, 210, 140)

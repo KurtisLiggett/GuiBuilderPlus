@@ -11,7 +11,9 @@ Func _formAbout()
 	$w = 350
 	$h = 265
 
-	$hAbout = GUICreate("About " & $oMain.AppName, $w, $h, Default, Default, $WS_CAPTION, -1, $hGUI)
+	Local $aGuiPos = WinGetPos($hToolbar)
+
+	$hAbout = GUICreate("About " & $oMain.AppName, $w, $h, $aGuiPos[0] + 50, $aGuiPos[1] + 50, $WS_CAPTION, -1, $hGUI)
 	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExitAbout")
 
 	; top section

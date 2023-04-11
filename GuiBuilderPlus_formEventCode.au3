@@ -12,7 +12,9 @@ Func _formEventCode()
 	$h = 265
 	$footH = 32
 
-	$hEvent = GUICreate("Event Code", $w, $h, Default, Default, $WS_CAPTION, -1, $hGUI)
+	Local $aGuiPos = WinGetPos($hGUI)
+
+	$hEvent = GUICreate("Event Code", $w, $h, $aGuiPos[0] + $aGuiPos[2]/2 - $w/2, $aGuiPos[1] + $aGuiPos[3]/2 - $h/2, $WS_CAPTION, -1, $hGUI)
 	GUISetOnEvent($GUI_EVENT_CLOSE, "_onEventExit")
 
 	; top section
