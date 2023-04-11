@@ -336,7 +336,8 @@ Func _generateStyles($w = Default, $h = Default, $x = Default, $y = Default)
 	EndIf
 
 	;items - generated dynamically based on current selection
-	If BitAND( WinGetState($tabStylesHwnd), $WIN_STATE_VISIBLE) Then
+	Local $isVisible = BitAND( WinGetState($tabStylesHwnd), $WIN_STATE_VISIBLE)
+	If $isVisible Then
 		_SendMessage($tabStylesHwnd, $WM_SETREDRAW, False)
 	EndIf
 
@@ -434,7 +435,7 @@ Func _generateStyles($w = Default, $h = Default, $x = Default, $y = Default)
 	$labelLine = GUICtrlCreateLabel("", $width - $iScrollbarWidth - 1 - 81, 0, 1, $itemsHeight)
 	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
-	If BitAND( WinGetState($tabStylesHwnd), $WIN_STATE_VISIBLE) Then
+	If $isVisible Then
 		_SendMessage($tabStylesHwnd, $WM_SETREDRAW, True)
 		_WinAPI_RedrawWindow($tabStylesHwnd)
 	EndIf

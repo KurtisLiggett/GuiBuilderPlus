@@ -39,7 +39,7 @@ Func _formMain()
 	$oMain.Top = $main_top
 
 	;create an invisible parent for forms, to prevent showing in the taskbar
-	$hFormHolder = GUICreate("GBP form holder", 10, 10)
+	$hFormHolder = GUICreate("GBP form holder", 10, 10, -1, -1, -1, -1, $hToolbar)
 	$hGUI = GUICreate($oMain.Title & " - Form (" & $oMain.Width & ", " & $oMain.Height & ')', $oMain.Width, $oMain.Height, $main_left, $main_top, BITOR($WS_SIZEBOX, $WS_CAPTION), BitOR($WS_EX_ACCEPTFILES, $WS_EX_COMPOSITED), $hFormHolder)
 
 	_getGuiFrameSize()
@@ -644,7 +644,7 @@ Func _onMinimize()
 	GUISetState(@SW_HIDE, $oProperties_Main.properties.Hwnd)
 	GUISetState(@SW_HIDE, $oProperties_Ctrls.properties.Hwnd)
 	GUISetState(@SW_HIDE, $tabStylesHwnd)
-	GUISetState(@SW_HIDE, $hGUI)
+;~ 	GUISetState(@SW_HIDE, $hGUI)
 EndFunc   ;==>_onMinimize
 
 
@@ -673,7 +673,7 @@ Func _onRestore()
 		EndSwitch
 	EndIf
 	GUISetState(@SW_SHOWNORMAL, $hToolbar)
-	GUISetState(@SW_SHOWNORMAL, $hGUI)
+;~ 	GUISetState(@SW_SHOWNORMAL, $hGUI)
 	GUISwitch($hGUI)
 
 	$bResizedFlag = False
