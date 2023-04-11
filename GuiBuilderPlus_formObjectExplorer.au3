@@ -433,7 +433,6 @@ EndFunc   ;==>_setLvSelectedHwnd
 Func _formObjectExplorer_updateList()
 	If Not IsHWnd($hFormObjectExplorer) Then Return
 
-	ConsoleWrite("update list" & @CRLF)
 	Local $prevSelected = _getLvSelectedHwnd()
 
 	Local $count = $oCtrls.count
@@ -444,7 +443,6 @@ Func _formObjectExplorer_updateList()
 
 	Local $isVisible = BitAND( WinGetState($hFormObjectExplorer), $WIN_STATE_VISIBLE)
 	If $isVisible Then
-		ConsoleWrite("visible" & @CRLF)
 		_SendMessage($hFormObjectExplorer, $WM_SETREDRAW, False)
 	EndIf
 	_GUICtrlTreeView_DeleteAll($lvObjects)
@@ -534,7 +532,6 @@ Func _formObjectExplorer_updateList()
 	Next
 
 	If $isVisible Then
-		ConsoleWrite("redraw" & @CRLF)
 		_SendMessage($hFormObjectExplorer, $WM_SETREDRAW, True)
 		_WinAPI_RedrawWindow($hFormObjectExplorer)
 	EndIf

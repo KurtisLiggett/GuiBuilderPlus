@@ -40,7 +40,7 @@ Func _formMain()
 
 	;create an invisible parent for forms, to prevent showing in the taskbar
 	$hFormHolder = GUICreate("GBP form holder", 10, 10, -1, -1, -1, -1, $hToolbar)
-	$hGUI = GUICreate($oMain.Title & " - Form (" & $oMain.Width & ", " & $oMain.Height & ')', $oMain.Width, $oMain.Height, $main_left, $main_top, BITOR($WS_SIZEBOX, $WS_CAPTION), BitOR($WS_EX_ACCEPTFILES, $WS_EX_COMPOSITED), $hFormHolder)
+	$hGUI = GUICreate($oMain.Title & " - Form (" & $oMain.Width & ", " & $oMain.Height & ')', $oMain.Width, $oMain.Height, $main_left, $main_top, BitOR($WS_SIZEBOX, $WS_CAPTION), BitOR($WS_EX_ACCEPTFILES, $WS_EX_COMPOSITED), $hFormHolder)
 
 	_getGuiFrameSize()
 	WinMove($hGUI, "", Default, Default, $oMain.Width + $iGuiFrameW, $oMain.Height + $iGuiFrameH)
@@ -629,7 +629,7 @@ EndFunc   ;==>_onExit
 Func _onExitForm()
 	;for now, close the program. In the future, close this form.
 	_onExit()
-EndFunc
+EndFunc   ;==>_onExitForm
 
 
 ;------------------------------------------------------------------------------
@@ -1178,9 +1178,9 @@ EndFunc   ;==>_onRedo
 
 #Region mouse events
 Func _GetDoubleClickTime()
-   Local $aDllRet = DllCall("user32.dll", "uint", "GetDoubleClickTime")
-   If Not @error Then Return $aDllRet[0]
-EndFunc
+	Local $aDllRet = DllCall("user32.dll", "uint", "GetDoubleClickTime")
+	If Not @error Then Return $aDllRet[0]
+EndFunc   ;==>_GetDoubleClickTime
 
 Func _onMousePrimaryDown()
 ;~ 	_WinAPI_Window($hGUI)
@@ -1216,7 +1216,7 @@ Func _onMousePrimaryDown()
 
 	;if tool is selected and clicking on an existing control (but not resizing), switch to selection
 	If (Not $initResize And Not $oCtrls.mode = $mode_init_move) And Not $oCtrls.mode = $mode_draw Then
-		If $oCtrls.exists($ctrl_hwnd) And $ctrl_hwnd <> $background Then
+		If $oCtrls.exists($ctrl_hwnd) And $ctrl_hwnd <> $background And $ctrl_hwnd <> 0 Then
 			GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 			$oCtrls.mode = $mode_default
 		EndIf
@@ -1268,7 +1268,7 @@ Func _onMousePrimaryDown()
 		Case $mode_default
 			_log("** PrimaryDown: default **")
 			Switch $ctrl_hwnd
-				Case $background
+				Case $background, 0
 					_log("  background")
 					_set_default_mode()
 					_set_current_mouse_pos(1)
@@ -1642,7 +1642,7 @@ Func _onMouseMove()
 			EndIf
 
 		Case $mode_default
-;~ 			_log("MOVE:  Default")
+			_log("MOVE:  Default")
 			If IsObj($oCtrls.clickedCtrl) Then
 				$oCtrls.mode = $mode_init_move
 				$oMouse.X = $oMouse.StartX
@@ -1911,7 +1911,7 @@ EndFunc   ;==>_onTestGUI
 
 Func _onSettings()
 	_formSettings()
-EndFunc
+EndFunc   ;==>_onSettings
 
 
 ;Smoke_N's WinGetByPID
@@ -2778,6 +2778,21 @@ Func ClientToScreen(ByRef $x, ByRef $y)
 	$y = DllStructGetData($tPoint, "Y")
 EndFunc   ;==>ClientToScreen
 
+;------------------------------------------------------------------------------
+; Title...........: ScreenToClient
+; Description.....: Convert the screen (desktop) coordinates to client (GUI) coordinates.
+;					taken from the helpfile
+;					updated by kurtykurtyboy
+;------------------------------------------------------------------------------
+Func ScreenToClient(ByRef $x, ByRef $y)
+	Local $tPoint = DllStructCreate("int X;int Y")
+	DllStructSetData($tPoint, "X", $x)
+	DllStructSetData($tPoint, "Y", $y)
+	_WinAPI_ScreenToClient($hGUI, $tPoint)
+	$x = DllStructGetData($tPoint, "X")
+	$y = DllStructGetData($tPoint, "Y")
+EndFunc   ;==>ScreenToClient
+
 
 #Region ; mouse management
 Func _mouse_snap_pos()
@@ -3127,3 +3142,34 @@ Func _memoryToPic($idPic, $name)
 	_WinAPI_DeleteObject($hBmp)
 	Return 0
 EndFunc   ;==>_memoryToPic
+
+
+Func _display_selection_rect(Const $oRect)
+	Static $prevRect = 0
+
+	GUISwitch($hGUI)
+	If GUICtrlGetHandle($overlay) <> -1 Then
+		GUICtrlDelete($overlay)
+		$overlay = -1
+	EndIf
+	$overlay = GUICtrlCreateGraphic($oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
+	GUICtrlSetState(-1, $GUI_DISABLE)
+	GUICtrlSetGraphic($overlay, $GUI_GR_RECT, 0, 0, $oRect.Width, $oRect.Height)
+	GUICtrlSetGraphic($overlay, $GUI_GR_REFRESH)
+	GUICtrlSetGraphic($background, $GUI_GR_REFRESH)
+	GUISwitch($hGUI)
+EndFunc   ;==>_display_selection_rect
+
+Func _recall_overlay()
+	GUISwitch($hGUI)
+
+	If $overlay <> -1 Then
+		ConsoleWrite("delete overlay" & @CRLF)
+		GUICtrlDelete($overlay)
+		$overlay = -1
+
+		$overlay = GUICtrlCreateGraphic(0, 0, 0, 0)
+		GUICtrlSetState(-1, $GUI_DISABLE)
+	EndIf
+	GUISwitch($hGUI)
+EndFunc   ;==>_recall_overlay

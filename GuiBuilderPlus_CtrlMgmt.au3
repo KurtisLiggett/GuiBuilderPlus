@@ -1104,46 +1104,6 @@ Func _remove_from_selected(Const $oCtrl, $updateProps = True)
 EndFunc   ;==>_remove_from_selected
 
 
-Func _display_selection_rect(Const $oRect)
-;~ 	_log("create rect")
-	Static $prevRect = 0
-
-;~ 	GUISwitch($hGUI)
-;~ 	If GUICtrlGetHandle($overlay) <> -1 Then
-;~ 		GUICtrlDelete($overlay)
-;~ 		$overlay = -1
-;~ 	EndIf
-;~ 	$overlay = GUICtrlCreateGraphic($oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
-;~ 	GUICtrlSetState(-1, $GUI_DISABLE)
-;~ 	GUICtrlSetGraphic($overlay, $GUI_GR_RECT, 0, 0, $oRect.Width, $oRect.Height)
-;~ 	GUICtrlSetGraphic($overlay, $GUI_GR_REFRESH)
-;~ 	GUISwitch($hGUI)
-
-	;if this is the first time, create the hGraphic
-	If $hSelectionGraphic = -1 Then
-		$hSelectionGraphic = _GDIPlus_GraphicsCreateFromHWND($hGUI) ;create a graphics object from a window handle
-		_GDIPlus_GraphicsSetSmoothingMode($hSelectionGraphic, $GDIP_SMOOTHINGMODE_HIGHQUALITY) ;sets the graphics object rendering quality (antialiasing)
-	EndIf
-
-	;clear the previous drawing
-;~ 	_GDIPlus_GraphicsClear($hSelectionGraphic)
-;~ 	_WinAPI_InvalidateRect($hGUI)
-	If IsObj($prevRect) Then
-		Local $rgnOuter = _WinAPI_CreateRectRgn($prevRect.Left, $prevRect.Top, $prevRect.Left + $prevRect.Width + 1, $prevRect.Top + $prevRect.Height + 1)
-		Local $rgnInner = _WinAPI_CreateRectRgn($prevRect.Left + 1, $prevRect.Top + 1, $prevRect.Left + $prevRect.Width, $prevRect.Top + $prevRect.Height)
-		Local $rgnBox = _WinAPI_CreateRectRgn(0, 0, 0, 0)
-		_WinAPI_CombineRgn($rgnBox, $rgnOuter, $rgnInner, $RGN_XOR)
-		_WinAPI_InvalidateRgn($hGUI, $rgnBox)
-		_WinAPI_DeleteObject($rgnOuter)
-		_WinAPI_DeleteObject($rgnInner)
-		_WinAPI_DeleteObject($rgnBox)
-	EndIf
-	$prevRect = $oRect
-
-	;draw the updated rect
-	_GDIPlus_GraphicsDrawRect($hSelectionGraphic, $oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
-EndFunc   ;==>_display_selection_rect
-
 ;~ Func _hide_selected_controls()
 ;~ 	For $oCtrl In $oSelected.ctrls.Items()
 ;~ 		If Not $setting_show_control Then
@@ -1257,23 +1217,6 @@ Func _move_mouse_to_grippy(Const $x, Const $y)
 	Opt("MouseCoordMode", $mouse_coord_mode)
 EndFunc   ;==>_move_mouse_to_grippy
 #EndRegion ; moving & resizing
-
-
-Func _recall_overlay()
-	GUISwitch($hGUI)
-	If $overlay <> -1 Then
-		GUICtrlDelete($overlay)
-		$overlay = -1
-	EndIf
-	GUISwitch($hGUI)
-
-	If $hSelectionGraphic <> -1 Then
-		_GDIPlus_GraphicsClear($hSelectionGraphic)
-		_WinAPI_InvalidateRect($hGUI)
-		_GDIPlus_GraphicsDispose($hSelectionGraphic)
-		$hSelectionGraphic = -1
-	EndIf
-EndFunc   ;==>_recall_overlay
 
 
 ;_objAction()_updateActionStacks
