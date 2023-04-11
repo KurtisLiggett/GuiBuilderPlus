@@ -145,6 +145,7 @@ Func _showgrid($state = Default)
 		$message &= "OFF"
 	Else
 		GUICtrlSetState($menu_show_grid, $GUI_CHECKED)
+		_hide_grid($background)
 		_show_grid($background, $oMain.Width, $oMain.Height)
 		IniWrite($sIniPath, "Settings", "ShowGrid", 1)
 		$message &= "ON"
