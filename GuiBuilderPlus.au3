@@ -23,6 +23,7 @@
 ;					- ADDED:	Full help file
 ;					- ADDED:	Font Name property
 ;					- ADDED:	Font weight property
+;					- ADDED:	Add combobox items with "|" in the text value
 ;					- UPDATED:	Added collapsible font properties
 ;					- UPDATED:	Moved "Show grid" from Settings menu to View menu
 ;					- UPDATED:	Control selection window is now the parent (main) window
