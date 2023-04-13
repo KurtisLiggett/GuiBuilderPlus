@@ -15,15 +15,18 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  04/10/2023 ...:
+;  04/13/2023 ...:
 ;					- FIXED:	HUGE reduction in flickering overall
 ;					- ADDED:	New settings dialog
-;					- ADDED:	Adjustable grid size setting
+;					- ADDED:	New setting: Adjustable grid size
 ;					- ADDED:	Syntax Highlighting in code window (RESH UDF by Beege)
 ;					- ADDED:	Full help file
+;					- ADDED:	Font Name property
+;					- ADDED:	Font weight property
+;					- UPDATED:	Added collapsible font properties
 ;					- UPDATED:	Moved "Show grid" from Settings menu to View menu
 ;					- UPDATED:	Control selection window is now the parent (main) window
-;					- UPDATED:	Code improvements
+;					- UPDATED:	Behind-the-scenes code improvements
 ;
 ; Roadmap .......:	- Finish control properties tabs
 ;					- Windows' theme support
@@ -96,6 +99,7 @@ Global $settingsChk_snapgrid, $settingsChk_pasteatmouse, $settingsChk_guifunctio
 
 ;Property Inspector
 Global $oProperties_Main, $oProperties_Ctrls, $tabSelected, $tabProperties, $tabStyles, $tabStylesHwnd
+Global $properties_fontButton
 
 ;GUI Constants
 Global Const $iconset = @ScriptDir & "\resources\Icons\" ; Added by: TheSaint
@@ -108,6 +112,7 @@ Global Enum $action_nudgeCtrl, $action_moveCtrl, $action_resizeCtrl, $action_del
 
 ;other variables
 Global $bStatusNewMessage
+Global $guiFontName
 Global $right_click = False
 Global $left_click = False, $ctrlClicked = False
 Global $bResizedFlag
@@ -141,6 +146,8 @@ _AutoItObject_StartUp()
 #include <FileConstants.au3>
 #include <FontConstants.au3>
 #include <GuiConstantsEx.au3>
+#include <ComboConstants.au3>
+#include <GuiComboBox.au3>
 #include <GuiTab.au3>
 #include <GuiListView.au3>
 #include <GuiIPAddress.au3>

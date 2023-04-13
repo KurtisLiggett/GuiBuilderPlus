@@ -646,7 +646,7 @@ Func _left_top_union_rect($oObjCtrls = 0)
 		EndIf
 
 		If Int(($oCtrl.Top - $smallest.Top) + $oCtrl.Height) > Int($smallest.Height) Then
-			$smallest.Height = Int(($oCtrl.Top - $smallest.Top)  + $oCtrl.Height)
+			$smallest.Height = Int(($oCtrl.Top - $smallest.Top) + $oCtrl.Height)
 		EndIf
 	Next
 
@@ -774,7 +774,7 @@ Func _PasteSelected($bDuplicate = False, $bAtMouse = False)
 			For $oCtrl In $aNewCtrls
 				If $i = 0 Then    ;select first item
 					_add_to_selected($aNewCtrls[$i], True, True)
-		;~ 					_populate_control_properties_gui($oNewCtrl)
+;~ 					_populate_control_properties_gui($oNewCtrl)
 				Else    ;add to selection
 					_add_to_selected($aNewCtrls[$i], False, False)
 				EndIf
@@ -1009,7 +1009,7 @@ EndFunc   ;==>_remove_all_from_selected
 
 Func _delete_selected_controls()
 	_deleteCtrls()
-EndFunc
+EndFunc   ;==>_delete_selected_controls
 
 Func _deleteCtrls($aCtrlsIn = 0)
 	GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
@@ -1021,9 +1021,9 @@ Func _deleteCtrls($aCtrlsIn = 0)
 	Else
 		$aCtrlsIn = $oSelected.ctrls.Items()
 	EndIf
-	Local $Count = UBound($aCtrlsIn)
+	Local $count = UBound($aCtrlsIn)
 
-	Switch $Count >= 1
+	Switch $count >= 1
 		Case True
 			_SendMessage($hGUI, $WM_SETREDRAW, False)
 
@@ -1033,7 +1033,7 @@ Func _deleteCtrls($aCtrlsIn = 0)
 
 			Local $i
 			For $oCtrl In $aCtrlsIn
-				If not $undo Then
+				If Not $undo Then
 					$aCtrls[$i] = $oSelected.getCopy($oCtrl.Hwnd)
 				EndIf
 				_delete_ctrl($oCtrl)
@@ -1048,7 +1048,7 @@ Func _deleteCtrls($aCtrlsIn = 0)
 
 			_refreshGenerateCode()
 
-			If $Count > 0 Then
+			If $count > 0 Then
 				_populate_control_properties_gui($oSelected.getFirst())
 				_showProperties($props_Ctrls)
 			Else
@@ -1058,7 +1058,7 @@ Func _deleteCtrls($aCtrlsIn = 0)
 			_SendMessage($hGUI, $WM_SETREDRAW, True)
 			_WinAPI_RedrawWindow($hGUI)
 
-			If not $undo Then
+			If Not $undo Then
 				;update the undo action stack
 				$oAction.ctrls = $aCtrls
 				_updateActionStacks($oAction)
@@ -1070,7 +1070,7 @@ Func _deleteCtrls($aCtrlsIn = 0)
 			_showProperties($props_Main)
 	EndSwitch
 
-EndFunc   ;==>_delete_selected_controls
+EndFunc   ;==>_deleteCtrls
 
 Func _remove_from_selected(Const $oCtrl, $updateProps = True)
 	If Not IsObj($oCtrl) Then
@@ -1235,7 +1235,7 @@ Func _updateActionStacks($oActionObject = 0)
 
 	;clear the redo stack
 	$aStackRedo = $aTemp
-EndFunc
+EndFunc   ;==>_updateActionStacks
 
 
 Func _undo()
@@ -1244,7 +1244,7 @@ Func _undo()
 
 	If $size > 0 Then
 		;perform the inverse of the saved action
-		Local $oAction = $aStackUndo[$size-1]
+		Local $oAction = $aStackUndo[$size - 1]
 		Switch $oAction.action
 			Case $action_changeText
 				Local $aActionCtrls = $oAction.ctrls
@@ -1252,7 +1252,7 @@ Func _undo()
 
 				_SendMessage($hGUI, $WM_SETREDRAW, False)
 				Local $aParams
-				For $i=0 To UBound($aActionCtrls)-1
+				For $i = 0 To UBound($aActionCtrls) - 1
 					$aParams = $aActionParams[$i]
 					GUICtrlSetData($aActionCtrls[$i].Hwnd, $aParams[0])
 					$aActionCtrls[$i].Text = $aParams[0]
@@ -1286,7 +1286,7 @@ Func _undo()
 
 				_SendMessage($hGUI, $WM_SETREDRAW, False)
 				Local $aParams
-				For $i=0 To UBound($aActionCtrls)-1
+				For $i = 0 To UBound($aActionCtrls) - 1
 					$aParams = $aActionParams[$i]
 					_change_ctrl_size_pos($aActionCtrls[$i], $aParams[4], $aParams[5], $aParams[0], $aParams[1])
 				Next
@@ -1306,11 +1306,11 @@ Func _undo()
 
 				_SendMessage($hGUI, $WM_SETREDRAW, False)
 				Local $prevHwnd, $oNewCtrl
-				For $i=0 To UBound($aActionCtrls)-1
+				For $i = 0 To UBound($aActionCtrls) - 1
 					ConsoleWrite("$i: " & $i & @CRLF)
 					$prevHwnd = $aActionCtrls[$i].Hwnd
 					$oNewCtrl = _create_ctrl($aActionCtrls[$i])
-					ConsoleWrite(Hex($oNewCtrl.Hwnd,8) & @CRLF)
+					ConsoleWrite(Hex($oNewCtrl.Hwnd, 8) & @CRLF)
 					_remove_all_from_selected()
 ;~ 					For $oActionObject In $aStackUndo
 ;~ 						For $oActionCtrl In $oActionObject.ctrls
@@ -1342,7 +1342,7 @@ Func _undo()
 
 				_SendMessage($hGUI, $WM_SETREDRAW, False)
 				Local $aParams
-				For $i=0 To UBound($aActionCtrls)-1
+				For $i = 0 To UBound($aActionCtrls) - 1
 					$aParams = $aActionParams[$i]
 					Local $newColor = $aParams[0]
 					Switch $aActionCtrls[$i].Type
@@ -1368,7 +1368,7 @@ Func _undo()
 
 				_SendMessage($hGUI, $WM_SETREDRAW, False)
 				Local $aParams
-				For $i=0 To UBound($aActionCtrls)-1
+				For $i = 0 To UBound($aActionCtrls) - 1
 					$aParams = $aActionParams[$i]
 					Local $newColor = $aParams[0]
 
@@ -1397,7 +1397,7 @@ Func _undo()
 				Local $aActionParams = $oAction.parameters
 
 				Local $aParams
-				For $i=0 To UBound($aActionCtrls)-1
+				For $i = 0 To UBound($aActionCtrls) - 1
 					$aParams = $aActionParams[$i]
 					$aActionCtrls[$i].CodeString = $aParams[0]
 				Next
@@ -1406,10 +1406,10 @@ Func _undo()
 		EndSwitch
 
 		;move from undo stack to redo stack
-		_ArrayAdd($aStackRedo, $aStackUndo[$size-1])
-		_ArrayDelete($aStackUndo, $size-1)
+		_ArrayAdd($aStackRedo, $aStackUndo[$size - 1])
+		_ArrayDelete($aStackUndo, $size - 1)
 	EndIf
-EndFunc
+EndFunc   ;==>_undo
 
 
 Func _redo()
@@ -1418,7 +1418,7 @@ Func _redo()
 
 	If $size > 0 Then
 		;perform the action
-		Local $oAction = $aStackRedo[$size-1]
+		Local $oAction = $aStackRedo[$size - 1]
 		Switch $oAction.action
 			Case $action_changeText
 				Local $aActionCtrls = $oAction.ctrls
@@ -1426,7 +1426,7 @@ Func _redo()
 
 				_SendMessage($hGUI, $WM_SETREDRAW, False)
 				Local $aParams
-				For $i=0 To UBound($aActionCtrls)-1
+				For $i = 0 To UBound($aActionCtrls) - 1
 					$aParams = $aActionParams[$i]
 					GUICtrlSetData($aActionCtrls[$i].Hwnd, $aParams[1])
 					$aActionCtrls[$i].Text = $aParams[1]
@@ -1460,7 +1460,7 @@ Func _redo()
 
 				_SendMessage($hGUI, $WM_SETREDRAW, False)
 				Local $aParams
-				For $i=0 To UBound($aActionCtrls)-1
+				For $i = 0 To UBound($aActionCtrls) - 1
 					$aParams = $aActionParams[$i]
 					_change_ctrl_size_pos($aActionCtrls[$i], $aParams[6], $aParams[7], $aParams[2], $aParams[3])
 				Next
@@ -1475,11 +1475,11 @@ Func _redo()
 
 				_SendMessage($hGUI, $WM_SETREDRAW, False)
 				Local $prevHwnd, $oNewCtrl
-				For $i=0 To UBound($aActionCtrls)-1
+				For $i = 0 To UBound($aActionCtrls) - 1
 					ConsoleWrite("$i: " & $i & @CRLF)
 					$prevHwnd = $aActionCtrls[$i].Hwnd
 					$oNewCtrl = _create_ctrl($aActionCtrls[$i])
-					ConsoleWrite(Hex($oNewCtrl.Hwnd,8) & @CRLF)
+					ConsoleWrite(Hex($oNewCtrl.Hwnd, 8) & @CRLF)
 					_remove_all_from_selected()
 ;~ 					For $oActionObject In $aStackUndo
 ;~ 						For $oActionCtrl In $oActionObject.ctrls
@@ -1511,11 +1511,11 @@ Func _redo()
 
 				_SendMessage($hGUI, $WM_SETREDRAW, False)
 				Local $prevHwnd, $oNewCtrl
-				For $i=0 To UBound($aActionCtrls)-1
+				For $i = 0 To UBound($aActionCtrls) - 1
 					ConsoleWrite("$i: " & $i & @CRLF)
 					$prevHwnd = $aActionCtrls[$i].Hwnd
 					$oNewCtrl = _create_ctrl($aActionCtrls[$i])
-					ConsoleWrite(Hex($oNewCtrl.Hwnd,8) & @CRLF)
+					ConsoleWrite(Hex($oNewCtrl.Hwnd, 8) & @CRLF)
 					_remove_all_from_selected()
 				Next
 				_SendMessage($hGUI, $WM_SETREDRAW, True)
@@ -1529,7 +1529,7 @@ Func _redo()
 
 				_SendMessage($hGUI, $WM_SETREDRAW, False)
 				Local $aParams
-				For $i=0 To UBound($aActionCtrls)-1
+				For $i = 0 To UBound($aActionCtrls) - 1
 					$aParams = $aActionParams[$i]
 					Local $newColor = $aParams[1]
 					Switch $aActionCtrls[$i].Type
@@ -1555,7 +1555,7 @@ Func _redo()
 
 				_SendMessage($hGUI, $WM_SETREDRAW, False)
 				Local $aParams
-				For $i=0 To UBound($aActionCtrls)-1
+				For $i = 0 To UBound($aActionCtrls) - 1
 					$aParams = $aActionParams[$i]
 					Local $newColor = $aParams[1]
 
@@ -1584,7 +1584,7 @@ Func _redo()
 				Local $aActionParams = $oAction.parameters
 
 				Local $aParams
-				For $i=0 To UBound($aActionCtrls)-1
+				For $i = 0 To UBound($aActionCtrls) - 1
 					$aParams = $aActionParams[$i]
 					$aActionCtrls[$i].CodeString = $aParams[1]
 				Next
@@ -1593,9 +1593,9 @@ Func _redo()
 		EndSwitch
 
 		;move from redo stack to undo stack
-		_ArrayAdd($aStackUndo, $aStackRedo[$size-1])
-		_ArrayDelete($aStackRedo, $size-1)
+		_ArrayAdd($aStackUndo, $aStackRedo[$size - 1])
+		_ArrayDelete($aStackRedo, $size - 1)
 	EndIf
-EndFunc
+EndFunc   ;==>_redo
 
 

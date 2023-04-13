@@ -1642,7 +1642,7 @@ Func _onMouseMove()
 			EndIf
 
 		Case $mode_default
-			_log("MOVE:  Default")
+;~ 			_log("MOVE:  Default")
 			If IsObj($oCtrls.clickedCtrl) Then
 				$oCtrls.mode = $mode_init_move
 				$oMouse.X = $oMouse.StartX
@@ -1650,7 +1650,7 @@ Func _onMouseMove()
 			EndIf
 
 		Case $mode_init_move, $mode_paste
-			_log("MOVE:  Moving")
+;~ 			_log("MOVE:  Moving")
 			Local $mouse_prevpos[2] = [$oMouse.X, $oMouse.Y]
 			$mouse_prevpos = _snap_to_grid($mouse_prevpos)
 
@@ -1999,6 +1999,42 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 
 
 	$oProperties_Ctrls.properties.Global.value = $oCtrl.Global
+
+	;font weight
+	Local $iFw
+	Switch $oCtrl.FontWeight
+		Case 100
+			$iFw = 0
+		Case 200
+			$iFw = 1
+		Case 300
+			$iFw = 2
+		Case 400
+			$iFw = 3
+		Case 500
+			$iFw = 4
+		Case 600
+			$iFw = 5
+		Case 700
+			$iFw = 6
+		Case 800
+			$iFw = 7
+		Case 900
+			$iFw = 8
+		Case Else
+			$iFw = 3
+	EndSwitch
+	_GUICtrlComboBox_SetCurSel(GUICtrlGetHandle($oProperties_Ctrls.properties.FontWeight.Hwnd), $iFw)
+;~ 	ControlCommand(HWnd($oProperties_Ctrls.properties.Hwnd), "", $oProperties_Ctrls.properties.FontWeight.Hwnd, "SetCurrentSelection", $iFw)
+
+	;font name
+	If $oCtrl.FontName = "" Then
+		_GUICtrlComboBox_SetCurSel(GUICtrlGetHandle($oProperties_Ctrls.properties.FontName.Hwnd), -1)
+	Else
+		Local $selection = ControlCommand(HWnd($oProperties_Ctrls.properties.Hwnd), "", $oProperties_Ctrls.properties.FontName.Hwnd, "FindString", $oCtrl.FontName)
+		_GUICtrlComboBox_SetCurSel(GUICtrlGetHandle($oProperties_Ctrls.properties.FontName.Hwnd), $selection)
+	EndIf
+
 EndFunc   ;==>_populate_control_properties_gui
 
 
@@ -2586,7 +2622,7 @@ Func _ctrl_change_FontSize()
 				If $oCtrl.Type = "IP" Then
 					_GUICtrlIpAddress_SetFont($oCtrl.Hwnd, "Arial", $new_data)
 				Else
-					GUICtrlSetFont($oCtrl.Hwnd, $new_data)
+					GUICtrlSetFont($oCtrl.Hwnd, $new_data, $oCtrl.FontWeight)
 				EndIf
 
 				;update the selected property
@@ -2597,6 +2633,82 @@ Func _ctrl_change_FontSize()
 
 	_refreshGenerateCode()
 EndFunc   ;==>_ctrl_change_FontSize
+
+Func _ctrl_change_FontWeight()
+	Local $new_data = $oProperties_Ctrls.properties.FontWeight.value
+
+	Switch $new_data
+		Case "Thin"
+			$new_data = 100
+		Case "Extra Light"
+			$new_data = 200
+		Case "Light"
+			$new_data = 300
+		Case "Normal"
+			$new_data = 400
+		Case "Medium"
+			$new_data = 500
+		Case "Semi Bold"
+			$new_data = 600
+		Case "Bold"
+			$new_data = 700
+		Case "Extra Bold"
+			$new_data = 800
+		Case "Heavy"
+			$new_data = 900
+		Case Else
+			$new_data = 400
+	EndSwitch
+
+	Local Const $sel_count = $oSelected.count
+
+
+	Switch $sel_count >= 1
+		Case True
+			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
+				;update the selected control
+				If $oCtrl.Type = "IP" Then
+					_GUICtrlIpAddress_SetFont($oCtrl.Hwnd, "Arial", $oCtrl.FontSize, $new_data)
+				Else
+					GUICtrlSetFont($oCtrl.Hwnd, $oCtrl.FontSize, $new_data)
+				EndIf
+
+				;update the selected property
+				$oCtrl.FontWeight = $new_data
+
+			Next
+	EndSwitch
+
+	_refreshGenerateCode()
+EndFunc   ;==>_ctrl_change_FontWeight
+
+Func _ctrl_change_FontName()
+	Local $new_data = $oProperties_Ctrls.properties.FontName.value
+
+	Local Const $sel_count = $oSelected.count
+
+	Switch $sel_count >= 1
+		Case True
+			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
+				;update the selected control
+				If $oCtrl.Type = "IP" Then
+					_GUICtrlIpAddress_SetFont($oCtrl.Hwnd, $new_data, $oCtrl.FontSize, $oCtrl.FontWeight)
+				Else
+					GUICtrlSetFont($oCtrl.Hwnd, $oCtrl.FontSize, $oCtrl.FontWeight, $GUI_FONTNORMAL, $new_data)
+				EndIf
+
+				;update the selected property
+				$oCtrl.FontName = $new_data
+
+			Next
+	EndSwitch
+
+	_refreshGenerateCode()
+EndFunc   ;==>_ctrl_change_FontName
 
 
 Func _ctrl_pick_Color()

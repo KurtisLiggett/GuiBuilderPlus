@@ -111,6 +111,8 @@ Func _save_gui_definition($saveAs = False)
 		Json_Put($objOutput, ".Controls[" & $i & "].Locked", $oCtrl.Locked)
 		Json_Put($objOutput, ".Controls[" & $i & "].styleString", $oCtrl.styleString)
 		Json_Put($objOutput, ".Controls[" & $i & "].FontSize", $oCtrl.FontSize)
+		Json_Put($objOutput, ".Controls[" & $i & "].FontWeight", $oCtrl.FontWeight)
+		Json_Put($objOutput, ".Controls[" & $i & "].FontName", $oCtrl.FontName)
 		If $oCtrl.Color = -1 Then
 			Json_Put($objOutput, ".Controls[" & $i & "].Color", -1)
 		Else
@@ -151,6 +153,8 @@ Func _save_gui_definition($saveAs = False)
 							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Locked", $oTabCtrl.Locked)
 							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].styleString", $oTabCtrl.styleString)
 							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].FontSize", $oTabCtrl.FontSize)
+							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].FontWeight", $oTabCtrl.FontWeight)
+							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].FontName", $oTabCtrl.FontName)
 							If $oTabCtrl.Color = -1 Then
 								Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Color", -1)
 							Else
@@ -187,6 +191,8 @@ Func _save_gui_definition($saveAs = False)
 						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Locked", $oThisCtrl.Locked)
 						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].styleString", $oThisCtrl.styleString)
 						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].FontSize", $oThisCtrl.FontSize)
+						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].FontWeight", $oThisCtrl.FontWeight)
+						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].FontName", $oThisCtrl.FontName)
 						If $oThisCtrl.Color = -1 Then
 							Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Color", -1)
 						Else
@@ -367,6 +373,8 @@ Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 			$oCtrl.Background = Dec(StringReplace($oCtrl.Background, "0x", ""))
 		EndIf
 		$oCtrl.FontSize = _Json_Get($oThisCtrl, ".FontSize", 8.5)
+		$oCtrl.FontWeight = _Json_Get($oThisCtrl, ".FontWeight", 400)
+		$oCtrl.FontName = _Json_Get($oThisCtrl, ".FontName", "")
 		$oCtrl.CodeString = _Json_Get($oThisCtrl, ".CodeString", "")
 
 		$oNewCtrl = _create_ctrl($oCtrl, True)
@@ -382,6 +390,22 @@ Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 				_GUICtrlIpAddress_SetFont($oCtrl.Hwnd, "Arial", $oCtrl.FontSize)
 			Else
 				GUICtrlSetFont($oCtrl.Hwnd, $oCtrl.FontSize)
+			EndIf
+		EndIf
+
+		If $oCtrl.FontWeight <> 400 Then
+			If $oCtrl.Type = "IP" Then
+				_GUICtrlIpAddress_SetFont($oCtrl.Hwnd, "Arial", $oCtrl.FontSize, $oCtrl.FontWeight)
+			Else
+				GUICtrlSetFont($oCtrl.Hwnd, $oCtrl.FontSize, $oCtrl.FontWeight)
+			EndIf
+		EndIf
+
+		If $oCtrl.FontName <> "" Then
+			If $oCtrl.Type = "IP" Then
+				_GUICtrlIpAddress_SetFont($oCtrl.Hwnd, $oCtrl.FontName, $oCtrl.FontSize, $oCtrl.FontWeight)
+			Else
+				GUICtrlSetFont($oCtrl.Hwnd, $oCtrl.FontSize, $oCtrl.FontWeight, 0, $oCtrl.FontName)
 			EndIf
 		EndIf
 
@@ -763,23 +787,40 @@ Func _importAu3File()
 		EndIf
 
 		;check line for GUICtrlSetFont
-		$aMatches = StringRegExp($sLine, '(?im)\s*(?:GUICtrlSetFont)\s*\((.+?),\s*(.+?)\s*(?:,|\))', $STR_REGEXPARRAYGLOBALMATCH)
+		Local $ctrlIndex, $fontWeight, $fontName
+		$aMatches = StringRegExp($sLine, '(?im)\s*(?:GUICtrlSetFont)\s*\((.+?),\s*(.+?)(?:,\s*(.+?))?(?:,\s*(?:.+?))?(?:,\s*"(.+?))?"\s*(?:,|\))', $STR_REGEXPARRAYGLOBALMATCH)
 		If Not @error Then
 			If $aMatches[0] = "-1" Then
-				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].FontSize", $aMatches[1])
+				$ctrlIndex = $iCtrlCounter
 			Else
 				Local $sName = StringReplace($aMatches[0], "$", "")
 				If $oVariables.Exists($sName) Then
 					For $i = 0 To $iCtrlCounter
 						If Json_Get($objOutput, ".Controls[" & $i & "].Name") = $sName Then
-							Json_Put($objOutput, ".Controls[" & $i & "].FontSize", $aMatches[1])
+							$ctrlIndex = $i
 							ExitLoop
 						EndIf
 					Next
 				EndIf
 			EndIf
+			If UBound($aMatches) > 2 Then
+				$fontWeight = $aMatches[2]
+			Else
+				$fontWeight = 400
+			EndIf
+			If UBound($aMatches) > 3 Then
+				$fontName = $aMatches[3]
+				ConsoleWrite($aMatches[3] & @CRLF)
+			Else
+				$fontName = ""
+			EndIf
+			Json_Put($objOutput, ".Controls[" & $ctrlIndex & "].FontSize", $aMatches[1])
+			Json_Put($objOutput, ".Controls[" & $ctrlIndex & "].FontWeight", $fontWeight)
+			Json_Put($objOutput, ".Controls[" & $ctrlIndex & "].FontName", $fontName)
+
 			ContinueLoop
 		EndIf
+
 
 		;check line for GUICtrlSetBkColor
 		$aMatches = StringRegExp($sLine, '(?im)\s*(?:GUICtrlSetBkColor)\s*\((.+?),\s*(.+?)\s*(?:,|\))', $STR_REGEXPARRAYGLOBALMATCH)

@@ -356,11 +356,35 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 		EndIf
 	EndIf
 
-	If $oCtrl.FontSize <> "" And $oCtrl.FontSize <> -1 And $oCtrl.FontSize <> 8.5 Then
-		If $oCtrl.Type = "IP" Then
-			$mControls &= '_GUICtrlIpAddress_SetFont($' & $oCtrl.Name & ', "Arial", ' & $oCtrl.FontSize & ')' & @CRLF
+	If ($oCtrl.FontSize <> "" And $oCtrl.FontSize <> -1 And $oCtrl.FontSize <> 8.5) Or $oCtrl.FontWeight <> 400 Or $oCtrl.FontName <> "" Then
+		Local $iFs, $sFw = "", $sFn = ""
+		If $oCtrl.FontName <> "" Then
+			$sFn = ', "' & $oCtrl.FontName & '"'
+		EndIf
+
+		If $oCtrl.FontWeight <> 400 Then
+			$sFw = ", " & $oCtrl.FontWeight
+		EndIf
+
+		If $oCtrl.FontSize = "" Or $oCtrl.FontSize = -1 Then
+			$iFs = 8.5
 		Else
-			$mControls &= 'GUICtrlSetFont(-1, ' & $oCtrl.FontSize & ')' & @CRLF
+			$iFs = $oCtrl.FontSize
+		EndIf
+
+		If $oCtrl.Type = "IP" Then
+			If $sFn = "" Then
+				$sFn = ', "Arial"'
+			EndIf
+			$mControls &= '_GUICtrlIpAddress_SetFont($' & $oCtrl.Name & $sFn & ', ' & $iFs & $sFw & ')' & @CRLF
+		Else
+			If $sFn <> "" Then
+				$sFn = ', $GUI_FONTNORMAL' & $sFn
+				If $sFw = "" Then
+					$sFn = ', 400' & $sFn
+				EndIf
+			EndIf
+			$mControls &= 'GUICtrlSetFont(-1, ' & $iFs & $sFw & $sFn & ')' & @CRLF
 		EndIf
 	EndIf
 
