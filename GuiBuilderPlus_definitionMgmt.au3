@@ -247,6 +247,7 @@ EndFunc   ;==>_onload_gui_definition
 ; Title...........: _load_gui_definition
 ; Description.....:	Load GUI definition file
 ; Author..........: Roy
+; Modified by.....: kurtykurtyboy
 ;------------------------------------------------------------------------------
 Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 	Static $firstLoad = True

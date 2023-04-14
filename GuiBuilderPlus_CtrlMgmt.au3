@@ -352,6 +352,8 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 	GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
+	GuiCtrlSetOnTop($oNewControl.Hwnd)
+
 	Return $oNewControl
 EndFunc   ;==>_create_ctrl
 
@@ -1236,6 +1238,21 @@ Func _updateActionStacks($oActionObject = 0)
 	;clear the redo stack
 	$aStackRedo = $aTemp
 EndFunc   ;==>_updateActionStacks
+
+
+;credit to jmon
+;modified by kurtykurtboy
+Func GuiCtrlSetOnTop($iCtrlID, $hAfter = $HWND_TOP)
+    Local $hWnd = $iCtrlID
+	Local $hAfterNew = $hAfter
+    If Not IsHWnd($hWnd) Then $hWnd = GUICtrlGetHandle($iCtrlID)
+
+	If $hAfter <> $HWND_TOP Then
+		If Not IsHWnd($hAfter) Then $hAfterNew = GUICtrlGetHandle($hAfter)
+	EndIf
+
+    Return _WinAPI_SetWindowPos($hWnd, $hAfterNew, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
+EndFunc
 
 
 Func _undo()

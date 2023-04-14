@@ -255,6 +255,21 @@ Func _onLvMoveUp()
 	If IsObj($oCtrlMove) Then
 		$oCtrls.moveUp($oCtrlMove)
 
+		Local $foundIndex, $nextHwnd
+		For $oThisCtrl In $oCtrls.ctrls.Items()
+			If $foundIndex Then
+				$nextHwnd = $oThisCtrl.Hwnd
+				ExitLoop
+			EndIf
+			If $oThisCtrl.Hwnd = $oCtrlMove.Hwnd Then
+				$foundIndex = True
+			EndIf
+		Next
+		If $foundIndex Then
+			ConsoleWrite("found index" & @CRLF)
+			GuiCtrlSetOnTop($oCtrlMove.Hwnd, $nextHwnd)
+		EndIf
+
 		_refreshGenerateCode()
 		_formObjectExplorer_updateList()
 
@@ -274,6 +289,21 @@ Func _onLvMoveDown()
 
 	If IsObj($oCtrlMove) Then
 		$oCtrls.moveDown($oCtrlMove)
+
+		Local $foundIndex, $nextHwnd
+		For $oThisCtrl In $oCtrls.ctrls.Items()
+			If $foundIndex Then
+				$nextHwnd = $oThisCtrl.Hwnd
+				ExitLoop
+			EndIf
+			If $oThisCtrl.Hwnd = $oCtrlMove.Hwnd Then
+				$foundIndex = True
+			EndIf
+		Next
+		If $foundIndex Then
+			ConsoleWrite("found index" & @CRLF)
+			GuiCtrlSetOnTop($oCtrlMove.Hwnd, $nextHwnd)
+		EndIf
 
 		_refreshGenerateCode()
 		_formObjectExplorer_updateList()
