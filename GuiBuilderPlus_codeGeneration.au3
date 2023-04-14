@@ -547,6 +547,12 @@ Func _generate_includes(Const $oCtrl, Const $includes)
 		EndIf
 	EndIf
 
+	If $oCtrl.Type = "IP" Then
+		If Not StringInStr($includes, "<GuiIPAddress.au3>") Then
+			Return @CRLF & "#include <GuiIPAddress.au3>"
+		EndIf
+	EndIf
+
 	Return ""
 EndFunc   ;==>_generate_includes
 

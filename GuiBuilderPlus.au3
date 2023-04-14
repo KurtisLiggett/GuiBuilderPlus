@@ -15,8 +15,9 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  04/13/2023 ...:
+;  04/14/2023 ...:
 ;					- FIXED:	HUGE reduction in flickering overall
+;					- FIXED:	Missing include file for IP Address control
 ;					- ADDED:	New settings dialog
 ;					- ADDED:	New setting: Adjustable grid size
 ;					- ADDED:	Syntax Highlighting in code window (RESH UDF by Beege)
@@ -27,7 +28,7 @@
 ;					- UPDATED:	Added collapsible font properties
 ;					- UPDATED:	Moved "Show grid" from Settings menu to View menu
 ;					- UPDATED:	Control selection window is now the parent (main) window
-;					- UPDATED:	Z-order of controls is now updated when moved up/down the list
+;					- UPDATED:	Z-order of controls is now updated visually in real time when moved up/down the list
 ;					- UPDATED:	Behind-the-scenes code improvements
 ;
 ; Roadmap .......:	- Finish control properties tabs
