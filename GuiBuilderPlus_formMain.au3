@@ -837,7 +837,7 @@ EndFunc   ;==>_onKeyRight
 ; Events..........: UP key
 ;------------------------------------------------------------------------------
 Func _onKeyCtrlUp()
-	_nudgeSelected(0, -10)
+	_nudgeSelected(0, -1 * $oOptions.GridSize)
 EndFunc   ;==>_onKeyCtrlUp
 
 
@@ -847,7 +847,7 @@ EndFunc   ;==>_onKeyCtrlUp
 ; Events..........: UP key
 ;------------------------------------------------------------------------------
 Func _onKeyCtrlDown()
-	_nudgeSelected(0, 10)
+	_nudgeSelected(0, $oOptions.GridSize)
 EndFunc   ;==>_onKeyCtrlDown
 
 
@@ -857,7 +857,7 @@ EndFunc   ;==>_onKeyCtrlDown
 ; Events..........: UP key
 ;------------------------------------------------------------------------------
 Func _onKeyCtrlLeft()
-	_nudgeSelected(-10, 0)
+	_nudgeSelected(-1 * $oOptions.GridSize, 0)
 EndFunc   ;==>_onKeyCtrlLeft
 
 
@@ -867,7 +867,7 @@ EndFunc   ;==>_onKeyCtrlLeft
 ; Events..........: UP key
 ;------------------------------------------------------------------------------
 Func _onKeyCtrlRight()
-	_nudgeSelected(10, 0)
+	_nudgeSelected($oOptions.GridSize, 0)
 EndFunc   ;==>_onKeyCtrlRight
 
 

@@ -27,6 +27,7 @@
 ;					- ADDED:	Add combobox items with "|" in the text value
 ;					- UPDATED:	Added collapsible font properties
 ;					- UPDATED:	Moved "Show grid" from Settings menu to View menu
+;					- UPDATED:	Ctrl+arrow now moves 1 grid space instead of 10px
 ;					- UPDATED:	Control selection window is now the parent (main) window
 ;					- UPDATED:	Z-order of controls is now updated visually in real time when moved up/down the list
 ;					- UPDATED:	Behind-the-scenes code improvements
