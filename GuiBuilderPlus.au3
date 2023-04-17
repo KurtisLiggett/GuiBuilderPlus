@@ -25,6 +25,7 @@
 ;					- ADDED:	Font Name property
 ;					- ADDED:	Font weight property
 ;					- ADDED:	Add combobox items with "|" in the text value
+;					- ADDED:	Add recently opened files list to File menu
 ;					- UPDATED:	Added collapsible font properties
 ;					- UPDATED:	Moved "Show grid" from Settings menu to View menu
 ;					- UPDATED:	Ctrl+arrow now moves 1 grid space instead of 10px
@@ -83,6 +84,8 @@ Global $debug = True
 Global $hGUI, $hToolbar, $hFormGenerateCode, $hFormObjectExplorer, $hStatusbar, $hAbout, $hEvent, $hSettings, $hFormHolder
 Global $iGuiFrameH, $iGuiFrameW, $defaultGuiBkColor = 0xF0F0F0
 Global $menu_wipe, $contextmenu_lock, $menu_helpchm
+;File menu
+Global $menu_file, $aMenuRecentList[12]
 ;Settings menu
 Global $menu_show_grid
 ;View menu
