@@ -19,7 +19,7 @@ Func _formSettings()
 	GUICtrlSetBkColor(-1, 0xFFFFFF)
 	GUICtrlSetState(-1, $GUI_DISABLE)
 
-	$settingsChk_snapgrid = GUICtrlCreateCheckbox("Snap to grid", 10, 10, 151, 20)
+	$settingsChk_snapgrid = GUICtrlCreateCheckbox("Snap to grid [F3]", 10, 10, 151, 20)
 	GUICtrlSetBkColor(-1, 0xFFFFFF)
 	$settingsChk_pasteatmouse = GUICtrlCreateCheckbox("Paste at mouse position", 10, 32.5, 151, 20)
 	GUICtrlSetBkColor(-1, 0xFFFFFF)
