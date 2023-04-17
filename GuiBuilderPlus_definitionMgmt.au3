@@ -277,9 +277,15 @@ Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 						Return
 					EndIf
 				EndIf
+			Case Else
+				If Not FileExists($AgdInfile) Then
+					MsgBox($MB_ICONERROR, "File Error", "Error loading the GUI definition file." & @CRLF & "File not found." & @CRLF)
+					Return
+				EndIf
 		EndSwitch
 
 		$AgdOutFile = $AgdInfile
+		_addToRecentFiles($AgdInfile)
 
 		_SendMessage($hGUI, $WM_SETREDRAW, False)
 
@@ -289,6 +295,7 @@ Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 			_load_gui_definition_ini($AgdInfile)
 			_SendMessage($hGUI, $WM_SETREDRAW, True)
 			_WinAPI_RedrawWindow($hGUI)
+			_addToRecentFiles($AgdInfile)
 			Return
 		EndIf
 

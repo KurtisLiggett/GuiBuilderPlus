@@ -174,22 +174,34 @@ Func _formToolbar()
 
 	#Region create-menu
 	;create up the File menu
-	Local $menu_file = GUICtrlCreateMenu("File")
+	$menu_file = GUICtrlCreateMenu("File")
 	Local $menu_save_definition = GUICtrlCreateMenuItem("Save" & @TAB & "Ctrl+S", $menu_file)
 	Local $menu_saveas_definition = GUICtrlCreateMenuItem("Save As..." & @TAB & "Ctrl+S", $menu_file)
 	Local $menu_load_definition = GUICtrlCreateMenuItem("Open" & @TAB & "Ctrl+O", $menu_file)
 	GUICtrlCreateMenuItem("", $menu_file)
 	Local $menu_import_au3 = GUICtrlCreateMenuItem("Import from au3", $menu_file)
 	Local $menu_export_au3 = GUICtrlCreateMenuItem("Export to au3", $menu_file)
-	GUICtrlCreateMenuItem("", $menu_file)
-	Local $menu_exit = GUICtrlCreateMenuItem("Exit", $menu_file)
+
+	;look for recent files and generate menus
+	Local $aRecentFiles = IniReadSection($sIniPath, "Recent")
+	If Not @error Then
+		GUICtrlCreateMenuItem("", $menu_file)
+		For $i = 1 To $aRecentFiles[0][0]
+			$aMenuRecentList[$i - 1] = GUICtrlCreateMenuItem($i & " " & $aRecentFiles[$i][1], $menu_file)
+			GUICtrlSetOnEvent(-1, "_onMenuRecent")
+		Next
+	EndIf
+
+	$aMenuRecentList[10] = GUICtrlCreateMenuItem("", $menu_file)
+	$aMenuRecentList[11] = GUICtrlCreateMenuItem("Exit", $menu_file)
+	GUICtrlSetOnEvent(-1, "_onExit")
+
 
 	GUICtrlSetOnEvent($menu_save_definition, "_onSaveGui")
 	GUICtrlSetOnEvent($menu_saveas_definition, "_onSaveAsGui")
 	GUICtrlSetOnEvent($menu_load_definition, "_onload_gui_definition")
 	GUICtrlSetOnEvent($menu_import_au3, "_onImportMenuItem")
 	GUICtrlSetOnEvent($menu_export_au3, "_onExportMenuItem")
-	GUICtrlSetOnEvent($menu_exit, "_onExit")
 
 	;create the Edit menu
 	Local $menu_edit = GUICtrlCreateMenu("Edit")
@@ -837,7 +849,7 @@ EndFunc   ;==>_onKeyRight
 ; Events..........: UP key
 ;------------------------------------------------------------------------------
 Func _onKeyCtrlUp()
-	_nudgeSelected(0, -10)
+	_nudgeSelected(0, -1 * $oOptions.GridSize)
 EndFunc   ;==>_onKeyCtrlUp
 
 
@@ -847,7 +859,7 @@ EndFunc   ;==>_onKeyCtrlUp
 ; Events..........: UP key
 ;------------------------------------------------------------------------------
 Func _onKeyCtrlDown()
-	_nudgeSelected(0, 10)
+	_nudgeSelected(0, $oOptions.GridSize)
 EndFunc   ;==>_onKeyCtrlDown
 
 
@@ -857,7 +869,7 @@ EndFunc   ;==>_onKeyCtrlDown
 ; Events..........: UP key
 ;------------------------------------------------------------------------------
 Func _onKeyCtrlLeft()
-	_nudgeSelected(-10, 0)
+	_nudgeSelected(-1 * $oOptions.GridSize, 0)
 EndFunc   ;==>_onKeyCtrlLeft
 
 
@@ -867,7 +879,7 @@ EndFunc   ;==>_onKeyCtrlLeft
 ; Events..........: UP key
 ;------------------------------------------------------------------------------
 Func _onKeyCtrlRight()
-	_nudgeSelected(10, 0)
+	_nudgeSelected($oOptions.GridSize, 0)
 EndFunc   ;==>_onKeyCtrlRight
 
 
@@ -3111,7 +3123,79 @@ Func _onContextMenu_Event()
 	_formEventCode()
 EndFunc   ;==>_onContextMenu_Event
 
+
+;------------------------------------------------------------------------------
+; Title...........: _onMenuRecent
+; Description.....: Call the menu event function
+; Events..........: menu item
+;------------------------------------------------------------------------------
+Func _onMenuRecent()
+	Local $sText = GUICtrlRead(@GUI_CtrlId, $GUI_READ_EXTENDED)
+	Local $sFilename = StringRegExpReplace($sText, '^\d+ ', "", 1)
+
+	_load_gui_definition($sFilename)
+EndFunc   ;==>_onMenuRecent
+
 #EndRegion ; menu bar items
+
+
+Func _addToRecentFiles($sFilename)
+	;delete previous menu items and separator + exit
+	For $i = 0 To UBound($aMenuRecentList) - 1
+		If $aMenuRecentList[$i] <> 0 Then
+			GUICtrlDelete($aMenuRecentList[$i])
+		EndIf
+	Next
+
+	;rearrange the recent files list
+	Local $aRecentFiles = IniReadSection($sIniPath, "Recent")
+	If Not @error Then
+		Local $aNewList[$aRecentFiles[0][0] + 1][2]
+		$aNewList[0][0] = $aRecentFiles[0][0]
+		$aNewList[1][0] = 1
+		$aNewList[1][1] = $sFilename
+		Local $index = 2
+		Local $exists = False
+
+		For $i = 1 To $aRecentFiles[0][0]
+			If $index > $aRecentFiles[0][0] Then
+				If $aRecentFiles[0][0] < 10 And $aRecentFiles[$i][1] <> $sFilename Then
+					ReDim $aNewList[$aNewList[0][0] + 2][2]
+					$aNewList[0][0] = $aRecentFiles[0][0] + 1
+					$aNewList[$index][0] = $index
+					$aNewList[$index][1] = $aRecentFiles[$i][1]
+				EndIf
+				ExitLoop
+			EndIf
+			If $aRecentFiles[$i][1] <> $sFilename Then
+				$aNewList[$index][0] = $index
+				$aNewList[$index][1] = $aRecentFiles[$i][1]
+				$index += 1
+			EndIf
+		Next
+	Else
+		Local $aNewList[2][2]
+		$aNewList[0][0] = 1
+		$aNewList[1][0] = 1
+		$aNewList[1][1] = $sFilename
+	EndIf
+
+	;build menu from new list
+	For $i = 1 To 10
+		If $i > $aNewList[0][0] Then
+			$aMenuRecentList[$i - 1] = 0
+		Else
+			$aMenuRecentList[$i - 1] = GUICtrlCreateMenuItem($i & " " & $aNewList[$i][1], $menu_file)
+			GUICtrlSetOnEvent(-1, "_onMenuRecent")
+		EndIf
+	Next
+	$aMenuRecentList[10] = GUICtrlCreateMenuItem("", $menu_file)
+	$aMenuRecentList[11] = GUICtrlCreateMenuItem("Exit", $menu_file)
+	GUICtrlSetOnEvent(-1, "_onExit")
+
+	;write list to ini file
+	IniWriteSection($sIniPath, "Recent", $aNewList)
+EndFunc   ;==>_addToRecentFiles
 
 
 ; #FUNCTION# ====================================================================================================================

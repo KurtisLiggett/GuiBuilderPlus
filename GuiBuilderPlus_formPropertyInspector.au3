@@ -94,7 +94,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 
 	#Region main-styles
 	;create the child gui for controls properties
-	_generateStyles($w, $h - 2, $x, $y + 1)
+	_generateStyles($w, $h, $x, $y + 1)
 
 	#EndRegion main-styles
 
