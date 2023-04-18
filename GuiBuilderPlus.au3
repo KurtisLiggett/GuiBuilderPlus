@@ -379,7 +379,7 @@ EndFunc   ;==>_get_script_title
 ;------------------------------------------------------------------------------
 Func _initialize_settings()
 
-	$oOptions.GridSize = 10
+	$oOptions.GridSize = 5
 	Local $aSettings = IniReadSection($sIniPath, "Settings")
 
 	If Not @error Then
