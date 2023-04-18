@@ -19,7 +19,7 @@
 ;					- FIXED:	HUGE reduction in flickering overall
 ;					- FIXED:	Missing include file for IP Address control
 ;					- ADDED:	New settings dialog
-;					- ADDED:	New setting: Adjustable grid size
+;					- ADDED:	New setting: Adjustable grid size - default now set to 5px
 ;					- ADDED:	Syntax Highlighting in code window (RESH UDF by Beege)
 ;					- ADDED:	Full help file
 ;					- ADDED:	Font Name property
