@@ -15,7 +15,7 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  04/14/2023 ...:
+;  04/19/2023 ...:
 ;					- FIXED:	HUGE reduction in flickering overall
 ;					- FIXED:	Missing include file for IP Address control
 ;					- ADDED:	New settings dialog
@@ -26,6 +26,7 @@
 ;					- ADDED:	Font weight property
 ;					- ADDED:	Add combobox items with "|" in the text value
 ;					- ADDED:	Add recently opened files list to File menu
+;					- ADDED:	Rectangle graphic
 ;					- UPDATED:	Added collapsible font properties
 ;					- UPDATED:	Moved "Show grid" from Settings menu to View menu
 ;					- UPDATED:	Ctrl+arrow now moves 1 grid space instead of 10px

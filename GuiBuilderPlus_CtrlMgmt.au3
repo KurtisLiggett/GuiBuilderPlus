@@ -333,6 +333,15 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 			$oCtrls.add($oNewControl, $hParent)
 
+		Case "Graphic"
+			$oNewControl.Hwnd = GUICtrlCreateGraphic($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			GUICtrlSetGraphic($oNewControl.Hwnd, $GUI_GR_RECT, 0, 0, $oNewControl.Width, $oNewControl.Height)
+			GUICtrlSetGraphic($oNewControl.Hwnd, $GUI_GR_REFRESH)
+			GUICtrlSetGraphic($background, $GUI_GR_REFRESH)
+;~ 			GUISwitch($hGUI)
+
+			$oCtrls.add($oNewControl, $hParent)
+
 	EndSwitch
 
 	$oMain.hasChanged = True
@@ -1124,7 +1133,7 @@ EndFunc   ;==>_remove_from_selected
 
 
 #Region ; moving & resizing
-Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, Const $height, $tabChild = False)
+Func _change_ctrl_size_pos(ByRef $oCtrl, $left, $top, $width, $height, $tabChild = False)
 	If $oCtrl.Locked Then Return
 
 	If $width < 1 Or $height < 1 Then
@@ -1143,6 +1152,21 @@ Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, 
 		Case "IP"
 ;~ 			WinMove($oCtrl.Hwnd, "", $left, $top, $width, $height)
 			_updateIP($oCtrl)
+
+		Case "Graphic"
+			Local $prevKey = $oCtrl.Hwnd
+			If $oCtrl.Hwnd <> 0 Then
+				GUICtrlDelete($oCtrl.Hwnd)
+			EndIf
+			If $left = Default Then $left = $oCtrl.left
+			If $top = Default Then $top = $oCtrl.top
+			If $width = Default Then $width = $oCtrl.Width
+			If $height = Default Then $height = $oCtrl.Height
+			$oCtrl.Hwnd = GUICtrlCreateGraphic($left, $top, $width, $height)
+			GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_RECT, 0, 0, $width, $height)
+			GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_REFRESH)
+			$oCtrl.parent.ctrls.Key($prevKey) = $oCtrl.Hwnd
+			GUICtrlSetGraphic($background, $GUI_GR_REFRESH)
 
 		Case Else
 			GUICtrlSetPos($oCtrl.Hwnd, $left, $top, $width, $height)

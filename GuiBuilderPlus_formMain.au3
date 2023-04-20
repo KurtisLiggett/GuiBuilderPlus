@@ -398,11 +398,10 @@ Func _formToolbar()
 	GUICtrlSetTip(-1, "Menu")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	$toolButton = GUICtrlCreateRadio("ContextMenu", 165, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	$toolButton = GUICtrlCreateRadio("Graphic", 165, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
 	_setIconFromResource($toolButton, "Icon 20.ico", 220)
-	GUICtrlSetTip(-1, "Context Menu")
+	GUICtrlSetTip(-1, "Graphic")
 	GUICtrlSetOnEvent(-1, _control_type)
-	GUICtrlSetState(-1, $GUI_DISABLE)
 
 	; -----------------------------------------------------------------------------------------------------------
 
@@ -3341,8 +3340,6 @@ EndFunc   ;==>_memoryToPic
 
 
 Func _display_selection_rect(Const $oRect)
-	Static $prevRect = 0
-
 	GUISwitch($hGUI)
 	If GUICtrlGetHandle($overlay) <> -1 Then
 		GUICtrlDelete($overlay)
