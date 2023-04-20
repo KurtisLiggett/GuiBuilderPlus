@@ -555,9 +555,31 @@ EndFunc   ;==>_generateStyles
 Func _isAllLabels()
 	If $oSelected.count > 0 Then
 		For $oCtrl In $oSelected.ctrls.Items()
-			If $oCtrl.Type <> "Label" Then
-				Return False
-			EndIf
+			Switch $oCtrl.Type
+				Case "Label", "Input", "Edit"
+					ContinueLoop
+
+				Case Else
+					Return False
+
+			EndSwitch
+		Next
+	EndIf
+
+	Return True
+EndFunc   ;==>_isAllLabels
+
+Func _isGraphic()
+	If $oSelected.count > 0 Then
+		For $oCtrl In $oSelected.ctrls.Items()
+			Switch $oCtrl.Type
+				Case "Graphic"
+					ContinueLoop
+
+				Case Else
+					Return False
+
+			EndSwitch
 		Next
 	EndIf
 
@@ -569,7 +591,7 @@ Func _hasBG()
 	If $oSelected.count > 0 Then
 		For $oCtrl In $oSelected.ctrls.Items()
 			Switch $oCtrl.Type
-				Case "Label", "Checkbox", "Radio"
+				Case "Label", "Checkbox", "Radio", "Graphic", "Edit", "Input"
 					ContinueLoop
 
 				Case Else

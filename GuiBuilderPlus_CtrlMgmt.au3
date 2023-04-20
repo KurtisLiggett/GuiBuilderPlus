@@ -498,6 +498,25 @@ Func _updateIP($oCtrl)
 ;~ 	_WinAPI_SetWindowPos($oCtrl.Hwnd, $HWND_TOP, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height, $SWP_SHOWWINDOW)
 EndFunc   ;==>_updateIP
 
+Func _updateGraphic($oCtrl)
+	Local $prevKey = $oCtrl.Hwnd
+	GUICtrlDelete($oCtrl.Hwnd)
+
+	$oCtrl.Hwnd = GUICtrlCreateGraphic($oCtrl.left, $oCtrl.top, $oCtrl.Width, $oCtrl.Height)
+	If $oCtrl.color <> -1 And $oCtrl.background <> -1 Then
+		GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_COLOR, $oCtrl.color, $oCtrl.background)
+	ElseIf $oCtrl.color = -1 And $oCtrl.background <> -1 Then
+		GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_COLOR, 0x000000, $oCtrl.background)
+	ElseIf $oCtrl.color <> -1 And $oCtrl.background = -1 Then
+		GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_COLOR, $oCtrl.color)
+	EndIf
+	GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_RECT, 0, 0, $oCtrl.Width, $oCtrl.Height)
+	GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_REFRESH)
+
+	$oCtrl.parent.ctrls.Key($prevKey) = $oCtrl.Hwnd
+	GUICtrlSetGraphic($background, $GUI_GR_REFRESH)
+EndFunc   ;==>_updateIP
+
 
 Func _new_menuItem()
 	_new_menuItemCreate()
@@ -1154,19 +1173,7 @@ Func _change_ctrl_size_pos(ByRef $oCtrl, $left, $top, $width, $height, $tabChild
 			_updateIP($oCtrl)
 
 		Case "Graphic"
-			Local $prevKey = $oCtrl.Hwnd
-			If $oCtrl.Hwnd <> 0 Then
-				GUICtrlDelete($oCtrl.Hwnd)
-			EndIf
-			If $left = Default Then $left = $oCtrl.left
-			If $top = Default Then $top = $oCtrl.top
-			If $width = Default Then $width = $oCtrl.Width
-			If $height = Default Then $height = $oCtrl.Height
-			$oCtrl.Hwnd = GUICtrlCreateGraphic($left, $top, $width, $height)
-			GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_RECT, 0, 0, $width, $height)
-			GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_REFRESH)
-			$oCtrl.parent.ctrls.Key($prevKey) = $oCtrl.Hwnd
-			GUICtrlSetGraphic($background, $GUI_GR_REFRESH)
+			_updateGraphic($oCtrl)
 
 		Case Else
 			GUICtrlSetPos($oCtrl.Hwnd, $left, $top, $width, $height)

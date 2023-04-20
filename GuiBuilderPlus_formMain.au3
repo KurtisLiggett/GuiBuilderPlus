@@ -399,7 +399,7 @@ Func _formToolbar()
 	GUICtrlSetOnEvent(-1, _control_type)
 
 	$toolButton = GUICtrlCreateRadio("Graphic", 165, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	_setIconFromResource($toolButton, "Icon 20.ico", 220)
+	_setIconFromResource($toolButton, "Icon 24.ico", 224)
 	GUICtrlSetTip(-1, "Graphic")
 	GUICtrlSetOnEvent(-1, _control_type)
 
@@ -2563,7 +2563,7 @@ Func _ctrl_change_bkColor()
 
 				;convert string to color then apply
 				Switch $oCtrl.Type
-					Case "Label", "Checkbox", "Radio"
+					Case "Label", "Checkbox", "Radio", "Input", "Edit"
 						If $colorInput <> -1 Then
 							GUICtrlSetBkColor($oCtrl.Hwnd, $colorInput)
 						Else
@@ -2577,6 +2577,10 @@ Func _ctrl_change_bkColor()
 						EndIf
 
 						$oCtrl.Background = $colorInput
+
+					Case "Graphic"
+						$oCtrl.Background = $colorInput
+						_updateGraphic($oCtrl)
 
 					Case Else
 						ContinueLoop
@@ -2764,20 +2768,28 @@ Func _ctrl_change_Color()
 				If $oCtrl.Locked Then ContinueLoop
 
 				;convert string to color then apply
-				If $oCtrl.Type <> "Label" Then Return 0
+				Switch $oCtrl.Type
+					Case "Label", "Edit", "Input"
+						If $colorInput <> -1 Then
+							GUICtrlSetColor($oCtrl.Hwnd, $colorInput)
+						Else
+							GUICtrlDelete($oCtrl.Hwnd)
+							$oCtrl.Hwnd = GUICtrlCreateLabel($oCtrl.Text, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
+							$oCtrl.Color = -1
+							If $oCtrl.Background <> -1 Then
+								GUICtrlSetBkColor($oCtrl.Hwnd, $oCtrl.Background)
+							EndIf
+						EndIf
 
-				If $colorInput <> -1 Then
-					GUICtrlSetColor($oCtrl.Hwnd, $colorInput)
-				Else
-					GUICtrlDelete($oCtrl.Hwnd)
-					$oCtrl.Hwnd = GUICtrlCreateLabel($oCtrl.Text, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
-					$oCtrl.Color = -1
-					If $oCtrl.Background <> -1 Then
-						GUICtrlSetBkColor($oCtrl.Hwnd, $oCtrl.Background)
-					EndIf
-				EndIf
+						$oCtrl.Color = $colorInput
 
-				$oCtrl.Color = $colorInput
+					Case "Graphic"
+						$oCtrl.Color = $colorInput
+						_updateGraphic($oCtrl)
+
+					Case Else
+						Return 0
+				EndSwitch
 			Next
 	EndSwitch
 

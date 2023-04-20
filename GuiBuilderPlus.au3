@@ -29,6 +29,7 @@
 ;					- ADDED:	Rectangle graphic
 ;					- UPDATED:	Added collapsible font properties
 ;					- UPDATED:	Moved "Show grid" from Settings menu to View menu
+;					- UPDATED:	Allow background/foreground colors for Edit and Input controls
 ;					- UPDATED:	Ctrl+arrow now moves 1 grid space instead of 10px
 ;					- UPDATED:	Control selection window is now the parent (main) window
 ;					- UPDATED:	Z-order of controls is now updated visually in real time when moved up/down the list
@@ -70,6 +71,7 @@
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 21.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 22.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 23.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 24.ico
 
 Opt("WinTitleMatchMode", 4) ; advanced
 Opt("MouseCoordMode", 2)
