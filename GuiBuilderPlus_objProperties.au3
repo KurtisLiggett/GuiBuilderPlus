@@ -36,6 +36,8 @@ Func _objPropertiesProps()
 	_AutoItObject_AddProperty($oObject, "FontWeight", $ELSCOPE_PUBLIC, _objProperty("FontWeight"))
 	_AutoItObject_AddProperty($oObject, "Background", $ELSCOPE_PUBLIC, _objProperty("Background"))
 	_AutoItObject_AddProperty($oObject, "Global", $ELSCOPE_PUBLIC, _objProperty("Global", "Checkbox"))
+	_AutoItObject_AddProperty($oObject, "BorderColor", $ELSCOPE_PUBLIC, _objProperty("BorderColor"))
+	_AutoItObject_AddProperty($oObject, "BorderSize", $ELSCOPE_PUBLIC, _objProperty("BorderSize"))
 
 	Return $oObject
 EndFunc   ;==>_objPropertiesProps

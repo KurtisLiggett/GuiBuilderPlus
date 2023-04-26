@@ -53,6 +53,9 @@ Func _objCtrls($isSelection = False)
 	$oTypeCountList.Add("Icon", 0)
 	$oTypeCountList.Add("IP", 0)
 	$oTypeCountList.Add("ListView", 0)
+	$oTypeCountList.Add("Rect", 0)
+	$oTypeCountList.Add("Ellipse", 0)
+	$oTypeCountList.Add("Line", 0)
 	_AutoItObject_AddProperty($oObject, "typeCounts", $ELSCOPE_PUBLIC, $oTypeCountList)
 
 	_AutoItObject_AddMethod($oObject, "createNew", "_objCtrls_createNew")
@@ -519,6 +522,8 @@ Func _objCtrls_startResizing($oSelf)
 	For $oCtrl In $oSelf.ctrls.Items()
 		$oCtrl.resizePrevLeft = $mouse_pos[0]
 		$oCtrl.resizePrevTop = $mouse_pos[1]
+		$oCtrl.resizeStartLeft = $mouse_pos[0]
+		$oCtrl.resizeStarTop = $mouse_pos[1]
 		$oCtrl.PrevWidth = $oCtrl.Width
 		$oCtrl.PrevHeight = $oCtrl.Height
 		$oCtrl.PrevLeft = $oCtrl.Left
@@ -540,6 +545,8 @@ Func _objCtrl($oParent)
 	_AutoItObject_AddProperty($oObject, "isResizeMaster", $ELSCOPE_PUBLIC, False)
 	_AutoItObject_AddProperty($oObject, "resizePrevLeft", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "resizePrevTop", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "resizeStartLeft", $ELSCOPE_PUBLIC, 0)
+	_AutoItObject_AddProperty($oObject, "resizeStartTop", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "Hwnd", $ELSCOPE_PUBLIC)
 	_AutoItObject_AddProperty($oObject, "Hwnd", $ELSCOPE_PUBLIC)
 	_AutoItObject_AddProperty($oObject, "Hwnd1", $ELSCOPE_PUBLIC)
@@ -578,6 +585,12 @@ Func _objCtrl($oParent)
 	_AutoItObject_AddProperty($oObject, "styleString", $ELSCOPE_PUBLIC, "")
 	_AutoItObject_AddProperty($oObject, "styles", $ELSCOPE_PUBLIC, ObjCreate("Scripting.Dictionary"))
 	_AutoItObject_AddProperty($oObject, "CodeString", $ELSCOPE_PUBLIC, "")
+	_AutoItObject_AddProperty($oObject, "BorderColor", $ELSCOPE_PUBLIC, '0x000000')
+	_AutoItObject_AddProperty($oObject, "BorderSize", $ELSCOPE_PUBLIC, 1)
+	Local $aCoord1[2] = [0,0]
+	Local $aCoord2[2] = [1,1]
+	_AutoItObject_AddProperty($oObject, "Coord1", $ELSCOPE_PUBLIC, $aCoord1)
+	_AutoItObject_AddProperty($oObject, "Coord2", $ELSCOPE_PUBLIC, $aCoord2)
 
 	Return $oObject
 EndFunc   ;==>_objCtrl

@@ -333,6 +333,34 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 			$oCtrls.add($oNewControl, $hParent)
 
+		Case "Rect"
+			$oNewControl.Hwnd = GUICtrlCreateGraphic($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			GUICtrlSetGraphic($oNewControl.Hwnd, $GUI_GR_RECT, 0, 0, $oNewControl.Width, $oNewControl.Height)
+			GUICtrlSetGraphic($oNewControl.Hwnd, $GUI_GR_REFRESH)
+			_updateGraphic($oNewControl)
+;~ 			GUICtrlSetGraphic($background, $GUI_GR_REFRESH)
+
+			$oCtrls.add($oNewControl, $hParent)
+
+		Case "Ellipse"
+			$oNewControl.Hwnd = GUICtrlCreateGraphic($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			GUICtrlSetGraphic($oNewControl.Hwnd, $GUI_GR_ELLIPSE, 0, 0, $oNewControl.Width, $oNewControl.Height)
+			GUICtrlSetGraphic($oNewControl.Hwnd, $GUI_GR_REFRESH)
+			_updateGraphic($oNewControl)
+;~ 			GUICtrlSetGraphic($background, $GUI_GR_REFRESH)
+
+			$oCtrls.add($oNewControl, $hParent)
+
+		Case "Line"
+			$oNewControl.Hwnd = GUICtrlCreateGraphic($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			GUICtrlSetGraphic($oNewControl.Hwnd, $GUI_GR_MOVE, $oNewControl.Coord1[0], $oNewControl.Coord1[1])
+			GUICtrlSetGraphic($oNewControl.Hwnd, $GUI_GR_LINE, $oNewControl.Coord2[0], $oNewControl.Coord2[1])
+			GUICtrlSetGraphic($oNewControl.Hwnd, $GUI_GR_REFRESH)
+			_updateGraphic($oNewControl)
+;~ 			GUICtrlSetGraphic($background, $GUI_GR_REFRESH)
+
+			$oCtrls.add($oNewControl, $hParent)
+
 	EndSwitch
 
 	$oMain.hasChanged = True
@@ -344,7 +372,12 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 	Switch IsObj($oCtrl)
 		Case True    ;paste from existing object
-			GUICtrlSetData($oNewControl.Hwnd, $oNewControl.Text)
+			Switch $oNewControl.Type
+				Case "Rect", "Ellipse", "Line"
+
+				Case Else
+					GUICtrlSetData($oNewControl.Hwnd, $oNewControl.Text)
+			EndSwitch
 
 		Case False    ;new object
 			$oNewControl.Text = $oNewControl.Text
@@ -1124,12 +1157,18 @@ EndFunc   ;==>_remove_from_selected
 
 
 #Region ; moving & resizing
-Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, Const $height, $tabChild = False)
+Func _change_ctrl_size_pos(ByRef $oCtrl, $left, $top, $width, $height, $tabChild = False)
 	If $oCtrl.Locked Then Return
 
-	If $width < 1 Or $height < 1 Then
-		Return
-	EndIf
+	;if not graphic, then prevent crossing origin
+	Switch $oCtrl.Type
+		Case "Rect", "Ellipse", "Line"
+
+		Case Else
+			If $width < 1 Or $height < 1 Then
+				Return
+			EndIf
+	EndSwitch
 
 	If $left <> Default Then $oCtrl.Left = $left
 	If $top <> Default Then $oCtrl.Top = $top
@@ -1144,6 +1183,9 @@ Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, 
 ;~ 			WinMove($oCtrl.Hwnd, "", $left, $top, $width, $height)
 			_updateIP($oCtrl)
 
+		Case "Rect", "Ellipse", "Line"
+			_updateGraphic($oCtrl)
+
 		Case Else
 			GUICtrlSetPos($oCtrl.Hwnd, $left, $top, $width, $height)
 	EndSwitch
@@ -1154,6 +1196,114 @@ Func _change_ctrl_size_pos(ByRef $oCtrl, Const $left, Const $top, Const $width, 
 	EndIf
 	$oMain.hasChanged = True
 EndFunc   ;==>_change_ctrl_size_pos
+
+
+Func _updateGraphic($oCtrl)
+	Local $prevKey = $oCtrl.Hwnd
+	GUICtrlDelete($oCtrl.Hwnd)
+
+	$oCtrl.Hwnd = GUICtrlCreateGraphic($oCtrl.left, $oCtrl.top, $oCtrl.Width, $oCtrl.Height)
+	If $oCtrl.BorderSize > 1 Then
+		GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_PENSIZE, $oCtrl.BorderSize)
+	EndIf
+	Switch $oCtrl.Type
+		Case "Rect", "Ellipse"
+			If $oCtrl.BorderColor <> -1 And $oCtrl.background <> -1 Then
+				GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_COLOR, $oCtrl.BorderColor, $oCtrl.background)
+			ElseIf $oCtrl.BorderColor = -1 And $oCtrl.background <> -1 Then
+				GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_COLOR, 0x000000, $oCtrl.background)
+			ElseIf $oCtrl.BorderColor <> -1 And $oCtrl.background = -1 Then
+				GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_COLOR, $oCtrl.BorderColor)
+			EndIf
+			Switch $oCtrl.Type
+				Case "Rect"
+					GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_RECT, 0, 0, $oCtrl.Width, $oCtrl.Height)
+				Case "Ellipse"
+					GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_ELLIPSE, 0, 0, $oCtrl.Width, $oCtrl.Height)
+			EndSwitch
+		Case "Line"
+			Local $aCoord1 = [$oCtrl.coord1[0], $oCtrl.coord1[1]]
+			Local $aCoord2 = [$oCtrl.coord2[0], $oCtrl.coord2[1]]
+			Switch $oCtrls.mode
+				Case $resize_nw
+					$aCoord2[0] = $oCtrl.width
+					If $aCoord2[1] > $aCoord1[1] Then
+						$aCoord2[1] = $oCtrl.height
+					Else
+						$aCoord1[1] = $oCtrl.height
+					EndIf
+
+				Case $resize_n
+					If $aCoord2[1] > $aCoord1[1] Then
+						$aCoord2[1] = $oCtrl.height
+					Else
+						$aCoord1[1] = $oCtrl.height
+					EndIf
+
+				Case $resize_w
+					$aCoord2[0] = $oCtrl.width
+
+				Case $resize_e
+					$aCoord2[0] = $oCtrl.width
+
+				Case $resize_s
+					If $aCoord2[1] > $aCoord1[1] Then
+						$aCoord2[1] = $oCtrl.height
+					Else
+						$aCoord1[1] = $oCtrl.height
+					EndIf
+
+				Case $resize_se
+					$aCoord2[0] = $oCtrl.width
+					If $aCoord2[1] > $aCoord1[1] Then
+						$aCoord2[1] = $oCtrl.height
+					Else
+						$aCoord1[1] = $oCtrl.height
+					EndIf
+
+				Case $resize_ne
+					$aCoord2[0] = $oCtrl.width
+					$aCoord2[0] = $oCtrl.width
+					If $aCoord2[1] > $aCoord1[1] Then
+						$aCoord2[1] = $oCtrl.height
+					Else
+						$aCoord1[1] = $oCtrl.height
+					EndIf
+
+				Case $resize_sw
+					$aCoord2[0] = $oCtrl.width
+					If $aCoord2[1] > $aCoord1[1] Then
+						$aCoord2[1] = $oCtrl.height
+					Else
+						$aCoord1[1] = $oCtrl.height
+					EndIf
+
+				Case Else
+					$aCoord2[0] = $oCtrl.width
+					If $aCoord2[1] > $aCoord1[1] Then
+						$aCoord2[1] = $oCtrl.height
+					Else
+						$aCoord1[1] = $oCtrl.height
+					EndIf
+
+			EndSwitch
+
+			GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_MOVE, $aCoord1[0], $aCoord1[1])
+			GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_PENSIZE, $oCtrl.BorderSize)
+			If $oCtrl.BorderColor <> -1 Then
+				GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_COLOR, $oCtrl.BorderColor)
+			EndIf
+			GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_LINE, $aCoord2[0], $aCoord2[1])
+			GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_REFRESH)
+;~ 			GUICtrlSetGraphic($background, $GUI_GR_REFRESH)
+
+	EndSwitch
+	GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_REFRESH)
+
+	$oCtrl.parent.ctrls.Key($prevKey) = $oCtrl.Hwnd
+;~ 	GUICtrlSetGraphic($background, $GUI_GR_REFRESH)
+EndFunc   ;==>_updateGraphic
+
 
 Func _moveTabCtrls($oCtrl, $delta_x, $delta_y, $width, $height)
 	If $oCtrl.Locked Then Return
@@ -1243,16 +1393,16 @@ EndFunc   ;==>_updateActionStacks
 ;credit to jmon
 ;modified by kurtykurtboy
 Func GuiCtrlSetOnTop($iCtrlID, $hAfter = $HWND_TOP)
-    Local $hWnd = $iCtrlID
+	Local $hWnd = $iCtrlID
 	Local $hAfterNew = $hAfter
-    If Not IsHWnd($hWnd) Then $hWnd = GUICtrlGetHandle($iCtrlID)
+	If Not IsHWnd($hWnd) Then $hWnd = GUICtrlGetHandle($iCtrlID)
 
 	If $hAfter <> $HWND_TOP Then
 		If Not IsHWnd($hAfter) Then $hAfterNew = GUICtrlGetHandle($hAfter)
 	EndIf
 
-    Return _WinAPI_SetWindowPos($hWnd, $hAfterNew, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
-EndFunc
+	Return _WinAPI_SetWindowPos($hWnd, $hAfterNew, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
+EndFunc   ;==>GuiCtrlSetOnTop
 
 
 Func _undo()
@@ -1324,24 +1474,13 @@ Func _undo()
 				_SendMessage($hGUI, $WM_SETREDRAW, False)
 				Local $prevHwnd, $oNewCtrl
 				For $i = 0 To UBound($aActionCtrls) - 1
-					ConsoleWrite("$i: " & $i & @CRLF)
 					$prevHwnd = $aActionCtrls[$i].Hwnd
 					$oNewCtrl = _create_ctrl($aActionCtrls[$i])
-					ConsoleWrite(Hex($oNewCtrl.Hwnd, 8) & @CRLF)
 					_remove_all_from_selected()
-;~ 					For $oActionObject In $aStackUndo
-;~ 						For $oActionCtrl In $oActionObject.ctrls
-;~ 							ConsoleWrite("  name: " & $oActionCtrl.Name & @CRLF)
-;~ 							ConsoleWrite("  hwnd: " & $oActionCtrl.Hwnd & @CRLF)
-;~ 							If $oActionCtrl.Hwnd = $prevHwnd Then
-;~ 								ConsoleWrite("  new hwnd: " & $oNewCtrl.Hwnd & @CRLF)
-;~ 								$oActionCtrl.Hwnd = $oNewCtrl.Hwnd
-;~ 								$oActionCtrl.grippies.parent = $oNewCtrl.Hwnd
-;~ 							Else
-;~ 								ConsoleWrite("  no match: " & $oActionCtrl.Hwnd & @CRLF)
-;~ 							EndIf
-;~ 						Next
-;~ 					Next
+					Switch $aActionCtrls[$i].Type
+						Case "Rect", "Ellipse", "Line"
+							_updateGraphic($aActionCtrls[$i])
+					EndSwitch
 				Next
 				_SendMessage($hGUI, $WM_SETREDRAW, True)
 				_WinAPI_RedrawWindow($hGUI)
@@ -1363,7 +1502,7 @@ Func _undo()
 					$aParams = $aActionParams[$i]
 					Local $newColor = $aParams[0]
 					Switch $aActionCtrls[$i].Type
-						Case "Label", "Checkbox", "Radio"
+						Case "Label", "Checkbox", "Radio", "Input", "Edit"
 							If $newColor <> -1 Then
 								GUICtrlSetBkColor($aActionCtrls[$i].Hwnd, $newColor)
 								$aActionCtrls[$i].Background = $newColor
@@ -1371,6 +1510,9 @@ Func _undo()
 								GUICtrlSetBkColor($aActionCtrls[$i].Hwnd, $defaultGuiBkColor)
 								$aActionCtrls[$i].Background = -1
 							EndIf
+						Case "Rect", "Ellipse"
+							$aActionCtrls[$i].Background = $newColor
+							_updateGraphic($aActionCtrls[$i])
 
 					EndSwitch
 				Next
@@ -1389,20 +1531,63 @@ Func _undo()
 					$aParams = $aActionParams[$i]
 					Local $newColor = $aParams[0]
 
-					If $aActionCtrls[$i].Type = "Label" Then
-						If $newColor <> -1 Then
-							GUICtrlSetColor($aActionCtrls[$i].Hwnd, $newColor)
-						Else
-							GUICtrlDelete($aActionCtrls[$i].Hwnd)
-							$aActionCtrls[$i].Hwnd = GUICtrlCreateLabel($aActionCtrls[$i].Text, $aActionCtrls[$i].Left, $aActionCtrls[$i].Top, $aActionCtrls[$i].Width, $aActionCtrls[$i].Height)
-							$aActionCtrls[$i].Color = -1
-							If $aActionCtrls[$i].Background <> -1 Then
-								GUICtrlSetBkColor($aActionCtrls[$i].Hwnd, $aActionCtrls[$i].Background)
+					Switch $aActionCtrls[$i].Type
+						Case "Label", "Edit", "Input"
+							If $newColor <> -1 Then
+								GUICtrlSetColor($aActionCtrls[$i].Hwnd, $newColor)
+							Else
+								GUICtrlDelete($aActionCtrls[$i].Hwnd)
+								$aActionCtrls[$i].Hwnd = GUICtrlCreateLabel($aActionCtrls[$i].Text, $aActionCtrls[$i].Left, $aActionCtrls[$i].Top, $aActionCtrls[$i].Width, $aActionCtrls[$i].Height)
+								$aActionCtrls[$i].Color = -1
+								If $aActionCtrls[$i].Background <> -1 Then
+									GUICtrlSetBkColor($aActionCtrls[$i].Hwnd, $aActionCtrls[$i].Background)
+								EndIf
 							EndIf
-						EndIf
 
-						$aActionCtrls[$i].Color = $newColor
-					EndIf
+							$aActionCtrls[$i].Color = $newColor
+					EndSwitch
+				Next
+				_SendMessage($hGUI, $WM_SETREDRAW, True)
+				_WinAPI_RedrawWindow($hGUI)
+				_populate_control_properties_gui($oSelected.getFirst())
+				_refreshGenerateCode()
+
+			Case $action_changeBorderColor
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				_SendMessage($hGUI, $WM_SETREDRAW, False)
+				Local $aParams
+				For $i = 0 To UBound($aActionCtrls) - 1
+					$aParams = $aActionParams[$i]
+					Local $newColor = $aParams[0]
+
+					Switch $aActionCtrls[$i].Type
+						Case "Rect", "Ellipse", "Line"
+							$aActionCtrls[$i].BorderColor = $newColor
+							_updateGraphic($aActionCtrls[$i])
+					EndSwitch
+				Next
+				_SendMessage($hGUI, $WM_SETREDRAW, True)
+				_WinAPI_RedrawWindow($hGUI)
+				_populate_control_properties_gui($oSelected.getFirst())
+				_refreshGenerateCode()
+
+			Case $action_changeBorderSize
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				_SendMessage($hGUI, $WM_SETREDRAW, False)
+				Local $aParams
+				For $i = 0 To UBound($aActionCtrls) - 1
+					$aParams = $aActionParams[$i]
+					Local $newData = $aParams[0]
+
+					Switch $aActionCtrls[$i].Type
+						Case "Rect", "Ellipse", "Line"
+							$aActionCtrls[$i].BorderSize = $newData
+							_updateGraphic($aActionCtrls[$i])
+					EndSwitch
 				Next
 				_SendMessage($hGUI, $WM_SETREDRAW, True)
 				_WinAPI_RedrawWindow($hGUI)
@@ -1493,10 +1678,8 @@ Func _redo()
 				_SendMessage($hGUI, $WM_SETREDRAW, False)
 				Local $prevHwnd, $oNewCtrl
 				For $i = 0 To UBound($aActionCtrls) - 1
-					ConsoleWrite("$i: " & $i & @CRLF)
 					$prevHwnd = $aActionCtrls[$i].Hwnd
 					$oNewCtrl = _create_ctrl($aActionCtrls[$i])
-					ConsoleWrite(Hex($oNewCtrl.Hwnd, 8) & @CRLF)
 					_remove_all_from_selected()
 ;~ 					For $oActionObject In $aStackUndo
 ;~ 						For $oActionCtrl In $oActionObject.ctrls
@@ -1529,10 +1712,8 @@ Func _redo()
 				_SendMessage($hGUI, $WM_SETREDRAW, False)
 				Local $prevHwnd, $oNewCtrl
 				For $i = 0 To UBound($aActionCtrls) - 1
-					ConsoleWrite("$i: " & $i & @CRLF)
 					$prevHwnd = $aActionCtrls[$i].Hwnd
 					$oNewCtrl = _create_ctrl($aActionCtrls[$i])
-					ConsoleWrite(Hex($oNewCtrl.Hwnd, 8) & @CRLF)
 					_remove_all_from_selected()
 				Next
 				_SendMessage($hGUI, $WM_SETREDRAW, True)
@@ -1550,7 +1731,7 @@ Func _redo()
 					$aParams = $aActionParams[$i]
 					Local $newColor = $aParams[1]
 					Switch $aActionCtrls[$i].Type
-						Case "Label", "Checkbox", "Radio"
+						Case "Label", "Checkbox", "Radio", "Input", "Edit"
 							If $newColor <> -1 Then
 								GUICtrlSetBkColor($aActionCtrls[$i].Hwnd, $newColor)
 								$aActionCtrls[$i].Background = $newColor
@@ -1558,6 +1739,9 @@ Func _redo()
 								GUICtrlSetBkColor($aActionCtrls[$i].Hwnd, $defaultGuiBkColor)
 								$aActionCtrls[$i].Background = -1
 							EndIf
+						Case "Rect", "Ellipse"
+							$aActionCtrls[$i].Background = $newColor
+							_updateGraphic($aActionCtrls[$i])
 
 					EndSwitch
 				Next
@@ -1576,20 +1760,63 @@ Func _redo()
 					$aParams = $aActionParams[$i]
 					Local $newColor = $aParams[1]
 
-					If $aActionCtrls[$i].Type = "Label" Then
-						If $newColor <> -1 Then
-							GUICtrlSetColor($aActionCtrls[$i].Hwnd, $newColor)
-						Else
-							GUICtrlDelete($aActionCtrls[$i].Hwnd)
-							$aActionCtrls[$i].Hwnd = GUICtrlCreateLabel($aActionCtrls[$i].Text, $aActionCtrls[$i].Left, $aActionCtrls[$i].Top, $aActionCtrls[$i].Width, $aActionCtrls[$i].Height)
-							$aActionCtrls[$i].Color = -1
-							If $aActionCtrls[$i].Background <> -1 Then
-								GUICtrlSetBkColor($aActionCtrls[$i].Hwnd, $aActionCtrls[$i].Background)
+					Switch $aActionCtrls[$i].Type
+						Case "Label", "Edit", "Input"
+							If $newColor <> -1 Then
+								GUICtrlSetColor($aActionCtrls[$i].Hwnd, $newColor)
+							Else
+								GUICtrlDelete($aActionCtrls[$i].Hwnd)
+								$aActionCtrls[$i].Hwnd = GUICtrlCreateLabel($aActionCtrls[$i].Text, $aActionCtrls[$i].Left, $aActionCtrls[$i].Top, $aActionCtrls[$i].Width, $aActionCtrls[$i].Height)
+								$aActionCtrls[$i].Color = -1
+								If $aActionCtrls[$i].Background <> -1 Then
+									GUICtrlSetBkColor($aActionCtrls[$i].Hwnd, $aActionCtrls[$i].Background)
+								EndIf
 							EndIf
-						EndIf
 
-						$aActionCtrls[$i].Color = $newColor
-					EndIf
+							$aActionCtrls[$i].Color = $newColor
+					EndSwitch
+				Next
+				_SendMessage($hGUI, $WM_SETREDRAW, True)
+				_WinAPI_RedrawWindow($hGUI)
+				_populate_control_properties_gui($oSelected.getFirst())
+				_refreshGenerateCode()
+
+			Case $action_changeBorderColor
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				_SendMessage($hGUI, $WM_SETREDRAW, False)
+				Local $aParams
+				For $i = 0 To UBound($aActionCtrls) - 1
+					$aParams = $aActionParams[$i]
+					Local $newColor = $aParams[1]
+
+					Switch $aActionCtrls[$i].Type
+						Case "Rect", "Ellipse", "Line"
+							$aActionCtrls[$i].BorderColor = $newColor
+							_updateGraphic($aActionCtrls[$i])
+					EndSwitch
+				Next
+				_SendMessage($hGUI, $WM_SETREDRAW, True)
+				_WinAPI_RedrawWindow($hGUI)
+				_populate_control_properties_gui($oSelected.getFirst())
+				_refreshGenerateCode()
+
+			Case $action_changeBorderSize
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				_SendMessage($hGUI, $WM_SETREDRAW, False)
+				Local $aParams
+				For $i = 0 To UBound($aActionCtrls) - 1
+					$aParams = $aActionParams[$i]
+					Local $newData = $aParams[1]
+
+					Switch $aActionCtrls[$i].Type
+						Case "Rect", "Ellipse", "Line"
+							$aActionCtrls[$i].BorderSize = $newData
+							_updateGraphic($aActionCtrls[$i])
+					EndSwitch
 				Next
 				_SendMessage($hGUI, $WM_SETREDRAW, True)
 				_WinAPI_RedrawWindow($hGUI)

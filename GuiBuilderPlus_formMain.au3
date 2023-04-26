@@ -398,11 +398,20 @@ Func _formToolbar()
 	GUICtrlSetTip(-1, "Menu")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	$toolButton = GUICtrlCreateRadio("ContextMenu", 165, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	_setIconFromResource($toolButton, "Icon 20.ico", 220)
-	GUICtrlSetTip(-1, "Context Menu")
+	$button_graphic = GUICtrlCreateRadio("Rect", 165, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($button_graphic, "Icon 24.ico", 224)
+	GUICtrlSetTip(-1, "Draw Rectangle")
 	GUICtrlSetOnEvent(-1, _control_type)
-	GUICtrlSetState(-1, $GUI_DISABLE)
+
+	;context menu for graphic button
+	Local $graphic_contextmenu = GUICtrlCreateContextMenu($button_graphic)
+	GUICtrlCreateMenuItem("Rectangle", $graphic_contextmenu)
+	GUICtrlSetOnEvent(-1, "_onGraphicMenuRect")
+	GUICtrlCreateMenuItem("Ellipse", $graphic_contextmenu)
+	GUICtrlSetOnEvent(-1, "_onGraphicMenuEllipse")
+	GUICtrlCreateMenuItem("Line", $graphic_contextmenu)
+	GUICtrlSetOnEvent(-1, "_onGraphicMenuLine")
+
 
 	; -----------------------------------------------------------------------------------------------------------
 
@@ -586,6 +595,18 @@ Func _display_grid(Const $grid_ctrl, Const $width, Const $height)
 
 	;resize the control for click detection
 	GUICtrlSetPos($grid_ctrl, Default, Default, $width, $height)
+
+	;send to background
+	GuiCtrlSetOnTop($grid_ctrl, $HWND_BOTTOM)
+	GUICtrlSetState($grid_ctrl, $GUI_DISABLE)
+
+	;refresh all graphic controls, to show on top
+	For $oCtrl In $oCtrls.ctrls.Items()
+		Switch $oCtrl.Type
+			Case "Rect", "Ellipse", "Line"
+				_updateGraphic($oCtrl)
+		EndSwitch
+	Next
 EndFunc   ;==>_display_grid
 #EndRegion grid management
 
@@ -1185,6 +1206,33 @@ Func _onRedo()
 	_redo()
 EndFunc   ;==>_onRedo
 
+Func _onGraphicMenuRect()
+	GUICtrlSetTip($button_graphic, "Draw Rectangle")
+	GUICtrlSetData($button_graphic, "Rect")
+	_setIconFromResource($button_graphic, "Icon 24.ico", 224)
+	GUICtrlSetState($button_graphic, $GUI_CHECKED)
+	$oCtrls.CurrentType = "Rect"
+	$oCtrls.mode = $mode_draw
+EndFunc
+
+Func _onGraphicMenuEllipse()
+	GUICtrlSetTip($button_graphic, "Draw Ellipse")
+	GUICtrlSetData($button_graphic, "Ellipse")
+	_setIconFromResource($button_graphic, "Icon 25.ico", 225)
+	GUICtrlSetState($button_graphic, $GUI_CHECKED)
+	$oCtrls.CurrentType = "Ellipse"
+	$oCtrls.mode = $mode_draw
+EndFunc
+
+Func _onGraphicMenuLine()
+	GUICtrlSetTip($button_graphic, "Draw Line")
+	GUICtrlSetData($button_graphic, "Line")
+	_setIconFromResource($button_graphic, "Icon 26.ico", 226)
+	GUICtrlSetState($button_graphic, $GUI_CHECKED)
+	$oCtrls.CurrentType = "Line"
+	$oCtrls.mode = $mode_draw
+EndFunc
+
 
 
 
@@ -1447,6 +1495,143 @@ Func _onMousePrimaryUp()
 					_delete_selected_controls()
 					_set_default_mode()
 				Else
+					;done drawing
+					Switch $oCtrlSelectedFirst.Type
+						Case "Rect", "Ellipse", "Line"
+							Local $aCoord1 = [$oCtrlSelectedFirst.coord1[0], $oCtrlSelectedFirst.coord1[1]]
+							Local $aCoord2 = [$oCtrlSelectedFirst.coord2[0], $oCtrlSelectedFirst.coord2[1]]
+
+							If $oCtrlSelectedFirst.width < 0 And $oCtrlSelectedFirst.height < 0 Then
+								$oCtrlSelectedFirst.width = -1 * $oCtrlSelectedFirst.width
+								$oCtrlSelectedFirst.left -= $oCtrlSelectedFirst.width
+
+								$oCtrlSelectedFirst.height = -1 * $oCtrlSelectedFirst.height
+								$oCtrlSelectedFirst.top -= $oCtrlSelectedFirst.height
+
+								Switch $oCtrls.mode
+									Case $resize_se, $resize_nw
+										$aCoord1[0] = 0
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord1[1] = 0
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+											$aCoord2[1] = 0
+										EndIf
+									Case $resize_ne, $resize_sw
+										$aCoord1[0] = 0
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord1[1] = 0
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+											$aCoord2[1] = 0
+										EndIf
+								EndSwitch
+
+								$oCtrlSelectedFirst.grippies.show()
+
+							ElseIf $oCtrlSelectedFirst.width < 0 Then
+								$oCtrlSelectedFirst.width = -1 * $oCtrlSelectedFirst.width
+								$oCtrlSelectedFirst.left -= $oCtrlSelectedFirst.width
+
+								$aCoord1[0] = 0
+								$aCoord1[1] = $oCtrlSelectedFirst.coord2[1]
+								$aCoord2[0] = $oCtrlSelectedFirst.width
+								$aCoord2[1] = $oCtrl.coord1[1]
+
+								$oCtrl.grippies.show()
+
+							ElseIf $oCtrl.height < 0 Then
+								$oCtrl.height = -1 * $oCtrl.height
+								$oCtrlSelectedFirst.top -= $oCtrlSelectedFirst.height
+
+								If $aCoord2[1] > $aCoord1[1] Then
+									$aCoord1[0] = 0
+									$aCoord1[1] = $oCtrlSelectedFirst.height
+									$aCoord2[0] = $oCtrlSelectedFirst.width
+									$aCoord2[1] = 0
+								Else
+									$aCoord1[0] = 0
+									$aCoord1[1] = 0
+									$aCoord2[0] = $oCtrlSelectedFirst.width
+									$aCoord2[1] = $oCtrlSelectedFirst.height
+								EndIf
+
+								$oCtrlSelectedFirst.grippies.show()
+
+							EndIf
+
+							$oCtrlSelectedFirst.coord1 = $aCoord1
+							$oCtrlSelectedFirst.coord2 = $aCoord2
+
+							;update line coords
+							If $oCtrlSelectedFirst.Type = "Line" Then
+								Switch $oCtrls.mode
+									Case $resize_nw
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+										EndIf
+
+									Case $resize_n
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+										EndIf
+
+									Case $resize_w
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+
+									Case $resize_e
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+
+									Case $resize_s
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+										EndIf
+
+									Case $resize_se
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+										EndIf
+
+									Case $resize_ne
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+										EndIf
+
+									Case $resize_sw
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+										EndIf
+
+								EndSwitch
+								$oCtrlSelectedFirst.coord1 = $aCoord1
+								$oCtrlSelectedFirst.coord2 = $aCoord2
+							EndIf
+
+							_updateGraphic($oCtrlSelectedFirst)
+					EndSwitch
+
+
 					;update the undo action stack
 					Local $oAction = _objAction()
 					$oAction.action = $action_drawCtrl
@@ -1461,7 +1646,145 @@ Func _onMousePrimaryUp()
 					_updateActionStacks($oAction)
 				EndIf
 			Else
-				_log("** PrimaryUp: Else **")
+				_log("** PrimaryUp: Resize Else **")
+				For $oCtrl In $oSelected.ctrls.Items()
+					Switch $oCtrl.Type
+						Case "Rect", "Ellipse", "Line"
+							Local $aCoord1 = [$oCtrl.coord1[0], $oCtrl.coord1[1]]
+							Local $aCoord2 = [$oCtrl.coord2[0], $oCtrl.coord2[1]]
+
+							If $oCtrl.width < 0 And $oCtrl.height < 0 Then
+								$oCtrl.width = -1 * $oCtrl.width
+								$oCtrl.left -= $oCtrl.width
+
+								$oCtrl.height = -1 * $oCtrl.height
+								$oCtrl.top -= $oCtrl.height
+
+								Switch $oCtrls.mode
+									Case $resize_se, $resize_nw
+										$aCoord1[0] = 0
+										$aCoord2[0] = $oCtrl.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord1[1] = 0
+											$aCoord2[1] = $oCtrl.height
+										Else
+											$aCoord1[1] = $oCtrl.height
+											$aCoord2[1] = 0
+										EndIf
+									Case $resize_ne, $resize_sw
+										$aCoord1[0] = 0
+										$aCoord2[0] = $oCtrl.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord1[1] = 0
+											$aCoord2[1] = $oCtrl.height
+										Else
+											$aCoord1[1] = $oCtrl.height
+											$aCoord2[1] = 0
+										EndIf
+								EndSwitch
+
+								$oCtrl.grippies.show()
+
+							ElseIf $oCtrl.width < 0 Then
+								$oCtrl.width = -1 * $oCtrl.width
+								$oCtrl.left -= $oCtrl.width
+
+								$aCoord1[0] = 0
+								$aCoord1[1] = $oCtrl.coord2[1]
+								$aCoord2[0] = $oCtrl.width
+								$aCoord2[1] = $oCtrl.coord1[1]
+
+								$oCtrl.grippies.show()
+
+							ElseIf $oCtrl.height < 0 Then
+								$oCtrl.height = -1 * $oCtrl.height
+								$oCtrl.top -= $oCtrl.height
+
+								If $aCoord2[1] > $aCoord1[1] Then
+									$aCoord1[0] = 0
+									$aCoord1[1] = $oCtrl.height
+									$aCoord2[0] = $oCtrl.width
+									$aCoord2[1] = 0
+								Else
+									$aCoord1[0] = 0
+									$aCoord1[1] = 0
+									$aCoord2[0] = $oCtrl.width
+									$aCoord2[1] = $oCtrl.height
+								EndIf
+
+								$oCtrl.grippies.show()
+
+							EndIf
+
+							$oCtrl.coord1 = $aCoord1
+							$oCtrl.coord2 = $aCoord2
+
+							;update line coords
+							If $oCtrl.Type = "Line" Then
+								Switch $oCtrls.mode
+									Case $resize_nw
+										$aCoord2[0] = $oCtrl.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrl.height
+										Else
+											$aCoord1[1] = $oCtrl.height
+										EndIf
+
+									Case $resize_n
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrl.height
+										Else
+											$aCoord1[1] = $oCtrl.height
+										EndIf
+
+									Case $resize_w
+										$aCoord2[0] = $oCtrl.width
+
+									Case $resize_e
+										$aCoord2[0] = $oCtrl.width
+
+									Case $resize_s
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrl.height
+										Else
+											$aCoord1[1] = $oCtrl.height
+										EndIf
+
+									Case $resize_se
+										$aCoord2[0] = $oCtrl.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrl.height
+										Else
+											$aCoord1[1] = $oCtrl.height
+										EndIf
+
+									Case $resize_ne
+										$aCoord2[0] = $oCtrl.width
+										$aCoord2[0] = $oCtrl.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrl.height
+										Else
+											$aCoord1[1] = $oCtrl.height
+										EndIf
+
+									Case $resize_sw
+										$aCoord2[0] = $oCtrl.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrl.height
+										Else
+											$aCoord1[1] = $oCtrl.height
+										EndIf
+
+								EndSwitch
+								$oCtrl.coord1 = $aCoord1
+								$oCtrl.coord2 = $aCoord2
+							EndIf
+
+							_updateGraphic($oCtrl)
+					EndSwitch
+				Next
+
+
 				;update the undo action stack
 				Local $oAction = _objAction()
 				$oAction.action = $action_resizeCtrl
@@ -2009,6 +2332,18 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 		$oProperties_Ctrls.properties.Color.value = ""
 	EndIf
 
+	If $oCtrl.BorderColor <> -1 Then
+		$oProperties_Ctrls.properties.BorderColor.value = "0x" & Hex($oCtrl.BorderColor, 6)
+	Else
+		$oProperties_Ctrls.properties.BorderColor.value = -1
+	EndIf
+
+	If $oCtrl.BorderSize > 1 Then
+		$oProperties_Ctrls.properties.BorderSize.value = $oCtrl.BorderSize
+	Else
+		$oProperties_Ctrls.properties.BorderSize.value = 1
+	EndIf
+
 
 	$oProperties_Ctrls.properties.Global.value = $oCtrl.Global
 
@@ -2444,6 +2779,18 @@ Func _ctrl_change_width()
 
 				;move the selected control
 				_change_ctrl_size_pos($oCtrl, Default, Default, $new_data, Default)
+
+				Switch $oCtrl.Type
+					Case "Line"
+						Local $aCoord1 = [$oCtrl.coord1[0], $oCtrl.coord1[1]]
+						Local $aCoord2 = [$oCtrl.coord2[0], $oCtrl.coord2[1]]
+
+						$aCoord2[0] = $oCtrl.width
+
+						$oCtrl.coord1 = $aCoord1
+						$oCtrl.coord2 = $aCoord2
+				EndSwitch
+
 				;update the selected property
 				$oCtrl.Width = $new_data
 
@@ -2500,6 +2847,23 @@ Func _ctrl_change_height()
 
 				;move the selected control
 				_change_ctrl_size_pos($oCtrl, Default, Default, Default, $new_data)
+
+				Switch $oCtrl.Type
+					Case "Line"
+						Local $aCoord1 = [$oCtrl.coord1[0], $oCtrl.coord1[1]]
+						Local $aCoord2 = [$oCtrl.coord2[0], $oCtrl.coord2[1]]
+
+						If $aCoord2[1] > $aCoord1[1] Then
+							$aCoord2[1] = $oCtrl.height
+						Else
+							$aCoord1[1] = $oCtrl.height
+						EndIf
+
+						$oCtrl.coord1 = $aCoord1
+						$oCtrl.coord2 = $aCoord2
+				EndSwitch
+
+
 				;update the selected property
 				$oCtrl.Height = $new_data
 
@@ -2564,7 +2928,7 @@ Func _ctrl_change_bkColor()
 
 				;convert string to color then apply
 				Switch $oCtrl.Type
-					Case "Label", "Checkbox", "Radio"
+					Case "Label", "Checkbox", "Radio", "Input", "Edit"
 						If $colorInput <> -1 Then
 							GUICtrlSetBkColor($oCtrl.Hwnd, $colorInput)
 						Else
@@ -2579,6 +2943,10 @@ Func _ctrl_change_bkColor()
 
 						$oCtrl.Background = $colorInput
 
+					Case "Rect", "Ellipse", "Line"
+						$oCtrl.Background = $colorInput
+						_updateGraphic($oCtrl)
+
 					Case Else
 						ContinueLoop
 
@@ -2589,6 +2957,109 @@ Func _ctrl_change_bkColor()
 	_refreshGenerateCode()
 	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_bkColor
+
+Func _ctrl_pick_borderColor()
+	Local $color = _ChooseColor(2)
+
+	If $color = -1 Then Return 0
+	$oProperties_Ctrls.properties.BorderColor.value = $color
+
+	_ctrl_change_borderColor()
+	$oMain.hasChanged = True
+EndFunc   ;==>_ctrl_pick_borderColor
+
+
+Func _ctrl_change_borderColor()
+	Local $colorInput = $oProperties_Ctrls.properties.BorderColor.value
+	Local $newColor = $colorInput
+	If $colorInput = "" Then
+		$colorInput = -1
+		$oProperties_Ctrls.properties.BorderColor.value = -1
+	Else
+		$colorInput = Dec(StringReplace($colorInput, "0x", ""))
+	EndIf
+
+	Local Const $sel_count = $oSelected.count
+
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_changeBorderColor
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[2]
+	For $i = 0 To UBound($oAction.ctrls) - 1
+		$aParam[0] = $oAction.ctrls[$i].BorderColor
+		$aParam[1] = $colorInput
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
+
+	Switch $sel_count >= 1
+		Case True
+			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
+				;convert string to color then apply
+				Switch $oCtrl.Type
+					Case "Rect", "Ellipse", "Line"
+						$oCtrl.BorderColor = $colorInput
+						_updateGraphic($oCtrl)
+
+					Case Else
+						ContinueLoop
+
+				EndSwitch
+			Next
+	EndSwitch
+
+	_refreshGenerateCode()
+	$oMain.hasChanged = True
+EndFunc   ;==>_ctrl_change_borderColor
+
+Func _ctrl_change_borderSize()
+	Local $new_data = $oProperties_Ctrls.properties.BorderSize.value
+	If $new_data = "" Or $new_data = "-1" Then
+		$oProperties_Ctrls.properties.BorderSize.value = 1
+		$new_data = 1
+	EndIf
+
+	Local Const $sel_count = $oSelected.count
+
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_changeBorderSize
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[2]
+	For $i = 0 To UBound($oAction.ctrls) - 1
+		$aParam[0] = $oAction.ctrls[$i].BorderSize
+		$aParam[1] = $new_data
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
+
+	Switch $sel_count >= 1
+		Case True
+			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
+				Switch $oCtrl.Type
+					Case "Rect", "Ellipse", "Line"
+						$oCtrl.BorderSize = $new_data
+						_updateGraphic($oCtrl)
+
+					Case Else
+						ContinueLoop
+
+				EndSwitch
+
+			Next
+	EndSwitch
+
+	_refreshGenerateCode()
+EndFunc   ;==>_ctrl_change_borderSize
 
 
 Func _ctrl_change_global()
@@ -2765,20 +3236,24 @@ Func _ctrl_change_Color()
 				If $oCtrl.Locked Then ContinueLoop
 
 				;convert string to color then apply
-				If $oCtrl.Type <> "Label" Then Return 0
+				Switch $oCtrl.Type
+					Case "Label", "Edit", "Input"
+						If $colorInput <> -1 Then
+							GUICtrlSetColor($oCtrl.Hwnd, $colorInput)
+						Else
+							GUICtrlDelete($oCtrl.Hwnd)
+							$oCtrl.Hwnd = GUICtrlCreateLabel($oCtrl.Text, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
+							$oCtrl.Color = -1
+							If $oCtrl.Background <> -1 Then
+								GUICtrlSetBkColor($oCtrl.Hwnd, $oCtrl.Background)
+							EndIf
+						EndIf
 
-				If $colorInput <> -1 Then
-					GUICtrlSetColor($oCtrl.Hwnd, $colorInput)
-				Else
-					GUICtrlDelete($oCtrl.Hwnd)
-					$oCtrl.Hwnd = GUICtrlCreateLabel($oCtrl.Text, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
-					$oCtrl.Color = -1
-					If $oCtrl.Background <> -1 Then
-						GUICtrlSetBkColor($oCtrl.Hwnd, $oCtrl.Background)
-					EndIf
-				EndIf
+						$oCtrl.Color = $colorInput
 
-				$oCtrl.Color = $colorInput
+					Case Else
+						Return 0
+				EndSwitch
 			Next
 	EndSwitch
 
@@ -3341,8 +3816,6 @@ EndFunc   ;==>_memoryToPic
 
 
 Func _display_selection_rect(Const $oRect)
-	Static $prevRect = 0
-
 	GUISwitch($hGUI)
 	If GUICtrlGetHandle($overlay) <> -1 Then
 		GUICtrlDelete($overlay)
@@ -3360,7 +3833,6 @@ Func _recall_overlay()
 	GUISwitch($hGUI)
 
 	If $overlay <> -1 Then
-		ConsoleWrite("delete overlay" & @CRLF)
 		GUICtrlDelete($overlay)
 		$overlay = -1
 
