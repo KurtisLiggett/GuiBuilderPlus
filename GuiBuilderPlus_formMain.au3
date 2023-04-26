@@ -1497,10 +1497,140 @@ Func _onMousePrimaryUp()
 				Else
 					;done drawing
 					Switch $oCtrlSelectedFirst.Type
-						Case "Line"
-							Local $aCoords[2] = [$oCtrlSelectedFirst.width, $oCtrlSelectedFirst.height]
-							$oCtrlSelectedFirst.Coord2 = $aCoords
+						Case "Rect", "Ellipse", "Line"
+							Local $aCoord1 = [$oCtrlSelectedFirst.coord1[0], $oCtrlSelectedFirst.coord1[1]]
+							Local $aCoord2 = [$oCtrlSelectedFirst.coord2[0], $oCtrlSelectedFirst.coord2[1]]
+
+							If $oCtrlSelectedFirst.width < 0 And $oCtrlSelectedFirst.height < 0 Then
+								$oCtrlSelectedFirst.width = -1 * $oCtrlSelectedFirst.width
+								$oCtrlSelectedFirst.left -= $oCtrlSelectedFirst.width
+
+								$oCtrlSelectedFirst.height = -1 * $oCtrlSelectedFirst.height
+								$oCtrlSelectedFirst.top -= $oCtrlSelectedFirst.height
+
+								Switch $oCtrls.mode
+									Case $resize_se, $resize_nw
+										$aCoord1[0] = 0
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord1[1] = 0
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+											$aCoord2[1] = 0
+										EndIf
+									Case $resize_ne, $resize_sw
+										$aCoord1[0] = 0
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord1[1] = 0
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+											$aCoord2[1] = 0
+										EndIf
+								EndSwitch
+
+								$oCtrlSelectedFirst.grippies.show()
+
+							ElseIf $oCtrlSelectedFirst.width < 0 Then
+								$oCtrlSelectedFirst.width = -1 * $oCtrlSelectedFirst.width
+								$oCtrlSelectedFirst.left -= $oCtrlSelectedFirst.width
+
+								$aCoord1[0] = 0
+								$aCoord1[1] = $oCtrlSelectedFirst.coord2[1]
+								$aCoord2[0] = $oCtrlSelectedFirst.width
+								$aCoord2[1] = $oCtrl.coord1[1]
+
+								$oCtrl.grippies.show()
+
+							ElseIf $oCtrl.height < 0 Then
+								$oCtrl.height = -1 * $oCtrl.height
+								$oCtrlSelectedFirst.top -= $oCtrlSelectedFirst.height
+
+								If $aCoord2[1] > $aCoord1[1] Then
+									$aCoord1[0] = 0
+									$aCoord1[1] = $oCtrlSelectedFirst.height
+									$aCoord2[0] = $oCtrlSelectedFirst.width
+									$aCoord2[1] = 0
+								Else
+									$aCoord1[0] = 0
+									$aCoord1[1] = 0
+									$aCoord2[0] = $oCtrlSelectedFirst.width
+									$aCoord2[1] = $oCtrlSelectedFirst.height
+								EndIf
+
+								$oCtrlSelectedFirst.grippies.show()
+
+							EndIf
+
+							$oCtrlSelectedFirst.coord1 = $aCoord1
+							$oCtrlSelectedFirst.coord2 = $aCoord2
+
+							;update line coords
+							If $oCtrlSelectedFirst.Type = "Line" Then
+								Switch $oCtrls.mode
+									Case $resize_nw
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+										EndIf
+
+									Case $resize_n
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+										EndIf
+
+									Case $resize_w
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+
+									Case $resize_e
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+
+									Case $resize_s
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+										EndIf
+
+									Case $resize_se
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+										EndIf
+
+									Case $resize_ne
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+										EndIf
+
+									Case $resize_sw
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+										EndIf
+
+								EndSwitch
+								$oCtrlSelectedFirst.coord1 = $aCoord1
+								$oCtrlSelectedFirst.coord2 = $aCoord2
+							EndIf
+
+							_updateGraphic($oCtrlSelectedFirst)
 					EndSwitch
+
 
 					;update the undo action stack
 					Local $oAction = _objAction()
@@ -1523,7 +1653,6 @@ Func _onMousePrimaryUp()
 							Local $aCoord1 = [$oCtrl.coord1[0], $oCtrl.coord1[1]]
 							Local $aCoord2 = [$oCtrl.coord2[0], $oCtrl.coord2[1]]
 
-				;~ 			ConsoleWrite($oCtrl.left & "  " & $oCtrl.width & @CRLF)
 							If $oCtrl.width < 0 And $oCtrl.height < 0 Then
 								$oCtrl.width = -1 * $oCtrl.width
 								$oCtrl.left -= $oCtrl.width
@@ -1586,9 +1715,6 @@ Func _onMousePrimaryUp()
 								$oCtrl.grippies.show()
 
 							EndIf
-
-;~ 							If $oCtrl.width = 0 Then $oCtrl.width = 1
-;~ 							If $oCtrl.height = 0 Then $oCtrl.height = 1
 
 							$oCtrl.coord1 = $aCoord1
 							$oCtrl.coord2 = $aCoord2
