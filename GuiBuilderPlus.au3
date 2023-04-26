@@ -15,7 +15,7 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  04/19/2023 ...:
+;  04/25/2023 ...:
 ;					- FIXED:	HUGE reduction in flickering overall
 ;					- FIXED:	Missing include file for IP Address control
 ;					- ADDED:	New settings dialog
@@ -26,7 +26,7 @@
 ;					- ADDED:	Font weight property
 ;					- ADDED:	Add combobox items with "|" in the text value
 ;					- ADDED:	Add recently opened files list to File menu
-;					- ADDED:	Rectangle graphic
+;					- ADDED:	Rectangle, ellipse, and line graphics
 ;					- UPDATED:	Added collapsible font properties
 ;					- UPDATED:	Moved "Show grid" from Settings menu to View menu
 ;					- UPDATED:	Allow background/foreground colors for Edit and Input controls
@@ -45,7 +45,7 @@
 #AutoIt3Wrapper_Res_HiDpi=y
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.0.0-beta6.exe
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.0.0.exe
 #AutoIt3Wrapper_Res_Fileversion=1.0.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 1.ico
@@ -72,6 +72,8 @@
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 22.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 23.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 24.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 25.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 26.ico
 
 Opt("WinTitleMatchMode", 4) ; advanced
 Opt("MouseCoordMode", 2)
@@ -86,6 +88,7 @@ Global $debug = True
 ;GUI components
 Global $hGUI, $hToolbar, $hFormGenerateCode, $hFormObjectExplorer, $hStatusbar, $hAbout, $hEvent, $hSettings, $hFormHolder
 Global $iGuiFrameH, $iGuiFrameW, $defaultGuiBkColor = 0xF0F0F0
+Global $button_graphic
 Global $menu_wipe, $contextmenu_lock, $menu_helpchm
 ;File menu
 Global $menu_file, $aMenuRecentList[12]
@@ -109,7 +112,7 @@ Global $settingsChk_snapgrid, $settingsChk_pasteatmouse, $settingsChk_guifunctio
 
 ;Property Inspector
 Global $oProperties_Main, $oProperties_Ctrls, $tabSelected, $tabProperties, $tabStyles, $tabStylesHwnd
-Global $properties_fontButton
+Global $properties_fontButton, $properties_borderButton
 
 ;GUI Constants
 Global Const $iconset = @ScriptDir & "\resources\Icons\" ; Added by: TheSaint
@@ -118,7 +121,8 @@ Global Enum $mode_default, $mode_draw, $mode_drawing, $mode_init_move, $mode_ini
 Global Enum $props_Main, $props_Ctrls
 ; Cursor Consts - added by: Jaberwacky
 Global Const $ARROW = 2, $CROSS = 3, $SIZE_ALL = 9, $SIZENESW = 10, $SIZENS = 11, $SIZENWSE = 12, $SIZEWS = 13
-Global Enum $action_nudgeCtrl, $action_moveCtrl, $action_resizeCtrl, $action_deleteCtrl, $action_createCtrl, $action_renameCtrl, $action_changeColor, $action_changeBkColor, $action_pasteCtrl, $action_changeText, $action_changeCode, $action_drawCtrl
+Global Enum $action_nudgeCtrl, $action_moveCtrl, $action_resizeCtrl, $action_deleteCtrl, $action_createCtrl, $action_renameCtrl, $action_changeColor, $action_changeBkColor, $action_pasteCtrl, _
+		$action_changeText, $action_changeCode, $action_drawCtrl, $action_changeBorderColor, $action_changeBorderSize
 
 ;other variables
 Global $bStatusNewMessage
@@ -228,7 +232,7 @@ Func _main()
 	$oClipboard = _objCtrls()
 	$oMain = _objMain()
 	$oMain.AppName = "GuiBuilderPlus"
-	$oMain.AppVersion = "1.0.0-beta6"
+	$oMain.AppVersion = "1.0.0"
 	$oMain.Title = StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1)
 	$oMain.Name = "hGUI"
 	$oMain.Width = 400
