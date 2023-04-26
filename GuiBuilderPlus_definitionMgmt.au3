@@ -391,10 +391,10 @@ Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 	Local $oCtrl, $Key, $oNewCtrl
 	Local $aControls = Json_Get($objInput, ".Controls")
 	If @error Then
-		ConsoleWrite("Error: " & @error & @CRLF)
+		ConsoleWrite("No controls found" & @CRLF)
 	EndIf
 
-	If IsObj($aControls) Then
+	If IsArray($aControls) Then
 		For $oThisCtrl In $aControls
 			$oCtrl = $oCtrls.createNew()
 
