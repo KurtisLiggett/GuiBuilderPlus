@@ -18,6 +18,7 @@
 ;  04/25/2023 ...:
 ;					- FIXED:	HUGE reduction in flickering overall
 ;					- FIXED:	Missing include file for IP Address control
+;					- FIXED:	Bug opening a saved file with no controls
 ;					- ADDED:	New settings dialog
 ;					- ADDED:	New setting: Adjustable grid size - default now set to 5px
 ;					- ADDED:	Syntax Highlighting in code window (RESH UDF by Beege)
