@@ -62,6 +62,8 @@ Func _save_gui_definition($saveAs = False)
 			$mygui = StringReplace($mygui, ".agd", "")
 
 			$mygui = $mygui & ".au3"
+
+			_addToRecentFiles($AgdOutFile)
 		EndIf
 	EndIf
 

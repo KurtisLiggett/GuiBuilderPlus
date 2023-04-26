@@ -181,18 +181,17 @@ Func _formToolbar()
 	GUICtrlCreateMenuItem("", $menu_file)
 	Local $menu_import_au3 = GUICtrlCreateMenuItem("Import from au3", $menu_file)
 	Local $menu_export_au3 = GUICtrlCreateMenuItem("Export to au3", $menu_file)
+	GUICtrlCreateMenuItem("", $menu_file)
 
 	;look for recent files and generate menus
 	Local $aRecentFiles = IniReadSection($sIniPath, "Recent")
 	If Not @error Then
-		GUICtrlCreateMenuItem("", $menu_file)
 		For $i = 1 To $aRecentFiles[0][0]
 			$aMenuRecentList[$i - 1] = GUICtrlCreateMenuItem($i & " " & $aRecentFiles[$i][1], $menu_file)
 			GUICtrlSetOnEvent(-1, "_onMenuRecent")
 		Next
+		$aMenuRecentList[10] = GUICtrlCreateMenuItem("", $menu_file)
 	EndIf
-
-	$aMenuRecentList[10] = GUICtrlCreateMenuItem("", $menu_file)
 	$aMenuRecentList[11] = GUICtrlCreateMenuItem("Exit", $menu_file)
 	GUICtrlSetOnEvent(-1, "_onExit")
 
