@@ -138,6 +138,8 @@ Func _objCtrls_add($oSelf, $objCtrl, $hParent = -1)
 			$objCtrl.styles = _Styles_IP()
 		Case "ListView"
 			$objCtrl.styles = _Styles_ListView()
+		Case "Rect", "Ellipse", "Line"
+			$objCtrl.styles = _Styles_Label()
 	EndSwitch
 
 	$oSelf.ctrls.Add($objCtrl.Hwnd, $objCtrl)
