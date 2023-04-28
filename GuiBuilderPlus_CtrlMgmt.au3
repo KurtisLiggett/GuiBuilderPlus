@@ -1200,9 +1200,17 @@ EndFunc   ;==>_change_ctrl_size_pos
 
 Func _updateGraphic($oCtrl)
 	Local $prevKey = $oCtrl.Hwnd
+;~ 	Local $zOrder1 = _WinAPI_GetWindow(GUICtrlGetHandle($oCtrl.Hwnd), $GW_HWNDPREV )
+;~ 	ConsoleWrite(GUICtrlGetHandle($oCtrl.Hwnd) & ": " & $zOrder1 & @CRLF)
+;~ 	Local $zOrder2 = _WinAPI_GetWindow(GUICtrlGetHandle($oCtrl.Hwnd), $GW_HWNDNEXT  )
+;~ 	ConsoleWrite(GUICtrlGetHandle($oCtrl.Hwnd) & ": " & $zOrder2 & @CRLF)
 	GUICtrlDelete($oCtrl.Hwnd)
 
 	$oCtrl.Hwnd = GUICtrlCreateGraphic($oCtrl.left, $oCtrl.top, $oCtrl.Width, $oCtrl.Height)
+
+	;restore the z-order
+;~ 	GuiCtrlSetOnTop($oCtrl.Hwnd, $zOrder2)
+
 	If $oCtrl.BorderSize > 1 Then
 		GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_PENSIZE, $oCtrl.BorderSize)
 	EndIf
@@ -1302,6 +1310,7 @@ Func _updateGraphic($oCtrl)
 
 	$oCtrl.parent.ctrls.Key($prevKey) = $oCtrl.Hwnd
 ;~ 	GUICtrlSetGraphic($background, $GUI_GR_REFRESH)
+
 EndFunc   ;==>_updateGraphic
 
 
@@ -1397,7 +1406,7 @@ Func GuiCtrlSetOnTop($iCtrlID, $hAfter = $HWND_TOP)
 	Local $hAfterNew = $hAfter
 	If Not IsHWnd($hWnd) Then $hWnd = GUICtrlGetHandle($iCtrlID)
 
-	If $hAfter <> $HWND_TOP Then
+	If $hAfter <> $HWND_TOP And $hAfter <> $HWND_BOTTOM Then
 		If Not IsHWnd($hAfter) Then $hAfterNew = GUICtrlGetHandle($hAfter)
 	EndIf
 

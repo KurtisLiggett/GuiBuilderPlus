@@ -596,7 +596,8 @@ Func _display_grid(Const $grid_ctrl, Const $width, Const $height)
 	GUICtrlSetPos($grid_ctrl, Default, Default, $width, $height)
 
 	;send to background
-	GuiCtrlSetOnTop($grid_ctrl, $HWND_BOTTOM)
+;~ 	GuiCtrlSetOnTop($grid_ctrl, $HWND_BOTTOM)
+	_WinAPI_SetWindowPos(GUICtrlGetHandle($grid_ctrl), $HWND_BOTTOM, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
 	GUICtrlSetState($grid_ctrl, $GUI_DISABLE)
 
 	;refresh all graphic controls, to show on top
