@@ -127,7 +127,7 @@ EndFunc   ;==>_onExitSettings
 
 Func _onShowGrid()
 	_showgrid()
-EndFunc
+EndFunc   ;==>_onShowGrid
 ;------------------------------------------------------------------------------
 ; Title...........: _showgrid
 ; Description.....: Show (or hide) the background grid and update INI file
@@ -138,7 +138,7 @@ Func _showgrid($state = Default)
 	Local $newState
 	If $state = Default Then
 		$newState = Not $oOptions.showGrid
-	else
+	Else
 		$newState = $state
 	EndIf
 
@@ -187,13 +187,13 @@ EndFunc   ;==>_pastepos
 ;------------------------------------------------------------------------------
 Func _onGridsnap()
 	_gridsnap()
-EndFunc
+EndFunc   ;==>_onGridsnap
 Func _gridsnap($state = Default)
 	Local $message = "Grid snap: "
 	Local $newState
 	If $state = Default Then
 		$newState = Not $oOptions.snapGrid
-	else
+	Else
 		$newState = $state
 	EndIf
 

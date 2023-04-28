@@ -1213,7 +1213,7 @@ Func _onGraphicMenuRect()
 	GUICtrlSetState($button_graphic, $GUI_CHECKED)
 	$oCtrls.CurrentType = "Rect"
 	$oCtrls.mode = $mode_draw
-EndFunc
+EndFunc   ;==>_onGraphicMenuRect
 
 Func _onGraphicMenuEllipse()
 	GUICtrlSetTip($button_graphic, "Draw Ellipse")
@@ -1222,7 +1222,7 @@ Func _onGraphicMenuEllipse()
 	GUICtrlSetState($button_graphic, $GUI_CHECKED)
 	$oCtrls.CurrentType = "Ellipse"
 	$oCtrls.mode = $mode_draw
-EndFunc
+EndFunc   ;==>_onGraphicMenuEllipse
 
 Func _onGraphicMenuLine()
 	GUICtrlSetTip($button_graphic, "Draw Line")
@@ -1231,7 +1231,7 @@ Func _onGraphicMenuLine()
 	GUICtrlSetState($button_graphic, $GUI_CHECKED)
 	$oCtrls.CurrentType = "Line"
 	$oCtrls.mode = $mode_draw
-EndFunc
+EndFunc   ;==>_onGraphicMenuLine
 
 
 

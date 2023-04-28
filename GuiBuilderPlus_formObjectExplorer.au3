@@ -164,7 +164,7 @@ Func _onLvObjectsItem()
 							$i += 1
 						Next
 					EndIf
-				Else	;this is a child
+				Else    ;this is a child
 					Local $aParentText = _GUICtrlTreeView_GetText($lvObjects, $hParent)
 					Local $aParentStrings = StringSplit($aParentText, @TAB)
 					Local $ParentTextHwnd = StringTrimRight(StringTrimLeft($aParentStrings[2], 7), 1)
@@ -193,7 +193,7 @@ Func _onLvObjectsItem()
 
 						Case "Menu"
 							$childSelected = True
-		;~ 					_add_to_selected($oParentCtrl)
+;~ 					_add_to_selected($oParentCtrl)
 							_populate_control_properties_gui($oCtrl, Dec($textHwnd))
 
 					EndSwitch
@@ -471,7 +471,7 @@ Func _formObjectExplorer_updateList()
 	Local $lvItem, $lvMenu, $lvMenuDelete, $childItem, $tabMenu, $tabMenuDelete, $lvMenuNewTab, $lvMenuDeleteTab, $sName, $childTabCtrl
 	Local $lvMenuNewMenuItem, $menuItemMenu
 
-	Local $isVisible = BitAND( WinGetState($hFormObjectExplorer), $WIN_STATE_VISIBLE)
+	Local $isVisible = BitAND(WinGetState($hFormObjectExplorer), $WIN_STATE_VISIBLE)
 	If $isVisible Then
 		_SendMessage($hFormObjectExplorer, $WM_SETREDRAW, False)
 	EndIf

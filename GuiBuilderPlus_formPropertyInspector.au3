@@ -137,7 +137,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	GUICtrlSetFont(-1, 12)
 	GUICtrlSetOnEvent(-1, "_onBorderButton")
 	Local $aTemp = $properties_data[$properties_borderIndex][0]
-	For $i=0 to UBound($aTemp)
+	For $i = 0 To UBound($aTemp)
 		If $aTemp[$i] = 0 Then
 			$aTemp[$i] = $properties_borderButton
 			ExitLoop
@@ -150,7 +150,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	GUICtrlSetFont(-1, 12)
 	GUICtrlSetOnEvent(-1, "_onFontButton")
 	$aTemp = $properties_data[$properties_fontIndex][0]
-	For $i=0 to UBound($aTemp)
+	For $i = 0 To UBound($aTemp)
 		If $aTemp[$i] = 0 Then
 			$aTemp[$i] = $properties_fontButton
 			ExitLoop
@@ -274,7 +274,7 @@ Func _onBorderButton()
 	Next
 
 	_WinAPI_RedrawWindow($hWin)
-EndFunc   ;==>_onFontButton
+EndFunc   ;==>_onBorderButton
 
 Func _propertiesShowBorder($show = True)
 	Local $aCtrl = $properties_data[$properties_borderIndex][0]
