@@ -2344,6 +2344,7 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 		$oProperties_Ctrls.properties.BorderSize.value = 1
 	EndIf
 
+	$oProperties_Ctrls.properties.Items.value = $oCtrl.Items
 
 	$oProperties_Ctrls.properties.Global.value = $oCtrl.Global
 
@@ -3082,6 +3083,24 @@ Func _ctrl_change_global()
 	_refreshGenerateCode()
 	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_global
+
+Func _ctrl_change_items()
+	Local $new_data = $oProperties_Ctrls.properties.Items.value
+	$new_data = _items_GetList($new_data, "|", "|")
+
+	Local Const $sel_count = $oSelected.count
+
+	Switch $sel_count >= 1
+		Case True
+			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
+				$oCtrl.Items = $new_data
+			Next
+	EndSwitch
+
+	_refreshGenerateCode()
+EndFunc   ;==>_ctrl_change_items
 
 
 Func _ctrl_change_FontSize()

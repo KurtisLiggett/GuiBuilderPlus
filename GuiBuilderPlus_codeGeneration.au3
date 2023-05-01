@@ -346,10 +346,18 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 
 			$mControls &= 'GUICtrlCreateGroup("", -99, -99, 1, 1)' & @CRLF & @CRLF
 
-		Case "Combo"
-			If StringInStr($oCtrl.Text, "|") Then
+		Case "List"
+			If $oCtrl.Items <> "" Then
 				$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("", ' & $ltwh & $ctrlStyle & ')' & @CRLF
-				$mControls &= 'GuiCtrlSetData(-1, "' & $oCtrl.Text & '")' & @CRLF
+				$mControls &= 'GuiCtrlSetData(-1, "' & $oCtrl.Items & '")' & @CRLF
+			Else
+				$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & $ctrlStyle & ')' & @CRLF
+			EndIf
+
+		Case "Combo"
+			If $oCtrl.Items <> "" Then
+				$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("", ' & $ltwh & $ctrlStyle & ')' & @CRLF
+				$mControls &= 'GuiCtrlSetData(-1, "' & $oCtrl.Items & '")' & @CRLF
 			Else
 				$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & $ctrlStyle & ')' & @CRLF
 			EndIf

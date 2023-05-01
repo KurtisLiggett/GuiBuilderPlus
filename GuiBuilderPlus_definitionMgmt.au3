@@ -138,6 +138,7 @@ Func _save_gui_definition($saveAs = False)
 			Json_Put($objOutput, ".Controls[" & $i & "].Coords.Coord2_X", $oCtrl.Coord2[0])
 			Json_Put($objOutput, ".Controls[" & $i & "].Coords.Coord2_Y", $oCtrl.Coord2[1])
 		EndIf
+		Json_Put($objOutput, ".Controls[" & $i & "].Items", $oCtrl.Items)
 
 		Switch $oCtrl.Type
 			Case "Tab"
@@ -192,6 +193,7 @@ Func _save_gui_definition($saveAs = False)
 								Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Coords.Coord2_Y", $oTabCtrl.Coord2[1])
 							EndIf
 							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].CodeString", $oTabCtrl.CodeString)
+							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Items", $oTabCtrl.Items)
 							$k += 1
 						Next
 
@@ -242,6 +244,7 @@ Func _save_gui_definition($saveAs = False)
 							Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Coords.Coord2_Y", $oThisCtrl.Coord2[1])
 						EndIf
 						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].CodeString", $oThisCtrl.CodeString)
+						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Items", $oThisCtrl.Items)
 						$k += 1
 					Next
 				EndIf
@@ -437,6 +440,7 @@ Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 			$oCtrl.Coord2 = $aCoords
 
 			$oCtrl.CodeString = _Json_Get($oThisCtrl, ".CodeString", "")
+			$oCtrl.Items = _Json_Get($oThisCtrl, ".Items", "")
 
 			$oNewCtrl = _create_ctrl($oCtrl, True)
 			Local $aStyles = StringSplit($oNewCtrl.styleString, ", ", $STR_ENTIRESPLIT + $STR_NOCOUNT)
@@ -509,6 +513,7 @@ Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 								$oCtrl2.Locked = _Json_Get($oTabCtrl, ".Locked", $GUI_UNCHECKED)
 								$oCtrl2.styleString = _Json_Get($oTabCtrl, ".styleString", "")
 								$oCtrl2.CodeString = _Json_Get($oTabCtrl, ".CodeString", "")
+								$oCtrl2.Items = _Json_Get($oTabCtrl, ".Items", "")
 								$oCtrl2.Color = _Json_Get($oTabCtrl, ".Color", -1)
 								If $oCtrl2.Color <> -1 Then
 									$oCtrl2.Color = Dec(StringReplace($oCtrl2.Color, "0x", ""))
@@ -570,6 +575,7 @@ Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 						$oCtrl2.Locked = _Json_Get($oGroupCtrl, ".Locked", $GUI_UNCHECKED)
 						$oCtrl2.styleString = _Json_Get($oGroupCtrl, ".styleString", "")
 						$oCtrl2.CodeString = _Json_Get($oGroupCtrl, ".CodeString", "")
+						$oCtrl2.Items = _Json_Get($oGroupCtrl, ".Items", "")
 						$oCtrl2.Color = _Json_Get($oGroupCtrl, ".Color", -1)
 						If $oCtrl2.Color <> -1 Then
 							$oCtrl2.Color = Dec(StringReplace($oCtrl2.Color, "0x", ""))

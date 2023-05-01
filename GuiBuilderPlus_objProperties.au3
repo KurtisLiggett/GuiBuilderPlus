@@ -38,6 +38,7 @@ Func _objPropertiesProps()
 	_AutoItObject_AddProperty($oObject, "Global", $ELSCOPE_PUBLIC, _objProperty("Global", "Checkbox"))
 	_AutoItObject_AddProperty($oObject, "BorderColor", $ELSCOPE_PUBLIC, _objProperty("BorderColor"))
 	_AutoItObject_AddProperty($oObject, "BorderSize", $ELSCOPE_PUBLIC, _objProperty("BorderSize"))
+	_AutoItObject_AddProperty($oObject, "Items", $ELSCOPE_PUBLIC, _objProperty("Items"))
 
 	Return $oObject
 EndFunc   ;==>_objPropertiesProps
