@@ -596,7 +596,8 @@ Func _display_grid(Const $grid_ctrl, Const $width, Const $height)
 	GUICtrlSetPos($grid_ctrl, Default, Default, $width, $height)
 
 	;send to background
-	GuiCtrlSetOnTop($grid_ctrl, $HWND_BOTTOM)
+;~ 	GuiCtrlSetOnTop($grid_ctrl, $HWND_BOTTOM)
+	_WinAPI_SetWindowPos(GUICtrlGetHandle($grid_ctrl), $HWND_BOTTOM, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
 	GUICtrlSetState($grid_ctrl, $GUI_DISABLE)
 
 	;refresh all graphic controls, to show on top
@@ -1212,7 +1213,7 @@ Func _onGraphicMenuRect()
 	GUICtrlSetState($button_graphic, $GUI_CHECKED)
 	$oCtrls.CurrentType = "Rect"
 	$oCtrls.mode = $mode_draw
-EndFunc
+EndFunc   ;==>_onGraphicMenuRect
 
 Func _onGraphicMenuEllipse()
 	GUICtrlSetTip($button_graphic, "Draw Ellipse")
@@ -1221,7 +1222,7 @@ Func _onGraphicMenuEllipse()
 	GUICtrlSetState($button_graphic, $GUI_CHECKED)
 	$oCtrls.CurrentType = "Ellipse"
 	$oCtrls.mode = $mode_draw
-EndFunc
+EndFunc   ;==>_onGraphicMenuEllipse
 
 Func _onGraphicMenuLine()
 	GUICtrlSetTip($button_graphic, "Draw Line")
@@ -1230,7 +1231,7 @@ Func _onGraphicMenuLine()
 	GUICtrlSetState($button_graphic, $GUI_CHECKED)
 	$oCtrls.CurrentType = "Line"
 	$oCtrls.mode = $mode_draw
-EndFunc
+EndFunc   ;==>_onGraphicMenuLine
 
 
 
@@ -2343,6 +2344,7 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 		$oProperties_Ctrls.properties.BorderSize.value = 1
 	EndIf
 
+	$oProperties_Ctrls.properties.Items.value = $oCtrl.Items
 
 	$oProperties_Ctrls.properties.Global.value = $oCtrl.Global
 
@@ -3081,6 +3083,24 @@ Func _ctrl_change_global()
 	_refreshGenerateCode()
 	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_global
+
+Func _ctrl_change_items()
+	Local $new_data = $oProperties_Ctrls.properties.Items.value
+	$new_data = _items_GetList($new_data, "|", "|")
+
+	Local Const $sel_count = $oSelected.count
+
+	Switch $sel_count >= 1
+		Case True
+			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
+				$oCtrl.Items = $new_data
+			Next
+	EndSwitch
+
+	_refreshGenerateCode()
+EndFunc   ;==>_ctrl_change_items
 
 
 Func _ctrl_change_FontSize()

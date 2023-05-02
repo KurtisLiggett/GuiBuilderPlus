@@ -5,8 +5,8 @@
 
 
 Global Enum $typeHeading, $typeText, $typeNumber, $typeCheck, $typeColor, $getHeight, $typeReal, $typeComboFW, $typeComboFN
-Global $properties_data[100][10], $properties_fontIndex, $properties_borderIndex
-Global $properties_data_font[5][10], $properties_data_border[5][10]
+Global $properties_data[100][10], $properties_fontIndex, $properties_borderIndex, $properties_itemsIndex
+Global $properties_data_font[5][10], $properties_data_border[5][10], $properties_data_items[5][10]
 ;------------------------------------------------------------------------------
 ; Title...........: formGenerateCode
 ; Description.....:	Create the code generation GUI
@@ -60,7 +60,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
 	;items
-	$oProperties_Main.properties.Background.Hwnd = _formPropertyInspector_newitem("Background Color", $typeColor, 20, 1, $w - $iScrollbarWidth - 1, 20, "_main_pick_bkColor")
+	$oProperties_Main.properties.Background.Hwnd = _formPropertyInspector_newitem("Background", $typeColor, 20, 1, $w - $iScrollbarWidth - 1, 20, "_main_pick_bkColor")
 	$oProperties_Main.properties.Height.Hwnd = _formPropertyInspector_newitem("Height", $typeNumber)
 	$oProperties_Main.properties.Left.Hwnd = _formPropertyInspector_newitem("Left", $typeNumber)
 	$oProperties_Main.properties.Name.Hwnd = _formPropertyInspector_newitem("Name", $typeText)
@@ -113,12 +113,8 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	Local $labelLine = GUICtrlCreateLabel("", $w - $iScrollbarWidth - 1, 0, 1, $newH + 20)
 	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
-	;Func _formPropertyInspector_newitem($text, $type = -1, $x = -1, $y = -1, $w = -1, $h = -1, $funcName = -1, $show = 1, $parent = -1)
 	;items
 	$oProperties_Ctrls.properties.Background.Hwnd = _formPropertyInspector_newitem("Background", $typeColor, 20, 1, $w - $iScrollbarWidth - 1, 20, "_ctrl_pick_bkColor", 1)
-	$oProperties_Ctrls.properties.BorderColor.Hwnd = _formPropertyInspector_newitem("Line Color", $typeColor, -1, -1, -1, -1, "_ctrl_pick_borderColor", 1)
-	$properties_borderIndex = $properties_data[0][0]
-	$oProperties_Ctrls.properties.BorderSize.Hwnd = _formPropertyInspector_newitem("Thickness", $typeNumber, 30, -1, -1, -1, -1, 1, 1, $properties_borderIndex)
 	$oProperties_Ctrls.properties.FontName.Hwnd = _formPropertyInspector_newitem("Font", $typeComboFN, 20, -1, -1, -1, -1, 1)
 	$properties_fontIndex = $properties_data[0][0]
 	$oProperties_Ctrls.properties.FontSize.Hwnd = _formPropertyInspector_newitem("Size", $typeReal, 30, -1, -1, -1, -1, 1, 1, $properties_fontIndex)
@@ -126,18 +122,23 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	$oProperties_Ctrls.properties.Color.Hwnd = _formPropertyInspector_newitem("Color", $typeColor, 30, -1, -1, -1, "_ctrl_pick_Color", 1, 1, $properties_fontIndex)
 	$oProperties_Ctrls.properties.Global.Hwnd = _formPropertyInspector_newitem("Global", $typeCheck, 20, -1, -1, -1, -1, 1)
 	$oProperties_Ctrls.properties.Height.Hwnd = _formPropertyInspector_newitem("Height", $typeNumber, -1, -1, -1, -1, -1, 1)
+	$oProperties_Ctrls.properties.Items.Hwnd = _formPropertyInspector_newitem("Items", $typeColor, -1, -1, -1, -1, "_formListItems", 1)
+	$properties_itemsIndex = $properties_data[0][0]
 	$oProperties_Ctrls.properties.Left.Hwnd = _formPropertyInspector_newitem("Left", $typeNumber, -1, -1, -1, -1, -1, 1)
-	$oProperties_Ctrls.properties.Name.Hwnd = _formPropertyInspector_newitem("Name", $typeText, -1, -1, -1, -1, -1, 1)
+	$oProperties_Ctrls.properties.BorderColor.Hwnd = _formPropertyInspector_newitem("Line Color", $typeColor, -1, -1, -1, -1, "_ctrl_pick_borderColor", 1)
+	$properties_borderIndex = $properties_data[0][0]
+	$oProperties_Ctrls.properties.BorderSize.Hwnd = _formPropertyInspector_newitem("Thickness", $typeNumber, 30, -1, -1, -1, -1, 1, 1, $properties_borderIndex)
+	$oProperties_Ctrls.properties.Name.Hwnd = _formPropertyInspector_newitem("Name", $typeText, 20, -1, -1, -1, -1, 1)
 	$oProperties_Ctrls.properties.Text.Hwnd = _formPropertyInspector_newitem("Text", $typeText, -1, -1, -1, -1, -1, 1)
 	$oProperties_Ctrls.properties.Top.Hwnd = _formPropertyInspector_newitem("Top", $typeNumber, -1, -1, -1, -1, -1, 1)
 	$oProperties_Ctrls.properties.Width.Hwnd = _formPropertyInspector_newitem("Width", $typeNumber, -1, -1, -1, -1, -1, 1)
 
-	$properties_borderButton = GUICtrlCreateLabel("-", 3, 21, 15, 18, BitOR($SS_CENTER, $SS_CENTERIMAGE))
+	$properties_borderButton = GUICtrlCreateLabel("-", 3, 181, 15, 18, BitOR($SS_CENTER, $SS_CENTERIMAGE))
 	GUICtrlSetBkColor(-1, 0xFFFFFF)
 	GUICtrlSetFont(-1, 12)
 	GUICtrlSetOnEvent(-1, "_onBorderButton")
 	Local $aTemp = $properties_data[$properties_borderIndex][0]
-	For $i=0 to UBound($aTemp)
+	For $i = 0 To UBound($aTemp)
 		If $aTemp[$i] = 0 Then
 			$aTemp[$i] = $properties_borderButton
 			ExitLoop
@@ -145,12 +146,12 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	Next
 	$properties_data[$properties_borderIndex][0] = $aTemp
 
-	$properties_fontButton = GUICtrlCreateLabel("-", 3, 61, 15, 18, BitOR($SS_CENTER, $SS_CENTERIMAGE))
+	$properties_fontButton = GUICtrlCreateLabel("-", 3, 21, 15, 18, BitOR($SS_CENTER, $SS_CENTERIMAGE))
 	GUICtrlSetBkColor(-1, 0xFFFFFF)
 	GUICtrlSetFont(-1, 12)
 	GUICtrlSetOnEvent(-1, "_onFontButton")
 	$aTemp = $properties_data[$properties_fontIndex][0]
-	For $i=0 to UBound($aTemp)
+	For $i = 0 To UBound($aTemp)
 		If $aTemp[$i] = 0 Then
 			$aTemp[$i] = $properties_fontButton
 			ExitLoop
@@ -180,6 +181,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	GUICtrlSetOnEvent($oProperties_Ctrls.properties.BorderColor.Hwnd, _ctrl_change_borderColor)
 	GUICtrlSetOnEvent($oProperties_Ctrls.properties.BorderSize.Hwnd, _ctrl_change_borderSize)
 	GUICtrlSetOnEvent($oProperties_Ctrls.properties.Global.Hwnd, _ctrl_change_global)
+	GUICtrlSetOnEvent($oProperties_Ctrls.properties.Items.Hwnd, _ctrl_change_items)
 	#EndRegion ctrl-properties
 
 
@@ -274,7 +276,7 @@ Func _onBorderButton()
 	Next
 
 	_WinAPI_RedrawWindow($hWin)
-EndFunc   ;==>_onFontButton
+EndFunc   ;==>_onBorderButton
 
 Func _propertiesShowBorder($show = True)
 	Local $aCtrl = $properties_data[$properties_borderIndex][0]
@@ -340,6 +342,48 @@ Func _propertiesShowBorder($show = True)
 
 	_WinAPI_RedrawWindow($hWin)
 EndFunc   ;==>_propertiesShowBorder
+
+
+Func _propertiesShowItems($show = True)
+	Local $iIndex = $properties_itemsIndex
+	Local $aCtrl = $properties_data[$iIndex][0]
+	If (BitAND(GUICtrlGetState($aCtrl[0]), $GUI_SHOW) = $GUI_SHOW) = $show Then Return
+
+	Local $shiftSize = 20
+	Local $shiftAmount = $shiftSize
+
+	Local $hWin = HWnd($oProperties_Ctrls.properties.Hwnd)
+
+	If $show Then
+		For $iCtrl In $properties_data[$iIndex][0]
+			If $iCtrl = 0 Then ExitLoop
+			GUICtrlSetState($iCtrl, $GUI_SHOW)
+		Next
+	Else
+		For $iCtrl In $properties_data[$iIndex][0]
+			If $iCtrl = 0 Then ExitLoop
+			GUICtrlSetState($iCtrl, $GUI_HIDE)
+		Next
+	EndIf
+
+	For $i = $iIndex + 1 To $properties_data[0][0]
+		If $show Then
+			For $iCtrl In $properties_data[$i][0]
+				If $iCtrl = 0 Then ExitLoop
+				Local $aPos = ControlGetPos($hWin, "", $iCtrl)
+				ControlMove($hWin, "", $iCtrl, $aPos[0], $aPos[1] + $shiftAmount)
+			Next
+		Else
+			For $iCtrl In $properties_data[$i][0]
+				If $iCtrl = 0 Then ExitLoop
+				Local $aPos = ControlGetPos($hWin, "", $iCtrl)
+				ControlMove($hWin, "", $iCtrl, $aPos[0], $aPos[1] - $shiftAmount)
+			Next
+		EndIf
+	Next
+
+	_WinAPI_RedrawWindow($hWin)
+EndFunc   ;==>_propertiesShowItems
 
 
 Func _formPropertyInspector_newitem($text, $type = -1, $x = -1, $y = -1, $w = -1, $h = -1, $funcName = -1, $ctrlProp = 0, $show = 1, $parent = -1)
@@ -546,22 +590,34 @@ Func _showProperties($props = $props_Main)
 
 			Switch $tabSelected
 				Case "Properties"
-					If _isAllLabels() Then
+					Local $aCtrlTypes = _check_Ctl_Types()
+					Local $bIsAllLabels = $aCtrlTypes[0]
+					Local $bIsGraphic = $aCtrlTypes[1]
+					Local $bHasBG = $aCtrlTypes[2]
+					Local $bHasItems = $aCtrlTypes[3]
+
+					If $bIsAllLabels Then
 						GUICtrlSetState($oProperties_Ctrls.properties.Color.Hwnd, $GUI_ENABLE)
 					Else
 						GUICtrlSetState($oProperties_Ctrls.properties.Color.Hwnd, $GUI_DISABLE)
 					EndIf
 
-					If _hasBG() Then
+					If $bHasBG Then
 						GUICtrlSetState($oProperties_Ctrls.properties.Background.Hwnd, $GUI_ENABLE)
 					Else
 						GUICtrlSetState($oProperties_Ctrls.properties.Background.Hwnd, $GUI_DISABLE)
 					EndIf
 
-					If _isGraphic() Then
+					If $bIsGraphic Then
 						_propertiesShowBorder(True)
 					Else
 						_propertiesShowBorder(False)
+					EndIf
+
+					If $bHasItems Then
+						_propertiesShowItems(True)
+					Else
+						_propertiesShowItems(False)
 					EndIf
 
 					GUISetState(@SW_HIDE, $tabStylesHwnd)
@@ -722,70 +778,60 @@ Func _generateStyles($w = Default, $h = Default, $x = Default, $y = Default)
 ;~ 	GUISwitch($hToolbar)
 EndFunc   ;==>_generateStyles
 
-Func _isAllLabels()
+Func _check_Ctl_Types()
+	Local $aTypeChecks[10] = [True, True, True, True, True, True, True, True, True, True]
+	; 0 = is all labels
+	; 1 = is graphic
+	; 2 = has background property
+	; 3 = has items
+
 	If $oSelected.count > 0 Then
 		For $oCtrl In $oSelected.ctrls.Items()
 			Switch $oCtrl.Type
 				Case "Label", "Input", "Edit"
-					ContinueLoop
+					$aTypeChecks[1] = False    ;not a graphic
+					$aTypeChecks[3] = False    ;does not have items
 
-				Case Else
-					Return False
-
-			EndSwitch
-		Next
-	EndIf
-
-	Return True
-EndFunc   ;==>_isAllLabels
-
-Func _isGraphic()
-	If $oSelected.count > 0 Then
-		For $oCtrl In $oSelected.ctrls.Items()
-			Switch $oCtrl.Type
 				Case "Rect", "Ellipse", "Line"
-					ContinueLoop
+					$aTypeChecks[0] = False    ;not a Label
+					$aTypeChecks[3] = False    ;does not have items
+
+				Case "List", "Combo", "ListView"
+					$aTypeChecks[0] = False    ;not a Label
+					$aTypeChecks[1] = False    ;not a graphic
 
 				Case Else
-					Return False
+					$aTypeChecks[0] = False    ;not a Label
+					$aTypeChecks[1] = False    ;not a graphic
+					$aTypeChecks[3] = False    ;does not have items
 
 			EndSwitch
-		Next
-	EndIf
 
-	Return True
-EndFunc   ;==>_isGraphic
-
-
-Func _hasBG()
-	If $oSelected.count > 0 Then
-		For $oCtrl In $oSelected.ctrls.Items()
 			Switch $oCtrl.Type
 				Case "Label", "Checkbox", "Radio", "Edit", "Input", "Rect", "Ellipse"
-					ContinueLoop
+					;do nothing
 
 				Case Else
-					Return False
+					$aTypeChecks[2] = False    ;has no background prop
 
 			EndSwitch
 		Next
 	EndIf
 
-	Return True
-EndFunc   ;==>_hasBG
+	Return $aTypeChecks
+EndFunc   ;==>_check_Ctl_Types
 
+;~ Func _containsMenus()
+;~ 	If $oSelected.count > 0 Then
+;~ 		For $oCtrl In $oSelected.ctrls.Items()
+;~ 			If $oCtrl.Type <> "Menu" Then
+;~ 				Return True
+;~ 			EndIf
+;~ 		Next
+;~ 	EndIf
 
-Func _containsMenus()
-	If $oSelected.count > 0 Then
-		For $oCtrl In $oSelected.ctrls.Items()
-			If $oCtrl.Type <> "Menu" Then
-				Return True
-			EndIf
-		Next
-	EndIf
-
-	Return False
-EndFunc   ;==>_containsMenus
+;~ 	Return False
+;~ EndFunc   ;==>_containsMenus
 
 Func _onTabProperties()
 	$tabSelected = "Properties"
@@ -851,24 +897,30 @@ Func _onStyleChange()
 				If $oCtrl.Hwnd = @GUI_CtrlId Then
 					$text = $oCtrl.name
 
+					Local $iCtrlId
 					For $oThisCtrl In $oSelected.ctrls.Items()
+						$iCtrlId = $oThisCtrl.Hwnd
+						If $oThisCtrl.Type = "UpDown" Then
+							$iCtrlId = $oThisCtrl.Hwnd2
+						EndIf
+
 						$CtrlValue = StringRegExp($oThisCtrl.styleString, '(?:^|,\s)\$' & $text & '(?:,|$)')
 						If $CtrlValue <> ($value = $GUI_CHECKED) Then
 ;~ 							$oThisCtrl.styles.Item($text) = $value
-							$iOldStyle = _WinAPI_GetWindowLong(GUICtrlGetHandle($oThisCtrl.Hwnd), $GWL_STYLE)
+							$iOldStyle = _WinAPI_GetWindowLong(GUICtrlGetHandle($iCtrlId), $GWL_STYLE)
 							If ($value = $GUI_CHECKED) Then
 								If $oThisCtrl.styleString = "" Then
 									$oThisCtrl.styleString = "$" & $text
 								ElseIf Not StringRegExp($oThisCtrl.styleString, '(?:^|,\s)\$' & $text & '(?:,|$)') Then
 									$oThisCtrl.styleString &= ", " & "$" & $text
 								EndIf
-								GUICtrlSetStyle($oThisCtrl.Hwnd, BitOR($iOldStyle, Eval($text)))
+								GUICtrlSetStyle($iCtrlId, BitOR($iOldStyle, Eval($text)))
 							Else
 								;middle of string
 								$oThisCtrl.styleString = StringRegExpReplace($oThisCtrl.styleString, '(\$' & $text & ', )', "")
 								;start or end of string
 								$oThisCtrl.styleString = StringRegExpReplace($oThisCtrl.styleString, '((?:^|,\s)\$' & $text & '$)', "")
-								GUICtrlSetStyle($oThisCtrl.Hwnd, BitXOR($iOldStyle, Eval($text)))
+								GUICtrlSetStyle($iCtrlId, BitXOR($iOldStyle, Eval($text)))
 							EndIf
 						EndIf
 					Next

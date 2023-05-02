@@ -15,17 +15,18 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  04/25/2023 ...:
+;  05/01/2023 ...:
 ;					- FIXED:	HUGE reduction in flickering overall
 ;					- FIXED:	Missing include file for IP Address control
 ;					- FIXED:	Bug opening a saved file with no controls
+;					- FIXED:	Bug applying styles to UpDown control
 ;					- ADDED:	New settings dialog
 ;					- ADDED:	New setting: Adjustable grid size - default now set to 5px
 ;					- ADDED:	Syntax Highlighting in code window (RESH UDF by Beege)
 ;					- ADDED:	Full help file
 ;					- ADDED:	Font Name property
 ;					- ADDED:	Font weight property
-;					- ADDED:	Add combobox items with "|" in the text value
+;					- ADDED:	Items property for combobox and listbox
 ;					- ADDED:	Add recently opened files list to File menu
 ;					- ADDED:	Rectangle, ellipse, and line graphics
 ;					- UPDATED:	Added collapsible font properties
@@ -110,6 +111,8 @@ Global $lvObjects, $labelObjectCount, $childSelected
 Global $editEventCode
 ;settings popup
 Global $settingsChk_snapgrid, $settingsChk_pasteatmouse, $settingsChk_guifunction, $settingsChk_eventmode, $settingsInput_gridsize
+;list items popup
+Global $hListItems, $editListItems
 
 ;Property Inspector
 Global $oProperties_Main, $oProperties_Ctrls, $tabSelected, $tabProperties, $tabStyles, $tabStylesHwnd
@@ -201,6 +204,7 @@ _AutoItObject_StartUp()
 #include "GuiBuilderPlus_formAbout.au3"
 #include "GuiBuilderPlus_formEventCode.au3"
 #include "GuiBuilderPlus_formSettings.au3"
+#include "GuiBuilderPlus_formListItems.au3"
 #EndRegion ; includes
 
 

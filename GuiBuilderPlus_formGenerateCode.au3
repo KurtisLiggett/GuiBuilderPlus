@@ -95,11 +95,6 @@ Func _formGenerateCode()
 		GUICtrlSetState($check_guiFunc, $GUI_UNCHECKED)
 	EndIf
 
-	Local Const $accel_selectAll = GUICtrlCreateDummy()
-	Local Const $accelerators[1][2] = [["^a", $accel_selectAll]]
-	GUISetAccelerators($accelerators, $hFormGenerateCode)
-	GUICtrlSetOnEvent($accel_selectAll, "_onSelectAll")
-
 	GUISwitch($hGUI)
 EndFunc   ;==>_formGenerateCode
 #EndRegion formGenerateCode
@@ -134,7 +129,7 @@ EndFunc   ;==>_onCodeSave
 ; Events..........: Copy button in code generation dialog
 ;------------------------------------------------------------------------------
 Func _onCodeCopy()
-	ClipPut(GUICtrlRead($editCodeGeneration))
+	ClipPut(_GUICtrlRichEdit_GetText($editCodeGeneration))
 EndFunc   ;==>_onCodeCopy
 
 Func _onSelectAll()

@@ -114,7 +114,7 @@ Func _objCtrls_add($oSelf, $objCtrl, $hParent = -1)
 		Case "Label"
 			$objCtrl.styles = _Styles_Label()
 			$objCtrl.styles.Item("SS_CENTER") = True
-		Case "UpDown"
+		Case "Updown"
 			$objCtrl.styles = _Styles_UpDown()
 		Case "List"
 			$objCtrl.styles = _Styles_List()
@@ -589,10 +589,11 @@ Func _objCtrl($oParent)
 	_AutoItObject_AddProperty($oObject, "CodeString", $ELSCOPE_PUBLIC, "")
 	_AutoItObject_AddProperty($oObject, "BorderColor", $ELSCOPE_PUBLIC, '0x000000')
 	_AutoItObject_AddProperty($oObject, "BorderSize", $ELSCOPE_PUBLIC, 1)
-	Local $aCoord1[2] = [0,0]
-	Local $aCoord2[2] = [1,1]
+	Local $aCoord1[2] = [0, 0]
+	Local $aCoord2[2] = [1, 1]
 	_AutoItObject_AddProperty($oObject, "Coord1", $ELSCOPE_PUBLIC, $aCoord1)
 	_AutoItObject_AddProperty($oObject, "Coord2", $ELSCOPE_PUBLIC, $aCoord2)
+	_AutoItObject_AddProperty($oObject, "Items", $ELSCOPE_PUBLIC, "")
 
 	Return $oObject
 EndFunc   ;==>_objCtrl
@@ -1469,5 +1470,5 @@ Func _objAction()
 	_AutoItObject_AddProperty($oObject, "parameters", $ELSCOPE_PUBLIC, $aTemp)
 
 	Return $oObject
-EndFunc   ;==>_objCtrls
+EndFunc   ;==>_objAction
 
