@@ -314,8 +314,8 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 			$mControls &= 'GUICtrlCreateTabItem("")' & @CRLF & @CRLF
 
 		Case "Updown"
-			$mControls &= "GUICtrlCreateInput" & '("' & $oCtrl.Text & '", ' & $ltwh & $ctrlStyle & ')' & @CRLF
-			$mControls &= "GUICtrlCreateUpdown(-1)" & @CRLF
+			$mControls &= "GUICtrlCreateInput" & '("' & $oCtrl.Text & '", ' & $ltwh & ')' & @CRLF
+			$mControls &= "GUICtrlCreateUpdown(-1" & $ctrlStyle & ")" & @CRLF
 
 		Case "Pic"
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("", ' & $ltwh & $ctrlStyle & ')' & @CRLF

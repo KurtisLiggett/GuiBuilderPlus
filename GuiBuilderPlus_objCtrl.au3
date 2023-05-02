@@ -114,7 +114,7 @@ Func _objCtrls_add($oSelf, $objCtrl, $hParent = -1)
 		Case "Label"
 			$objCtrl.styles = _Styles_Label()
 			$objCtrl.styles.Item("SS_CENTER") = True
-		Case "UpDown"
+		Case "Updown"
 			$objCtrl.styles = _Styles_UpDown()
 		Case "List"
 			$objCtrl.styles = _Styles_List()

@@ -897,24 +897,30 @@ Func _onStyleChange()
 				If $oCtrl.Hwnd = @GUI_CtrlId Then
 					$text = $oCtrl.name
 
+					Local $iCtrlId
 					For $oThisCtrl In $oSelected.ctrls.Items()
+						$iCtrlId = $oThisCtrl.Hwnd
+						If $oThisCtrl.Type = "UpDown" Then
+							$iCtrlId = $oThisCtrl.Hwnd2
+						EndIf
+
 						$CtrlValue = StringRegExp($oThisCtrl.styleString, '(?:^|,\s)\$' & $text & '(?:,|$)')
 						If $CtrlValue <> ($value = $GUI_CHECKED) Then
 ;~ 							$oThisCtrl.styles.Item($text) = $value
-							$iOldStyle = _WinAPI_GetWindowLong(GUICtrlGetHandle($oThisCtrl.Hwnd), $GWL_STYLE)
+							$iOldStyle = _WinAPI_GetWindowLong(GUICtrlGetHandle($iCtrlId), $GWL_STYLE)
 							If ($value = $GUI_CHECKED) Then
 								If $oThisCtrl.styleString = "" Then
 									$oThisCtrl.styleString = "$" & $text
 								ElseIf Not StringRegExp($oThisCtrl.styleString, '(?:^|,\s)\$' & $text & '(?:,|$)') Then
 									$oThisCtrl.styleString &= ", " & "$" & $text
 								EndIf
-								GUICtrlSetStyle($oThisCtrl.Hwnd, BitOR($iOldStyle, Eval($text)))
+								GUICtrlSetStyle($iCtrlId, BitOR($iOldStyle, Eval($text)))
 							Else
 								;middle of string
 								$oThisCtrl.styleString = StringRegExpReplace($oThisCtrl.styleString, '(\$' & $text & ', )', "")
 								;start or end of string
 								$oThisCtrl.styleString = StringRegExpReplace($oThisCtrl.styleString, '((?:^|,\s)\$' & $text & '$)', "")
-								GUICtrlSetStyle($oThisCtrl.Hwnd, BitXOR($iOldStyle, Eval($text)))
+								GUICtrlSetStyle($iCtrlId, BitXOR($iOldStyle, Eval($text)))
 							EndIf
 						EndIf
 					Next
