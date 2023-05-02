@@ -15,11 +15,12 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  05/01/2023 ...:
+;  05/02/2023 ...:
 ;					- FIXED:	HUGE reduction in flickering overall
 ;					- FIXED:	Missing include file for IP Address control
 ;					- FIXED:	Bug opening a saved file with no controls
 ;					- FIXED:	Bug applying styles to UpDown control
+;					- FIXED:	Fixed shortcut keys in some situations
 ;					- ADDED:	New settings dialog
 ;					- ADDED:	New setting: Adjustable grid size - default now set to 5px
 ;					- ADDED:	Syntax Highlighting in code window (RESH UDF by Beege)

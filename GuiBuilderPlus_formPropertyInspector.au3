@@ -655,6 +655,7 @@ Func _generateStyles($w = Default, $h = Default, $x = Default, $y = Default)
 	$tabStylesHwnd = GUICreate("", $width, $height - 2, $left, $top + 1, $WS_POPUP, $WS_EX_MDICHILD, $hToolbar)
 	GUISetBkColor(0xFFFFFF)
 	Local $ret = _GUIScrollbars_Generate($tabStylesHwnd, $width - 2, $height + 350)
+	_set_accelerators(True)
 
 	Local $iScrollbarWidth = $__g_aSB_WindowInfo[0][5]
 

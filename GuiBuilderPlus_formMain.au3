@@ -445,7 +445,7 @@ EndFunc   ;==>_formToolbar
 ; Title...........: _set_accelerators
 ; Description.....: Set the GUI accelerator keys
 ;------------------------------------------------------------------------------
-Func _set_accelerators()
+Func _set_accelerators($styleOnly = False)
 	Local Const $accel_delete = GUICtrlCreateDummy()
 	Local Const $accel_x = GUICtrlCreateDummy()
 	Local Const $accel_c = GUICtrlCreateDummy()
@@ -493,7 +493,9 @@ Func _set_accelerators()
 			["^y", $accel_y], _
 			["{F1}", $menu_helpchm] _
 			]
-	GUISetAccelerators($accelerators, $hGUI)
+	If Not $styleOnly Then
+		GUISetAccelerators($accelerators, $hGUI)
+	EndIf
 
 	Local Const $acceleratorsToolbar[6][2] = _
 			[ _
@@ -504,8 +506,12 @@ Func _set_accelerators()
 			["^o", $accel_o], _
 			["{F1}", $menu_helpchm] _
 			]
-	GUISetAccelerators($accelerators, $hToolbar)
-	GUISetAccelerators($accelerators, $oProperties_Main.properties.Hwnd)
+	If Not $styleOnly Then
+		GUISetAccelerators($accelerators, $hToolbar)
+		GUISetAccelerators($accelerators, $oProperties_Main.properties.Hwnd)
+		GUISetAccelerators($accelerators, $oProperties_Ctrls.properties.Hwnd)
+	EndIf
+	GUISetAccelerators($accelerators, $tabStylesHwnd)
 
 	GUICtrlSetOnEvent($accel_delete, _delete_selected_controls)
 	GUICtrlSetOnEvent($accel_x, _cut_selected)
