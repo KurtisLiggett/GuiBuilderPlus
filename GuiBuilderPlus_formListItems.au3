@@ -66,6 +66,7 @@ Func _onSaveListItems()
 
 	For $oThisCtrl In $oSelected.ctrls.Items()
 		$oThisCtrl.Items = $sItems
+		GuiCtrlSetData($oThisCtrl.Hwnd, "|" & $oThisCtrl.Items)
 	Next
 
 	$oProperties_Ctrls.properties.Items.value = $sItems
