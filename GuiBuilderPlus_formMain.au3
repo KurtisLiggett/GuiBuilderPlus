@@ -1812,9 +1812,9 @@ Func _onMousePrimaryUp()
 				_updateActionStacks($oAction)
 			EndIf
 
-			If $oCtrlSelectedFirst.Type = 'Pic' Then
-				GUICtrlSetImage($oCtrlSelectedFirst.Hwnd, $samplebmp)
-			EndIf
+;~ 			If $oCtrlSelectedFirst.Type = 'Pic' Then
+;~ 				GUICtrlSetImage($oCtrlSelectedFirst.Hwnd, $samplebmp)
+;~ 			EndIf
 
 			_populate_control_properties_gui($oCtrlSelectedFirst)
 

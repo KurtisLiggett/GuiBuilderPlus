@@ -294,7 +294,9 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '(' & $ltwh & $ctrlStyle & ')' & @CRLF
 
 		Case "Icon" ; extra iconid [set to zero]
-			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", 0, ' & $ltwh & $ctrlStyle & ')' & @CRLF
+;~ 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", 0, ' & $ltwh & $ctrlStyle & ')' & @CRLF
+			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("", -1, ' & $ltwh & $ctrlStyle & ')' & @CRLF
+			$mControls &= "GUICtrlSetImage(-1, " & '"' & $sampleicon & '")' & @CRLF
 
 		Case "Tab"
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '(' & $ltwh & $ctrlStyle & ')' & @CRLF

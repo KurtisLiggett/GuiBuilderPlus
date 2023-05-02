@@ -36,6 +36,7 @@
 ;					- UPDATED:	Ctrl+arrow now moves 1 grid space instead of 10px
 ;					- UPDATED:	Control selection window is now the parent (main) window
 ;					- UPDATED:	Z-order of controls is now updated visually in real time when moved up/down the list
+;					- UPDATED:	Better handling of Pic and Icon resizing
 ;					- UPDATED:	Behind-the-scenes code improvements
 ;
 ; Roadmap .......:	- Finish control properties tabs
@@ -150,6 +151,7 @@ Global $AgdOutFile, $lfld, $mygui
 
 Global $sampleavi = @ScriptDir & "\resources\sampleAVI.avi"
 Global $samplebmp = @ScriptDir & "\resources\SampleImage.bmp"
+Global $sampleicon = @ScriptDir & "\resources\icons\icon.ico"
 Global $sIniPath = @ScriptDir & "\storage\GUIBuilderPlus.ini"
 #EndRegion ; globals
 

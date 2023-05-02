@@ -298,7 +298,8 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 ;~ 			Return $oNewControl
 
 		Case "Icon"
-			$oNewControl.Hwnd = GUICtrlCreateIcon($iconset, 0, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			$oNewControl.Hwnd = GUICtrlCreateIcon($sampleicon, -1, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			GUICtrlSetImage($oNewControl.Hwnd, $sampleicon, -1)
 
 			$oCtrls.add($oNewControl, $hParent)
 
@@ -1188,6 +1189,12 @@ Func _change_ctrl_size_pos(ByRef $oCtrl, $left, $top, $width, $height, $tabChild
 
 		Case Else
 			GUICtrlSetPos($oCtrl.Hwnd, $left, $top, $width, $height)
+			If $oCtrl.Type = "Icon" Then
+				GUICtrlSetImage($oCtrl.Hwnd, $sampleicon, -1)
+			EndIf
+			If $oCtrl.Type = "Pic" Then
+				GUICtrlSetImage($oCtrl.Hwnd, $samplebmp, -1)
+			EndIf
 	EndSwitch
 
 	If Not $tabChild Then
