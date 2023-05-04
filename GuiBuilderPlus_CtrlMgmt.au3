@@ -281,6 +281,7 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 		Case "Pic"
 			$oNewControl.Hwnd = GUICtrlCreatePic($samplebmp, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 			GUICtrlSetImage($oNewControl.Hwnd, $samplebmp)
+			$oNewControl.Img = $samplebmp
 
 			$oCtrls.add($oNewControl, $hParent)
 
@@ -300,6 +301,7 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 		Case "Icon"
 			$oNewControl.Hwnd = GUICtrlCreateIcon($sampleicon, -1, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 			GUICtrlSetImage($oNewControl.Hwnd, $sampleicon, -1)
+			$oNewControl.Img = $sampleicon
 
 			$oCtrls.add($oNewControl, $hParent)
 
@@ -1190,10 +1192,10 @@ Func _change_ctrl_size_pos(ByRef $oCtrl, $left, $top, $width, $height, $tabChild
 		Case Else
 			GUICtrlSetPos($oCtrl.Hwnd, $left, $top, $width, $height)
 			If $oCtrl.Type = "Icon" Then
-				GUICtrlSetImage($oCtrl.Hwnd, $sampleicon, -1)
+				GUICtrlSetImage($oCtrl.Hwnd, $oCtrl.Img, -1)
 			EndIf
 			If $oCtrl.Type = "Pic" Then
-				GUICtrlSetImage($oCtrl.Hwnd, $samplebmp, -1)
+				GUICtrlSetImage($oCtrl.Hwnd, $oCtrl.Img, -1)
 			EndIf
 	EndSwitch
 

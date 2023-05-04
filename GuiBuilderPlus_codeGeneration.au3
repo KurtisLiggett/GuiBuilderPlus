@@ -296,7 +296,7 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 		Case "Icon" ; extra iconid [set to zero]
 ;~ 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", 0, ' & $ltwh & $ctrlStyle & ')' & @CRLF
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("", -1, ' & $ltwh & $ctrlStyle & ')' & @CRLF
-			$mControls &= "GUICtrlSetImage(-1, " & '"' & $sampleicon & '")' & @CRLF
+			$mControls &= "GUICtrlSetImage(-1, " & '"' & $oCtrl.Img & '")' & @CRLF
 
 		Case "Tab"
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '(' & $ltwh & $ctrlStyle & ')' & @CRLF
@@ -321,7 +321,7 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 
 		Case "Pic"
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("", ' & $ltwh & $ctrlStyle & ')' & @CRLF
-			$mControls &= "GUICtrlSetImage(-1, " & '"' & $samplebmp & '")' & @CRLF
+			$mControls &= "GUICtrlSetImage(-1, " & '"' & $oCtrl.Img & '")' & @CRLF
 
 		Case "Menu"
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '")' & @CRLF

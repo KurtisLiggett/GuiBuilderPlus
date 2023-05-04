@@ -594,6 +594,7 @@ Func _objCtrl($oParent)
 	_AutoItObject_AddProperty($oObject, "Coord1", $ELSCOPE_PUBLIC, $aCoord1)
 	_AutoItObject_AddProperty($oObject, "Coord2", $ELSCOPE_PUBLIC, $aCoord2)
 	_AutoItObject_AddProperty($oObject, "Items", $ELSCOPE_PUBLIC, "")
+	_AutoItObject_AddProperty($oObject, "Img", $ELSCOPE_PUBLIC, "")
 
 	Return $oObject
 EndFunc   ;==>_objCtrl
