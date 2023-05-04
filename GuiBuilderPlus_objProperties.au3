@@ -31,9 +31,14 @@ Func _objPropertiesProps()
 	_AutoItObject_AddProperty($oObject, "Width", $ELSCOPE_PUBLIC, _objProperty("Width"))
 	_AutoItObject_AddProperty($oObject, "Height", $ELSCOPE_PUBLIC, _objProperty("Height"))
 	_AutoItObject_AddProperty($oObject, "Color", $ELSCOPE_PUBLIC, _objProperty("Color"))
+	_AutoItObject_AddProperty($oObject, "FontName", $ELSCOPE_PUBLIC, _objProperty("FontName"))
 	_AutoItObject_AddProperty($oObject, "FontSize", $ELSCOPE_PUBLIC, _objProperty("FontSize"))
+	_AutoItObject_AddProperty($oObject, "FontWeight", $ELSCOPE_PUBLIC, _objProperty("FontWeight"))
 	_AutoItObject_AddProperty($oObject, "Background", $ELSCOPE_PUBLIC, _objProperty("Background"))
 	_AutoItObject_AddProperty($oObject, "Global", $ELSCOPE_PUBLIC, _objProperty("Global", "Checkbox"))
+	_AutoItObject_AddProperty($oObject, "BorderColor", $ELSCOPE_PUBLIC, _objProperty("BorderColor"))
+	_AutoItObject_AddProperty($oObject, "BorderSize", $ELSCOPE_PUBLIC, _objProperty("BorderSize"))
+	_AutoItObject_AddProperty($oObject, "Items", $ELSCOPE_PUBLIC, _objProperty("Items"))
 
 	Return $oObject
 EndFunc   ;==>_objPropertiesProps

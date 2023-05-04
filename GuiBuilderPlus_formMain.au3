@@ -37,7 +37,10 @@ Func _formMain()
 
 	$oMain.Left = $main_left
 	$oMain.Top = $main_top
-	$hGUI = GUICreate($oMain.Title & " - Form (" & $oMain.Width & ", " & $oMain.Height & ')', $oMain.Width, $oMain.Height, $main_left, $main_top, BitOR($WS_SIZEBOX, $WS_SYSMENU, $WS_MINIMIZEBOX), $WS_EX_ACCEPTFILES)
+
+	;create an invisible parent for forms, to prevent showing in the taskbar
+	$hFormHolder = GUICreate("GBP form holder", 10, 10, -1, -1, -1, -1, $hToolbar)
+	$hGUI = GUICreate($oMain.Title & " - Form (" & $oMain.Width & ", " & $oMain.Height & ')', $oMain.Width, $oMain.Height, $main_left, $main_top, BitOR($WS_SIZEBOX, $WS_CAPTION), BitOR($WS_EX_ACCEPTFILES, $WS_EX_COMPOSITED), $hFormHolder)
 
 	_getGuiFrameSize()
 	WinMove($hGUI, "", Default, Default, $oMain.Width + $iGuiFrameW, $oMain.Height + $iGuiFrameH)
@@ -47,9 +50,7 @@ Func _formMain()
 
 
 	;GUI events
-	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExit", $hGUI)
-	GUISetOnEvent($GUI_EVENT_MINIMIZE, "_onMinimize", $hGUI)
-	GUISetOnEvent($GUI_EVENT_RESTORE, "_onRestore")
+	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExitForm", $hGUI)
 	GUISetOnEvent($GUI_EVENT_RESIZED, "_onResize", $hGUI)
 	GUISetOnEvent($GUI_EVENT_PRIMARYDOWN, "_onMousePrimaryDown", $hGUI)
 	GUISetOnEvent($GUI_EVENT_PRIMARYUP, "_onMousePrimaryUp", $hGUI)
@@ -165,11 +166,15 @@ Func _formToolbar()
 		$toolbar_top = 0
 	EndIf
 
-	$hToolbar = GUICreate("Choose Control Type", $toolbar_width, $toolbar_height, $toolbar_left, $toolbar_top, $WS_CAPTION, -1, $hGUI)
+	$hToolbar = GUICreate($oMain.AppName, $toolbar_width, $toolbar_height, $toolbar_left, $toolbar_top, BitOR($WS_SYSMENU, $WS_MINIMIZEBOX))
+
+	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExit", $hToolbar)
+	GUISetOnEvent($GUI_EVENT_MINIMIZE, "_onMinimize", $hToolbar)
+	GUISetOnEvent($GUI_EVENT_RESTORE, "_onRestore", $hToolbar)
 
 	#Region create-menu
 	;create up the File menu
-	Local $menu_file = GUICtrlCreateMenu("File")
+	$menu_file = GUICtrlCreateMenu("File")
 	Local $menu_save_definition = GUICtrlCreateMenuItem("Save" & @TAB & "Ctrl+S", $menu_file)
 	Local $menu_saveas_definition = GUICtrlCreateMenuItem("Save As..." & @TAB & "Ctrl+S", $menu_file)
 	Local $menu_load_definition = GUICtrlCreateMenuItem("Open" & @TAB & "Ctrl+O", $menu_file)
@@ -177,14 +182,25 @@ Func _formToolbar()
 	Local $menu_import_au3 = GUICtrlCreateMenuItem("Import from au3", $menu_file)
 	Local $menu_export_au3 = GUICtrlCreateMenuItem("Export to au3", $menu_file)
 	GUICtrlCreateMenuItem("", $menu_file)
-	Local $menu_exit = GUICtrlCreateMenuItem("Exit", $menu_file)
+
+	;look for recent files and generate menus
+	Local $aRecentFiles = IniReadSection($sIniPath, "Recent")
+	If Not @error Then
+		For $i = 1 To $aRecentFiles[0][0]
+			$aMenuRecentList[$i - 1] = GUICtrlCreateMenuItem($i & " " & $aRecentFiles[$i][1], $menu_file)
+			GUICtrlSetOnEvent(-1, "_onMenuRecent")
+		Next
+		$aMenuRecentList[10] = GUICtrlCreateMenuItem("", $menu_file)
+	EndIf
+	$aMenuRecentList[11] = GUICtrlCreateMenuItem("Exit", $menu_file)
+	GUICtrlSetOnEvent(-1, "_onExit")
+
 
 	GUICtrlSetOnEvent($menu_save_definition, "_onSaveGui")
 	GUICtrlSetOnEvent($menu_saveas_definition, "_onSaveAsGui")
 	GUICtrlSetOnEvent($menu_load_definition, "_onload_gui_definition")
 	GUICtrlSetOnEvent($menu_import_au3, "_onImportMenuItem")
 	GUICtrlSetOnEvent($menu_export_au3, "_onExportMenuItem")
-	GUICtrlSetOnEvent($menu_exit, "_onExit")
 
 	;create the Edit menu
 	Local $menu_edit = GUICtrlCreateMenu("Edit")
@@ -236,6 +252,9 @@ Func _formToolbar()
 
 	;create the View menu
 	Local $menu_view = GUICtrlCreateMenu("View")
+	$menu_show_grid = GUICtrlCreateMenuItem("Show grid" & @TAB & "F7", $menu_view)
+	GUICtrlSetOnEvent($menu_show_grid, _onShowGrid)
+	GUICtrlSetState($menu_show_grid, $GUI_CHECKED)
 	$menu_generateCode = GUICtrlCreateMenuItem("Live Generated Code", $menu_view)
 	GUICtrlSetOnEvent($menu_generateCode, "_onGenerateCode")
 	GUICtrlSetState($menu_generateCode, $GUI_UNCHECKED)
@@ -245,47 +264,24 @@ Func _formToolbar()
 ;~ 	GUICtrlCreateMenuItem("", $menu_view)
 ;~ 	Local $menu_resetLayout = GUICtrlCreateMenuItem("Reset window layout", $menu_view)
 
-;~ 	GUICtrlSetOnEvent($menu_resetLayout, "_onResetLayout")
 
 	;create the Tools menu
 	Local $menu_tools = GUICtrlCreateMenu("Tools")
 	Local $menu_testForm = GUICtrlCreateMenuItem("Test GUI" & @TAB & "F5", $menu_tools)
+	Local $menu_settings = GUICtrlCreateMenuItem("Settings", $menu_tools)
 
 	GUICtrlSetOnEvent($menu_testForm, "_onTestGUI")
+	GUICtrlSetOnEvent($menu_settings, "_onSettings")
 
-	;create the Settings menu
-	Local $menu_settings = GUICtrlCreateMenu("Settings", $menu_tools)
-	$menu_show_grid = GUICtrlCreateMenuItem("Show grid" & @TAB & "F7", $menu_settings)
-	$menu_grid_snap = GUICtrlCreateMenuItem("Snap to grid" & @TAB & "F3", $menu_settings)
-	$menu_paste_pos = GUICtrlCreateMenuItem("Paste at mouse position", $menu_settings)
-	$menu_show_ctrl = GUICtrlCreateMenuItem("Show control when moving", $menu_settings)
-	$menu_show_hidden = GUICtrlCreateMenuItem("Show hidden controls", $menu_settings)
-	$menu_gui_function = GUICtrlCreateMenuItem("Create GUI in a function", $menu_settings)
-	$menu_onEvent_mode = GUICtrlCreateMenuItem("Enable OnEvent mode", $menu_settings)
-;~ 	$menu_dpi_scaling = GUICtrlCreateMenuItem("Apply DPI scaling factor", $menu_settings)
-
-	GUICtrlSetOnEvent($menu_show_grid, _showgrid)
-	GUICtrlSetOnEvent($menu_grid_snap, _gridsnap)
-	GUICtrlSetOnEvent($menu_paste_pos, _pastepos)
-	GUICtrlSetOnEvent($menu_show_ctrl, _show_control)
-	GUICtrlSetOnEvent($menu_show_hidden, _menu_show_hidden)
-	GUICtrlSetOnEvent($menu_gui_function, "_menu_gui_function")
-	GUICtrlSetOnEvent($menu_onEvent_mode, "_menu_onEvent_mode")
-;~ 	GUICtrlSetOnEvent($menu_dpi_scaling, "_menu_dpi_scaling")
-
-	GUICtrlSetState($menu_show_grid, $GUI_CHECKED)
-	GUICtrlSetState($menu_grid_snap, $GUI_CHECKED)
-	GUICtrlSetState($menu_paste_pos, $GUI_CHECKED)
-	GUICtrlSetState($menu_show_ctrl, $GUI_CHECKED)
-	GUICtrlSetState($menu_show_hidden, $GUI_UNCHECKED)
-;~ 	GUICtrlSetState($menu_dpi_scaling, $GUI_UNCHECKED)
-
+	;create the Help menu
 	Local $menu_help = GUICtrlCreateMenu("Help")
+	$menu_helpchm = GUICtrlCreateMenuItem("Help" & @TAB & "F1", $menu_help)
 	Local $menu_github = GUICtrlCreateMenuItem("Github Repository", $menu_help)
 	Local $menu_about = GUICtrlCreateMenuItem("About", $menu_help)         ; added by: TheSaint
 
 	GUICtrlSetOnEvent($menu_about, _menu_about)
 	GUICtrlSetOnEvent($menu_github, _onGithubItem)
+	GUICtrlSetOnEvent($menu_helpchm, _onHelpItem)
 
 	#EndRegion create-menu
 
@@ -401,11 +397,20 @@ Func _formToolbar()
 	GUICtrlSetTip(-1, "Menu")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	$toolButton = GUICtrlCreateRadio("ContextMenu", 165, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	_setIconFromResource($toolButton, "Icon 20.ico", 220)
-	GUICtrlSetTip(-1, "Context Menu")
+	$button_graphic = GUICtrlCreateRadio("Rect", 165, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($button_graphic, "Icon 24.ico", 224)
+	GUICtrlSetTip(-1, "Draw Rectangle")
 	GUICtrlSetOnEvent(-1, _control_type)
-	GUICtrlSetState(-1, $GUI_DISABLE)
+
+	;context menu for graphic button
+	Local $graphic_contextmenu = GUICtrlCreateContextMenu($button_graphic)
+	GUICtrlCreateMenuItem("Rectangle", $graphic_contextmenu)
+	GUICtrlSetOnEvent(-1, "_onGraphicMenuRect")
+	GUICtrlCreateMenuItem("Ellipse", $graphic_contextmenu)
+	GUICtrlSetOnEvent(-1, "_onGraphicMenuEllipse")
+	GUICtrlCreateMenuItem("Line", $graphic_contextmenu)
+	GUICtrlSetOnEvent(-1, "_onGraphicMenuLine")
+
 
 	; -----------------------------------------------------------------------------------------------------------
 
@@ -428,7 +433,7 @@ Func _formToolbar()
 
 
 	;create property inspector
-	_formPropertyInspector(0, 215, $toolbar_width, 222)
+	_formPropertyInspector(0, 210, $toolbar_width, 222)
 
 
 	$hStatusbar = _GUICtrlStatusBar_Create($hToolbar)
@@ -440,7 +445,7 @@ EndFunc   ;==>_formToolbar
 ; Title...........: _set_accelerators
 ; Description.....: Set the GUI accelerator keys
 ;------------------------------------------------------------------------------
-Func _set_accelerators()
+Func _set_accelerators($styleOnly = False)
 	Local Const $accel_delete = GUICtrlCreateDummy()
 	Local Const $accel_x = GUICtrlCreateDummy()
 	Local Const $accel_c = GUICtrlCreateDummy()
@@ -457,11 +462,13 @@ Func _set_accelerators()
 	Local Const $accel_Ctrlright = GUICtrlCreateDummy()
 	Local Const $accel_s = GUICtrlCreateDummy()
 	Local Const $accel_o = GUICtrlCreateDummy()
+	Local Const $accel_F3 = GUICtrlCreateDummy()
 	Local Const $accel_F5 = GUICtrlCreateDummy()
 	Local Const $accel_z = GUICtrlCreateDummy()
 	Local Const $accel_y = GUICtrlCreateDummy()
+	Local Const $accel_F1 = GUICtrlCreateDummy()
 
-	Local Const $accelerators[21][2] = _
+	Local Const $accelerators[22][2] = _
 			[ _
 			["{Delete}", $accel_delete], _
 			["^x", $accel_x], _
@@ -477,26 +484,34 @@ Func _set_accelerators()
 			["^{DOWN}", $accel_Ctrldown], _
 			["^{LEFT}", $accel_Ctrlleft], _
 			["^{RIGHT}", $accel_Ctrlright], _
-			["{F3}", $menu_grid_snap], _
+			["{F3}", $accel_F3], _
 			["{F7}", $menu_show_grid], _
 			["{F5}", $accel_F5], _
 			["^s", $accel_s], _
 			["^o", $accel_o], _
 			["^z", $accel_z], _
-			["^y", $accel_y] _
+			["^y", $accel_y], _
+			["{F1}", $menu_helpchm] _
 			]
-	GUISetAccelerators($accelerators, $hGUI)
+	If Not $styleOnly Then
+		GUISetAccelerators($accelerators, $hGUI)
+	EndIf
 
-	Local Const $acceleratorsToolbar[5][2] = _
+	Local Const $acceleratorsToolbar[6][2] = _
 			[ _
-			["{F3}", $menu_grid_snap], _
+			["{F3}", $accel_F3], _
 			["{F7}", $menu_show_grid], _
 			["{F5}", $accel_F5], _
 			["^s", $accel_s], _
-			["^o", $accel_o] _
+			["^o", $accel_o], _
+			["{F1}", $menu_helpchm] _
 			]
-	GUISetAccelerators($accelerators, $hToolbar)
-	GUISetAccelerators($accelerators, $oProperties_Main.properties.Hwnd)
+	If Not $styleOnly Then
+		GUISetAccelerators($accelerators, $hToolbar)
+		GUISetAccelerators($accelerators, $oProperties_Main.properties.Hwnd)
+		GUISetAccelerators($accelerators, $oProperties_Ctrls.properties.Hwnd)
+	EndIf
+	GUISetAccelerators($accelerators, $tabStylesHwnd)
 
 	GUICtrlSetOnEvent($accel_delete, _delete_selected_controls)
 	GUICtrlSetOnEvent($accel_x, _cut_selected)
@@ -515,6 +530,7 @@ Func _set_accelerators()
 	GUICtrlSetOnEvent($accel_s, "_onSaveGui")
 	GUICtrlSetOnEvent($accel_o, "_onload_gui_definition")
 	GUICtrlSetOnEvent($accel_F5, "_onTestGUI")
+	GUICtrlSetOnEvent($accel_F3, "_onGridsnap")
 	GUICtrlSetOnEvent($accel_z, "_onUndo")
 	GUICtrlSetOnEvent($accel_y, "_onRedo")
 EndFunc   ;==>_set_accelerators
@@ -561,22 +577,22 @@ EndFunc   ;==>_hide_grid
 Func _display_grid(Const $grid_ctrl, Const $width, Const $height)
 	Local Const $iColor = 0xDEDEDE
 	Local $penSize = 1
-	Local Const $width_steps = $width / $grid_ticks
-	Local Const $height_steps = $height / $grid_ticks
+	Local Const $width_steps = $width / $oOptions.gridSize
+	Local Const $height_steps = $height / $oOptions.gridSize
 
 	GUICtrlSetGraphic($grid_ctrl, $GUI_GR_PENSIZE, $penSize)
 	GUICtrlSetGraphic($grid_ctrl, $GUI_GR_COLOR, $iColor)
 
 	;draw vertical lines
 	For $x = 0 To $width_steps
-		GUICtrlSetGraphic($grid_ctrl, $GUI_GR_MOVE, $x * $grid_ticks, 0)
-		GUICtrlSetGraphic($grid_ctrl, $GUI_GR_LINE, $x * $grid_ticks, $height)
+		GUICtrlSetGraphic($grid_ctrl, $GUI_GR_MOVE, $x * $oOptions.gridSize, 0)
+		GUICtrlSetGraphic($grid_ctrl, $GUI_GR_LINE, $x * $oOptions.gridSize, $height)
 	Next
 
 	;draw horizontal lines
 	For $x = 0 To $height_steps
-		GUICtrlSetGraphic($grid_ctrl, $GUI_GR_MOVE, 0, $x * $grid_ticks)
-		GUICtrlSetGraphic($grid_ctrl, $GUI_GR_LINE, $width, $x * $grid_ticks)
+		GUICtrlSetGraphic($grid_ctrl, $GUI_GR_MOVE, 0, $x * $oOptions.gridSize)
+		GUICtrlSetGraphic($grid_ctrl, $GUI_GR_LINE, $width, $x * $oOptions.gridSize)
 	Next
 
 	;refresh the graphic display
@@ -584,6 +600,19 @@ Func _display_grid(Const $grid_ctrl, Const $width, Const $height)
 
 	;resize the control for click detection
 	GUICtrlSetPos($grid_ctrl, Default, Default, $width, $height)
+
+	;send to background
+;~ 	GuiCtrlSetOnTop($grid_ctrl, $HWND_BOTTOM)
+	_WinAPI_SetWindowPos(GUICtrlGetHandle($grid_ctrl), $HWND_BOTTOM, 0, 0, 0, 0, $SWP_NOMOVE + $SWP_NOSIZE + $SWP_NOCOPYBITS)
+	GUICtrlSetState($grid_ctrl, $GUI_DISABLE)
+
+	;refresh all graphic controls, to show on top
+	For $oCtrl In $oCtrls.ctrls.Items()
+		Switch $oCtrl.Type
+			Case "Rect", "Ellipse", "Line"
+				_updateGraphic($oCtrl)
+		EndSwitch
+	Next
 EndFunc   ;==>_display_grid
 #EndRegion grid management
 
@@ -636,6 +665,11 @@ Func _onExit()
 	Exit
 EndFunc   ;==>_onExit
 
+Func _onExitForm()
+	;for now, close the program. In the future, close this form.
+	_onExit()
+EndFunc   ;==>_onExitForm
+
 
 ;------------------------------------------------------------------------------
 ; Title...........: _onMinimize
@@ -645,10 +679,11 @@ EndFunc   ;==>_onExit
 Func _onMinimize()
 	_saveWinPositions()
 
-	GUISetState(@SW_MINIMIZE, $hGUI)
+	GUISetState(@SW_MINIMIZE, $hToolbar)
 	GUISetState(@SW_HIDE, $oProperties_Main.properties.Hwnd)
 	GUISetState(@SW_HIDE, $oProperties_Ctrls.properties.Hwnd)
 	GUISetState(@SW_HIDE, $tabStylesHwnd)
+;~ 	GUISetState(@SW_HIDE, $hGUI)
 EndFunc   ;==>_onMinimize
 
 
@@ -658,7 +693,7 @@ EndFunc   ;==>_onMinimize
 ; Event...........: taskbar button
 ;------------------------------------------------------------------------------
 Func _onRestore()
-	GUISetState(@SW_RESTORE, $hGUI)
+	GUISetState(@SW_RESTORE, $hToolbar)
 	If $oSelected.count > 0 Then
 		Switch $tabSelected
 			Case "Properties"
@@ -676,7 +711,8 @@ Func _onRestore()
 				GUISetState(@SW_SHOWNOACTIVATE, $tabStylesHwnd)
 		EndSwitch
 	EndIf
-	GUISetState(@SW_SHOWNORMAL, $hGUI)
+	GUISetState(@SW_SHOWNORMAL, $hToolbar)
+;~ 	GUISetState(@SW_SHOWNORMAL, $hGUI)
 	GUISwitch($hGUI)
 
 	$bResizedFlag = False
@@ -749,7 +785,7 @@ EndFunc   ;==>WM_NOTIFY
 Func _onResize()
 	Local $win_client_size = WinGetClientSize($hGUI)
 
-	If _setting_show_grid() Then
+	If $oOptions.showGrid Then
 		_display_grid($background, $win_client_size[0], $win_client_size[1])
 	EndIf
 
@@ -840,7 +876,7 @@ EndFunc   ;==>_onKeyRight
 ; Events..........: UP key
 ;------------------------------------------------------------------------------
 Func _onKeyCtrlUp()
-	_nudgeSelected(0, -10)
+	_nudgeSelected(0, -1 * $oOptions.GridSize)
 EndFunc   ;==>_onKeyCtrlUp
 
 
@@ -850,7 +886,7 @@ EndFunc   ;==>_onKeyCtrlUp
 ; Events..........: UP key
 ;------------------------------------------------------------------------------
 Func _onKeyCtrlDown()
-	_nudgeSelected(0, 10)
+	_nudgeSelected(0, $oOptions.GridSize)
 EndFunc   ;==>_onKeyCtrlDown
 
 
@@ -860,7 +896,7 @@ EndFunc   ;==>_onKeyCtrlDown
 ; Events..........: UP key
 ;------------------------------------------------------------------------------
 Func _onKeyCtrlLeft()
-	_nudgeSelected(-10, 0)
+	_nudgeSelected(-1 * $oOptions.GridSize, 0)
 EndFunc   ;==>_onKeyCtrlLeft
 
 
@@ -870,7 +906,7 @@ EndFunc   ;==>_onKeyCtrlLeft
 ; Events..........: UP key
 ;------------------------------------------------------------------------------
 Func _onKeyCtrlRight()
-	_nudgeSelected(10, 0)
+	_nudgeSelected($oOptions.GridSize, 0)
 EndFunc   ;==>_onKeyCtrlRight
 
 
@@ -882,7 +918,7 @@ Func _nudgeSelected($x = 0, $y = 0, $aUndoCtrls = 0)
 	GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 	$oCtrls.mode = $mode_default
 
-;~ 	Local $nudgeAmount = ($setting_snap_grid) ? $grid_ticks : 1
+;~ 	Local $nudgeAmount = ($oOptions.snapGrid) ? $oOptions.gridSize : 1
 	Local $nudgeAmount = 1
 	Local $adjustmentX = 0, $adjustmentX = 0
 
@@ -1176,14 +1212,41 @@ Func _onRedo()
 	_redo()
 EndFunc   ;==>_onRedo
 
+Func _onGraphicMenuRect()
+	GUICtrlSetTip($button_graphic, "Draw Rectangle")
+	GUICtrlSetData($button_graphic, "Rect")
+	_setIconFromResource($button_graphic, "Icon 24.ico", 224)
+	GUICtrlSetState($button_graphic, $GUI_CHECKED)
+	$oCtrls.CurrentType = "Rect"
+	$oCtrls.mode = $mode_draw
+EndFunc   ;==>_onGraphicMenuRect
+
+Func _onGraphicMenuEllipse()
+	GUICtrlSetTip($button_graphic, "Draw Ellipse")
+	GUICtrlSetData($button_graphic, "Ellipse")
+	_setIconFromResource($button_graphic, "Icon 25.ico", 225)
+	GUICtrlSetState($button_graphic, $GUI_CHECKED)
+	$oCtrls.CurrentType = "Ellipse"
+	$oCtrls.mode = $mode_draw
+EndFunc   ;==>_onGraphicMenuEllipse
+
+Func _onGraphicMenuLine()
+	GUICtrlSetTip($button_graphic, "Draw Line")
+	GUICtrlSetData($button_graphic, "Line")
+	_setIconFromResource($button_graphic, "Icon 26.ico", 226)
+	GUICtrlSetState($button_graphic, $GUI_CHECKED)
+	$oCtrls.CurrentType = "Line"
+	$oCtrls.mode = $mode_draw
+EndFunc   ;==>_onGraphicMenuLine
+
 
 
 
 #Region mouse events
 Func _GetDoubleClickTime()
-   Local $aDllRet = DllCall("user32.dll", "uint", "GetDoubleClickTime")
-   If Not @error Then Return $aDllRet[0]
-EndFunc
+	Local $aDllRet = DllCall("user32.dll", "uint", "GetDoubleClickTime")
+	If Not @error Then Return $aDllRet[0]
+EndFunc   ;==>_GetDoubleClickTime
 
 Func _onMousePrimaryDown()
 ;~ 	_WinAPI_Window($hGUI)
@@ -1219,7 +1282,7 @@ Func _onMousePrimaryDown()
 
 	;if tool is selected and clicking on an existing control (but not resizing), switch to selection
 	If (Not $initResize And Not $oCtrls.mode = $mode_init_move) And Not $oCtrls.mode = $mode_draw Then
-		If $oCtrls.exists($ctrl_hwnd) And $ctrl_hwnd <> $background Then
+		If $oCtrls.exists($ctrl_hwnd) And $ctrl_hwnd <> $background And $ctrl_hwnd <> 0 Then
 			GUICtrlSetState($oMain.DefaultCursor, $GUI_CHECKED)
 			$oCtrls.mode = $mode_default
 		EndIf
@@ -1271,7 +1334,7 @@ Func _onMousePrimaryDown()
 		Case $mode_default
 			_log("** PrimaryDown: default **")
 			Switch $ctrl_hwnd
-				Case $background
+				Case $background, 0
 					_log("  background")
 					_set_default_mode()
 					_set_current_mouse_pos(1)
@@ -1298,7 +1361,7 @@ Func _onMousePrimaryDown()
 					;handle double click detection
 					Static Local $clickTime, $prevCtrl
 					If $ctrl_hwnd = $prevCtrl And TimerDiff($clickTime) <= $dblClickTime Then
-						_formEventEntry()
+						_formEventCode()
 						Return
 					EndIf
 					$prevCtrl = $ctrl_hwnd
@@ -1438,6 +1501,143 @@ Func _onMousePrimaryUp()
 					_delete_selected_controls()
 					_set_default_mode()
 				Else
+					;done drawing
+					Switch $oCtrlSelectedFirst.Type
+						Case "Rect", "Ellipse", "Line"
+							Local $aCoord1 = [$oCtrlSelectedFirst.coord1[0], $oCtrlSelectedFirst.coord1[1]]
+							Local $aCoord2 = [$oCtrlSelectedFirst.coord2[0], $oCtrlSelectedFirst.coord2[1]]
+
+							If $oCtrlSelectedFirst.width < 0 And $oCtrlSelectedFirst.height < 0 Then
+								$oCtrlSelectedFirst.width = -1 * $oCtrlSelectedFirst.width
+								$oCtrlSelectedFirst.left -= $oCtrlSelectedFirst.width
+
+								$oCtrlSelectedFirst.height = -1 * $oCtrlSelectedFirst.height
+								$oCtrlSelectedFirst.top -= $oCtrlSelectedFirst.height
+
+								Switch $oCtrls.mode
+									Case $resize_se, $resize_nw
+										$aCoord1[0] = 0
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord1[1] = 0
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+											$aCoord2[1] = 0
+										EndIf
+									Case $resize_ne, $resize_sw
+										$aCoord1[0] = 0
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord1[1] = 0
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+											$aCoord2[1] = 0
+										EndIf
+								EndSwitch
+
+								$oCtrlSelectedFirst.grippies.show()
+
+							ElseIf $oCtrlSelectedFirst.width < 0 Then
+								$oCtrlSelectedFirst.width = -1 * $oCtrlSelectedFirst.width
+								$oCtrlSelectedFirst.left -= $oCtrlSelectedFirst.width
+
+								$aCoord1[0] = 0
+								$aCoord1[1] = $oCtrlSelectedFirst.coord2[1]
+								$aCoord2[0] = $oCtrlSelectedFirst.width
+								$aCoord2[1] = $oCtrl.coord1[1]
+
+								$oCtrl.grippies.show()
+
+							ElseIf $oCtrl.height < 0 Then
+								$oCtrl.height = -1 * $oCtrl.height
+								$oCtrlSelectedFirst.top -= $oCtrlSelectedFirst.height
+
+								If $aCoord2[1] > $aCoord1[1] Then
+									$aCoord1[0] = 0
+									$aCoord1[1] = $oCtrlSelectedFirst.height
+									$aCoord2[0] = $oCtrlSelectedFirst.width
+									$aCoord2[1] = 0
+								Else
+									$aCoord1[0] = 0
+									$aCoord1[1] = 0
+									$aCoord2[0] = $oCtrlSelectedFirst.width
+									$aCoord2[1] = $oCtrlSelectedFirst.height
+								EndIf
+
+								$oCtrlSelectedFirst.grippies.show()
+
+							EndIf
+
+							$oCtrlSelectedFirst.coord1 = $aCoord1
+							$oCtrlSelectedFirst.coord2 = $aCoord2
+
+							;update line coords
+							If $oCtrlSelectedFirst.Type = "Line" Then
+								Switch $oCtrls.mode
+									Case $resize_nw
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+										EndIf
+
+									Case $resize_n
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+										EndIf
+
+									Case $resize_w
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+
+									Case $resize_e
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+
+									Case $resize_s
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+										EndIf
+
+									Case $resize_se
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+										EndIf
+
+									Case $resize_ne
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+										EndIf
+
+									Case $resize_sw
+										$aCoord2[0] = $oCtrlSelectedFirst.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrlSelectedFirst.height
+										Else
+											$aCoord1[1] = $oCtrlSelectedFirst.height
+										EndIf
+
+								EndSwitch
+								$oCtrlSelectedFirst.coord1 = $aCoord1
+								$oCtrlSelectedFirst.coord2 = $aCoord2
+							EndIf
+
+							_updateGraphic($oCtrlSelectedFirst)
+					EndSwitch
+
+
 					;update the undo action stack
 					Local $oAction = _objAction()
 					$oAction.action = $action_drawCtrl
@@ -1452,7 +1652,145 @@ Func _onMousePrimaryUp()
 					_updateActionStacks($oAction)
 				EndIf
 			Else
-				_log("** PrimaryUp: Else **")
+				_log("** PrimaryUp: Resize Else **")
+				For $oCtrl In $oSelected.ctrls.Items()
+					Switch $oCtrl.Type
+						Case "Rect", "Ellipse", "Line"
+							Local $aCoord1 = [$oCtrl.coord1[0], $oCtrl.coord1[1]]
+							Local $aCoord2 = [$oCtrl.coord2[0], $oCtrl.coord2[1]]
+
+							If $oCtrl.width < 0 And $oCtrl.height < 0 Then
+								$oCtrl.width = -1 * $oCtrl.width
+								$oCtrl.left -= $oCtrl.width
+
+								$oCtrl.height = -1 * $oCtrl.height
+								$oCtrl.top -= $oCtrl.height
+
+								Switch $oCtrls.mode
+									Case $resize_se, $resize_nw
+										$aCoord1[0] = 0
+										$aCoord2[0] = $oCtrl.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord1[1] = 0
+											$aCoord2[1] = $oCtrl.height
+										Else
+											$aCoord1[1] = $oCtrl.height
+											$aCoord2[1] = 0
+										EndIf
+									Case $resize_ne, $resize_sw
+										$aCoord1[0] = 0
+										$aCoord2[0] = $oCtrl.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord1[1] = 0
+											$aCoord2[1] = $oCtrl.height
+										Else
+											$aCoord1[1] = $oCtrl.height
+											$aCoord2[1] = 0
+										EndIf
+								EndSwitch
+
+								$oCtrl.grippies.show()
+
+							ElseIf $oCtrl.width < 0 Then
+								$oCtrl.width = -1 * $oCtrl.width
+								$oCtrl.left -= $oCtrl.width
+
+								$aCoord1[0] = 0
+								$aCoord1[1] = $oCtrl.coord2[1]
+								$aCoord2[0] = $oCtrl.width
+								$aCoord2[1] = $oCtrl.coord1[1]
+
+								$oCtrl.grippies.show()
+
+							ElseIf $oCtrl.height < 0 Then
+								$oCtrl.height = -1 * $oCtrl.height
+								$oCtrl.top -= $oCtrl.height
+
+								If $aCoord2[1] > $aCoord1[1] Then
+									$aCoord1[0] = 0
+									$aCoord1[1] = $oCtrl.height
+									$aCoord2[0] = $oCtrl.width
+									$aCoord2[1] = 0
+								Else
+									$aCoord1[0] = 0
+									$aCoord1[1] = 0
+									$aCoord2[0] = $oCtrl.width
+									$aCoord2[1] = $oCtrl.height
+								EndIf
+
+								$oCtrl.grippies.show()
+
+							EndIf
+
+							$oCtrl.coord1 = $aCoord1
+							$oCtrl.coord2 = $aCoord2
+
+							;update line coords
+							If $oCtrl.Type = "Line" Then
+								Switch $oCtrls.mode
+									Case $resize_nw
+										$aCoord2[0] = $oCtrl.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrl.height
+										Else
+											$aCoord1[1] = $oCtrl.height
+										EndIf
+
+									Case $resize_n
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrl.height
+										Else
+											$aCoord1[1] = $oCtrl.height
+										EndIf
+
+									Case $resize_w
+										$aCoord2[0] = $oCtrl.width
+
+									Case $resize_e
+										$aCoord2[0] = $oCtrl.width
+
+									Case $resize_s
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrl.height
+										Else
+											$aCoord1[1] = $oCtrl.height
+										EndIf
+
+									Case $resize_se
+										$aCoord2[0] = $oCtrl.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrl.height
+										Else
+											$aCoord1[1] = $oCtrl.height
+										EndIf
+
+									Case $resize_ne
+										$aCoord2[0] = $oCtrl.width
+										$aCoord2[0] = $oCtrl.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrl.height
+										Else
+											$aCoord1[1] = $oCtrl.height
+										EndIf
+
+									Case $resize_sw
+										$aCoord2[0] = $oCtrl.width
+										If $aCoord2[1] > $aCoord1[1] Then
+											$aCoord2[1] = $oCtrl.height
+										Else
+											$aCoord1[1] = $oCtrl.height
+										EndIf
+
+								EndSwitch
+								$oCtrl.coord1 = $aCoord1
+								$oCtrl.coord2 = $aCoord2
+							EndIf
+
+							_updateGraphic($oCtrl)
+					EndSwitch
+				Next
+
+
 				;update the undo action stack
 				Local $oAction = _objAction()
 				$oAction.action = $action_resizeCtrl
@@ -1474,9 +1812,9 @@ Func _onMousePrimaryUp()
 				_updateActionStacks($oAction)
 			EndIf
 
-			If $oCtrlSelectedFirst.Type = 'Pic' Then
-				GUICtrlSetImage($oCtrlSelectedFirst.Hwnd, $samplebmp)
-			EndIf
+;~ 			If $oCtrlSelectedFirst.Type = 'Pic' Then
+;~ 				GUICtrlSetImage($oCtrlSelectedFirst.Hwnd, $samplebmp)
+;~ 			EndIf
 
 			_populate_control_properties_gui($oCtrlSelectedFirst)
 
@@ -1653,7 +1991,7 @@ Func _onMouseMove()
 			EndIf
 
 		Case $mode_init_move, $mode_paste
-			_log("MOVE:  Moving")
+;~ 			_log("MOVE:  Moving")
 			Local $mouse_prevpos[2] = [$oMouse.X, $oMouse.Y]
 			$mouse_prevpos = _snap_to_grid($mouse_prevpos)
 
@@ -1773,9 +2111,12 @@ Func _onGenerateCode()
 	Switch BitAND(GUICtrlRead($menu_generateCode), $GUI_CHECKED) = $GUI_CHECKED
 		Case True
 			IniWrite($sIniPath, "Settings", "ShowCode", 1)
+			$oOptions.showCodeViewer = True
 
 		Case False
 			IniWrite($sIniPath, "Settings", "ShowCode", 0)
+			$oOptions.showCodeViewer = False
+
 	EndSwitch
 EndFunc   ;==>_onGenerateCode
 
@@ -1799,9 +2140,12 @@ Func _onShowObjectExplorer()
 	Switch BitAND(GUICtrlRead($menu_ObjectExplorer), $GUI_CHECKED) = $GUI_CHECKED
 		Case True
 			IniWrite($sIniPath, "Settings", "ShowObjectExplorer", 1)
+			$oOptions.ShowObjectExplorer = True
 
 		Case False
 			IniWrite($sIniPath, "Settings", "ShowObjectExplorer", 0)
+			$oOptions.ShowObjectExplorer = False
+
 	EndSwitch
 EndFunc   ;==>_onShowObjectExplorer
 
@@ -1906,6 +2250,11 @@ Func _onTestGUI()
 
 EndFunc   ;==>_onTestGUI
 
+Func _onSettings()
+	_formSettings()
+EndFunc   ;==>_onSettings
+
+
 ;Smoke_N's WinGetByPID
 Func _WinGetByPID($iPID, $nArray = 1) ;0 will return 1 base array; leaving it 1 will return the first visible window it finds
 	If IsString($iPID) Then $iPID = ProcessExists($iPID)
@@ -1989,8 +2338,57 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 		$oProperties_Ctrls.properties.Color.value = ""
 	EndIf
 
+	If $oCtrl.BorderColor <> -1 Then
+		$oProperties_Ctrls.properties.BorderColor.value = "0x" & Hex($oCtrl.BorderColor, 6)
+	Else
+		$oProperties_Ctrls.properties.BorderColor.value = -1
+	EndIf
+
+	If $oCtrl.BorderSize > 1 Then
+		$oProperties_Ctrls.properties.BorderSize.value = $oCtrl.BorderSize
+	Else
+		$oProperties_Ctrls.properties.BorderSize.value = 1
+	EndIf
+
+	$oProperties_Ctrls.properties.Items.value = $oCtrl.Items
 
 	$oProperties_Ctrls.properties.Global.value = $oCtrl.Global
+
+	;font weight
+	Local $iFw
+	Switch $oCtrl.FontWeight
+		Case 100
+			$iFw = 0
+		Case 200
+			$iFw = 1
+		Case 300
+			$iFw = 2
+		Case 400
+			$iFw = 3
+		Case 500
+			$iFw = 4
+		Case 600
+			$iFw = 5
+		Case 700
+			$iFw = 6
+		Case 800
+			$iFw = 7
+		Case 900
+			$iFw = 8
+		Case Else
+			$iFw = 3
+	EndSwitch
+	_GUICtrlComboBox_SetCurSel(GUICtrlGetHandle($oProperties_Ctrls.properties.FontWeight.Hwnd), $iFw)
+;~ 	ControlCommand(HWnd($oProperties_Ctrls.properties.Hwnd), "", $oProperties_Ctrls.properties.FontWeight.Hwnd, "SetCurrentSelection", $iFw)
+
+	;font name
+	If $oCtrl.FontName = "" Then
+		_GUICtrlComboBox_SetCurSel(GUICtrlGetHandle($oProperties_Ctrls.properties.FontName.Hwnd), -1)
+	Else
+		Local $selection = ControlCommand(HWnd($oProperties_Ctrls.properties.Hwnd), "", $oProperties_Ctrls.properties.FontName.Hwnd, "FindString", $oCtrl.FontName)
+		_GUICtrlComboBox_SetCurSel(GUICtrlGetHandle($oProperties_Ctrls.properties.FontName.Hwnd), $selection)
+	EndIf
+
 EndFunc   ;==>_populate_control_properties_gui
 
 
@@ -2046,7 +2444,7 @@ Func _main_change_width()
 
 	$oMain.Width = $aWinPos[0]
 
-	If _setting_show_grid() Then
+	If $oOptions.showGrid Then
 		_display_grid($background, $aWinPos[0], $aWinPos[1])
 	EndIf
 
@@ -2065,7 +2463,7 @@ Func _main_change_height()
 
 	$oMain.Height = $aWinPos[1]
 
-	If _setting_show_grid() Then
+	If $oOptions.showGrid Then
 		_display_grid($background, $aWinPos[0], $aWinPos[1])
 	EndIf
 
@@ -2388,6 +2786,18 @@ Func _ctrl_change_width()
 
 				;move the selected control
 				_change_ctrl_size_pos($oCtrl, Default, Default, $new_data, Default)
+
+				Switch $oCtrl.Type
+					Case "Line"
+						Local $aCoord1 = [$oCtrl.coord1[0], $oCtrl.coord1[1]]
+						Local $aCoord2 = [$oCtrl.coord2[0], $oCtrl.coord2[1]]
+
+						$aCoord2[0] = $oCtrl.width
+
+						$oCtrl.coord1 = $aCoord1
+						$oCtrl.coord2 = $aCoord2
+				EndSwitch
+
 				;update the selected property
 				$oCtrl.Width = $new_data
 
@@ -2444,6 +2854,23 @@ Func _ctrl_change_height()
 
 				;move the selected control
 				_change_ctrl_size_pos($oCtrl, Default, Default, Default, $new_data)
+
+				Switch $oCtrl.Type
+					Case "Line"
+						Local $aCoord1 = [$oCtrl.coord1[0], $oCtrl.coord1[1]]
+						Local $aCoord2 = [$oCtrl.coord2[0], $oCtrl.coord2[1]]
+
+						If $aCoord2[1] > $aCoord1[1] Then
+							$aCoord2[1] = $oCtrl.height
+						Else
+							$aCoord1[1] = $oCtrl.height
+						EndIf
+
+						$oCtrl.coord1 = $aCoord1
+						$oCtrl.coord2 = $aCoord2
+				EndSwitch
+
+
 				;update the selected property
 				$oCtrl.Height = $new_data
 
@@ -2508,7 +2935,7 @@ Func _ctrl_change_bkColor()
 
 				;convert string to color then apply
 				Switch $oCtrl.Type
-					Case "Label", "Checkbox", "Radio"
+					Case "Label", "Checkbox", "Radio", "Input", "Edit"
 						If $colorInput <> -1 Then
 							GUICtrlSetBkColor($oCtrl.Hwnd, $colorInput)
 						Else
@@ -2523,6 +2950,10 @@ Func _ctrl_change_bkColor()
 
 						$oCtrl.Background = $colorInput
 
+					Case "Rect", "Ellipse", "Line"
+						$oCtrl.Background = $colorInput
+						_updateGraphic($oCtrl)
+
 					Case Else
 						ContinueLoop
 
@@ -2533,6 +2964,109 @@ Func _ctrl_change_bkColor()
 	_refreshGenerateCode()
 	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_bkColor
+
+Func _ctrl_pick_borderColor()
+	Local $color = _ChooseColor(2)
+
+	If $color = -1 Then Return 0
+	$oProperties_Ctrls.properties.BorderColor.value = $color
+
+	_ctrl_change_borderColor()
+	$oMain.hasChanged = True
+EndFunc   ;==>_ctrl_pick_borderColor
+
+
+Func _ctrl_change_borderColor()
+	Local $colorInput = $oProperties_Ctrls.properties.BorderColor.value
+	Local $newColor = $colorInput
+	If $colorInput = "" Then
+		$colorInput = -1
+		$oProperties_Ctrls.properties.BorderColor.value = -1
+	Else
+		$colorInput = Dec(StringReplace($colorInput, "0x", ""))
+	EndIf
+
+	Local Const $sel_count = $oSelected.count
+
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_changeBorderColor
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[2]
+	For $i = 0 To UBound($oAction.ctrls) - 1
+		$aParam[0] = $oAction.ctrls[$i].BorderColor
+		$aParam[1] = $colorInput
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
+
+	Switch $sel_count >= 1
+		Case True
+			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
+				;convert string to color then apply
+				Switch $oCtrl.Type
+					Case "Rect", "Ellipse", "Line"
+						$oCtrl.BorderColor = $colorInput
+						_updateGraphic($oCtrl)
+
+					Case Else
+						ContinueLoop
+
+				EndSwitch
+			Next
+	EndSwitch
+
+	_refreshGenerateCode()
+	$oMain.hasChanged = True
+EndFunc   ;==>_ctrl_change_borderColor
+
+Func _ctrl_change_borderSize()
+	Local $new_data = $oProperties_Ctrls.properties.BorderSize.value
+	If $new_data = "" Or $new_data = "-1" Then
+		$oProperties_Ctrls.properties.BorderSize.value = 1
+		$new_data = 1
+	EndIf
+
+	Local Const $sel_count = $oSelected.count
+
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_changeBorderSize
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $aParams[$oSelected.ctrls.Count]
+	Local $aParam[2]
+	For $i = 0 To UBound($oAction.ctrls) - 1
+		$aParam[0] = $oAction.ctrls[$i].BorderSize
+		$aParam[1] = $new_data
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
+
+	Switch $sel_count >= 1
+		Case True
+			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
+				Switch $oCtrl.Type
+					Case "Rect", "Ellipse", "Line"
+						$oCtrl.BorderSize = $new_data
+						_updateGraphic($oCtrl)
+
+					Case Else
+						ContinueLoop
+
+				EndSwitch
+
+			Next
+	EndSwitch
+
+	_refreshGenerateCode()
+EndFunc   ;==>_ctrl_change_borderSize
 
 
 Func _ctrl_change_global()
@@ -2556,6 +3090,24 @@ Func _ctrl_change_global()
 	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_global
 
+Func _ctrl_change_items()
+	Local $new_data = $oProperties_Ctrls.properties.Items.value
+	$new_data = _items_GetList($new_data, "|", "|")
+
+	Local Const $sel_count = $oSelected.count
+
+	Switch $sel_count >= 1
+		Case True
+			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
+				$oCtrl.Items = $new_data
+			Next
+	EndSwitch
+
+	_refreshGenerateCode()
+EndFunc   ;==>_ctrl_change_items
+
 
 Func _ctrl_change_FontSize()
 	Local $new_data = $oProperties_Ctrls.properties.FontSize.value
@@ -2578,7 +3130,7 @@ Func _ctrl_change_FontSize()
 				If $oCtrl.Type = "IP" Then
 					_GUICtrlIpAddress_SetFont($oCtrl.Hwnd, "Arial", $new_data)
 				Else
-					GUICtrlSetFont($oCtrl.Hwnd, $new_data)
+					GUICtrlSetFont($oCtrl.Hwnd, $new_data, $oCtrl.FontWeight)
 				EndIf
 
 				;update the selected property
@@ -2589,6 +3141,82 @@ Func _ctrl_change_FontSize()
 
 	_refreshGenerateCode()
 EndFunc   ;==>_ctrl_change_FontSize
+
+Func _ctrl_change_FontWeight()
+	Local $new_data = $oProperties_Ctrls.properties.FontWeight.value
+
+	Switch $new_data
+		Case "Thin"
+			$new_data = 100
+		Case "Extra Light"
+			$new_data = 200
+		Case "Light"
+			$new_data = 300
+		Case "Normal"
+			$new_data = 400
+		Case "Medium"
+			$new_data = 500
+		Case "Semi Bold"
+			$new_data = 600
+		Case "Bold"
+			$new_data = 700
+		Case "Extra Bold"
+			$new_data = 800
+		Case "Heavy"
+			$new_data = 900
+		Case Else
+			$new_data = 400
+	EndSwitch
+
+	Local Const $sel_count = $oSelected.count
+
+
+	Switch $sel_count >= 1
+		Case True
+			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
+				;update the selected control
+				If $oCtrl.Type = "IP" Then
+					_GUICtrlIpAddress_SetFont($oCtrl.Hwnd, "Arial", $oCtrl.FontSize, $new_data)
+				Else
+					GUICtrlSetFont($oCtrl.Hwnd, $oCtrl.FontSize, $new_data)
+				EndIf
+
+				;update the selected property
+				$oCtrl.FontWeight = $new_data
+
+			Next
+	EndSwitch
+
+	_refreshGenerateCode()
+EndFunc   ;==>_ctrl_change_FontWeight
+
+Func _ctrl_change_FontName()
+	Local $new_data = $oProperties_Ctrls.properties.FontName.value
+
+	Local Const $sel_count = $oSelected.count
+
+	Switch $sel_count >= 1
+		Case True
+			For $oCtrl In $oSelected.ctrls.Items()
+				If $oCtrl.Locked Then ContinueLoop
+
+				;update the selected control
+				If $oCtrl.Type = "IP" Then
+					_GUICtrlIpAddress_SetFont($oCtrl.Hwnd, $new_data, $oCtrl.FontSize, $oCtrl.FontWeight)
+				Else
+					GUICtrlSetFont($oCtrl.Hwnd, $oCtrl.FontSize, $oCtrl.FontWeight, $GUI_FONTNORMAL, $new_data)
+				EndIf
+
+				;update the selected property
+				$oCtrl.FontName = $new_data
+
+			Next
+	EndSwitch
+
+	_refreshGenerateCode()
+EndFunc   ;==>_ctrl_change_FontName
 
 
 Func _ctrl_pick_Color()
@@ -2633,20 +3261,24 @@ Func _ctrl_change_Color()
 				If $oCtrl.Locked Then ContinueLoop
 
 				;convert string to color then apply
-				If $oCtrl.Type <> "Label" Then Return 0
+				Switch $oCtrl.Type
+					Case "Label", "Edit", "Input"
+						If $colorInput <> -1 Then
+							GUICtrlSetColor($oCtrl.Hwnd, $colorInput)
+						Else
+							GUICtrlDelete($oCtrl.Hwnd)
+							$oCtrl.Hwnd = GUICtrlCreateLabel($oCtrl.Text, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
+							$oCtrl.Color = -1
+							If $oCtrl.Background <> -1 Then
+								GUICtrlSetBkColor($oCtrl.Hwnd, $oCtrl.Background)
+							EndIf
+						EndIf
 
-				If $colorInput <> -1 Then
-					GUICtrlSetColor($oCtrl.Hwnd, $colorInput)
-				Else
-					GUICtrlDelete($oCtrl.Hwnd)
-					$oCtrl.Hwnd = GUICtrlCreateLabel($oCtrl.Text, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
-					$oCtrl.Color = -1
-					If $oCtrl.Background <> -1 Then
-						GUICtrlSetBkColor($oCtrl.Hwnd, $oCtrl.Background)
-					EndIf
-				EndIf
+						$oCtrl.Color = $colorInput
 
-				$oCtrl.Color = $colorInput
+					Case Else
+						Return 0
+				EndSwitch
 			Next
 	EndSwitch
 
@@ -2770,6 +3402,21 @@ Func ClientToScreen(ByRef $x, ByRef $y)
 	$y = DllStructGetData($tPoint, "Y")
 EndFunc   ;==>ClientToScreen
 
+;------------------------------------------------------------------------------
+; Title...........: ScreenToClient
+; Description.....: Convert the screen (desktop) coordinates to client (GUI) coordinates.
+;					taken from the helpfile
+;					updated by kurtykurtyboy
+;------------------------------------------------------------------------------
+Func ScreenToClient(ByRef $x, ByRef $y)
+	Local $tPoint = DllStructCreate("int X;int Y")
+	DllStructSetData($tPoint, "X", $x)
+	DllStructSetData($tPoint, "Y", $y)
+	_WinAPI_ScreenToClient($hGUI, $tPoint)
+	$x = DllStructGetData($tPoint, "X")
+	$y = DllStructGetData($tPoint, "Y")
+EndFunc   ;==>ScreenToClient
+
 
 #Region ; mouse management
 Func _mouse_snap_pos()
@@ -2777,10 +3424,10 @@ Func _mouse_snap_pos()
 EndFunc   ;==>_mouse_snap_pos
 
 Func _snap_to_grid($coords)
-	If $setting_snap_grid Then
-		$coords[0] = $grid_ticks * Int($coords[0] / $grid_ticks - 0.5) + $grid_ticks
+	If $oOptions.snapGrid Then
+		$coords[0] = $oOptions.gridSize * Int($coords[0] / $oOptions.gridSize - 0.5) + $oOptions.gridSize
 
-		$coords[1] = $grid_ticks * Int($coords[1] / $grid_ticks - 0.5) + $grid_ticks
+		$coords[1] = $oOptions.gridSize * Int($coords[1] / $oOptions.gridSize - 0.5) + $oOptions.gridSize
 	EndIf
 
 	Return $coords
@@ -2916,20 +3563,6 @@ Func _rect_from_points(Const $a1, Const $a2, Const $b1, Const $b2)
 EndFunc   ;==>_rect_from_points
 #EndRegion ; rectangle management
 
-
-Func _setting_show_grid(Const $toggle = False, Const $value = '')
-	Local Static $setting_show_grid = False
-
-	Switch $toggle
-		Case True
-			$setting_show_grid = $value
-	EndSwitch
-
-	Return $setting_show_grid
-EndFunc   ;==>_setting_show_grid
-
-
-
 #EndRegion functions
 
 
@@ -2958,258 +3591,12 @@ EndFunc   ;==>ShowMenu
 
 
 ;------------------------------------------------------------------------------
-; Title...........: _showgrid
-; Description.....: Show (or hide) the background grid and update INI file
-; Events..........: settings menu item select
+; Title...........: _onHelpItem
+; Description.....: Open the help file
 ;------------------------------------------------------------------------------
-Func _showgrid()
-	Local Const $show_grid_data = GUICtrlRead($menu_show_grid)
-	Local $message = "Grid: "
-
-	Select
-		Case BitAND($show_grid_data, $GUI_CHECKED) = $GUI_CHECKED
-			GUICtrlSetState($menu_show_grid, $GUI_UNCHECKED)
-
-			_hide_grid($background)
-
-			IniWrite($sIniPath, "Settings", "ShowGrid", 0)
-			$message &= "OFF"
-
-		Case BitAND($show_grid_data, $GUI_UNCHECKED) = $GUI_UNCHECKED
-			GUICtrlSetState($menu_show_grid, $GUI_CHECKED)
-
-			_show_grid($background, $oMain.Width, $oMain.Height)
-
-			IniWrite($sIniPath, "Settings", "ShowGrid", 1)
-			$message &= "ON"
-	EndSelect
-
-	$bStatusNewMessage = True
-	_GUICtrlStatusBar_SetText($hStatusbar, $message)
-EndFunc   ;==>_showgrid
-
-
-;------------------------------------------------------------------------------
-; Title...........: _pastepos
-; Description.....: Update INI setting for paste at mouse position
-; Events..........: settings menu item select
-;------------------------------------------------------------------------------
-Func _pastepos()
-	If BitAND(GUICtrlRead($menu_paste_pos), $GUI_CHECKED) = $GUI_CHECKED Then
-		GUICtrlSetState($menu_paste_pos, $GUI_UNCHECKED)
-
-		IniWrite($sIniPath, "Settings", "PastePos", 0)
-	Else
-		GUICtrlSetState($menu_paste_pos, $GUI_CHECKED)
-
-		IniWrite($sIniPath, "Settings", "PastePos", 1)
-	EndIf
-
-	$setting_paste_pos = Not $setting_paste_pos
-EndFunc   ;==>_pastepos
-
-
-;------------------------------------------------------------------------------
-; Title...........: _gridsnap
-; Description.....: Update INI setting for grid snap
-; Events..........: settings menu item select
-;------------------------------------------------------------------------------
-Func _gridsnap()
-	Local $message = "Grid snap: "
-	If BitAND(GUICtrlRead($menu_grid_snap), $GUI_CHECKED) = $GUI_CHECKED Then
-		GUICtrlSetState($menu_grid_snap, $GUI_UNCHECKED)
-
-		IniWrite($sIniPath, "Settings", "GridSnap", 0)
-		$message &= "OFF"
-	Else
-		GUICtrlSetState($menu_grid_snap, $GUI_CHECKED)
-
-		IniWrite($sIniPath, "Settings", "GridSnap", 1)
-		$message &= "ON"
-	EndIf
-
-	$setting_snap_grid = Not $setting_snap_grid
-
-	$bStatusNewMessage = True
-	_GUICtrlStatusBar_SetText($hStatusbar, $message)
-EndFunc   ;==>_gridsnap
-
-
-;------------------------------------------------------------------------------
-; Title...........: _show_control
-; Description.....: Update INI setting for show control
-; Events..........: settings menu item select
-;------------------------------------------------------------------------------
-Func _show_control()
-	Switch BitAND(GUICtrlRead($menu_show_ctrl), $GUI_CHECKED) = $GUI_CHECKED
-		Case True
-			GUICtrlSetState($menu_show_ctrl, $GUI_UNCHECKED)
-
-			IniWrite($sIniPath, "Settings", "ShowControl", 0)
-
-			$setting_show_control = False
-
-		Case False
-			GUICtrlSetState($menu_show_ctrl, $GUI_CHECKED)
-
-			IniWrite($sIniPath, "Settings", "ShowControl", 1)
-
-			$setting_show_control = True
-	EndSwitch
-EndFunc   ;==>_show_control
-
-
-;------------------------------------------------------------------------------
-; Title...........: _menu_show_hidden
-; Description.....: Update INI setting for show hidden
-;					show/hide controls based on setting
-; Events..........: settings menu item select
-;------------------------------------------------------------------------------
-Func _menu_show_hidden()
-	Switch BitAND(GUICtrlRead($menu_show_hidden), $GUI_CHECKED) = $GUI_CHECKED
-		Case True
-			GUICtrlSetState($menu_show_hidden, $GUI_UNCHECKED)
-
-			IniWrite($sIniPath, "Settings", "ShowHidden", 0)
-
-			$setting_show_hidden = False
-
-			For $oCtrl In $oCtrls.ctrls.Items()
-
-				If Not $oCtrl.Visible Then
-					GUICtrlSetState($oCtrl.Hwnd, $GUI_HIDE)
-				EndIf
-			Next
-
-			_recall_overlay()
-
-		Case False
-			GUICtrlSetState($menu_show_hidden, $GUI_CHECKED)
-
-			IniWrite($sIniPath, "Settings", "ShowHidden", 1)
-
-			$setting_show_hidden = True
-
-			For $oCtrl In $oCtrls.ctrls.Items()
-
-				If Not $oCtrl.Visible Then
-					GUICtrlSetState($oCtrl.Hwnd, $GUI_SHOW)
-				EndIf
-			Next
-
-	EndSwitch
-EndFunc   ;==>_menu_show_hidden
-
-
-;------------------------------------------------------------------------------
-; Title...........: _menu_dpi_scaling
-; Description.....: Update INI setting for dpi scaling
-; Events..........: settings menu item select
-;------------------------------------------------------------------------------
-Func _menu_dpi_scaling()
-	Switch BitAND(GUICtrlRead($menu_dpi_scaling), $GUI_CHECKED) = $GUI_CHECKED
-		Case True
-			GUICtrlSetState($menu_dpi_scaling, $GUI_UNCHECKED)
-
-			IniWrite($sIniPath, "Settings", "DpiScaling", 0)
-
-			$setting_dpi_scaling = False
-
-
-		Case False
-			GUICtrlSetState($menu_dpi_scaling, $GUI_CHECKED)
-
-			IniWrite($sIniPath, "Settings", "DpiScaling", 1)
-
-			$setting_dpi_scaling = True
-
-	EndSwitch
-
-	_refreshGenerateCode()
-EndFunc   ;==>_menu_dpi_scaling
-
-
-;------------------------------------------------------------------------------
-; Title...........: _menu_onEvent_mode
-; Description.....: Update INI setting
-; Events..........: settings menu item
-;------------------------------------------------------------------------------
-Func _menu_onEvent_mode()
-	_set_onEvent_mode()
-EndFunc   ;==>_menu_onEvent_mode
-
-Func _radio_onMsgMode()
-	_set_onEvent_mode(0)
-EndFunc   ;==>_radio_onMsgMode
-
-Func _radio_onEventMode()
-	_set_onEvent_mode(1)
-EndFunc   ;==>_radio_onEventMode
-
-Func _set_onEvent_mode($iState = -1)
-	Local $checkedState, $IniState
-
-	If $iState = -1 Then
-		Switch BitAND(GUICtrlRead($menu_onEvent_mode), $GUI_CHECKED) = $GUI_CHECKED
-			Case True
-				$checkedState = $GUI_UNCHECKED
-				$IniState = 0
-				$setting_onEvent_mode = False
-
-			Case False
-				$checkedState = $GUI_CHECKED
-				$IniState = 1
-				$setting_onEvent_mode = True
-		EndSwitch
-	ElseIf $iState = 0 Then
-		$checkedState = $GUI_UNCHECKED
-		$IniState = 0
-		$setting_onEvent_mode = False
-	ElseIf $iState = 1 Then
-		$checkedState = $GUI_CHECKED
-		$IniState = 1
-		$setting_onEvent_mode = True
-	EndIf
-
-	GUICtrlSetState($menu_onEvent_mode, $checkedState)
-	GUICtrlSetState($radio_eventMode, $checkedState)
-	If $checkedState = $GUI_UNCHECKED Then
-		GUICtrlSetState($radio_msgMode, $GUI_CHECKED)
-	EndIf
-	IniWrite($sIniPath, "Settings", "OnEventMode", $IniState)
-	_refreshGenerateCode()
-EndFunc   ;==>_set_onEvent_mode
-
-
-;------------------------------------------------------------------------------
-; Title...........: _menu_gui_function
-; Description.....: Update INI setting
-; Events..........: settings menu item
-;------------------------------------------------------------------------------
-Func _menu_gui_function()
-	Switch BitAND(GUICtrlRead($menu_gui_function), $GUI_CHECKED) = $GUI_CHECKED
-		Case True
-			GUICtrlSetState($menu_gui_function, $GUI_UNCHECKED)
-			GUICtrlSetState($check_guiFunc, $GUI_UNCHECKED)
-
-			IniWrite($sIniPath, "Settings", "GuiInFunction", 0)
-
-			$setting_gui_function = False
-
-
-		Case False
-			GUICtrlSetState($menu_gui_function, $GUI_CHECKED)
-			GUICtrlSetState($check_guiFunc, $GUI_CHECKED)
-
-			IniWrite($sIniPath, "Settings", "GuiInFunction", 1)
-
-			$setting_gui_function = True
-
-	EndSwitch
-
-	_refreshGenerateCode()
-EndFunc   ;==>_menu_gui_function
-
+Func _onHelpItem()
+	ShellExecute(@ScriptDir & "\storage\GuiBuilderPlus.chm")
+EndFunc   ;==>_onHelpItem
 
 ;------------------------------------------------------------------------------
 ; Title...........: _onGithubItem
@@ -3224,178 +3611,91 @@ EndFunc   ;==>_onGithubItem
 ; Description.....: Display popup with program description
 ;------------------------------------------------------------------------------
 Func _menu_about()
-	$w = 350
-	$h = 265
-
-	$hAbout = GUICreate("About " & $oMain.AppName, $w, $h, Default, Default, $WS_CAPTION, -1, $hGUI)
-	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExitAbout")
-
-	; top section
-
-	GUICtrlCreateLabel("", 0, 0, $w, $h - 32)
-	GUICtrlSetBkColor(-1, 0xFFFFFF)
-	GUICtrlSetState(-1, $GUI_DISABLE)
-
-	GUICtrlCreateLabel("", 0, $h - 32, $w, 1)
-	GUICtrlSetBkColor(-1, 0x000000)
-
-	Local $pic = GUICtrlCreatePic("", 10, 10, 48, 48)
-	_memoryToPic($pic, GetIconData(0))
-
-	GUICtrlCreateLabel($oMain.AppName, 70, 10, $w - 15)
-	GUICtrlSetFont(-1, 13, 800)
-
-	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlCreateLabel("Version:", 60, 30, 60, -1, $SS_RIGHT)
-	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlCreateLabel($oMain.AppVersion, 125, 30, 65, -1)
-	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
-
-	GUICtrlCreateLabel("License:", 60, 46, 60, -1, $SS_RIGHT)
-	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlCreateLabel("GNU GPL v3", 125, 46, 65, -1)
-	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
-
-	GUICtrlCreateLabel("", 0, 75, $w, 1)
-	GUICtrlSetBkColor(-1, 0x000000)
-
-	$desc = "GuiBuilderPlus is a small, easy to use GUI designer for AutoIt." & @CRLF & @CRLF & _
-			"Originally created as AutoBuilder by the user CyberSlug," & @CRLF & _
-			"enhanced as GuiBuilder by TheSaint," & @CRLF & _
-			"and further enhanced and expanded as GuiBuilderNxt by jaberwacky," & @CRLF & _
-			"with additional modifications by kurtykurtyboy as GuiBuilderPlus," & @CRLF & @CRLF & _
-			"GuiBuilderPlus is a continuation of the great work started by others," & @CRLF & _
-			"with a focus on increased stability and usability followed by new features."
-	GUICtrlCreateLabel($desc, 10, 85, $w - 16, 135)
-	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
-
-;~ 	$desc = "Originally created as AutoBuilder by the user CyberSlug," & @CRLF & _
-;~ 		"enhanced as GuiBuilder by TheSaint," & @CRLF & _
-;~ 		"and further enhanced and expanded as GuiBuilderNxt by jaberwacky," & @CRLF & _
-;~ 		"with additional modifications by kurtykurtyboy as GuiBuilderPlus," & @CRLF & _
-;~ 		"GuiBuilderPlus is a continuation of the great work started by others," & @CRLF & _
-;~ 		"with a focus on increased stability and usability followed by new features."
-;~ 	GUICtrlCreateLabel($desc, 10, 115, $w - 16, 100)
-;~ 	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
-
-	; bottom section
-
-	$bt_AboutOk = GUICtrlCreateButton("OK", $w - 55, $h - 27, 50, 22)
-	GUICtrlSetOnEvent(-1, "_onExitAbout")
-
-	GUISetState(@SW_DISABLE, $hGUI)
-	GUISetState(@SW_SHOW, $hAbout)
-
+	_formAbout()
 EndFunc   ;==>_menu_about
 
-Func _onExitAbout()
-	GUIDelete($hAbout)
-	GUISetState(@SW_ENABLE, $hGUI)
-	GUISwitch($hGUI)
-EndFunc   ;==>_onExitAbout
-
-Func _menu_vals()
-	Local Const $ctrl_count = $oCtrls.count
-
-	Local $values = "Total Of Controls = " & $ctrl_count & @CRLF & @CRLF
-
-	For $oCtrl In $oCtrls.ctrls.Items()
-
-		$values &= "Handle = " & Hex($oCtrl.Hwnd) & @CRLF & _
-				"Type   = " & $oCtrl.Type & @CRLF & _
-				"Name   = " & $oCtrl.Name & @CRLF & @CRLF
-	Next
-
-	MsgBox($MB_ICONINFORMATION, "Current Code Values", $values)
-EndFunc   ;==>_menu_vals
-
-
-#EndRegion ; menu bar items
-
-
-#Region event-item
 ;------------------------------------------------------------------------------
 ; Title...........: _onContextMenu_Event
 ; Description.....: Call the context menu event function
 ; Events..........: Context menu item
 ;------------------------------------------------------------------------------
 Func _onContextMenu_Event()
-	_formEventEntry()
+	_formEventCode()
 EndFunc   ;==>_onContextMenu_Event
 
+
 ;------------------------------------------------------------------------------
-; Title...........: _formEventEntry
-; Description.....: Create the event form to enter custom code
+; Title...........: _onMenuRecent
+; Description.....: Call the menu event function
+; Events..........: menu item
 ;------------------------------------------------------------------------------
-Func _formEventEntry()
-	$w = 350
-	$h = 265
-	$footH = 32
+Func _onMenuRecent()
+	Local $sText = GUICtrlRead(@GUI_CtrlId, $GUI_READ_EXTENDED)
+	Local $sFilename = StringRegExpReplace($sText, '^\d+ ', "", 1)
 
-	$hEvent = GUICreate("Event Code", $w, $h, Default, Default, $WS_CAPTION, -1, $hGUI)
-	GUISetOnEvent($GUI_EVENT_CLOSE, "_onEventExit")
+	_load_gui_definition($sFilename)
+EndFunc   ;==>_onMenuRecent
 
-	; top section
-
-	GUICtrlCreateLabel("", 0, 0, $w, $h - 32)
-	GUICtrlSetBkColor(-1, 0xFFFFFF)
-	GUICtrlSetState(-1, $GUI_DISABLE)
-
-	GUICtrlCreateLabel("", 5, 5, $w - 10, $h - $footH - 10)
-	GUICtrlSetBkColor(-1, 0x555555)
-	GUICtrlSetState(-1, $GUI_DISABLE)
-	$editEventCode = GUICtrlCreateEdit($oSelected.getFirst().CodeString, 5 + 1, 5 + 1, $w - 12, $h - $footH - 12, BitOR($ES_WANTRETURN, $WS_VSCROLL, $ES_AUTOVSCROLL), 0)
+#EndRegion ; menu bar items
 
 
-	; bottom section
-
-	GUICtrlCreateLabel("", 0, $h - $footH, $w, 1)
-	GUICtrlSetBkColor(-1, 0x000000)
-
-	Local $bt_Save = GUICtrlCreateButton("Save", $w - 55, $h - $footH + 5, 50, 22)
-	GUICtrlSetOnEvent(-1, "_onEventSave")
-
-	Local $bt_Exit = GUICtrlCreateButton("Cancel", $w - 55 - 55, $h - $footH + 5, 50, 22)
-	GUICtrlSetOnEvent(-1, "_onEventExit")
-
-	GUISetState(@SW_DISABLE, $hGUI)
-	GUISetState(@SW_SHOW, $hEvent)
-
-EndFunc   ;==>_formEventEntry
-
-Func _onEventSave()
-	Local $sCode = GUICtrlRead($editEventCode)
-
-	;update the undo action stack
-	Local $oAction = _objAction()
-	$oAction.action = $action_changeCode
-	$oAction.ctrls = $oSelected.ctrls.Items()
-	Local $aParams[$oSelected.ctrls.Count]
-	Local $aParam[2]
-	For $i = 0 To UBound($oAction.ctrls) - 1
-		$aParam[0] = $oAction.ctrls[$i].CodeString
-		$aParam[1] = $sCode
-		$aParams[$i] = $aParam
-	Next
-	$oAction.parameters = $aParams
-	_updateActionStacks($oAction)
-
-
-	For $oCtrl In $oSelected.ctrls.Items()
-		$oCtrl.CodeString = $sCode
+Func _addToRecentFiles($sFilename)
+	;delete previous menu items and separator + exit
+	For $i = 0 To UBound($aMenuRecentList) - 1
+		If $aMenuRecentList[$i] <> 0 Then
+			GUICtrlDelete($aMenuRecentList[$i])
+		EndIf
 	Next
 
-	_onEventExit()
-	_refreshGenerateCode()
-EndFunc   ;==>_onEventSave
+	;rearrange the recent files list
+	Local $aRecentFiles = IniReadSection($sIniPath, "Recent")
+	If Not @error Then
+		Local $aNewList[$aRecentFiles[0][0] + 1][2]
+		$aNewList[0][0] = $aRecentFiles[0][0]
+		$aNewList[1][0] = 1
+		$aNewList[1][1] = $sFilename
+		Local $index = 2
+		Local $exists = False
 
-Func _onEventExit()
-	GUIDelete($hEvent)
-	GUISetState(@SW_ENABLE, $hGUI)
-	GUISwitch($hGUI)
-EndFunc   ;==>_onEventExit
+		For $i = 1 To $aRecentFiles[0][0]
+			If $index > $aRecentFiles[0][0] Then
+				If $aRecentFiles[0][0] < 10 And $aRecentFiles[$i][1] <> $sFilename Then
+					ReDim $aNewList[$aNewList[0][0] + 2][2]
+					$aNewList[0][0] = $aRecentFiles[0][0] + 1
+					$aNewList[$index][0] = $index
+					$aNewList[$index][1] = $aRecentFiles[$i][1]
+				EndIf
+				ExitLoop
+			EndIf
+			If $aRecentFiles[$i][1] <> $sFilename Then
+				$aNewList[$index][0] = $index
+				$aNewList[$index][1] = $aRecentFiles[$i][1]
+				$index += 1
+			EndIf
+		Next
+	Else
+		Local $aNewList[2][2]
+		$aNewList[0][0] = 1
+		$aNewList[1][0] = 1
+		$aNewList[1][1] = $sFilename
+	EndIf
 
-#EndRegion event-item
+	;build menu from new list
+	For $i = 1 To 10
+		If $i > $aNewList[0][0] Then
+			$aMenuRecentList[$i - 1] = 0
+		Else
+			$aMenuRecentList[$i - 1] = GUICtrlCreateMenuItem($i & " " & $aNewList[$i][1], $menu_file)
+			GUICtrlSetOnEvent(-1, "_onMenuRecent")
+		EndIf
+	Next
+	$aMenuRecentList[10] = GUICtrlCreateMenuItem("", $menu_file)
+	$aMenuRecentList[11] = GUICtrlCreateMenuItem("Exit", $menu_file)
+	GUICtrlSetOnEvent(-1, "_onExit")
+
+	;write list to ini file
+	IniWriteSection($sIniPath, "Recent", $aNewList)
+EndFunc   ;==>_addToRecentFiles
 
 
 ; #FUNCTION# ====================================================================================================================
@@ -3538,3 +3838,31 @@ Func _memoryToPic($idPic, $name)
 	_WinAPI_DeleteObject($hBmp)
 	Return 0
 EndFunc   ;==>_memoryToPic
+
+
+Func _display_selection_rect(Const $oRect)
+	GUISwitch($hGUI)
+	If GUICtrlGetHandle($overlay) <> -1 Then
+		GUICtrlDelete($overlay)
+		$overlay = -1
+	EndIf
+	$overlay = GUICtrlCreateGraphic($oRect.Left, $oRect.Top, $oRect.Width, $oRect.Height)
+	GUICtrlSetState(-1, $GUI_DISABLE)
+	GUICtrlSetGraphic($overlay, $GUI_GR_RECT, 0, 0, $oRect.Width, $oRect.Height)
+	GUICtrlSetGraphic($overlay, $GUI_GR_REFRESH)
+	GUICtrlSetGraphic($background, $GUI_GR_REFRESH)
+	GUISwitch($hGUI)
+EndFunc   ;==>_display_selection_rect
+
+Func _recall_overlay()
+	GUISwitch($hGUI)
+
+	If $overlay <> -1 Then
+		GUICtrlDelete($overlay)
+		$overlay = -1
+
+		$overlay = GUICtrlCreateGraphic(0, 0, 0, 0)
+		GUICtrlSetState(-1, $GUI_DISABLE)
+	EndIf
+	GUISwitch($hGUI)
+EndFunc   ;==>_recall_overlay

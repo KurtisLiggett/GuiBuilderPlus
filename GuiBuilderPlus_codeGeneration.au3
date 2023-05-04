@@ -15,8 +15,8 @@ Func _code_generation()
 	;get options
 ;~ 	Local $bAddDpiScale = $setting_dpi_scaling
 	Local $bAddDpiScale = False
-	Local $bOnEventMode = $setting_onEvent_mode
-	Local $bGuiFunction = $setting_gui_function
+	Local $bOnEventMode = $oOptions.eventMode
+	Local $bGuiFunction = $oOptions.guiInFunction
 
 	Local $sDpiScale = ""
 	If $bAddDpiScale Then
@@ -294,7 +294,9 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '(' & $ltwh & $ctrlStyle & ')' & @CRLF
 
 		Case "Icon" ; extra iconid [set to zero]
-			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", 0, ' & $ltwh & $ctrlStyle & ')' & @CRLF
+;~ 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", 0, ' & $ltwh & $ctrlStyle & ')' & @CRLF
+			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("", -1, ' & $ltwh & $ctrlStyle & ')' & @CRLF
+			$mControls &= "GUICtrlSetImage(-1, " & '"' & $oCtrl.Img & '")' & @CRLF
 
 		Case "Tab"
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '(' & $ltwh & $ctrlStyle & ')' & @CRLF
@@ -314,12 +316,12 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 			$mControls &= 'GUICtrlCreateTabItem("")' & @CRLF & @CRLF
 
 		Case "Updown"
-			$mControls &= "GUICtrlCreateInput" & '("' & $oCtrl.Text & '", ' & $ltwh & $ctrlStyle & ')' & @CRLF
-			$mControls &= "GUICtrlCreateUpdown(-1)" & @CRLF
+			$mControls &= "GUICtrlCreateInput" & '("' & $oCtrl.Text & '", ' & $ltwh & ')' & @CRLF
+			$mControls &= "GUICtrlCreateUpdown(-1" & $ctrlStyle & ")" & @CRLF
 
 		Case "Pic"
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("", ' & $ltwh & $ctrlStyle & ')' & @CRLF
-			$mControls &= "GUICtrlSetImage(-1, " & '"' & $samplebmp & '")' & @CRLF
+			$mControls &= "GUICtrlSetImage(-1, " & '"' & $oCtrl.Img & '")' & @CRLF
 
 		Case "Menu"
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '")' & @CRLF
@@ -346,6 +348,69 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 
 			$mControls &= 'GUICtrlCreateGroup("", -99, -99, 1, 1)' & @CRLF & @CRLF
 
+		Case "List"
+			If $oCtrl.Items <> "" Then
+				$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("", ' & $ltwh & $ctrlStyle & ')' & @CRLF
+				$mControls &= 'GuiCtrlSetData(-1, "' & $oCtrl.Items & '")' & @CRLF
+			Else
+				$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & $ctrlStyle & ')' & @CRLF
+			EndIf
+
+		Case "Combo"
+			If $oCtrl.Items <> "" Then
+				$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("", ' & $ltwh & $ctrlStyle & ')' & @CRLF
+				$mControls &= 'GuiCtrlSetData(-1, "' & $oCtrl.Items & '")' & @CRLF
+			Else
+				$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & $ctrlStyle & ')' & @CRLF
+			EndIf
+
+		Case "Rect"
+			$mControls &= 'GUICtrlCreateGraphic(' & $ltwh & $ctrlStyle & ')' & @CRLF
+			Local $border, $back
+			If $oCtrl.BorderColor <> -1 Then
+				$border = '0x' & Hex($oCtrl.BorderColor, 6)
+			Else
+				$border = '0x000000'
+			EndIf
+			If $oCtrl.background <> -1 Then
+				$back = ', 0x' & Hex($oCtrl.background, 6)
+			Else
+				$back = ''
+			EndIf
+			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_PENSIZE, ' & $oCtrl.BorderSize & ')' & @CRLF
+			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_COLOR, ' & $border & $back & ')' & @CRLF
+			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_RECT, 0, 0, ' & $oCtrl.Width & ', ' & $oCtrl.Height & ')' & @CRLF
+
+		Case "Ellipse"
+			$mControls &= 'GUICtrlCreateGraphic(' & $ltwh & $ctrlStyle & ')' & @CRLF
+			Local $border, $back
+			If $oCtrl.BorderColor <> -1 Then
+				$border = '0x' & Hex($oCtrl.BorderColor, 6)
+			Else
+				$border = '0x000000'
+			EndIf
+			If $oCtrl.background <> -1 Then
+				$back = ', 0x' & Hex($oCtrl.background, 6)
+			Else
+				$back = ''
+			EndIf
+			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_PENSIZE, ' & $oCtrl.BorderSize & ')' & @CRLF
+			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_COLOR, ' & $border & $back & ')' & @CRLF
+			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_ELLIPSE, 0, 0, ' & $oCtrl.Width & ', ' & $oCtrl.Height & ')' & @CRLF
+
+		Case "Line"
+			$mControls &= 'GUICtrlCreateGraphic(' & $ltwh & $ctrlStyle & ')' & @CRLF
+			Local $border
+			If $oCtrl.BorderColor <> -1 Then
+				$border = '0x' & Hex($oCtrl.BorderColor, 6)
+			Else
+				$border = '0x000000'
+			EndIf
+			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_PENSIZE, ' & $oCtrl.BorderSize & ')' & @CRLF
+			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_COLOR, ' & $border & ')' & @CRLF
+			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_MOVE, ' & $oCtrl.Coord1[0] & ', ' & $oCtrl.Coord1[1] & ')' & @CRLF
+			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_LINE, ' & $oCtrl.Coord2[0] & ', ' & $oCtrl.Coord2[1] & ')' & @CRLF
+
 		Case Else
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & $ctrlStyle & ')' & @CRLF
 	EndSwitch
@@ -356,11 +421,35 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 		EndIf
 	EndIf
 
-	If $oCtrl.FontSize <> "" And $oCtrl.FontSize <> -1 And $oCtrl.FontSize <> 8.5 Then
-		If $oCtrl.Type = "IP" Then
-			$mControls &= '_GUICtrlIpAddress_SetFont($' & $oCtrl.Name & ', "Arial", ' & $oCtrl.FontSize & ')' & @CRLF
+	If ($oCtrl.FontSize <> "" And $oCtrl.FontSize <> -1 And $oCtrl.FontSize <> 8.5) Or $oCtrl.FontWeight <> 400 Or $oCtrl.FontName <> "" Then
+		Local $iFs, $sFw = "", $sFn = ""
+		If $oCtrl.FontName <> "" Then
+			$sFn = ', "' & $oCtrl.FontName & '"'
+		EndIf
+
+		If $oCtrl.FontWeight <> 400 Then
+			$sFw = ", " & $oCtrl.FontWeight
+		EndIf
+
+		If $oCtrl.FontSize = "" Or $oCtrl.FontSize = -1 Then
+			$iFs = 8.5
 		Else
-			$mControls &= 'GUICtrlSetFont(-1, ' & $oCtrl.FontSize & ')' & @CRLF
+			$iFs = $oCtrl.FontSize
+		EndIf
+
+		If $oCtrl.Type = "IP" Then
+			If $sFn = "" Then
+				$sFn = ', "Arial"'
+			EndIf
+			$mControls &= '_GUICtrlIpAddress_SetFont($' & $oCtrl.Name & $sFn & ', ' & $iFs & $sFw & ')' & @CRLF
+		Else
+			If $sFn <> "" Then
+				$sFn = ', $GUI_FONTNORMAL' & $sFn
+				If $sFw = "" Then
+					$sFn = ', 400' & $sFn
+				EndIf
+			EndIf
+			$mControls &= 'GUICtrlSetFont(-1, ' & $iFs & $sFw & $sFn & ')' & @CRLF
 		EndIf
 	EndIf
 
@@ -368,7 +457,12 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 		$mControls &= "GUICtrlSetColor(-1, 0x" & Hex($oCtrl.Color, 6) & ")" & @CRLF
 	EndIf
 	If $oCtrl.Background <> -1 Then
-		$mControls &= "GUICtrlSetBkColor(-1, 0x" & Hex($oCtrl.Background, 6) & ")" & @CRLF
+		Switch $oCtrl.Type
+			Case "Rect", "Ellipse", "Line"
+
+			Case Else
+				$mControls &= "GUICtrlSetBkColor(-1, 0x" & Hex($oCtrl.Background, 6) & ")" & @CRLF
+		EndSwitch
 	EndIf
 
 	$aRet[0] = $mControls
@@ -512,6 +606,12 @@ Func _generate_includes(Const $oCtrl, Const $includes)
 	If StringInStr($oCtrl.styleString, "LVS_") Then
 		If Not StringInStr($includes, "<ListViewConstants.au3>") Then
 			Return @CRLF & "#include <ListViewConstants.au3>"
+		EndIf
+	EndIf
+
+	If $oCtrl.Type = "IP" Then
+		If Not StringInStr($includes, "<GuiIPAddress.au3>") Then
+			Return @CRLF & "#include <GuiIPAddress.au3>"
 		EndIf
 	EndIf
 

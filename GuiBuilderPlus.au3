@@ -3,7 +3,7 @@
 
 ; #HEADER# ======================================================================================================================
 ; Title .........: GUIBuilderPlus
-; AutoIt Version : 3.3.14.5
+; AutoIt Version : 3.3.16.0
 ; Description ...: Build GUI with GUI based heavily on GuiBuilderNxt
 ;
 ; Remarks .......:
@@ -15,15 +15,29 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  04/03/2023 ...:	- ADDED:	Add events to controls (right-click menu or double click)
-;					- ADDED:	Add options to code preview window for convenience
-;					- FIXED:	Could not 'undo' drawing of new control
-;
-;  09/19/2022 ...:	- CHANGED:	More sophisticated handling of AutoIt3.exe location
-;  03/29/2023 ...:	- ADDED:	Undo / redo functionality
-;					- ADDED:	Change window title to match Title property
-;					- FIXED:	Jumping while resizing
-;					- UPDATED:	Updated About dialog
+;  05/02/2023 ...:
+;					- FIXED:	HUGE reduction in flickering overall
+;					- FIXED:	Missing include file for IP Address control
+;					- FIXED:	Bug opening a saved file with no controls
+;					- FIXED:	Bug applying styles to UpDown control
+;					- FIXED:	Fixed shortcut keys in some situations
+;					- ADDED:	New settings dialog
+;					- ADDED:	New setting: Adjustable grid size - default now set to 5px
+;					- ADDED:	Syntax Highlighting in code window (RESH UDF by Beege)
+;					- ADDED:	Full help file
+;					- ADDED:	Font Name property
+;					- ADDED:	Font weight property
+;					- ADDED:	Items property for combobox and listbox
+;					- ADDED:	Add recently opened files list to File menu
+;					- ADDED:	Rectangle, ellipse, and line graphics
+;					- UPDATED:	Added collapsible font properties
+;					- UPDATED:	Moved "Show grid" from Settings menu to View menu
+;					- UPDATED:	Allow background/foreground colors for Edit and Input controls
+;					- UPDATED:	Ctrl+arrow now moves 1 grid space instead of 10px
+;					- UPDATED:	Control selection window is now the parent (main) window
+;					- UPDATED:	Z-order of controls is now updated visually in real time when moved up/down the list
+;					- UPDATED:	Better handling of Pic and Icon resizing
+;					- UPDATED:	Behind-the-scenes code improvements
 ;
 ; Roadmap .......:	- Finish control properties tabs
 ;					- Windows' theme support
@@ -35,7 +49,7 @@
 #AutoIt3Wrapper_Res_HiDpi=y
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.0.0-beta5.exe
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.0.0.exe
 #AutoIt3Wrapper_Res_Fileversion=1.0.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 1.ico
@@ -61,6 +75,9 @@
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 21.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 22.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 23.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 24.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 25.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 26.ico
 
 Opt("WinTitleMatchMode", 4) ; advanced
 Opt("MouseCoordMode", 2)
@@ -73,11 +90,14 @@ Global $debug = True
 
 #Region ; globals
 ;GUI components
-Global $hGUI, $hToolbar, $hFormGenerateCode, $hFormObjectExplorer, $hStatusbar, $hAbout, $hEvent
+Global $hGUI, $hToolbar, $hFormGenerateCode, $hFormObjectExplorer, $hStatusbar, $hAbout, $hEvent, $hSettings, $hFormHolder
 Global $iGuiFrameH, $iGuiFrameW, $defaultGuiBkColor = 0xF0F0F0
-Global $menu_wipe, $contextmenu_lock
+Global $button_graphic
+Global $menu_wipe, $contextmenu_lock, $menu_helpchm
+;File menu
+Global $menu_file, $aMenuRecentList[12]
 ;Settings menu
-Global $menu_show_grid, $menu_grid_snap, $menu_paste_pos, $menu_show_ctrl, $menu_show_hidden, $menu_dpi_scaling, $menu_gui_function, $menu_onEvent_mode
+Global $menu_show_grid
 ;View menu
 Global $menu_generateCode, $menu_ObjectExplorer
 ;Background
@@ -91,22 +111,28 @@ Global $editCodeGeneration, $radio_msgMode, $radio_eventMode, $check_guiFunc
 Global $lvObjects, $labelObjectCount, $childSelected
 ;control events popup
 Global $editEventCode
+;settings popup
+Global $settingsChk_snapgrid, $settingsChk_pasteatmouse, $settingsChk_guifunction, $settingsChk_eventmode, $settingsInput_gridsize
+;list items popup
+Global $hListItems, $editListItems
 
 ;Property Inspector
 Global $oProperties_Main, $oProperties_Ctrls, $tabSelected, $tabProperties, $tabStyles, $tabStylesHwnd
+Global $properties_fontButton, $properties_borderButton
 
 ;GUI Constants
-Global Const $grid_ticks = 10
 Global Const $iconset = @ScriptDir & "\resources\Icons\" ; Added by: TheSaint
 Global Enum $mode_default, $mode_draw, $mode_drawing, $mode_init_move, $mode_init_selection, $mode_paste, _
 		$resize_nw, $resize_n, $resize_ne, $resize_e, $resize_se, $resize_s, $resize_sw, $resize_w
 Global Enum $props_Main, $props_Ctrls
 ; Cursor Consts - added by: Jaberwacky
 Global Const $ARROW = 2, $CROSS = 3, $SIZE_ALL = 9, $SIZENESW = 10, $SIZENS = 11, $SIZENWSE = 12, $SIZEWS = 13
-Global Enum $action_nudgeCtrl, $action_moveCtrl, $action_resizeCtrl, $action_deleteCtrl, $action_createCtrl, $action_renameCtrl, $action_changeColor, $action_changeBkColor, $action_pasteCtrl, $action_changeText, $action_changeCode, $action_drawCtrl
+Global Enum $action_nudgeCtrl, $action_moveCtrl, $action_resizeCtrl, $action_deleteCtrl, $action_createCtrl, $action_renameCtrl, $action_changeColor, $action_changeBkColor, $action_pasteCtrl, _
+		$action_changeText, $action_changeCode, $action_drawCtrl, $action_changeBorderColor, $action_changeBorderSize
 
 ;other variables
 Global $bStatusNewMessage
+Global $guiFontName
 Global $right_click = False
 Global $left_click = False, $ctrlClicked = False
 Global $bResizedFlag
@@ -117,15 +143,15 @@ Global $hSelectionGraphic = -1
 Global $dblClickTime
 
 ;Control Objects
-Global $oMain, $oCtrls, $oSelected, $oClipboard, $oMouse
+Global $oMain, $oCtrls, $oSelected, $oClipboard, $oMouse, $oOptions
 Global $aStackUndo[0], $aStackRedo[0]
 
 ; added by: TheSaint (most are my own, others just not declared)
 Global $AgdOutFile, $lfld, $mygui
-Global $setting_snap_grid, $setting_paste_pos, $setting_show_control, $setting_show_hidden, $setting_dpi_scaling, $setting_gui_function, $setting_onEvent_mode
 
 Global $sampleavi = @ScriptDir & "\resources\sampleAVI.avi"
 Global $samplebmp = @ScriptDir & "\resources\SampleImage.bmp"
+Global $sampleicon = @ScriptDir & "\resources\icons\icon.ico"
 Global $sIniPath = @ScriptDir & "\storage\GUIBuilderPlus.ini"
 #EndRegion ; globals
 
@@ -141,6 +167,8 @@ _AutoItObject_StartUp()
 #include <FileConstants.au3>
 #include <FontConstants.au3>
 #include <GuiConstantsEx.au3>
+#include <ComboConstants.au3>
+#include <GuiComboBox.au3>
 #include <GuiTab.au3>
 #include <GuiListView.au3>
 #include <GuiIPAddress.au3>
@@ -165,6 +193,8 @@ _AutoItObject_StartUp()
 #include "UDFS\Json\json.au3"
 #include "UDFS\GUIScrollbars_Ex.au3"
 #include "UDFs\StringSize.au3"
+#include "UDFs\RESH.au3"
+#include "GuiBuilderPlus_objOptions.au3"
 #include "GuiBuilderPlus_objCtrl.au3"
 #include "GuiBuilderPlus_objProperties.au3"
 #include "GuiBuilderPlus_CtrlMgmt.au3"
@@ -174,6 +204,10 @@ _AutoItObject_StartUp()
 #include "GuiBuilderPlus_formPropertyInspector.au3"
 #include "GuiBuilderPlus_formGenerateCode.au3"
 #include "GuiBuilderPlus_formObjectExplorer.au3"
+#include "GuiBuilderPlus_formAbout.au3"
+#include "GuiBuilderPlus_formEventCode.au3"
+#include "GuiBuilderPlus_formSettings.au3"
+#include "GuiBuilderPlus_formListItems.au3"
 #EndRegion ; includes
 
 
@@ -206,7 +240,7 @@ Func _main()
 	$oClipboard = _objCtrls()
 	$oMain = _objMain()
 	$oMain.AppName = "GuiBuilderPlus"
-	$oMain.AppVersion = "1.0.0-beta4"
+	$oMain.AppVersion = "1.0.0"
 	$oMain.Title = StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1)
 	$oMain.Name = "hGUI"
 	$oMain.Width = 400
@@ -220,11 +254,14 @@ Func _main()
 	$oProperties_Main = _objProperties()
 	$oProperties_Ctrls = _objProperties()
 
-	;make the main program GUI
-	_formMain()
+	;create options object
+	$oOptions = _objOptions()
 
 	;make the toolbar/properties GUI
 	_formToolbar()
+
+	;make the form GUI
+	_formMain()
 
 	_set_accelerators()
 
@@ -235,11 +272,11 @@ Func _main()
 
 
 	;load the extra toolbars
-	If BitAND(GUICtrlRead($menu_ObjectExplorer), $GUI_CHECKED) = $GUI_CHECKED Then
+	If $oOptions.ShowObjectExplorer Then
 		_formObjectExplorer()
 	EndIf
 
-	If BitAND(GUICtrlRead($menu_generateCode), $GUI_CHECKED) = $GUI_CHECKED Then
+	If $oOptions.showCodeViewer Then
 		_formGenerateCode()
 	EndIf
 
@@ -250,7 +287,6 @@ Func _main()
 	$bResizedFlag = 0
 	GUISetState(@SW_SHOWNOACTIVATE, $hFormObjectExplorer)
 	GUISetState(@SW_SHOWNOACTIVATE, $hFormGenerateCode)
-	_GUICtrlEdit_SetSel($editCodeGeneration, 0, 0)
 	GUISwitch($hGUI)
 
 	;check au3 exe path
@@ -357,72 +393,47 @@ EndFunc   ;==>_get_script_title
 ; Description.....: Read and initialize INI file settings
 ;------------------------------------------------------------------------------
 Func _initialize_settings()
-;~ 	_disable_control_properties_gui()
 
-	Local $bShowGrid = True
-	Local $bPastePos = True
-	Local $bGridSnap = True
-	Local $bShowControl = True
-	Local $bShowHidden = False
-	Local $bShowCode = False
-	Local $bShowObjectExplorer = False
-	Local $bDpiScaling = False
-	Local $bGuiFunction = False
-	Local $bOnEventMode = False
-
+	$oOptions.GridSize = 5
 	Local $aSettings = IniReadSection($sIniPath, "Settings")
+
 	If Not @error Then
 		For $i = 1 To $aSettings[0][0]
 			Switch $aSettings[$i][0]
 				Case "ShowGrid"
-					$bShowGrid = ($aSettings[$i][1] = 1) ? True : False
+					$oOptions.showGrid = ($aSettings[$i][1] = 1) ? True : False
 				Case "PastePos"
-					$bPastePos = ($aSettings[$i][1] = 1) ? True : False
+					$oOptions.pasteAtMouse = ($aSettings[$i][1] = 1) ? True : False
 				Case "GridSnap"
-					$bGridSnap = ($aSettings[$i][1] = 1) ? True : False
-				Case "ShowControl"
-					$bShowControl = ($aSettings[$i][1] = 1) ? True : False
-				Case "ShowHidden"
-					$bShowHidden = ($aSettings[$i][1] = 1) ? True : False
+					$oOptions.snapGrid = ($aSettings[$i][1] = 1) ? True : False
 				Case "ShowCode"
-					$bShowCode = ($aSettings[$i][1] = 1) ? True : False
+					$oOptions.showCodeViewer = ($aSettings[$i][1] = 1) ? True : False
 				Case "ShowObjectExplorer"
-					$bShowObjectExplorer = ($aSettings[$i][1] = 1) ? True : False
-				Case "DpiScaling"
-					$bDpiScaling = ($aSettings[$i][1] = 1) ? True : False
+					$oOptions.showObjectExplorer = ($aSettings[$i][1] = 1) ? True : False
 				Case "GuiInFunction"
-					$bGuiFunction = ($aSettings[$i][1] = 1) ? True : False
+					$oOptions.guiInFunction = ($aSettings[$i][1] = 1) ? True : False
 				Case "OnEventMode"
-					$bOnEventMode = ($aSettings[$i][1] = 1) ? True : False
+					$oOptions.eventMode = ($aSettings[$i][1] = 1) ? True : False
+				Case "GridSize"
+					$oOptions.GridSize = $aSettings[$i][1]
 			EndSwitch
 		Next
+	Else
+		$oOptions.showGrid = True
+		$oOptions.pasteAtMouse = True
+		$oOptions.guiInFunction = True
+		$oOptions.eventMode = False
 	EndIf
 
-	If $bShowGrid Then
+	If $oOptions.showGrid Then
 		_show_grid($background, $oMain.Width, $oMain.Height)
 	Else
 		_hide_grid($background)
 	EndIf
-	_setting_show_grid(True, $bShowGrid)
 
-	_setCheckedState($menu_show_grid, $bShowGrid)
-	_setCheckedState($menu_paste_pos, $bPastePos)
-	_setCheckedState($menu_grid_snap, $bGridSnap)
-	_setCheckedState($menu_show_ctrl, $bShowControl)
-	_setCheckedState($menu_show_hidden, $bShowHidden)
-	_setCheckedState($menu_generateCode, $bShowCode)
-	_setCheckedState($menu_ObjectExplorer, $bShowObjectExplorer)
-	_setCheckedState($menu_dpi_scaling, $bDpiScaling)
-	_setCheckedState($menu_onEvent_mode, $bOnEventMode)
-	_setCheckedState($menu_gui_function, $bGuiFunction)
-
-	$setting_paste_pos = $bPastePos
-	$setting_snap_grid = $bGridSnap
-	$setting_show_control = $bShowControl
-	$setting_show_hidden = $bShowHidden
-	$setting_dpi_scaling = $bDpiScaling
-	$setting_onEvent_mode = $bOnEventMode
-	$setting_gui_function = $bGuiFunction
+	_setCheckedState($menu_show_grid, $oOptions.showGrid)
+	_setCheckedState($menu_generateCode, $oOptions.showCodeViewer)
+	_setCheckedState($menu_ObjectExplorer, $oOptions.ShowObjectExplorer)
 
 	If Not FileExists("storage") Then
 		DirCreate("storage")

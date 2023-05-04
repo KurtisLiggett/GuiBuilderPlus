@@ -47,7 +47,7 @@ Func _formObjectExplorer()
 		$y = 1
 	EndIf
 
-	$hFormObjectExplorer = GUICreate("Object Explorer", $w, $h, $x, $y, $WS_SIZEBOX, -1, $hGUI)
+	$hFormObjectExplorer = GUICreate("Object Explorer", $w, $h, $x, $y, $WS_SIZEBOX, -1, $hToolbar)
 	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExitObjectExplorer")
 	Local $titleBarHeight = _WinAPI_GetSystemMetrics($SM_CYCAPTION) + 3
 
@@ -164,7 +164,7 @@ Func _onLvObjectsItem()
 							$i += 1
 						Next
 					EndIf
-				Else	;this is a child
+				Else    ;this is a child
 					Local $aParentText = _GUICtrlTreeView_GetText($lvObjects, $hParent)
 					Local $aParentStrings = StringSplit($aParentText, @TAB)
 					Local $ParentTextHwnd = StringTrimRight(StringTrimLeft($aParentStrings[2], 7), 1)
@@ -193,7 +193,7 @@ Func _onLvObjectsItem()
 
 						Case "Menu"
 							$childSelected = True
-		;~ 					_add_to_selected($oParentCtrl)
+;~ 					_add_to_selected($oParentCtrl)
 							_populate_control_properties_gui($oCtrl, Dec($textHwnd))
 
 					EndSwitch
@@ -255,6 +255,21 @@ Func _onLvMoveUp()
 	If IsObj($oCtrlMove) Then
 		$oCtrls.moveUp($oCtrlMove)
 
+		Local $foundIndex, $nextHwnd
+		For $oThisCtrl In $oCtrls.ctrls.Items()
+			If $foundIndex Then
+				$nextHwnd = $oThisCtrl.Hwnd
+				ExitLoop
+			EndIf
+			If $oThisCtrl.Hwnd = $oCtrlMove.Hwnd Then
+				$foundIndex = True
+			EndIf
+		Next
+		If $foundIndex Then
+			ConsoleWrite("found index" & @CRLF)
+			GuiCtrlSetOnTop($oCtrlMove.Hwnd, $nextHwnd)
+		EndIf
+
 		_refreshGenerateCode()
 		_formObjectExplorer_updateList()
 
@@ -274,6 +289,21 @@ Func _onLvMoveDown()
 
 	If IsObj($oCtrlMove) Then
 		$oCtrls.moveDown($oCtrlMove)
+
+		Local $foundIndex, $nextHwnd
+		For $oThisCtrl In $oCtrls.ctrls.Items()
+			If $foundIndex Then
+				$nextHwnd = $oThisCtrl.Hwnd
+				ExitLoop
+			EndIf
+			If $oThisCtrl.Hwnd = $oCtrlMove.Hwnd Then
+				$foundIndex = True
+			EndIf
+		Next
+		If $foundIndex Then
+			ConsoleWrite("found index" & @CRLF)
+			GuiCtrlSetOnTop($oCtrlMove.Hwnd, $nextHwnd)
+		EndIf
 
 		_refreshGenerateCode()
 		_formObjectExplorer_updateList()
@@ -440,7 +470,11 @@ Func _formObjectExplorer_updateList()
 
 	Local $lvItem, $lvMenu, $lvMenuDelete, $childItem, $tabMenu, $tabMenuDelete, $lvMenuNewTab, $lvMenuDeleteTab, $sName, $childTabCtrl
 	Local $lvMenuNewMenuItem, $menuItemMenu
-	_SendMessage($hFormObjectExplorer, $WM_SETREDRAW, False)
+
+	Local $isVisible = BitAND(WinGetState($hFormObjectExplorer), $WIN_STATE_VISIBLE)
+	If $isVisible Then
+		_SendMessage($hFormObjectExplorer, $WM_SETREDRAW, False)
+	EndIf
 	_GUICtrlTreeView_DeleteAll($lvObjects)
 	For $oCtrl In $oCtrls.ctrls.Items()
 		If $oCtrl.Type = "TabItem" Then ContinueLoop
@@ -527,8 +561,10 @@ Func _formObjectExplorer_updateList()
 		EndSwitch
 	Next
 
-	_SendMessage($hFormObjectExplorer, $WM_SETREDRAW, True)
-	_WinAPI_RedrawWindow($hFormObjectExplorer)
+	If $isVisible Then
+		_SendMessage($hFormObjectExplorer, $WM_SETREDRAW, True)
+		_WinAPI_RedrawWindow($hFormObjectExplorer)
+	EndIf
 
 	If StringStripWS($count, $STR_STRIPALL) = "" Then $count = 0
 	GUICtrlSetData($labelObjectCount, "Object Count: " & $count)
