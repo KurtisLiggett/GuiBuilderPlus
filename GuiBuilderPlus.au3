@@ -15,29 +15,8 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  05/02/2023 ...:
-;					- FIXED:	HUGE reduction in flickering overall
-;					- FIXED:	Missing include file for IP Address control
-;					- FIXED:	Bug opening a saved file with no controls
-;					- FIXED:	Bug applying styles to UpDown control
-;					- FIXED:	Fixed shortcut keys in some situations
-;					- ADDED:	New settings dialog
-;					- ADDED:	New setting: Adjustable grid size - default now set to 5px
-;					- ADDED:	Syntax Highlighting in code window (RESH UDF by Beege)
-;					- ADDED:	Full help file
-;					- ADDED:	Font Name property
-;					- ADDED:	Font weight property
-;					- ADDED:	Items property for combobox and listbox
-;					- ADDED:	Add recently opened files list to File menu
-;					- ADDED:	Rectangle, ellipse, and line graphics
-;					- UPDATED:	Added collapsible font properties
-;					- UPDATED:	Moved "Show grid" from Settings menu to View menu
-;					- UPDATED:	Allow background/foreground colors for Edit and Input controls
-;					- UPDATED:	Ctrl+arrow now moves 1 grid space instead of 10px
-;					- UPDATED:	Control selection window is now the parent (main) window
-;					- UPDATED:	Z-order of controls is now updated visually in real time when moved up/down the list
-;					- UPDATED:	Better handling of Pic and Icon resizing
-;					- UPDATED:	Behind-the-scenes code improvements
+;  05/04/2023 ...:
+;					- FIXED:	Bug when resizing the Code Generation window
 ;
 ; Roadmap .......:	- Finish control properties tabs
 ;					- Windows' theme support
@@ -106,7 +85,7 @@ Global $overlay = -1, $overlay_contextmenu, $overlay_contextmenutab
 ;grippys
 ;~ Global $NorthWest_Grippy, $North_Grippy, $NorthEast_Grippy, $West_Grippy, $East_Grippy, $SouthWest_Grippy, $South_Grippy, $SouthEast_Grippy
 ;code generation popup
-Global $editCodeGeneration, $radio_msgMode, $radio_eventMode, $check_guiFunc
+Global $editCodeGeneration, $radio_msgMode, $radio_eventMode, $check_guiFunc, $labelCodeGeneration
 ;object explorer popup
 Global $lvObjects, $labelObjectCount, $childSelected
 ;control events popup

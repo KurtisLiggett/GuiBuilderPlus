@@ -726,9 +726,18 @@ EndFunc   ;==>_onRestore
 ; Events..........: Called while dragging window to resize
 ;------------------------------------------------------------------------------
 Func _WM_SIZE($hWnd, $Msg, $wParam, $lParam)
-	If $hWnd <> $hGUI Then Return $GUI_RUNDEFMSG
+	Switch $hWnd
+		Case $hGUI
+			$bResizedFlag = 1
 
-	$bResizedFlag = 1
+		Case $hFormGenerateCode
+			Local $aPos = ControlGetPos($hFormGenerateCode, "", $labelCodeGeneration)
+			WinMove($editCodeGeneration, "", $aPos[0], $aPos[1], $aPos[2], $aPos[3])
+
+		Case Else
+			Return $GUI_RUNDEFMSG
+
+	EndSwitch
 
 	Return $GUI_RUNDEFMSG
 EndFunc   ;==>_WM_SIZE
