@@ -17,6 +17,7 @@
 ; Latest Revisions
 ;  05/04/2023 ...:
 ;					- FIXED:	Bug when resizing the Code Generation window
+;					- FIXED:	More seamless positioning of resize handles when crossing zero
 ;
 ; Roadmap .......:	- Finish control properties tabs
 ;					- Windows' theme support

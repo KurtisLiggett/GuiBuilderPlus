@@ -60,7 +60,8 @@ Func _formGenerateCode()
 	;create invisible lable for resizing
 	$labelCodeGeneration = GUICtrlCreateLabel("", 10, 10, $w - 20, $h - $titleBarHeight - 78)
 	GUICtrlSetResizing(-1, $GUI_DOCKBORDERS)
-	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT )
+	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
+	GUICtrlSetState(-1, $GUI_DISABLE)
 
 	$editCodeGeneration = _GUICtrlRichEdit_Create($hFormGenerateCode, "", 10, 10, $w - 20, $h - $titleBarHeight - 78, BitOR($ES_MULTILINE, $WS_VSCROLL, $WS_HSCROLL, $ES_AUTOVSCROLL))
 	GUICtrlSetFont(-1, 9, -1, -1, "Courier New")
