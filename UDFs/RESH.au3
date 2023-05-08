@@ -108,7 +108,8 @@ Func _RESH_SyntaxHighlight($hRichEdit, $sUpdateFunction = 0, $sNewData = "")
 	_GUICtrlRichEdit_ReplaceText($hRichEdit, '')
 	_GUICtrlRichEdit_SetLimitOnText($hRichEdit, Round(StringLen($sCode) * 1.5))
 
-	_GUICtrlRichEdit_StreamFromVar($hRichEdit, $sCode)
+	_GUICtrlRichEdit_SetText($hRichEdit, $sCode)
+;~ 	_GUICtrlRichEdit_StreamFromVar($hRichEdit, $sCode)
 ;~ 	_GUICtrlRichEdit_AppendTextNoFocus($hRichEdit, $sCode)
 
 	_GUICtrlRichEdit_GotoCharPosNoFocus($hRichEdit, $iStart)
@@ -429,9 +430,9 @@ Func __RESH_ReplaceRichEditTags(ByRef $sCode)
 ;~ 	If $g_RESH_VIEW_TIMES Then ConsoleWrite('ReplaceRichEditTags = ' & TimerDiff($time) & @LF)
 EndFunc   ;==>__RESH_ReplaceRichEditTags
 Func __RESH_HeaderFooter(ByRef $sCode)
-#Tidy_Off
+	#Tidy_Off
 	$sCode = 	"{" 													& _
-					"\rtf1\ansi\ansicpg1252\deff0\deflang1033" 			& _
+					"\rtf1\ansi\ansicpg1252\deff0\deflang1033\deftab416" 			& _
 					"{" 												& _
 						"\fonttbl" 										& _
 						"{" 											& _
