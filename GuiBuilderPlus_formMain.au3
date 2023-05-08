@@ -3851,7 +3851,8 @@ EndFunc   ;==>_memoryToPic
 
 Func _display_selection_rect(Const $oRect)
 	GUISwitch($hGUI)
-	If GUICtrlGetHandle($overlay) <> -1 Then
+
+	If $overlay <> -1 Then
 		GUICtrlDelete($overlay)
 		$overlay = -1
 	EndIf

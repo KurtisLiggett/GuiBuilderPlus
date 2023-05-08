@@ -15,8 +15,9 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  05/04/2023 ...:
+;  05/08/2023 ...:
 ;					- FIXED:	Bug when resizing the Code Generation window
+;					- FIXED:	Bug control randomly disappears
 ;					- FIXED:	More seamless positioning of resize handles when crossing zero
 ;
 ; Roadmap .......:	- Finish control properties tabs
