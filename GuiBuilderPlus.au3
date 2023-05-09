@@ -15,11 +15,12 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  05/08/2023 ...:
+;  05/09/2023 ...:
 ;					- FIXED:	Bug when resizing the Code Generation window
 ;					- FIXED:	Bug control randomly disappears
 ;					- FIXED:	More seamless positioning of resize handles when crossing zero
 ;                   - ADDED:    New property "Image" for Icon and Pic controls with selection dialog
+;                   - UPDATED:  Smaller tab width in code preview
 ;
 ; Roadmap .......:	- Finish control properties tabs
 ;					- Windows' theme support
@@ -28,11 +29,11 @@
 ; ===============================================================================================================================
 
 #Region project-settings
-#AutoIt3Wrapper_Res_HiDpi=y
+#AutoIt3Wrapper_Res_HiDpi=N
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.0.0.exe
-#AutoIt3Wrapper_Res_Fileversion=1.0.0
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.1.0.exe
+#AutoIt3Wrapper_Res_Fileversion=1.1.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 1.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 2.ico
@@ -222,7 +223,7 @@ Func _main()
 	$oClipboard = _objCtrls()
 	$oMain = _objMain()
 	$oMain.AppName = "GuiBuilderPlus"
-	$oMain.AppVersion = "1.0.0"
+	$oMain.AppVersion = "1.1.0"
 	$oMain.Title = StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1)
 	$oMain.Name = "hGUI"
 	$oMain.Width = 400
