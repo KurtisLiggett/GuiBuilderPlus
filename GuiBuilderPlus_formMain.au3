@@ -2398,6 +2398,9 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 		_GUICtrlComboBox_SetCurSel(GUICtrlGetHandle($oProperties_Ctrls.properties.FontName.Hwnd), $selection)
 	EndIf
 
+	;img
+	$oProperties_Ctrls.properties.Img.value = $oCtrl.Img
+
 EndFunc   ;==>_populate_control_properties_gui
 
 
@@ -3075,6 +3078,7 @@ Func _ctrl_change_borderSize()
 	EndSwitch
 
 	_refreshGenerateCode()
+	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_borderSize
 
 
@@ -3115,6 +3119,7 @@ Func _ctrl_change_items()
 	EndSwitch
 
 	_refreshGenerateCode()
+	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_items
 
 
@@ -3149,6 +3154,7 @@ Func _ctrl_change_FontSize()
 	EndSwitch
 
 	_refreshGenerateCode()
+	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_FontSize
 
 Func _ctrl_change_FontWeight()
@@ -3199,6 +3205,7 @@ Func _ctrl_change_FontWeight()
 	EndSwitch
 
 	_refreshGenerateCode()
+	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_FontWeight
 
 Func _ctrl_change_FontName()
@@ -3225,6 +3232,7 @@ Func _ctrl_change_FontName()
 	EndSwitch
 
 	_refreshGenerateCode()
+	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_FontName
 
 
@@ -3294,6 +3302,36 @@ Func _ctrl_change_Color()
 	_refreshGenerateCode()
 	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_Color
+
+
+Func _ctrl_pick_img()
+	Local $filterString = ""
+	If $oSelected.getFirst().Type = "Icon" Then
+		$filterString = "Icon (*.ico)"
+	Else
+		$filterString = "All (*.bmp; *.jpg; *.gif)|Bitmap (*.bmp)|JPEG (*.jpg; *.jpeg)|GIF (*.gif)"
+	EndIf
+
+	Local $ret = FileOpenDialog("Select Image", @ScriptFullPath, $filterString, $FD_FILEMUSTEXIST)
+	If @error Then
+		Return
+	EndIf
+
+	$oProperties_Ctrls.properties.Img.value = $ret
+	_ctrl_change_img()
+EndFunc   ;==>_ctrl_pick_img
+
+Func _ctrl_change_img()
+	For $oCtrl In $oSelected.ctrls.Items()
+		If $oCtrl.Locked Then ContinueLoop
+
+		$oCtrl.Img = $oProperties_Ctrls.properties.Img.value
+		GUICtrlSetImage($oCtrl.Hwnd, $oCtrl.Img, -1)
+	Next
+
+	_refreshGenerateCode()
+	$oMain.hasChanged = True
+EndFunc   ;==>_ctrl_change_img
 
 
 #Region ; states

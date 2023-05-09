@@ -39,6 +39,7 @@ Func _objPropertiesProps()
 	_AutoItObject_AddProperty($oObject, "BorderColor", $ELSCOPE_PUBLIC, _objProperty("BorderColor"))
 	_AutoItObject_AddProperty($oObject, "BorderSize", $ELSCOPE_PUBLIC, _objProperty("BorderSize"))
 	_AutoItObject_AddProperty($oObject, "Items", $ELSCOPE_PUBLIC, _objProperty("Items"))
+	_AutoItObject_AddProperty($oObject, "Img", $ELSCOPE_PUBLIC, _objProperty("Img"))
 
 	Return $oObject
 EndFunc   ;==>_objPropertiesProps

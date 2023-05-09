@@ -5,7 +5,7 @@
 
 
 Global Enum $typeHeading, $typeText, $typeNumber, $typeCheck, $typeColor, $getHeight, $typeReal, $typeComboFW, $typeComboFN
-Global $properties_data[100][10], $properties_fontIndex, $properties_borderIndex, $properties_itemsIndex, $properties_textIndex
+Global $properties_data[100][10], $properties_fontIndex, $properties_borderIndex, $properties_itemsIndex, $properties_textIndex, $properties_imgIndex
 ;------------------------------------------------------------------------------
 ; Title...........: formGenerateCode
 ; Description.....:	Create the code generation GUI
@@ -121,6 +121,8 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	$oProperties_Ctrls.properties.Color.Hwnd = _formPropertyInspector_newitem("Color", $typeColor, 30, -1, -1, -1, "_ctrl_pick_Color", 1, 1, $properties_fontIndex)
 	$oProperties_Ctrls.properties.Global.Hwnd = _formPropertyInspector_newitem("Global", $typeCheck, 20, -1, -1, -1, -1, 1)
 	$oProperties_Ctrls.properties.Height.Hwnd = _formPropertyInspector_newitem("Height", $typeNumber, -1, -1, -1, -1, -1, 1)
+	$oProperties_Ctrls.properties.Img.Hwnd = _formPropertyInspector_newitem("Image", $typeColor, -1, -1, -1, -1, "_ctrl_pick_img", 1)
+	$properties_imgIndex = $properties_data[0][0]
 	$oProperties_Ctrls.properties.Items.Hwnd = _formPropertyInspector_newitem("Items", $typeColor, -1, -1, -1, -1, "_formListItems", 1)
 	$properties_itemsIndex = $properties_data[0][0]
 	$oProperties_Ctrls.properties.Left.Hwnd = _formPropertyInspector_newitem("Left", $typeNumber, -1, -1, -1, -1, -1, 1)
@@ -182,6 +184,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	GUICtrlSetOnEvent($oProperties_Ctrls.properties.BorderSize.Hwnd, _ctrl_change_borderSize)
 	GUICtrlSetOnEvent($oProperties_Ctrls.properties.Global.Hwnd, _ctrl_change_global)
 	GUICtrlSetOnEvent($oProperties_Ctrls.properties.Items.Hwnd, _ctrl_change_items)
+	GUICtrlSetOnEvent($oProperties_Ctrls.properties.Img.Hwnd, _ctrl_change_img)
 	#EndRegion ctrl-properties
 
 
@@ -281,15 +284,19 @@ EndFunc   ;==>_onBorderButton
 
 Func _propertiesShowBorder($show = True)
 	_propertiesShowProp($properties_borderIndex, $show)
-EndFunc
+EndFunc   ;==>_propertiesShowBorder
 
 Func _propertiesShowItems($show = True)
 	_propertiesShowProp($properties_itemsIndex, $show)
-EndFunc
+EndFunc   ;==>_propertiesShowItems
 
 Func _propertiesShowText($show = True)
 	_propertiesShowProp($properties_textIndex, $show)
-EndFunc
+EndFunc   ;==>_propertiesShowText
+
+Func _propertiesShowImg($show = True)
+	_propertiesShowProp($properties_imgIndex, $show)
+EndFunc   ;==>_propertiesShowImg
 
 Func _propertiesShowProp($itemIndex, $show = True)
 	Local $aCtrl = $properties_data[$itemIndex][0]
@@ -354,7 +361,7 @@ Func _propertiesShowProp($itemIndex, $show = True)
 	Next
 
 	_WinAPI_RedrawWindow($hWin)
-EndFunc   ;==>_propertiesShowBorder
+EndFunc   ;==>_propertiesShowProp
 
 
 ;~ Func _propertiesShowItems($show = True)
@@ -609,6 +616,7 @@ Func _showProperties($props = $props_Main)
 					Local $bHasBG = $aCtrlTypes[2]
 					Local $bHasItems = $aCtrlTypes[3]
 					Local $bHasText = $aCtrlTypes[4]
+					Local $bHasImg = $aCtrlTypes[5]
 
 					If $bIsAllLabels Then
 						GUICtrlSetState($oProperties_Ctrls.properties.Color.Hwnd, $GUI_ENABLE)
@@ -638,6 +646,12 @@ Func _showProperties($props = $props_Main)
 						_propertiesShowText(True)
 					Else
 						_propertiesShowText(False)
+					EndIf
+
+					If $bHasImg Then
+						_propertiesShowImg(True)
+					Else
+						_propertiesShowImg(False)
 					EndIf
 
 					GUISetState(@SW_HIDE, $tabStylesHwnd)
@@ -806,6 +820,7 @@ Func _check_Ctl_Types()
 	; 2 = has background property
 	; 3 = has items
 	; 4 = has text
+	; 5 = has img
 
 	If $oSelected.count > 0 Then
 		For $oCtrl In $oSelected.ctrls.Items()
@@ -839,8 +854,16 @@ Func _check_Ctl_Types()
 			EndSwitch
 
 			Switch $oCtrl.Type
-				Case "Rect", "Ellipse", "Line", "List", "Combo", "ListView", "TreeView", "Slider", "Progress"
+				Case "Rect", "Ellipse", "Line", "List", "Combo", "ListView", "TreeView", "Slider", "Progress", "Pic", "Icon"
 					$aTypeChecks[4] = False    ;does not have text
+
+			EndSwitch
+
+			Switch $oCtrl.Type
+				Case "Pic", "Icon"
+
+				Case Else
+					$aTypeChecks[5] = False    ;does not have img
 
 			EndSwitch
 		Next
