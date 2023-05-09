@@ -19,6 +19,7 @@
 ;					- FIXED:	Bug when resizing the Code Generation window
 ;					- FIXED:	Bug control randomly disappears
 ;					- FIXED:	More seamless positioning of resize handles when crossing zero
+;					- FIXED:	Code preview was not always updating
 ;                   - ADDED:    New property "Image" for Icon and Pic controls with selection dialog
 ;                   - UPDATED:  Smaller tab width in code preview
 ;
