@@ -19,6 +19,7 @@
 ;					- FIXED:	Bug when resizing the Code Generation window
 ;					- FIXED:	Bug control randomly disappears
 ;					- FIXED:	More seamless positioning of resize handles when crossing zero
+;                   - ADDED:    New property "Image" for Icon and Pic controls with selection dialog
 ;
 ; Roadmap .......:	- Finish control properties tabs
 ;					- Windows' theme support

@@ -280,8 +280,10 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 		Case "Pic"
 			$oNewControl.Hwnd = GUICtrlCreatePic($samplebmp, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
-			GUICtrlSetImage($oNewControl.Hwnd, $samplebmp)
-			$oNewControl.Img = $samplebmp
+			If $oNewControl.Img = "" Then
+				$oNewControl.Img = $samplebmp
+			EndIf
+			GUICtrlSetImage($oNewControl.Hwnd, $oNewControl.Img)
 
 			$oCtrls.add($oNewControl, $hParent)
 
@@ -300,8 +302,10 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 		Case "Icon"
 			$oNewControl.Hwnd = GUICtrlCreateIcon($sampleicon, -1, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
-			GUICtrlSetImage($oNewControl.Hwnd, $sampleicon, -1)
-			$oNewControl.Img = $sampleicon
+			If $oNewControl.Img = "" Then
+				$oNewControl.Img = $sampleicon
+			EndIf
+			GUICtrlSetImage($oNewControl.Hwnd, $oNewControl.Img, -1)
 
 			$oCtrls.add($oNewControl, $hParent)
 
