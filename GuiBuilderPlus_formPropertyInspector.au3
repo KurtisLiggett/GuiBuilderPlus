@@ -5,8 +5,7 @@
 
 
 Global Enum $typeHeading, $typeText, $typeNumber, $typeCheck, $typeColor, $getHeight, $typeReal, $typeComboFW, $typeComboFN
-Global $properties_data[100][10], $properties_fontIndex, $properties_borderIndex, $properties_itemsIndex
-Global $properties_data_font[5][10], $properties_data_border[5][10], $properties_data_items[5][10]
+Global $properties_data[100][10], $properties_fontIndex, $properties_borderIndex, $properties_itemsIndex, $properties_textIndex, $properties_imgIndex
 ;------------------------------------------------------------------------------
 ; Title...........: formGenerateCode
 ; Description.....:	Create the code generation GUI
@@ -122,6 +121,8 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	$oProperties_Ctrls.properties.Color.Hwnd = _formPropertyInspector_newitem("Color", $typeColor, 30, -1, -1, -1, "_ctrl_pick_Color", 1, 1, $properties_fontIndex)
 	$oProperties_Ctrls.properties.Global.Hwnd = _formPropertyInspector_newitem("Global", $typeCheck, 20, -1, -1, -1, -1, 1)
 	$oProperties_Ctrls.properties.Height.Hwnd = _formPropertyInspector_newitem("Height", $typeNumber, -1, -1, -1, -1, -1, 1)
+	$oProperties_Ctrls.properties.Img.Hwnd = _formPropertyInspector_newitem("Image", $typeColor, -1, -1, -1, -1, "_ctrl_pick_img", 1)
+	$properties_imgIndex = $properties_data[0][0]
 	$oProperties_Ctrls.properties.Items.Hwnd = _formPropertyInspector_newitem("Items", $typeColor, -1, -1, -1, -1, "_formListItems", 1)
 	$properties_itemsIndex = $properties_data[0][0]
 	$oProperties_Ctrls.properties.Left.Hwnd = _formPropertyInspector_newitem("Left", $typeNumber, -1, -1, -1, -1, -1, 1)
@@ -130,6 +131,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	$oProperties_Ctrls.properties.BorderSize.Hwnd = _formPropertyInspector_newitem("Thickness", $typeNumber, 30, -1, -1, -1, -1, 1, 1, $properties_borderIndex)
 	$oProperties_Ctrls.properties.Name.Hwnd = _formPropertyInspector_newitem("Name", $typeText, 20, -1, -1, -1, -1, 1)
 	$oProperties_Ctrls.properties.Text.Hwnd = _formPropertyInspector_newitem("Text", $typeText, -1, -1, -1, -1, -1, 1)
+	$properties_textIndex = $properties_data[0][0]
 	$oProperties_Ctrls.properties.Top.Hwnd = _formPropertyInspector_newitem("Top", $typeNumber, -1, -1, -1, -1, -1, 1)
 	$oProperties_Ctrls.properties.Width.Hwnd = _formPropertyInspector_newitem("Width", $typeNumber, -1, -1, -1, -1, -1, 1)
 
@@ -182,6 +184,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	GUICtrlSetOnEvent($oProperties_Ctrls.properties.BorderSize.Hwnd, _ctrl_change_borderSize)
 	GUICtrlSetOnEvent($oProperties_Ctrls.properties.Global.Hwnd, _ctrl_change_global)
 	GUICtrlSetOnEvent($oProperties_Ctrls.properties.Items.Hwnd, _ctrl_change_items)
+	GUICtrlSetOnEvent($oProperties_Ctrls.properties.Img.Hwnd, _ctrl_change_img)
 	#EndRegion ctrl-properties
 
 
@@ -278,8 +281,25 @@ Func _onBorderButton()
 	_WinAPI_RedrawWindow($hWin)
 EndFunc   ;==>_onBorderButton
 
+
 Func _propertiesShowBorder($show = True)
-	Local $aCtrl = $properties_data[$properties_borderIndex][0]
+	_propertiesShowProp($properties_borderIndex, $show)
+EndFunc   ;==>_propertiesShowBorder
+
+Func _propertiesShowItems($show = True)
+	_propertiesShowProp($properties_itemsIndex, $show)
+EndFunc   ;==>_propertiesShowItems
+
+Func _propertiesShowText($show = True)
+	_propertiesShowProp($properties_textIndex, $show)
+EndFunc   ;==>_propertiesShowText
+
+Func _propertiesShowImg($show = True)
+	_propertiesShowProp($properties_imgIndex, $show)
+EndFunc   ;==>_propertiesShowImg
+
+Func _propertiesShowProp($itemIndex, $show = True)
+	Local $aCtrl = $properties_data[$itemIndex][0]
 	If (BitAND(GUICtrlGetState($aCtrl[0]), $GUI_SHOW) = $GUI_SHOW) = $show Then Return
 
 	Local $shiftSize = 20
@@ -288,21 +308,21 @@ Func _propertiesShowBorder($show = True)
 	Local $hWin = HWnd($oProperties_Ctrls.properties.Hwnd)
 
 	If $show Then
-		For $iCtrl In $properties_data[$properties_borderIndex][0]
+		For $iCtrl In $properties_data[$itemIndex][0]
 			If $iCtrl = 0 Then ExitLoop
 			GUICtrlSetState($iCtrl, $GUI_SHOW)
 		Next
 	Else
-		For $iCtrl In $properties_data[$properties_borderIndex][0]
+		For $iCtrl In $properties_data[$itemIndex][0]
 			If $iCtrl = 0 Then ExitLoop
 			GUICtrlSetState($iCtrl, $GUI_HIDE)
 		Next
 	EndIf
 
-	For $i = $properties_borderIndex + 1 To $properties_data[0][0]
+	For $i = $itemIndex + 1 To $properties_data[0][0]
 		If $show Then
-			If $properties_data[$i][2] = $properties_borderIndex Then
-				If $properties_data[$properties_borderIndex][1] Then
+			If $properties_data[$i][2] = $itemIndex Then
+				If $properties_data[$itemIndex][1] Then
 					$shiftAmount += $shiftSize
 					For $iCtrl In $properties_data[$i][0]
 						If $iCtrl = 0 Then ExitLoop
@@ -322,7 +342,7 @@ Func _propertiesShowBorder($show = True)
 				Next
 			EndIf
 		Else
-			If $properties_data[$i][2] = $properties_borderIndex Then
+			If $properties_data[$i][2] = $itemIndex Then
 				If $properties_data[$i][1] Then
 					$shiftAmount += $shiftSize
 				EndIf
@@ -341,49 +361,49 @@ Func _propertiesShowBorder($show = True)
 	Next
 
 	_WinAPI_RedrawWindow($hWin)
-EndFunc   ;==>_propertiesShowBorder
+EndFunc   ;==>_propertiesShowProp
 
 
-Func _propertiesShowItems($show = True)
-	Local $iIndex = $properties_itemsIndex
-	Local $aCtrl = $properties_data[$iIndex][0]
-	If (BitAND(GUICtrlGetState($aCtrl[0]), $GUI_SHOW) = $GUI_SHOW) = $show Then Return
+;~ Func _propertiesShowItems($show = True)
+;~ 	Local $iIndex = $properties_itemsIndex
+;~ 	Local $aCtrl = $properties_data[$iIndex][0]
+;~ 	If (BitAND(GUICtrlGetState($aCtrl[0]), $GUI_SHOW) = $GUI_SHOW) = $show Then Return
 
-	Local $shiftSize = 20
-	Local $shiftAmount = $shiftSize
+;~ 	Local $shiftSize = 20
+;~ 	Local $shiftAmount = $shiftSize
 
-	Local $hWin = HWnd($oProperties_Ctrls.properties.Hwnd)
+;~ 	Local $hWin = HWnd($oProperties_Ctrls.properties.Hwnd)
 
-	If $show Then
-		For $iCtrl In $properties_data[$iIndex][0]
-			If $iCtrl = 0 Then ExitLoop
-			GUICtrlSetState($iCtrl, $GUI_SHOW)
-		Next
-	Else
-		For $iCtrl In $properties_data[$iIndex][0]
-			If $iCtrl = 0 Then ExitLoop
-			GUICtrlSetState($iCtrl, $GUI_HIDE)
-		Next
-	EndIf
+;~ 	If $show Then
+;~ 		For $iCtrl In $properties_data[$iIndex][0]
+;~ 			If $iCtrl = 0 Then ExitLoop
+;~ 			GUICtrlSetState($iCtrl, $GUI_SHOW)
+;~ 		Next
+;~ 	Else
+;~ 		For $iCtrl In $properties_data[$iIndex][0]
+;~ 			If $iCtrl = 0 Then ExitLoop
+;~ 			GUICtrlSetState($iCtrl, $GUI_HIDE)
+;~ 		Next
+;~ 	EndIf
 
-	For $i = $iIndex + 1 To $properties_data[0][0]
-		If $show Then
-			For $iCtrl In $properties_data[$i][0]
-				If $iCtrl = 0 Then ExitLoop
-				Local $aPos = ControlGetPos($hWin, "", $iCtrl)
-				ControlMove($hWin, "", $iCtrl, $aPos[0], $aPos[1] + $shiftAmount)
-			Next
-		Else
-			For $iCtrl In $properties_data[$i][0]
-				If $iCtrl = 0 Then ExitLoop
-				Local $aPos = ControlGetPos($hWin, "", $iCtrl)
-				ControlMove($hWin, "", $iCtrl, $aPos[0], $aPos[1] - $shiftAmount)
-			Next
-		EndIf
-	Next
+;~ 	For $i = $iIndex + 1 To $properties_data[0][0]
+;~ 		If $show Then
+;~ 			For $iCtrl In $properties_data[$i][0]
+;~ 				If $iCtrl = 0 Then ExitLoop
+;~ 				Local $aPos = ControlGetPos($hWin, "", $iCtrl)
+;~ 				ControlMove($hWin, "", $iCtrl, $aPos[0], $aPos[1] + $shiftAmount)
+;~ 			Next
+;~ 		Else
+;~ 			For $iCtrl In $properties_data[$i][0]
+;~ 				If $iCtrl = 0 Then ExitLoop
+;~ 				Local $aPos = ControlGetPos($hWin, "", $iCtrl)
+;~ 				ControlMove($hWin, "", $iCtrl, $aPos[0], $aPos[1] - $shiftAmount)
+;~ 			Next
+;~ 		EndIf
+;~ 	Next
 
-	_WinAPI_RedrawWindow($hWin)
-EndFunc   ;==>_propertiesShowItems
+;~ 	_WinAPI_RedrawWindow($hWin)
+;~ EndFunc   ;==>_propertiesShowItems
 
 
 Func _formPropertyInspector_newitem($text, $type = -1, $x = -1, $y = -1, $w = -1, $h = -1, $funcName = -1, $ctrlProp = 0, $show = 1, $parent = -1)
@@ -595,6 +615,8 @@ Func _showProperties($props = $props_Main)
 					Local $bIsGraphic = $aCtrlTypes[1]
 					Local $bHasBG = $aCtrlTypes[2]
 					Local $bHasItems = $aCtrlTypes[3]
+					Local $bHasText = $aCtrlTypes[4]
+					Local $bHasImg = $aCtrlTypes[5]
 
 					If $bIsAllLabels Then
 						GUICtrlSetState($oProperties_Ctrls.properties.Color.Hwnd, $GUI_ENABLE)
@@ -618,6 +640,18 @@ Func _showProperties($props = $props_Main)
 						_propertiesShowItems(True)
 					Else
 						_propertiesShowItems(False)
+					EndIf
+
+					If $bHasText Then
+						_propertiesShowText(True)
+					Else
+						_propertiesShowText(False)
+					EndIf
+
+					If $bHasImg Then
+						_propertiesShowImg(True)
+					Else
+						_propertiesShowImg(False)
 					EndIf
 
 					GUISetState(@SW_HIDE, $tabStylesHwnd)
@@ -785,6 +819,8 @@ Func _check_Ctl_Types()
 	; 1 = is graphic
 	; 2 = has background property
 	; 3 = has items
+	; 4 = has text
+	; 5 = has img
 
 	If $oSelected.count > 0 Then
 		For $oCtrl In $oSelected.ctrls.Items()
@@ -814,6 +850,20 @@ Func _check_Ctl_Types()
 
 				Case Else
 					$aTypeChecks[2] = False    ;has no background prop
+
+			EndSwitch
+
+			Switch $oCtrl.Type
+				Case "Rect", "Ellipse", "Line", "List", "Combo", "ListView", "TreeView", "Slider", "Progress", "Pic", "Icon"
+					$aTypeChecks[4] = False    ;does not have text
+
+			EndSwitch
+
+			Switch $oCtrl.Type
+				Case "Pic", "Icon"
+
+				Case Else
+					$aTypeChecks[5] = False    ;does not have img
 
 			EndSwitch
 		Next

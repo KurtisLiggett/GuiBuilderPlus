@@ -15,29 +15,13 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  05/02/2023 ...:
-;					- FIXED:	HUGE reduction in flickering overall
-;					- FIXED:	Missing include file for IP Address control
-;					- FIXED:	Bug opening a saved file with no controls
-;					- FIXED:	Bug applying styles to UpDown control
-;					- FIXED:	Fixed shortcut keys in some situations
-;					- ADDED:	New settings dialog
-;					- ADDED:	New setting: Adjustable grid size - default now set to 5px
-;					- ADDED:	Syntax Highlighting in code window (RESH UDF by Beege)
-;					- ADDED:	Full help file
-;					- ADDED:	Font Name property
-;					- ADDED:	Font weight property
-;					- ADDED:	Items property for combobox and listbox
-;					- ADDED:	Add recently opened files list to File menu
-;					- ADDED:	Rectangle, ellipse, and line graphics
-;					- UPDATED:	Added collapsible font properties
-;					- UPDATED:	Moved "Show grid" from Settings menu to View menu
-;					- UPDATED:	Allow background/foreground colors for Edit and Input controls
-;					- UPDATED:	Ctrl+arrow now moves 1 grid space instead of 10px
-;					- UPDATED:	Control selection window is now the parent (main) window
-;					- UPDATED:	Z-order of controls is now updated visually in real time when moved up/down the list
-;					- UPDATED:	Better handling of Pic and Icon resizing
-;					- UPDATED:	Behind-the-scenes code improvements
+;  05/09/2023 ...:
+;					- FIXED:	Bug when resizing the Code Generation window
+;					- FIXED:	Bug control randomly disappears
+;					- FIXED:	More seamless positioning of resize handles when crossing zero
+;					- FIXED:	Code preview was not always updating
+;                   - ADDED:    New property "Image" for Icon and Pic controls with selection dialog
+;                   - UPDATED:  Smaller tab width in code preview
 ;
 ; Roadmap .......:	- Finish control properties tabs
 ;					- Windows' theme support
@@ -46,11 +30,11 @@
 ; ===============================================================================================================================
 
 #Region project-settings
-#AutoIt3Wrapper_Res_HiDpi=y
+#AutoIt3Wrapper_Res_HiDpi=N
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.0.0.exe
-#AutoIt3Wrapper_Res_Fileversion=1.0.0
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.1.0.exe
+#AutoIt3Wrapper_Res_Fileversion=1.1.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 1.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 2.ico
@@ -106,7 +90,7 @@ Global $overlay = -1, $overlay_contextmenu, $overlay_contextmenutab
 ;grippys
 ;~ Global $NorthWest_Grippy, $North_Grippy, $NorthEast_Grippy, $West_Grippy, $East_Grippy, $SouthWest_Grippy, $South_Grippy, $SouthEast_Grippy
 ;code generation popup
-Global $editCodeGeneration, $radio_msgMode, $radio_eventMode, $check_guiFunc
+Global $editCodeGeneration, $radio_msgMode, $radio_eventMode, $check_guiFunc, $labelCodeGeneration
 ;object explorer popup
 Global $lvObjects, $labelObjectCount, $childSelected
 ;control events popup
@@ -240,7 +224,7 @@ Func _main()
 	$oClipboard = _objCtrls()
 	$oMain = _objMain()
 	$oMain.AppName = "GuiBuilderPlus"
-	$oMain.AppVersion = "1.0.0"
+	$oMain.AppVersion = "1.1.0"
 	$oMain.Title = StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1)
 	$oMain.Name = "hGUI"
 	$oMain.Width = 400

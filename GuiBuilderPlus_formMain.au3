@@ -726,9 +726,18 @@ EndFunc   ;==>_onRestore
 ; Events..........: Called while dragging window to resize
 ;------------------------------------------------------------------------------
 Func _WM_SIZE($hWnd, $Msg, $wParam, $lParam)
-	If $hWnd <> $hGUI Then Return $GUI_RUNDEFMSG
+	Switch $hWnd
+		Case $hGUI
+			$bResizedFlag = 1
 
-	$bResizedFlag = 1
+		Case $hFormGenerateCode
+			Local $aPos = ControlGetPos($hFormGenerateCode, "", $labelCodeGeneration)
+			WinMove($editCodeGeneration, "", $aPos[0], $aPos[1], $aPos[2], $aPos[3])
+
+		Case Else
+			Return $GUI_RUNDEFMSG
+
+	EndSwitch
 
 	Return $GUI_RUNDEFMSG
 EndFunc   ;==>_WM_SIZE
@@ -2389,6 +2398,9 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 		_GUICtrlComboBox_SetCurSel(GUICtrlGetHandle($oProperties_Ctrls.properties.FontName.Hwnd), $selection)
 	EndIf
 
+	;img
+	$oProperties_Ctrls.properties.Img.value = $oCtrl.Img
+
 EndFunc   ;==>_populate_control_properties_gui
 
 
@@ -3066,6 +3078,7 @@ Func _ctrl_change_borderSize()
 	EndSwitch
 
 	_refreshGenerateCode()
+	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_borderSize
 
 
@@ -3106,6 +3119,7 @@ Func _ctrl_change_items()
 	EndSwitch
 
 	_refreshGenerateCode()
+	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_items
 
 
@@ -3140,6 +3154,7 @@ Func _ctrl_change_FontSize()
 	EndSwitch
 
 	_refreshGenerateCode()
+	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_FontSize
 
 Func _ctrl_change_FontWeight()
@@ -3190,6 +3205,7 @@ Func _ctrl_change_FontWeight()
 	EndSwitch
 
 	_refreshGenerateCode()
+	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_FontWeight
 
 Func _ctrl_change_FontName()
@@ -3216,6 +3232,7 @@ Func _ctrl_change_FontName()
 	EndSwitch
 
 	_refreshGenerateCode()
+	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_FontName
 
 
@@ -3285,6 +3302,36 @@ Func _ctrl_change_Color()
 	_refreshGenerateCode()
 	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_Color
+
+
+Func _ctrl_pick_img()
+	Local $filterString = ""
+	If $oSelected.getFirst().Type = "Icon" Then
+		$filterString = "Icon (*.ico)"
+	Else
+		$filterString = "All (*.bmp; *.jpg; *.gif)|Bitmap (*.bmp)|JPEG (*.jpg; *.jpeg)|GIF (*.gif)"
+	EndIf
+
+	Local $ret = FileOpenDialog("Select Image", @ScriptFullPath, $filterString, $FD_FILEMUSTEXIST)
+	If @error Then
+		Return
+	EndIf
+
+	$oProperties_Ctrls.properties.Img.value = $ret
+	_ctrl_change_img()
+EndFunc   ;==>_ctrl_pick_img
+
+Func _ctrl_change_img()
+	For $oCtrl In $oSelected.ctrls.Items()
+		If $oCtrl.Locked Then ContinueLoop
+
+		$oCtrl.Img = $oProperties_Ctrls.properties.Img.value
+		GUICtrlSetImage($oCtrl.Hwnd, $oCtrl.Img, -1)
+	Next
+
+	_refreshGenerateCode()
+	$oMain.hasChanged = True
+EndFunc   ;==>_ctrl_change_img
 
 
 #Region ; states
@@ -3842,7 +3889,8 @@ EndFunc   ;==>_memoryToPic
 
 Func _display_selection_rect(Const $oRect)
 	GUISwitch($hGUI)
-	If GUICtrlGetHandle($overlay) <> -1 Then
+
+	If $overlay <> -1 Then
 		GUICtrlDelete($overlay)
 		$overlay = -1
 	EndIf

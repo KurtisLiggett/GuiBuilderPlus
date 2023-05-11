@@ -57,11 +57,13 @@ Func _formGenerateCode()
 	GUICtrlSetBkColor(-1, 0xFFFFFF)
 	GUICtrlSetResizing(-1, $GUI_DOCKBORDERS)
 
-	$editCodeGeneration = _GUICtrlRichEdit_Create($hFormGenerateCode, "", 10, 10, $w - 20, $h - $titleBarHeight - 78, BitOR($ES_MULTILINE, $WS_VSCROLL, $WS_HSCROLL, $ES_AUTOVSCROLL))
+	;create invisible lable for resizing
+	$labelCodeGeneration = GUICtrlCreateLabel("", 10, 10, $w - 20, $h - $titleBarHeight - 78)
 	GUICtrlSetResizing(-1, $GUI_DOCKBORDERS)
-	GUICtrlSetFont(-1, 9, -1, -1, "Courier New")
-;~ 	_GUICtrlEdit_SetTabStops($editCodeGeneration, 4)
-;~ 	GUICtrlSetData($editCodeGeneration, _code_generation())
+	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
+	GUICtrlSetState(-1, $GUI_DISABLE)
+
+	$editCodeGeneration = _GUICtrlRichEdit_Create($hFormGenerateCode, "", 10, 10, $w - 20, $h - $titleBarHeight - 78, BitOR($ES_MULTILINE, $WS_VSCROLL, $WS_HSCROLL, $ES_AUTOVSCROLL))
 	_RESH_SyntaxHighlight($editCodeGeneration, 0, _code_generation())
 
 

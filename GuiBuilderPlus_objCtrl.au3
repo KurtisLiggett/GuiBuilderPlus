@@ -963,16 +963,20 @@ Func _objGrippies_show($oSelf)
 	Local Const $W = $oSelf.parent.Width
 	Local Const $h = $oSelf.parent.Height
 
-	Local Const $nw_left = $l - $grippy_size
-	Local Const $nw_top = $t - $grippy_size
+	Local $offsetX = 0, $offsetY = 0
+	If $W < 0 Then $offsetX = $grippy_size
+	If $h < 0 Then $offsetY = $grippy_size
+
+	Local Const $nw_left = $l - $grippy_size + $offsetX
+	Local Const $nw_top = $t - $grippy_size + $offsetY
 	Local Const $n_left = $l + ($W - $grippy_size) / 2
 	Local Const $n_top = $nw_top
-	Local Const $ne_left = $l + $W
+	Local Const $ne_left = $l + $W - $offsetX
 	Local Const $ne_top = $nw_top
 	Local Const $e_left = $ne_left
 	Local Const $e_top = $t + ($h - $grippy_size) / 2
 	Local Const $se_left = $ne_left
-	Local Const $se_top = $t + $h
+	Local Const $se_top = $t + $h - $offsetY
 	Local Const $s_left = $n_left
 	Local Const $s_top = $se_top
 	Local Const $sw_left = $nw_left
