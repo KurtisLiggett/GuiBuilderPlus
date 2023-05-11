@@ -15,13 +15,8 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  05/09/2023 ...:
-;					- FIXED:	Bug when resizing the Code Generation window
-;					- FIXED:	Bug control randomly disappears
-;					- FIXED:	More seamless positioning of resize handles when crossing zero
-;					- FIXED:	Code preview was not always updating
-;                   - ADDED:    New property "Image" for Icon and Pic controls with selection dialog
-;                   - UPDATED:  Smaller tab width in code preview
+;  05/11/2023 ...:
+;					- UPDATED:	Single new Image control replaces both Pic and Icon controls
 ;
 ; Roadmap .......:	- Finish control properties tabs
 ;					- Windows' theme support
