@@ -99,11 +99,19 @@ Func _RESH_SyntaxHighlight($hRichEdit, $sUpdateFunction = 0, $sNewData = "")
 	_GUICtrlRichEdit_SetSelNoFocus($hRichEdit, 0, -1, True)
 
 	Local $sCode
+
+	;the ASM code seems to be case sensitive, so make some replacements before sending to RESH
 	If $sNewData = "" Then
-		$sCode = _RESH_GenerateRTFCode(_GUICtrlRichEdit_GetSelText($hRichEdit), $sUpdateFunction)
-	Else
-		$sCode = _RESH_GenerateRTFCode($sNewData, $sUpdateFunction)
+		_GUICtrlRichEdit_GetSelText($hRichEdit)
 	EndIf
+	$sNewData = StringReplace($sNewData, "#Region", "#region")
+	$sNewData = StringReplace($sNewData, "#EndRegion", "#endregion")
+
+	$sCode = _RESH_GenerateRTFCode($sNewData, $sUpdateFunction)
+	$sCode = StringReplace($sCode, "#region", "#Region")
+	$sCode = StringReplace($sCode, "#endregion", "#EndRegion")
+
+	;now revert the substitutions
 
 	_GUICtrlRichEdit_ReplaceText($hRichEdit, '')
 	_GUICtrlRichEdit_SetLimitOnText($hRichEdit, Round(StringLen($sCode) * 1.5))

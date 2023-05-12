@@ -16,6 +16,7 @@
 ;
 ; Latest Revisions
 ;  05/11/2023 ...:
+;					- FIXED:	Code preview not highlighting #Region
 ;					- UPDATED:	Single new Image control replaces both Pic and Icon controls
 ;
 ; Roadmap .......:	- Finish control properties tabs
