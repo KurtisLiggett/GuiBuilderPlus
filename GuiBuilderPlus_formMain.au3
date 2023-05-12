@@ -377,12 +377,12 @@ Func _formToolbar()
 	; -----------------------------------------------------------------------------------------------------------
 
 	;create 4th row of buttons
-	$toolButton = GUICtrlCreateRadio("Avi", 5, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	_setIconFromResource($toolButton, "Icon 16.ico", 216)
-	GUICtrlSetTip(-1, "Avi")
-	GUICtrlSetOnEvent(-1, _control_type)
+;~ 	$toolButton = GUICtrlCreateRadio("Avi", 5, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+;~ 	_setIconFromResource($toolButton, "Icon 16.ico", 216)
+;~ 	GUICtrlSetTip(-1, "Avi")
+;~ 	GUICtrlSetOnEvent(-1, _control_type)
 
-	$toolButton = GUICtrlCreateRadio("Pic", 45, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	$toolButton = GUICtrlCreateRadio("Pic", 5, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
 	_setIconFromResource($toolButton, "Icon 17.ico", 217)
 	GUICtrlSetTip(-1, "Image")
 	GUICtrlSetOnEvent(-1, _control_type)
@@ -392,12 +392,12 @@ Func _formToolbar()
 ;~ 	GUICtrlSetTip(-1, "Pic")
 ;~ 	GUICtrlSetOnEvent(-1, _control_type)
 
-	$toolButton = GUICtrlCreateRadio("Menu", 85, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	$toolButton = GUICtrlCreateRadio("Menu", 45, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
 	_setIconFromResource($toolButton, "Icon 19.ico", 219)
 	GUICtrlSetTip(-1, "Menu")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	$button_graphic = GUICtrlCreateRadio("Rect", 125, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	$button_graphic = GUICtrlCreateRadio("Rect", 85, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
 	_setIconFromResource($button_graphic, "Icon 24.ico", 224)
 	GUICtrlSetTip(-1, "Draw Rectangle")
 	GUICtrlSetOnEvent(-1, _control_type)
@@ -411,24 +411,25 @@ Func _formToolbar()
 	GUICtrlCreateMenuItem("Line", $graphic_contextmenu)
 	GUICtrlSetOnEvent(-1, "_onGraphicMenuLine")
 
+	$toolButton = GUICtrlCreateRadio("Slider", 125, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 21.ico", 221)
+	GUICtrlSetTip(-1, "Slider")
+	GUICtrlSetOnEvent(-1, _control_type)
+
+	$toolButton = GUICtrlCreateRadio("ListView", 165, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
+	_setIconFromResource($toolButton, "Icon 23.ico", 223)
+	GUICtrlSetTip(-1, "ListView")
+	GUICtrlSetOnEvent(-1, _control_type)
 
 	; -----------------------------------------------------------------------------------------------------------
 
 	;create 5th row of buttons
-	$toolButton = GUICtrlCreateRadio("Slider", 165, 125, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	_setIconFromResource($toolButton, "Icon 21.ico", 221)
-	GUICtrlSetTip(-1, "Slider")
-	GUICtrlSetOnEvent(-1, _control_type)
 
 	$toolButton = GUICtrlCreateRadio("IP", 5, 165, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
 	_setIconFromResource($toolButton, "Icon 22.ico", 222)
 	GUICtrlSetTip(-1, "IP Address")
 	GUICtrlSetOnEvent(-1, _control_type)
 
-	$toolButton = GUICtrlCreateRadio("ListView", 45, 165, $contype_btn_w, $contype_btn_h, BitOR($BS_PUSHLIKE, $BS_ICON))
-	_setIconFromResource($toolButton, "Icon 23.ico", 223)
-	GUICtrlSetTip(-1, "ListView")
-	GUICtrlSetOnEvent(-1, _control_type)
 	#EndRegion control-creation
 
 
@@ -3305,7 +3306,7 @@ EndFunc   ;==>_ctrl_change_Color
 
 
 Func _ctrl_pick_img()
-	Local $filterString = "All (*.bmp; *.jpg; *.gif; *.ico)|Bitmap (*.bmp)|JPEG (*.jpg; *.jpeg)|GIF (*.gif)|Icon (*.ico)"
+	Local $filterString = "All (*.bmp; *.jpg; *.gif; *.ico; *.avi)|Bitmap (*.bmp)|JPEG (*.jpg; *.jpeg)|GIF (*.gif)|Icon (*.ico)|AVI (*.avi)"
 
 	Local $ret = FileOpenDialog("Select Image", @ScriptFullPath, $filterString, $FD_FILEMUSTEXIST)
 	If @error Then
@@ -3322,22 +3323,28 @@ Func _ctrl_change_img()
 	For $oCtrl In $oSelected.ctrls.Items()
 		If $oCtrl.Locked Then ContinueLoop
 
+		$oCtrl.Img = $oProperties_Ctrls.properties.Img.value
 		If StringCompare($ext, "ico") = 0 Then
-			If $oCtrl.Type = "Pic" Then
+			If $oCtrl.Type <> "Icon" Then
 				$oCtrl.Type = "Icon"
 				GUICtrlDelete($oCtrl.hwnd)
-				$oCtrl.hwnd = GUICtrlCreateIcon("", -1, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
+				$oCtrl.hwnd = GUICtrlCreateIcon($oCtrl.Img, -1, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
 			EndIf
+		ElseIf StringCompare($ext, "avi") = 0 Then
+			;avi doesn't seem to work with GuiCtrlSetImage, so we just recraete it on each change
+			$oCtrl.Type = "Avi"
+			GUICtrlDelete($oCtrl.hwnd)
+			$oCtrl.hwnd = GUICtrlCreateAvi($oCtrl.Img, 0, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
 		Else
-			If $oCtrl.Type = "Icon" Then
+			If $oCtrl.Type <> "Pic" Then
 				$oCtrl.Type = "Pic"
 				GUICtrlDelete($oCtrl.hwnd)
-				$oCtrl.hwnd = GUICtrlCreatePic("", $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
+				$oCtrl.hwnd = GUICtrlCreatePic($oCtrl.Img, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
 			EndIf
 		EndIf
 
-		GUICtrlSetPos($oCtrl.Hwnd, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
-		$oCtrl.Img = $oProperties_Ctrls.properties.Img.value
+;~ 		GUICtrlSetPos($oCtrl.Hwnd, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
+;~ 		$oCtrl.Img = $oProperties_Ctrls.properties.Img.value
 		GUICtrlSetImage($oCtrl.Hwnd, $oCtrl.Img, -1)
 	Next
 

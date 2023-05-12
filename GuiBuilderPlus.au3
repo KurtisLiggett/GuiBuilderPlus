@@ -15,9 +15,12 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  05/11/2023 ...:
-;					- FIXED:	Code preview not highlighting #Region
-;					- UPDATED:	Single new Image control replaces both Pic and Icon controls
+;  05/12/2023 ...:
+;					- FIXED:	Code preview not highlighting #Region/#EndRegion
+;					- FIXED:	Bugs in AVI control code
+;					- ADDED:	Image select button for AVI
+;					- UPDATED:	New single Image control replaces Pic, Icon, and AVI controls
+;					- UPDATED:	New button icons
 ;
 ; Roadmap .......:	- Finish control properties tabs
 ;					- Windows' theme support
@@ -29,8 +32,8 @@
 #AutoIt3Wrapper_Res_HiDpi=N
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.1.0.exe
-#AutoIt3Wrapper_Res_Fileversion=1.1.0
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.2.0.exe
+#AutoIt3Wrapper_Res_Fileversion=1.2.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 1.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 2.ico
@@ -130,7 +133,7 @@ Global $aStackUndo[0], $aStackRedo[0]
 Global $AgdOutFile, $lfld, $mygui
 
 Global $sampleavi = @ScriptDir & "\resources\sampleAVI.avi"
-Global $samplebmp = @ScriptDir & "\resources\SampleImage.bmp"
+Global $samplebmp = @ScriptDir & "\resources\SampleImage.jpg"
 Global $sampleicon = @ScriptDir & "\resources\icons\icon.ico"
 Global $sIniPath = @ScriptDir & "\storage\GUIBuilderPlus.ini"
 #EndRegion ; globals
@@ -220,7 +223,7 @@ Func _main()
 	$oClipboard = _objCtrls()
 	$oMain = _objMain()
 	$oMain.AppName = "GuiBuilderPlus"
-	$oMain.AppVersion = "1.1.0"
+	$oMain.AppVersion = "1.2.0"
 	$oMain.Title = StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1)
 	$oMain.Name = "hGUI"
 	$oMain.Width = 400

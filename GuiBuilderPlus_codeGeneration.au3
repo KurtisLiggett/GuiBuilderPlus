@@ -323,6 +323,9 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("", ' & $ltwh & $ctrlStyle & ')' & @CRLF
 			$mControls &= "GUICtrlSetImage(-1, " & '"' & $oCtrl.Img & '")' & @CRLF
 
+		Case "Avi"
+			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Img & '", 0, ' & $ltwh & $ctrlStyle & ')' & @CRLF
+
 		Case "Menu"
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '")' & @CRLF
 
@@ -612,6 +615,12 @@ Func _generate_includes(Const $oCtrl, Const $includes)
 	If $oCtrl.Type = "IP" Then
 		If Not StringInStr($includes, "<GuiIPAddress.au3>") Then
 			Return @CRLF & "#include <GuiIPAddress.au3>"
+		EndIf
+	EndIf
+
+	If $oCtrl.Type = "Avi" Then
+		If Not StringInStr($includes, "<AVIConstants.au3>") Then
+			Return @CRLF & "#include <AVIConstants.au3>"
 		EndIf
 	EndIf
 

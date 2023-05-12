@@ -854,13 +854,13 @@ Func _check_Ctl_Types()
 			EndSwitch
 
 			Switch $oCtrl.Type
-				Case "Rect", "Ellipse", "Line", "List", "Combo", "ListView", "TreeView", "Slider", "Progress", "Pic", "Icon"
+				Case "Rect", "Ellipse", "Line", "List", "Combo", "ListView", "TreeView", "Slider", "Progress", "Pic", "Icon", "Avi"
 					$aTypeChecks[4] = False    ;does not have text
 
 			EndSwitch
 
 			Switch $oCtrl.Type
-				Case "Pic", "Icon"
+				Case "Pic", "Icon", "Avi"
 
 				Case Else
 					$aTypeChecks[5] = False    ;does not have img
