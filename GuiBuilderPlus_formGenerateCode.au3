@@ -50,6 +50,10 @@ Func _formGenerateCode()
 	$hFormGenerateCode = GUICreate("Code Preview", $w, $h, $x, $y, $WS_SIZEBOX, -1, $hToolbar)
 	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExitGenerateCode")
 
+	If Not @Compiled Then
+		GUISetIcon(@ScriptDir & '\resources\icons\icon.ico')
+	EndIf
+
 	Local $titleBarHeight = _WinAPI_GetSystemMetrics($SM_CYCAPTION) + 3
 
 	GUICtrlCreateLabel("", 0, 0, $w, $h - $titleBarHeight - 57)

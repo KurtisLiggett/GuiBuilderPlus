@@ -50,9 +50,9 @@
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 13.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 14.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 15.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 16.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 15.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 17.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 18.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 17.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 19.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 20.ico
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 21.ico

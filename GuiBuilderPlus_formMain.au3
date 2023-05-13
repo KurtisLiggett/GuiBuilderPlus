@@ -42,6 +42,10 @@ Func _formMain()
 	$hFormHolder = GUICreate("GBP form holder", 10, 10, -1, -1, -1, -1, $hToolbar)
 	$hGUI = GUICreate($oMain.Title & " - Form (" & $oMain.Width & ", " & $oMain.Height & ')', $oMain.Width, $oMain.Height, $main_left, $main_top, BitOR($WS_SIZEBOX, $WS_CAPTION), BitOR($WS_EX_ACCEPTFILES, $WS_EX_COMPOSITED), $hFormHolder)
 
+	If Not @Compiled Then
+		GUISetIcon(@ScriptDir & '\resources\icons\icon.ico')
+	EndIf
+
 	_getGuiFrameSize()
 	WinMove($hGUI, "", Default, Default, $oMain.Width + $iGuiFrameW, $oMain.Height + $iGuiFrameH)
 
@@ -171,6 +175,11 @@ Func _formToolbar()
 	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExit", $hToolbar)
 	GUISetOnEvent($GUI_EVENT_MINIMIZE, "_onMinimize", $hToolbar)
 	GUISetOnEvent($GUI_EVENT_RESTORE, "_onRestore", $hToolbar)
+
+	If Not @Compiled Then
+		GUISetIcon(@ScriptDir & '\resources\icons\icon.ico')
+		TraySetIcon(@ScriptDir & '\resources\icons\icon.ico')
+	EndIf
 
 	#Region create-menu
 	;create up the File menu

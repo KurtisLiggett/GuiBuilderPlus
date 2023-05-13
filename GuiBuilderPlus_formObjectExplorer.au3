@@ -49,6 +49,11 @@ Func _formObjectExplorer()
 
 	$hFormObjectExplorer = GUICreate("Object Explorer", $w, $h, $x, $y, $WS_SIZEBOX, -1, $hToolbar)
 	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExitObjectExplorer")
+
+	If Not @Compiled Then
+		GUISetIcon(@ScriptDir & '\resources\icons\icon.ico')
+	EndIf
+
 	Local $titleBarHeight = _WinAPI_GetSystemMetrics($SM_CYCAPTION) + 3
 
 	;background label
