@@ -442,6 +442,12 @@ Func _formToolbar()
 	#EndRegion control-creation
 
 
+	;create the tray menu
+	$exititemtray = TrayCreateItem("Exit")
+	TrayItemSetOnEvent(-1, "_onExit")
+	TraySetToolTip($oMain.AppName & " " & $oMain.AppVersion)
+
+
 	;create property inspector
 	_formPropertyInspector(0, 210, $toolbar_width, 222)
 

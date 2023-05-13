@@ -21,6 +21,7 @@
 ;					- ADDED:	Image select button for AVI
 ;					- UPDATED:	New single Image control replaces Pic, Icon, and AVI controls
 ;					- UPDATED:	New button icons
+;					- UPDATED:	Better tray menu handling
 ;
 ; Roadmap .......:	- Finish control properties tabs
 ;					- Windows' theme support
@@ -66,6 +67,10 @@ Opt("WinTitleMatchMode", 4) ; advanced
 Opt("MouseCoordMode", 2)
 Opt("GUIOnEventMode", 1)
 Opt("GuiEventOptions", 1)
+Opt("TrayAutoPause", 0)
+Opt("TrayOnEventMode", 1)
+Opt("TrayMenuMode", 3)
+TraySetClick(8) ; $TRAY_CLICK_SECONDARYDOWN
 #EndRegion project-settings
 
 Global $grippy_size = 5
