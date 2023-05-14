@@ -3815,8 +3815,13 @@ Func _saveWinPositions()
 		If IsHWnd($hFormGenerateCode) Then
 			$currentWinPos = WinGetPos($hFormGenerateCode)
 			IniWrite($sIniPath, "Settings", "posGenerateCode", $currentWinPos[0] & "," & $currentWinPos[1])
-;~ 			$currentWinPos = WinGetClientSize($hFormGenerateCode)
-;~ 			IniWrite($sIniPath, "Settings", "sizeGenerateCode", $currentWinPos[0] & "," & $currentWinPos[1])
+			$currentWinPos = WinGetClientSize($hFormGenerateCode)
+
+			Local $captionH = _WinAPI_GetSystemMetrics($SM_CYCAPTION)
+			Local $borderW = _WinAPI_GetSystemMetrics($SM_CXBORDER)
+			Local $borderH = _WinAPI_GetSystemMetrics($SM_CYBORDER)
+
+			IniWrite($sIniPath, "Settings", "sizeGenerateCode", $currentWinPos[0] + 2 * $borderW & "," & $currentWinPos[1] + $captionH + 2 * $borderH)
 		EndIf
 
 		If IsHWnd($hFormObjectExplorer) Then

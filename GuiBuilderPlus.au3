@@ -22,6 +22,7 @@
 ;					- UPDATED:	New single Image control replaces Pic, Icon, and AVI controls
 ;					- UPDATED:	New button icons
 ;					- UPDATED:	Better tray menu handling
+;					- UPDATED:	Save code preview window size
 ;
 ; Roadmap .......:	- Finish control properties tabs
 ;					- Windows' theme support
