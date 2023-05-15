@@ -23,6 +23,7 @@
 ;					- UPDATED:	New button icons
 ;					- UPDATED:	Better tray menu handling
 ;					- UPDATED:	Save code preview window size
+;					- UPDATED:	Updated help file and corrected some formatting issues
 ;
 ; Roadmap .......:	- Finish control properties tabs
 ;					- Windows' theme support
