@@ -523,11 +523,11 @@ Func _set_accelerators($styleOnly = False)
 			["{F1}", $menu_helpchm] _
 			]
 	If Not $styleOnly Then
-		GUISetAccelerators($accelerators, $hToolbar)
-		GUISetAccelerators($accelerators, $oProperties_Main.properties.Hwnd)
-		GUISetAccelerators($accelerators, $oProperties_Ctrls.properties.Hwnd)
+		GUISetAccelerators($acceleratorsToolbar, $hToolbar)
+		GUISetAccelerators($acceleratorsToolbar, $oProperties_Main.properties.Hwnd)
+		GUISetAccelerators($acceleratorsToolbar, $oProperties_Ctrls.properties.Hwnd)
 	EndIf
-	GUISetAccelerators($accelerators, $tabStylesHwnd)
+	GUISetAccelerators($acceleratorsToolbar, $tabStylesHwnd)
 
 	GUICtrlSetOnEvent($accel_delete, _delete_selected_controls)
 	GUICtrlSetOnEvent($accel_x, _cut_selected)
@@ -2352,28 +2352,10 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 		$oProperties_Ctrls.properties.FontSize.value = 8.5
 	EndIf
 
-	If $oCtrl.Background <> -1 Then
-		$oProperties_Ctrls.properties.Background.value = "0x" & Hex($oCtrl.Background, 6)
-	Else
-		$oProperties_Ctrls.properties.Background.value = ""
-	EndIf
-	If $oCtrl.Color <> -1 Then
-		$oProperties_Ctrls.properties.Color.value = "0x" & Hex($oCtrl.Color, 6)
-	Else
-		$oProperties_Ctrls.properties.Color.value = ""
-	EndIf
-
-	If $oCtrl.BorderColor <> -1 Then
-		$oProperties_Ctrls.properties.BorderColor.value = "0x" & Hex($oCtrl.BorderColor, 6)
-	Else
-		$oProperties_Ctrls.properties.BorderColor.value = -1
-	EndIf
-
-	If $oCtrl.BorderSize > 1 Then
-		$oProperties_Ctrls.properties.BorderSize.value = $oCtrl.BorderSize
-	Else
-		$oProperties_Ctrls.properties.BorderSize.value = 1
-	EndIf
+	$oProperties_Ctrls.properties.Background.value = $oCtrl.Background
+	$oProperties_Ctrls.properties.Color.value = $oCtrl.Color
+	$oProperties_Ctrls.properties.BorderColor.value = $oCtrl.BorderColor
+	$oProperties_Ctrls.properties.BorderSize.value = $oCtrl.BorderSize
 
 	$oProperties_Ctrls.properties.Items.value = $oCtrl.Items
 
@@ -2502,6 +2484,7 @@ EndFunc   ;==>_main_change_height
 
 Func _main_pick_bkColor()
 	Local $color = _ChooseColor(2)
+	ConsoleWrite($color & @CRLF)
 
 	If $color = -1 Then Return 0
 	$oProperties_Main.properties.Background.value = $color
@@ -2513,14 +2496,13 @@ EndFunc   ;==>_main_pick_bkColor
 
 Func _main_change_background()
 	Local $colorInput = $oProperties_Main.properties.Background.value
-	If $colorInput = "" Or $colorInput = -1 Then
-		$colorInput = $defaultGuiBkColor
+	If $colorInput = "" Then
+		$oMain.Background = $defaultGuiBkColor
 	Else
-		$colorInput = Dec(StringReplace($colorInput, "0x", ""))
+		$oMain.Background = $colorInput
 	EndIf
-	$oMain.Background = $oProperties_Main.properties.Background.value
 
-	GUISetBkColor($colorInput, $hGUI)
+	GUISetBkColor($oMain.Background, $hGUI)
 
 	_refreshGenerateCode()
 	$oMain.hasChanged = True
@@ -2932,13 +2914,6 @@ EndFunc   ;==>_ctrl_pick_bkColor
 
 Func _ctrl_change_bkColor()
 	Local $colorInput = $oProperties_Ctrls.properties.Background.value
-	Local $newColor = $colorInput
-	If $colorInput = "" Then
-		$colorInput = -1
-		$oProperties_Ctrls.properties.Background.value = -1
-	Else
-		$colorInput = Dec(StringReplace($colorInput, "0x", ""))
-	EndIf
 
 	Local Const $sel_count = $oSelected.count
 
@@ -2964,13 +2939,13 @@ Func _ctrl_change_bkColor()
 				;convert string to color then apply
 				Switch $oCtrl.Type
 					Case "Label", "Checkbox", "Radio", "Input", "Edit"
-						If $colorInput <> -1 Then
+						If $colorInput <> "" Then
 							GUICtrlSetBkColor($oCtrl.Hwnd, $colorInput)
 						Else
 ;~ 							GUICtrlDelete($oCtrl.Hwnd)
 ;~ 							$oCtrl.Hwnd = GUICtrlCreateLabel($oCtrl.Text, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
 							GUICtrlSetBkColor($oCtrl.Hwnd, $defaultGuiBkColor)
-							$oCtrl.Background = -1
+							$oCtrl.Background = ""
 ;~ 							If $oCtrl.Color <> -1 Then
 ;~ 								GUICtrlSetColor($oCtrl.Hwnd, $oCtrl.Color)
 ;~ 							EndIf
@@ -3006,13 +2981,6 @@ EndFunc   ;==>_ctrl_pick_borderColor
 
 Func _ctrl_change_borderColor()
 	Local $colorInput = $oProperties_Ctrls.properties.BorderColor.value
-	Local $newColor = $colorInput
-	If $colorInput = "" Then
-		$colorInput = -1
-		$oProperties_Ctrls.properties.BorderColor.value = -1
-	Else
-		$colorInput = Dec(StringReplace($colorInput, "0x", ""))
-	EndIf
 
 	Local Const $sel_count = $oSelected.count
 
@@ -3264,13 +3232,6 @@ EndFunc   ;==>_ctrl_pick_Color
 
 Func _ctrl_change_Color()
 	Local $colorInput = $oProperties_Ctrls.properties.Color.value
-	Local $newColor = $colorInput
-	If $colorInput = "" Then
-		$colorInput = -1
-		$oProperties_Ctrls.properties.Color.value = -1
-	Else
-		$colorInput = Dec(StringReplace($colorInput, "0x", ""))
-	EndIf
 
 	Local Const $sel_count = $oSelected.count
 
@@ -3296,13 +3257,13 @@ Func _ctrl_change_Color()
 				;convert string to color then apply
 				Switch $oCtrl.Type
 					Case "Label", "Edit", "Input"
-						If $colorInput <> -1 Then
+						If $colorInput <> "" Then
 							GUICtrlSetColor($oCtrl.Hwnd, $colorInput)
 						Else
 							GUICtrlDelete($oCtrl.Hwnd)
 							$oCtrl.Hwnd = GUICtrlCreateLabel($oCtrl.Text, $oCtrl.Left, $oCtrl.Top, $oCtrl.Width, $oCtrl.Height)
-							$oCtrl.Color = -1
-							If $oCtrl.Background <> -1 Then
+							$oCtrl.Color = ""
+							If $oCtrl.Background <> "" Then
 								GUICtrlSetBkColor($oCtrl.Hwnd, $oCtrl.Background)
 							EndIf
 						EndIf

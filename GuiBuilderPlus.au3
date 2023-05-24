@@ -15,9 +15,16 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  05/12/2023 ...:
+;  05/24/2023 ...:
 ;					- FIXED:	Code preview not highlighting #Region/#EndRegion
 ;					- FIXED:	Bugs in AVI control code
+;					- FIXED:	Keyboard shortcut behavior in properties window
+;					- FIXED:	GUI properties not loading when opening GUI file
+;					- FIXED:	Wrong background color when opening GUI file
+;					- FIXED:	Wrong font properties when copy/paste
+;					- FIXED:	Controls smushed into top left when copy/paste
+;					- FIXED:	Inconsistencies in setting, saving, and loading colors
+;					- FIXED:	Incorrect tabs for event code
 ;					- ADDED:	Image select button for AVI
 ;					- UPDATED:	New single Image control replaces Pic, Icon, and AVI controls
 ;					- UPDATED:	New button icons
@@ -78,7 +85,7 @@ Global $debug = True
 #Region ; globals
 ;GUI components
 Global $hGUI, $hToolbar, $hFormGenerateCode, $hFormObjectExplorer, $hStatusbar, $hAbout, $hEvent, $hSettings, $hFormHolder
-Global $iGuiFrameH, $iGuiFrameW, $defaultGuiBkColor = 0xF0F0F0
+Global $iGuiFrameH, $iGuiFrameW, $defaultGuiBkColor = "0xF0F0F0"
 Global $button_graphic
 Global $menu_wipe, $contextmenu_lock, $menu_helpchm
 ;File menu
@@ -390,7 +397,7 @@ Func _initialize_settings()
 				Case "ShowGrid"
 					$oOptions.showGrid = ($aSettings[$i][1] = 1) ? True : False
 				Case "PastePos"
-					$oOptions.pasteAtMouse = ($aSettings[$i][1] = 1) ? True : False
+					$oOptions.pasteAtMouse = True
 				Case "GridSnap"
 					$oOptions.snapGrid = ($aSettings[$i][1] = 1) ? True : False
 				Case "ShowCode"

@@ -109,8 +109,8 @@ Func _code_generation()
 	EndIf
 
 	Local $background = ""
-	If $oMain.Background <> -1 And $oMain.Background <> "" Then
-		$background = "GUISetBkColor(0x" & Hex($oMain.Background, 6) & ")" & @CRLF
+	If $oMain.Background <> "" Then
+		$background = "GUISetBkColor(" & $oMain.Background & ")" & @CRLF
 	Else
 		$background = ""
 	EndIf
@@ -370,13 +370,13 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 		Case "Rect"
 			$mControls &= 'GUICtrlCreateGraphic(' & $ltwh & $ctrlStyle & ')' & @CRLF
 			Local $border, $back
-			If $oCtrl.BorderColor <> -1 Then
-				$border = '0x' & Hex($oCtrl.BorderColor, 6)
+			If $oCtrl.BorderColor <> "" Then
+				$border = $oCtrl.BorderColor
 			Else
 				$border = '0x000000'
 			EndIf
-			If $oCtrl.background <> -1 Then
-				$back = ', 0x' & Hex($oCtrl.background, 6)
+			If $oCtrl.background <> "" Then
+				$back = ', ' & $oCtrl.background
 			Else
 				$back = ''
 			EndIf
@@ -387,13 +387,13 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 		Case "Ellipse"
 			$mControls &= 'GUICtrlCreateGraphic(' & $ltwh & $ctrlStyle & ')' & @CRLF
 			Local $border, $back
-			If $oCtrl.BorderColor <> -1 Then
-				$border = '0x' & Hex($oCtrl.BorderColor, 6)
+			If $oCtrl.BorderColor <> "" Then
+				$border = $oCtrl.BorderColor
 			Else
 				$border = '0x000000'
 			EndIf
-			If $oCtrl.background <> -1 Then
-				$back = ', 0x' & Hex($oCtrl.background, 6)
+			If $oCtrl.background <> "" Then
+				$back = ', ' & $oCtrl.background
 			Else
 				$back = ''
 			EndIf
@@ -404,8 +404,8 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 		Case "Line"
 			$mControls &= 'GUICtrlCreateGraphic(' & $ltwh & $ctrlStyle & ')' & @CRLF
 			Local $border
-			If $oCtrl.BorderColor <> -1 Then
-				$border = '0x' & Hex($oCtrl.BorderColor, 6)
+			If $oCtrl.BorderColor <> "" Then
+				$border = $oCtrl.BorderColor
 			Else
 				$border = '0x000000'
 			EndIf
@@ -456,15 +456,15 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 		EndIf
 	EndIf
 
-	If $oCtrl.Color <> -1 Then
-		$mControls &= "GUICtrlSetColor(-1, 0x" & Hex($oCtrl.Color, 6) & ")" & @CRLF
+	If $oCtrl.Color <> "" Then
+		$mControls &= "GUICtrlSetColor(-1, " & $oCtrl.Color & ")" & @CRLF
 	EndIf
-	If $oCtrl.Background <> -1 Then
+	If $oCtrl.Background <> "" Then
 		Switch $oCtrl.Type
 			Case "Rect", "Ellipse", "Line"
 
 			Case Else
-				$mControls &= "GUICtrlSetBkColor(-1, 0x" & Hex($oCtrl.Background, 6) & ")" & @CRLF
+				$mControls &= "GUICtrlSetBkColor(-1, " & $oCtrl.Background & ")" & @CRLF
 		EndSwitch
 	EndIf
 
@@ -803,7 +803,7 @@ EndFunc   ;==>_getFuncCtrl
 Func _formatCodeString($sCodeString)
 	Local $sNewString
 
-	$sNewString = StringReplace($sCodeString, @CRLF, @CRLF & @TAB & @TAB & @TAB & @TAB)
+	$sNewString = StringReplace($sCodeString, @CRLF, @CRLF & @TAB)
 
 	Return $sNewString
 EndFunc   ;==>_formatCodeString

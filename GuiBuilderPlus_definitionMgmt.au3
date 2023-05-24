@@ -115,23 +115,11 @@ Func _save_gui_definition($saveAs = False)
 		Json_Put($objOutput, ".Controls[" & $i & "].FontSize", $oCtrl.FontSize)
 		Json_Put($objOutput, ".Controls[" & $i & "].FontWeight", $oCtrl.FontWeight)
 		Json_Put($objOutput, ".Controls[" & $i & "].FontName", $oCtrl.FontName)
-		If $oCtrl.Color = -1 Then
-			Json_Put($objOutput, ".Controls[" & $i & "].Color", -1)
-		Else
-			Json_Put($objOutput, ".Controls[" & $i & "].Color", "0x" & Hex($oCtrl.Color, 6))
-		EndIf
-		If $oCtrl.Background = -1 Then
-			Json_Put($objOutput, ".Controls[" & $i & "].Background", -1)
-		Else
-			Json_Put($objOutput, ".Controls[" & $i & "].Background", "0x" & Hex($oCtrl.Background, 6))
-		EndIf
-		Json_Put($objOutput, ".Controls[" & $i & "].CodeString", $oCtrl.CodeString)
-		If $oCtrl.BorderColor = -1 Then
-			Json_Put($objOutput, ".Controls[" & $i & "].BorderColor", "0x000000")
-		Else
-			Json_Put($objOutput, ".Controls[" & $i & "].BorderColor", "0x" & Hex($oCtrl.BorderColor, 6))
-		EndIf
+		Json_Put($objOutput, ".Controls[" & $i & "].Color", $oCtrl.Color)
+		Json_Put($objOutput, ".Controls[" & $i & "].Background", $oCtrl.Background)
+		Json_Put($objOutput, ".Controls[" & $i & "].BorderColor", $oCtrl.BorderColor)
 		Json_Put($objOutput, ".Controls[" & $i & "].BorderSize", $oCtrl.BorderSize)
+		Json_Put($objOutput, ".Controls[" & $i & "].CodeString", $oCtrl.CodeString)
 		If $oCtrl.Type = "Line" Then
 			Json_Put($objOutput, ".Controls[" & $i & "].Coords.Coord1_X", $oCtrl.Coord1[0])
 			Json_Put($objOutput, ".Controls[" & $i & "].Coords.Coord1_Y", $oCtrl.Coord1[1])
@@ -171,21 +159,9 @@ Func _save_gui_definition($saveAs = False)
 							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].FontSize", $oTabCtrl.FontSize)
 							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].FontWeight", $oTabCtrl.FontWeight)
 							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].FontName", $oTabCtrl.FontName)
-							If $oTabCtrl.Color = -1 Then
-								Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Color", -1)
-							Else
-								Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Color", "0x" & Hex($oTabCtrl.Color, 6))
-							EndIf
-							If $oTabCtrl.Background = -1 Then
-								Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Background", -1)
-							Else
-								Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Background", "0x" & Hex($oTabCtrl.Background, 6))
-							EndIf
-							If $oTabCtrl.BorderColor = -1 Then
-								Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].BorderColor", "0x000000")
-							Else
-								Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].BorderColor", "0x" & Hex($oTabCtrl.BorderColor, 6))
-							EndIf
+							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Color", $oTabCtrl.Color)
+							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Background", $oTabCtrl.Background)
+							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].BorderColor", $oTabCtrl.BorderColor)
 							Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].BorderSize", $oTabCtrl.BorderSize)
 							If $oTabCtrl.Type = "Line" Then
 								Json_Put($objOutput, ".Controls[" & $i & "].Tabs[" & $j & "].Controls[" & $k & "].Coords.Coord1_X", $oTabCtrl.Coord1[0])
@@ -223,21 +199,9 @@ Func _save_gui_definition($saveAs = False)
 						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].FontSize", $oThisCtrl.FontSize)
 						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].FontWeight", $oThisCtrl.FontWeight)
 						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].FontName", $oThisCtrl.FontName)
-						If $oThisCtrl.Color = -1 Then
-							Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Color", -1)
-						Else
-							Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Color", "0x" & Hex($oThisCtrl.Color, 6))
-						EndIf
-						If $oThisCtrl.Background = -1 Then
-							Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Background", -1)
-						Else
-							Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Background", "0x" & Hex($oThisCtrl.Background, 6))
-						EndIf
-						If $oThisCtrl.BorderColor = -1 Then
-							Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].BorderColor", "0x000000")
-						Else
-							Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].BorderColor", "0x" & Hex($oThisCtrl.BorderColor, 6))
-						EndIf
+						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Color", $oThisCtrl.Color)
+						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Background", $oThisCtrl.Background)
+						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].BorderColor", $oThisCtrl.BorderColor)
 						Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].BorderSize", $oThisCtrl.BorderSize)
 						If $oThisCtrl.Type = "Line" Then
 							Json_Put($objOutput, ".Controls[" & $i & "].Controls[" & $k & "].Coords.Coord1_X", $oThisCtrl.Coord1[0])
@@ -375,22 +339,21 @@ Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 			_display_grid($background, $oMain.Width, $oMain.Height)
 		EndIf
 	EndIf
-	$oMain.Background = _Json_Get($objInput, ".Main.Background", -1)
-	$oProperties_Main.Background.value = $oMain.Background
-	If $oMain.Background <> -1 And $oMain.Background <> "" Then
-		$oMain.Background = Dec(StringReplace($oMain.Background, "0x", ""))
+	$oMain.Background = _Json_Get($objInput, ".Main.Background", "")
+	If $oMain.Background <> "" Then
 		GUISetBkColor($oMain.Background, $hGUI)
 	Else
 		GUISetBkColor($defaultGuiBkColor, $hGUI)
 	EndIf
 	$oMain.styleString = _Json_Get($objInput, ".Main.styleString", "")
 
-	$oProperties_Main.Title.value = $oMain.Title
-	$oProperties_Main.Name.value = $oMain.Name
-	$oProperties_Main.Left.value = $oMain.Left
-	$oProperties_Main.Top.value = $oMain.Top
-	$oProperties_Main.Width.value = $oMain.Width
-	$oProperties_Main.Height.value = $oMain.Height
+	$oProperties_Main.properties.Background.value = $oMain.Background
+	$oProperties_Main.properties.Title.value = $oMain.Title
+	$oProperties_Main.properties.Name.value = $oMain.Name
+	$oProperties_Main.properties.Left.value = $oMain.Left
+	$oProperties_Main.properties.Top.value = $oMain.Top
+	$oProperties_Main.properties.Width.value = $oMain.Width
+	$oProperties_Main.properties.Height.value = $oMain.Height
 
 	Local Const $numCtrls = _Json_Get($objInput, ".Main.numctrls", -1)
 
@@ -417,21 +380,12 @@ Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 			$oCtrl.Global = _Json_Get($oThisCtrl, ".Global", $GUI_CHECKED)
 			$oCtrl.Locked = _Json_Get($oThisCtrl, ".Locked", $GUI_UNCHECKED)
 			$oCtrl.styleString = _Json_Get($oThisCtrl, ".styleString", "")
-			$oCtrl.Color = _Json_Get($oThisCtrl, ".Color", -1)
-			If $oCtrl.Color <> -1 Then
-				$oCtrl.Color = Dec(StringReplace($oCtrl.Color, "0x", ""))
-			EndIf
-			$oCtrl.Background = _Json_Get($oThisCtrl, ".Background", -1)
-			If $oCtrl.Background <> -1 Then
-				$oCtrl.Background = Dec(StringReplace($oCtrl.Background, "0x", ""))
-			EndIf
+			$oCtrl.Color = _Json_Get($oThisCtrl, ".Color", "")
+			$oCtrl.Background = _Json_Get($oThisCtrl, ".Background", "")
 			$oCtrl.FontSize = _Json_Get($oThisCtrl, ".FontSize", 8.5)
 			$oCtrl.FontWeight = _Json_Get($oThisCtrl, ".FontWeight", 400)
 			$oCtrl.FontName = _Json_Get($oThisCtrl, ".FontName", "")
 			$oCtrl.BorderColor = _Json_Get($oThisCtrl, ".BorderColor", '0x000000')
-			If $oCtrl.BorderColor <> -1 Then
-				$oCtrl.BorderColor = Dec(StringReplace($oCtrl.BorderColor, "0x", ""))
-			EndIf
 			$oCtrl.BorderSize = _Json_Get($oThisCtrl, ".BorderSize", 1)
 
 			Local $aCoords[2]
@@ -519,19 +473,9 @@ Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 								$oCtrl2.CodeString = _Json_Get($oTabCtrl, ".CodeString", "")
 								$oCtrl2.Items = _Json_Get($oTabCtrl, ".Items", "")
 								$oCtrl2.Img = _Json_Get($oTabCtrl, ".Img", "")
-								$oCtrl2.Color = _Json_Get($oTabCtrl, ".Color", -1)
-								If $oCtrl2.Color <> -1 Then
-									$oCtrl2.Color = Dec(StringReplace($oCtrl2.Color, "0x", ""))
-								EndIf
-								$oCtrl2.Background = _Json_Get($oTabCtrl, ".Background", -1)
-								If $oCtrl2.Background <> -1 Then
-									$oCtrl2.Background = Dec(StringReplace($oCtrl2.Background, "0x", ""))
-								EndIf
-
+								$oCtrl2.Color = _Json_Get($oTabCtrl, ".Color", "")
+								$oCtrl2.Background = _Json_Get($oTabCtrl, ".Background", "")
 								$oCtrl2.BorderColor = _Json_Get($oTabCtrl, ".BorderColor", '0x000000')
-								If $oCtrl2.BorderColor <> -1 Then
-									$oCtrl2.BorderColor = Dec(StringReplace($oCtrl2.BorderColor, "0x", ""))
-								EndIf
 								$oCtrl2.BorderSize = _Json_Get($oTabCtrl, ".BorderSize", 1)
 
 								$aCoords[0] = _Json_Get($oTabCtrl, ".Coords.Coord1_X", 0)
@@ -582,19 +526,9 @@ Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 						$oCtrl2.CodeString = _Json_Get($oGroupCtrl, ".CodeString", "")
 						$oCtrl2.Items = _Json_Get($oGroupCtrl, ".Items", "")
 						$oCtrl2.Img = _Json_Get($oGroupCtrl, ".Img", "")
-						$oCtrl2.Color = _Json_Get($oGroupCtrl, ".Color", -1)
-						If $oCtrl2.Color <> -1 Then
-							$oCtrl2.Color = Dec(StringReplace($oCtrl2.Color, "0x", ""))
-						EndIf
-						$oCtrl2.Background = _Json_Get($oGroupCtrl, ".Background", -1)
-						If $oCtrl2.Background <> -1 Then
-							$oCtrl2.Background = Dec(StringReplace($oCtrl2.Background, "0x", ""))
-						EndIf
-
-						$oCtrl2.BorderColor = _Json_Get($oGroupCtrl, ".BorderColor", -1)
-						If $oCtrl2.BorderColor <> -1 Then
-							$oCtrl2.BorderColor = Dec(StringReplace($oCtrl2.BorderColor, "0x", ""))
-						EndIf
+						$oCtrl2.Color = _Json_Get($oGroupCtrl, ".Color", "")
+						$oCtrl2.Background = _Json_Get($oGroupCtrl, ".Background", "")
+						$oCtrl2.BorderColor = _Json_Get($oGroupCtrl, ".BorderColor", '0x000000')
 						$oCtrl2.BorderSize = _Json_Get($oGroupCtrl, ".BorderSize", 1)
 
 						$aCoords[0] = _Json_Get($oGroupCtrl, ".Coords.Coord1_X", 0)
@@ -729,21 +663,20 @@ Func _load_gui_definition_ini($AgdInfile = '')
 			_display_grid($background, $oMain.Width, $oMain.Height)
 		EndIf
 	EndIf
-	$oMain.Background = IniRead($AgdInfile, "Main", "Background", -1)
-	$oProperties_Main.Background.value = $oMain.Background
-	If $oMain.Background <> -1 And $oMain.Background <> "" Then
-		$oMain.Background = Dec(StringReplace($oMain.Background, "0x", ""))
+	$oMain.Background = IniRead($AgdInfile, "Main", "Background", "")
+	If $oMain.Background <> "" Then
 		GUISetBkColor($oMain.Background, $hGUI)
 	Else
 		GUISetBkColor($defaultGuiBkColor, $hGUI)
 	EndIf
 
-	$oProperties_Main.Title.value = $oMain.Title
-	$oProperties_Main.Name.value = $oMain.Name
-	$oProperties_Main.Left.value = $oMain.Left
-	$oProperties_Main.Top.value = $oMain.Top
-	$oProperties_Main.Width.value = $oMain.Width
-	$oProperties_Main.Height.value = $oMain.Height
+	$oProperties_Main.properties.Background.value = $oMain.Background
+	$oProperties_Main.properties.Title.value = $oMain.Title
+	$oProperties_Main.properties.Name.value = $oMain.Name
+	$oProperties_Main.properties.Left.value = $oMain.Left
+	$oProperties_Main.properties.Top.value = $oMain.Top
+	$oProperties_Main.properties.Width.value = $oMain.Width
+	$oProperties_Main.properties.Height.value = $oMain.Height
 
 
 	Local Const $numCtrls = IniRead($AgdInfile, "Main", "numctrls", -1)
@@ -766,14 +699,8 @@ Func _load_gui_definition_ini($AgdInfile = '')
 		$oCtrl.Height = IniRead($AgdInfile, $Key, "Height", -1)
 		$oCtrl.Global = IniRead($AgdInfile, $Key, "Global", $GUI_CHECKED)
 		$oCtrl.Locked = IniRead($AgdInfile, $Key, "Locked", $GUI_UNCHECKED)
-		$oCtrl.Color = IniRead($AgdInfile, $Key, "Color", -1)
-		If $oCtrl.Color <> -1 Then
-			$oCtrl.Color = Dec(StringReplace($oCtrl.Color, "0x", ""))
-		EndIf
-		$oCtrl.Background = IniRead($AgdInfile, $Key, "Background", -1)
-		If $oCtrl.Background <> -1 Then
-			$oCtrl.Background = Dec(StringReplace($oCtrl.Background, "0x", ""))
-		EndIf
+		$oCtrl.Color = IniRead($AgdInfile, $Key, "Color", "")
+		$oCtrl.Background = IniRead($AgdInfile, $Key, "Background", "")
 
 		Local $oNewCtrl = _create_ctrl($oCtrl, True)
 
