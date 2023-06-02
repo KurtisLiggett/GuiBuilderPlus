@@ -2315,30 +2315,50 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 
 	;TEXT
 	Local $text = $oCtrl.Text
-	If $oCtrl.Type = "Tab" Then
-		If $childHwnd <> -1 Then ;this is a child tab
-			Local $iTabFocus = _GUICtrlTab_GetCurSel($oCtrl.Hwnd)
+	Switch $oCtrl.Type
+		Case "Tab"
+			If $childHwnd <> -1 Then ;this is a child tab
+				Local $iTabFocus = _GUICtrlTab_GetCurSel($oCtrl.Hwnd)
 
-			If $iTabFocus >= 0 Then
-				$tabID = $oCtrl.Tabs.at($iTabFocus)
-				$text = $oCtrls.get($tabID).Text
+				If $iTabFocus >= 0 Then
+					$tabID = $oCtrl.Tabs.at($iTabFocus)
+					$text = $oCtrls.get($tabID).Text
+				EndIf
 			EndIf
-		EndIf
-	EndIf
+		Case "Menu"
+			If $childHwnd <> -1 Then ;this is a menu item
+				For $oMenuItem In $oCtrl.MenuItems
+					If $oMenuItem.Hwnd = $childHwnd Then
+						$text = $oMenuItem.Text
+						ExitLoop
+					EndIf
+				Next
+			EndIf
+	EndSwitch
 	$oProperties_Ctrls.properties.Text.value = $text
 
 	;NAME
 	Local $name = $oCtrl.Name
-	If $oCtrl.Type = "Tab" Then
-		If $childHwnd <> -1 Then ;this is a child tab
-			Local $iTabFocus = _GUICtrlTab_GetCurSel($oCtrl.Hwnd)
+	Switch $oCtrl.Type
+		Case "Tab"
+			If $childHwnd <> -1 Then ;this is a child tab
+				Local $iTabFocus = _GUICtrlTab_GetCurSel($oCtrl.Hwnd)
 
-			If $iTabFocus >= 0 Then
-				$tabID = $oCtrl.Tabs.at($iTabFocus)
-				$name = $oCtrls.get($tabID).Name
+				If $iTabFocus >= 0 Then
+					$tabID = $oCtrl.Tabs.at($iTabFocus)
+					$name = $oCtrls.get($tabID).Name
+				EndIf
 			EndIf
-		EndIf
-	EndIf
+		Case "Menu"
+			If $childHwnd <> -1 Then ;this is a menu item
+				For $oMenuItem In $oCtrl.MenuItems
+					If $oMenuItem.Hwnd = $childHwnd Then
+						$name = $oMenuItem.Name
+						ExitLoop
+					EndIf
+				Next
+			EndIf
+	EndSwitch
 	$oProperties_Ctrls.properties.Name.value = $name
 
 	$oProperties_Ctrls.properties.Left.value = $oCtrl.Left
@@ -2359,7 +2379,31 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 
 	$oProperties_Ctrls.properties.Items.value = $oCtrl.Items
 
-	$oProperties_Ctrls.properties.Global.value = $oCtrl.Global
+
+	;Global
+	Local $bGlobal = $oCtrl.Global
+	Switch $oCtrl.Type
+;~ 		Case "Tab"
+;~ 			If $childHwnd <> -1 Then ;this is a child tab
+;~ 				Local $iTabFocus = _GUICtrlTab_GetCurSel($oCtrl.Hwnd)
+
+;~ 				If $iTabFocus >= 0 Then
+;~ 					$tabID = $oCtrl.Tabs.at($iTabFocus)
+;~ 					$bGlobal = $oCtrls.get($tabID).Global
+;~ 				EndIf
+;~ 			EndIf
+		Case "Menu"
+			If $childHwnd <> -1 Then ;this is a menu item
+				For $oMenuItem In $oCtrl.MenuItems
+					If $oMenuItem.Hwnd = $childHwnd Then
+						$bGlobal = $oMenuItem.Global
+						ExitLoop
+					EndIf
+				Next
+			EndIf
+	EndSwitch
+	$oProperties_Ctrls.properties.Global.value = $bGlobal
+
 
 	;font weight
 	Local $iFw
@@ -2517,59 +2561,85 @@ Func _ctrl_change_text()
 
 	Local Const $sel_count = $oSelected.count
 
+	Local $hSelected = _getLvSelectedHwnd()
+
+	;if exists. If not, then must be menu item
+	Local $isMenuItem
+	If Not $oSelected.ctrls.Exists($hSelected) Then
+		$isMenuItem = True
+	EndIf
+
 	;update the undo action stack
-	Local $oAction = _objAction()
-	$oAction.action = $action_changeText
-	$oAction.ctrls = $oSelected.ctrls.Items()
-	Local $aParams[$oSelected.ctrls.Count]
-	Local $aParam[2]
-	For $i = 0 To UBound($oAction.ctrls) - 1
-		$aParam[0] = $oAction.ctrls[$i].Text
-		$aParam[1] = $oProperties_Ctrls.properties.Text.value
-		$aParams[$i] = $aParam
-	Next
-	$oAction.parameters = $aParams
-	_updateActionStacks($oAction)
+	Local $oCtrl
+	If Not $isMenuItem Then
+		Local $oAction = _objAction()
+		$oAction.action = $action_changeText
+		$oAction.ctrls = $oSelected.ctrls.Items()
+		Local $aParams[$oSelected.ctrls.Count]
+		Local $aParam[2]
+		For $i = 0 To UBound($oAction.ctrls) - 1
+			$aParam[0] = $oAction.ctrls[$i].Text
+			$aParam[1] = $oProperties_Ctrls.properties.Text.value
+			$aParams[$i] = $aParam
+		Next
+		$oAction.parameters = $aParams
+		_updateActionStacks($oAction)
+	Else
+		$oCtrl = $oSelected.getFirst()
+		For $oMenuItem In $oCtrl.MenuItems
+			If $oMenuItem.Hwnd = $hSelected Then
+				$oCtrl = $oMenuItem
+				ExitLoop
+			EndIf
+		Next
+	EndIf
+
+	;update the undo action stack
+
 
 	Switch $sel_count >= 1
 		Case True
-			For $oCtrl In $oSelected.ctrls.Items()
-				If $oCtrl.Locked Then ContinueLoop
+			If Not $isMenuItem Then
+				For $oCtrl In $oSelected.ctrls.Items()
+					If $oCtrl.Locked Then ContinueLoop
 
-				If $oCtrl.Type = "Combo" Then
-					GUICtrlSetData($oCtrl.Hwnd, $new_text, $new_text)
-					$oCtrl.Text = $new_text
-				ElseIf $oCtrl.Type = "Tab" Then
-					If $childSelected Then
-						Local $iTabFocus = _GUICtrlTab_GetCurSel($oCtrl.Hwnd)
+					If $oCtrl.Type = "Combo" Then
+						GUICtrlSetData($oCtrl.Hwnd, $new_text, $new_text)
+						$oCtrl.Text = $new_text
+					ElseIf $oCtrl.Type = "Tab" Then
+						If $childSelected Then
+							Local $iTabFocus = _GUICtrlTab_GetCurSel($oCtrl.Hwnd)
 
-						If $iTabFocus >= 0 Then
-							_GUICtrlTab_SetItemText($oCtrl.Hwnd, $iTabFocus, $new_text)
-							$tabID = $oCtrl.Tabs.at($iTabFocus)
-							$oCtrls.get($tabID).Text = $new_text
+							If $iTabFocus >= 0 Then
+								_GUICtrlTab_SetItemText($oCtrl.Hwnd, $iTabFocus, $new_text)
+								$tabID = $oCtrl.Tabs.at($iTabFocus)
+								$oCtrls.get($tabID).Text = $new_text
+							EndIf
+						Else
+							$oCtrl.Text = $new_text
 						EndIf
-					Else
+					ElseIf $oCtrl.Type = "Menu" Then
+						If $childSelected Then
+							Local $hSelected = _getLvSelectedHwnd()
+							Local $oCtrl = $oCtrls.get($hSelected)
+							If Not IsObj($oCtrl) Then Return -1
+							GUICtrlSetData($oCtrl.Hwnd, $new_text)
+							$oCtrl.Text = $new_text
+						Else
+							GUICtrlSetData($oCtrl.Hwnd, $new_text)
+							$oCtrl.Text = $new_text
+						EndIf
+					ElseIf $oCtrl.Type = "IP" Then
+						_GUICtrlIpAddress_Set($oCtrl.Hwnd, $new_text)
 						$oCtrl.Text = $new_text
-					EndIf
-				ElseIf $oCtrl.Type = "Menu" Then
-					If $childSelected Then
-						Local $hSelected = _getLvSelectedHwnd()
-						Local $oCtrl = $oCtrls.get($hSelected)
-						If Not IsObj($oCtrl) Then Return -1
+					Else
 						GUICtrlSetData($oCtrl.Hwnd, $new_text)
 						$oCtrl.Text = $new_text
-					Else
-						GUICtrlSetData($oCtrl.Hwnd, $new_text)
-						$oCtrl.Text = $new_text
 					EndIf
-				ElseIf $oCtrl.Type = "IP" Then
-					_GUICtrlIpAddress_Set($oCtrl.Hwnd, $new_text)
-					$oCtrl.Text = $new_text
-				Else
-					GUICtrlSetData($oCtrl.Hwnd, $new_text)
-					$oCtrl.Text = $new_text
-				EndIf
-			Next
+				Next
+			Else
+				$oCtrl.Text = $new_text
+			EndIf
 	EndSwitch
 
 	_refreshGenerateCode()
@@ -2584,16 +2654,41 @@ Func _ctrl_change_name()
 
 	Local Const $sel_count = $oSelected.count
 
+	;get selected item in object viewer
+	Local $hSelected = _getLvSelectedHwnd()
+
+	;if exists. If not, then must be menu item
+	Local $isMenuItem
+	If Not $oSelected.ctrls.Exists($hSelected) Then
+		$isMenuItem = True
+	EndIf
+
+
 	;update the undo action stack
-	Local $oAction = _objAction()
-	$oAction.action = $action_renameCtrl
-	$oAction.ctrls = $oSelected.ctrls.Items()
-	Local $aParams[2] = [$oAction.ctrls[0].Name, $oProperties_Ctrls.properties.Name.value]
-	$oAction.parameters = $aParams
-	_updateActionStacks($oAction)
+	Local $oCtrl
+	If Not $isMenuItem Then
+		Local $oAction = _objAction()
+		$oAction.action = $action_renameCtrl
+		$oAction.ctrls = $oSelected.ctrls.Items()
+		Local $aParams[2] = [$oAction.ctrls[0].Name, $oProperties_Ctrls.properties.Name.value]
+
+		$oAction.parameters = $aParams
+		_updateActionStacks($oAction)
+	Else
+		$oCtrl = $oSelected.getFirst()
+		For $oMenuItem In $oCtrl.MenuItems
+			If $oMenuItem.Hwnd = $hSelected Then
+				$oCtrl = $oMenuItem
+				$name = $oMenuItem.Name
+				ExitLoop
+			EndIf
+		Next
+	EndIf
 
 	If $sel_count = 1 Then
-		Local $oCtrl = $oSelected.getFirst()
+		If Not $isMenuItem Then
+			Local $oCtrl = $oSelected.getFirst()
+		EndIf
 		If $oCtrl.Locked Then Return
 
 		If $oCtrl.Type = "Tab" Then
@@ -2610,14 +2705,14 @@ Func _ctrl_change_name()
 				$oCtrl.Name = $new_name
 			EndIf
 		ElseIf $oCtrl.Type = "Menu" Then
-			If $childSelected Then
-				Local $hSelected = _getLvSelectedHwnd()
-				Local $oCtrl = $oCtrls.get($hSelected)
-				If Not IsObj($oCtrl) Then Return -1
-				$oCtrl.Name = $new_name
-			Else
-				$oCtrl.Name = $new_name
-			EndIf
+;~ 			If $childSelected Then
+;~ 				Local $hSelected = _getLvSelectedHwnd()
+;~ 				Local $oCtrl = $oCtrls.get($hSelected)
+;~ 				If Not IsObj($oCtrl) Then Return -1
+;~ 				$oCtrl.Name = $new_name
+;~ 			Else
+			$oCtrl.Name = $new_name
+;~ 			EndIf
 		Else
 			$oCtrl.Name = $new_name
 		EndIf
@@ -3073,14 +3168,41 @@ Func _ctrl_change_global()
 
 	Local Const $sel_count = $oSelected.count
 
+	;get selected item in object viewer
+	Local $hSelected = _getLvSelectedHwnd()
+
+	;if exists. If not, then must be menu item
+	Local $isMenuItem
+	If Not $oSelected.ctrls.Exists($hSelected) And $hSelected <> -1 Then
+		$isMenuItem = True
+	EndIf
+
+	Local $oCtrl
+	If Not $isMenuItem Then
+
+	Else
+		$oCtrl = $oSelected.getFirst()
+		For $oMenuItem In $oCtrl.MenuItems
+			If $oMenuItem.Hwnd = $hSelected Then
+				$oCtrl = $oMenuItem
+				$name = $oMenuItem.Name
+				ExitLoop
+			EndIf
+		Next
+	EndIf
+
 	Switch $sel_count >= 1
 		Case True
-			For $oCtrl In $oSelected.ctrls.Items()
-				If $oCtrl.Locked Then ContinueLoop
+			If Not $isMenuItem Then
+				For $oCtrl In $oSelected.ctrls.Items()
+					If $oCtrl.Locked Then ContinueLoop
 
-				;update the property
+					;update the property
+					$oCtrl.Global = $new_data
+				Next
+			Else
 				$oCtrl.Global = $new_data
-			Next
+			EndIf
 	EndSwitch
 
 	_refreshGenerateCode()

@@ -94,6 +94,7 @@ Func _save_gui_definition($saveAs = False)
 
 	$i = 0
 	For $oCtrl In $oCtrls.ctrls.Items()
+
 		If $oCtrl.Type = "TabItem" Then ContinueLoop
 		If $oCtrl.CtrlParent <> 0 Then ContinueLoop
 
@@ -227,6 +228,7 @@ Func _save_gui_definition($saveAs = False)
 				For $oMenuItem In $oCtrl.MenuItems
 					Json_Put($objOutput, ".Controls[" & $i & "].MenuItems[" & $j & "].Name", $oMenuItem.Name)
 					Json_Put($objOutput, ".Controls[" & $i & "].MenuItems[" & $j & "].Text", $oMenuItem.Text)
+					Json_Put($objOutput, ".Controls[" & $i & "].MenuItems[" & $j & "].Global", $oMenuItem.Global)
 					$j += 1
 				Next
 			EndIf
@@ -562,11 +564,11 @@ Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 
 						$j = 1
 						For $oMenuItem In $aMenuItems
-							_new_menuItemCreate($oCtrl, True)
-
+							_new_menuItemCreate($oCtrl, True, _Json_Get($oMenuItem, ".Text", "tempText"))
 							$oCtrl.MenuItems.at($j - 1).Name = _Json_Get($oMenuItem, ".Name", "tempName")
 							$oCtrl.MenuItems.at($j - 1).Text = _Json_Get($oMenuItem, ".Text", "tempText")
-							GUICtrlSetData($oCtrl.MenuItems.at($j - 1).Hwnd, $oCtrl.MenuItems.at($j - 1).Text)
+							$oCtrl.MenuItems.at($j - 1).Global = _Json_Get($oMenuItem, ".Global", $GUI_CHECKED)
+;~ 							GUICtrlSetData($oCtrl.MenuItems.at($j - 1).Hwnd, $oCtrl.MenuItems.at($j - 1).Text)
 							$j += 1
 						Next
 					EndIf

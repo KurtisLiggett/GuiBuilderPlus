@@ -199,7 +199,8 @@ Func _onLvObjectsItem()
 						Case "Menu"
 							$childSelected = True
 ;~ 					_add_to_selected($oParentCtrl)
-							_populate_control_properties_gui($oCtrl, Dec($textHwnd))
+							_add_to_selected($oParentCtrl)
+							_populate_control_properties_gui($oParentCtrl, Dec($textHwnd))
 
 					EndSwitch
 				EndIf
@@ -271,7 +272,7 @@ Func _onLvMoveUp()
 			EndIf
 		Next
 		If $foundIndex Then
-			ConsoleWrite("found index" & @CRLF)
+;~ 			ConsoleWrite("found index" & @CRLF)
 			GuiCtrlSetOnTop($oCtrlMove.Hwnd, $nextHwnd)
 		EndIf
 
@@ -553,7 +554,11 @@ Func _formObjectExplorer_updateList()
 				GUICtrlSetOnEvent($lvMenuNewMenuItem, "_new_menuItem")
 
 				For $oMenuItem In $oCtrl.MenuItems
-					$childItem = GUICtrlCreateTreeViewItem($oMenuItem.Name & "       " & @TAB & "(HWND: " & Hex($oMenuItem.Hwnd) & ")", $lvItem)
+					Local $childName = $oMenuItem.Name
+					If $childName = "" Then
+						$childName = $oMenuItem.Type & "*"
+					EndIf
+					$childItem = GUICtrlCreateTreeViewItem($childName & "       " & @TAB & "(HWND: " & Hex($oMenuItem.Hwnd) & ")", $lvItem)
 					GUICtrlSetOnEvent(-1, "_onLvObjectsItem")
 
 					$menuItemMenu = GUICtrlCreateContextMenu($childItem)

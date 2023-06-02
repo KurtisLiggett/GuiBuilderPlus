@@ -46,15 +46,32 @@ Func _code_generation()
 	Local $aCtrlCode
 	For $oCtrl In $oCtrls.ctrls.Items()
 		;generate globals for controls
-		If (($oCtrl.Name <> "") And ($oCtrl.Global = $GUI_CHECKED)) Or (Not $bOnEventMode And $bGuiFunction And $oCtrl.CodeString <> "") Then
-			If StringLen($globals[$globalsIndex]) > 100 Then
-				$globals[$globalsIndex] = StringTrimRight($globals[$globalsIndex], 2) & @CRLF
-				$globalsIndex += 1
-				ReDim $globals[$globalsIndex + 1]
-				$globals[$globalsIndex] = "Global "
-			EndIf
-			$globals[$globalsIndex] &= "$" & $oCtrl.Name & ", "
-		EndIf
+		Switch $oCtrl.Type
+			Case "Menu"
+				For $oMenuItem In $oCtrl.MenuItems
+					If (($oMenuItem.Name <> "") And ($oMenuItem.Global = $GUI_CHECKED)) Or (Not $bOnEventMode And $bGuiFunction And $oMenuItem.CodeString <> "") Then
+						If StringLen($globals[$globalsIndex]) > 100 Then
+							$globals[$globalsIndex] = StringTrimRight($globals[$globalsIndex], 2) & @CRLF
+							$globalsIndex += 1
+							ReDim $globals[$globalsIndex + 1]
+							$globals[$globalsIndex] = "Global "
+						EndIf
+						$globals[$globalsIndex] &= "$" & $oMenuItem.Name & ", "
+					EndIf
+				Next
+
+			Case Else
+				If (($oCtrl.Name <> "") And ($oCtrl.Global = $GUI_CHECKED)) Or (Not $bOnEventMode And $bGuiFunction And $oCtrl.CodeString <> "") Then
+					If StringLen($globals[$globalsIndex]) > 100 Then
+						$globals[$globalsIndex] = StringTrimRight($globals[$globalsIndex], 2) & @CRLF
+						$globalsIndex += 1
+						ReDim $globals[$globalsIndex + 1]
+						$globals[$globalsIndex] = "Global "
+					EndIf
+					$globals[$globalsIndex] &= "$" & $oCtrl.Name & ", "
+				EndIf
+		EndSwitch
+
 
 		;generate includes
 		$includes &= _generate_includes($oCtrl, $includes)
@@ -329,8 +346,15 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 		Case "Menu"
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '")' & @CRLF
 
+			Local $thisScopeString
 			For $oMenuItem In $oCtrl.MenuItems
-				$mControls &= $scopeString & " $" & $oMenuItem.Name & " = "
+				$thisScopeString = "Local"
+				If StringStripWS($oMenuItem.Name, $STR_STRIPALL) <> '' Then
+					If ($oMenuItem.Global = $GUI_CHECKED) Or $useCodeString Then
+						$thisScopeString = "Global"
+					EndIf
+					$mControls &= $thisScopeString & " $" & $oMenuItem.Name & " = "
+				EndIf
 				$mControls &= 'GUICtrlCreateMenuItem("' & $oMenuItem.Text & '", $' & $oCtrl.Name & ')' & @CRLF
 			Next
 

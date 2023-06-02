@@ -596,7 +596,7 @@ Func _new_menuItem()
 	_new_menuItemCreate()
 EndFunc   ;==>_new_menuItem
 
-Func _new_menuItemCreate($oParent = 0, $loadGUI = False)
+Func _new_menuItemCreate($oParent = 0, $loadGUI = False, $itemText = -1)
 	Local $oCtrl, $hSelected
 	If Not IsObj($oParent) Then
 		$hSelected = _getLvSelectedHwnd()
@@ -609,9 +609,14 @@ Func _new_menuItemCreate($oParent = 0, $loadGUI = False)
 
 	Local $newCount = $oCtrl.MenuItems.count + 1
 	Local $MenuItem = _objCtrl($oCtrl)
-	$MenuItem.Hwnd = GUICtrlCreateMenuItem("MenuItem" & $newCount, $hSelected)
-	$MenuItem.Text = "MenuItem" & $newCount
+	If $loadGUI Then
+		$MenuItem.Text = $itemText
+	Else
+		$MenuItem.Text = "MenuItem" & $newCount
+	EndIf
+	$MenuItem.Hwnd = GUICtrlCreateMenuItem($MenuItem.Text, $hSelected)
 	$MenuItem.Name = "MenuItem_" & $newCount
+	$MenuItem.Type = "MenuItem"
 	$oCtrl.MenuItems.add($MenuItem)
 
 	_GUICtrlTab_SetCurSel($oCtrl.Hwnd, $newCount - 1)
@@ -625,21 +630,7 @@ EndFunc   ;==>_new_menuItemCreate
 
 Func _delete_menuItem()
 	Local $hSelected = _getLvSelectedHwnd()
-	Local $oCtrl = $oCtrls.get($hSelected)
-	If Not IsObj($oCtrl) Then Return -1
-
-	Local $oParent
-	For $oCtrl In $oCtrls.ctrls.Items()
-		If $oCtrl.Type = "Menu" Then
-			For $oMenuItem In $oCtrl.MenuItems
-				If $oMenuItem.Hwnd = $hSelected Then
-					$oParent = $oCtrl
-					ExitLoop 2
-				EndIf
-			Next
-		EndIf
-	Next
-
+	Local $oParent = $oSelected.getFirst()
 	If Not IsObj($oParent) Then Return -1
 
 	Local $i = 0
