@@ -15,7 +15,7 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  05/25/2023 ...:
+;  06/28/2023 ...:
 ;					- FIXED:	Code preview not highlighting #Region/#EndRegion
 ;					- FIXED:	Bugs in AVI control code
 ;					- FIXED:	Keyboard shortcut behavior in properties window
@@ -27,19 +27,19 @@
 ;					- FIXED:	Incorrect tabs for event code
 ;					- FIXED:	Delete menuitem not working
 ;					- FIXED:	Create variables for menuitems
+;					- FIXED:	Various bugs when importing from AU3 file
 ;					- ADDED:	Image select button for AVI
 ;					- ADDED:	Edit menuitem name, text, and global properties
 ;					- ADDED:	Button to Copy only the GUI Region to clipboard
 ;					- ADDED:	Status messages for copying to clipboard
 ;					- UPDATED:	New single Image control replaces Pic, Icon, and AVI controls
+;					- UPDATED:	BIG speed improvements when saving and loading definition files
+;					- UPDATED:	More reductions in flickering
 ;					- UPDATED:	New button icons
 ;					- UPDATED:	Better tray menu handling
 ;					- UPDATED:	Save code preview window size
+;					- UPDATED:	Add space around menu/menuitems in generated code
 ;					- UPDATED:	Updated help file and corrected some formatting issues
-;
-; Roadmap .......:	- Finish control properties tabs
-;					- Windows' theme support
-;					- Use single resize box for multiple selected controls
 ;
 ; ===============================================================================================================================
 
@@ -189,7 +189,7 @@ _AutoItObject_StartUp()
 #include <GuiMenu.au3>
 #include <GuiEdit.au3>
 #include <GuiTreeView.au3>
-#include "UDFS\Json\json.au3"
+#include "UDFS\JSON.au3"
 #include "UDFS\GUIScrollbars_Ex.au3"
 #include "UDFs\StringSize.au3"
 #include "UDFs\RESH.au3"

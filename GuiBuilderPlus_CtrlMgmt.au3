@@ -10,6 +10,12 @@
 ; Called by.......: Draw with mouse; Paste
 ;------------------------------------------------------------------------------
 Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hParent = -1, $bDuplicate = False)
+	Static $lasttime = TimerInit()
+	Local $timerCreate = TimerInit()
+
+;~ 	ConsoleWrite("Between: " & TimerDiff($lasttime) & @CRLF)
+	$lasttime = TimerInit()
+
 	;only allow 1 tab control
 	If $oCtrls.CurrentType = "Tab" Then
 		If $oCtrls.getTypeCount("Tab") > 0 Then
@@ -62,24 +68,24 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 	;use next available name
 	Local $found = True
 	Local $j = 0
-	While $found
-		$found = False
-		$j += 1
-		$name = $oNewControl.Type & "_" & $j
-
-		If $count >= 1 Then
-			For $oCtrl In $oCtrls.ctrls.Items()
-
-				If $oCtrl.Name = $name Then
-					$found = True
-					ExitLoop
-				EndIf
-			Next
-		Else
-			$found = False
-		EndIf
-	WEnd
 	If Not $bUseName Then
+		While $found
+			$found = False
+			$j += 1
+			$name = $oNewControl.Type & "_" & $j
+
+			If $count >= 1 Then
+				For $oCtrl In $oCtrls.ctrls.Items()
+
+					If $oCtrl.Name = $name Then
+						$found = True
+						ExitLoop
+					EndIf
+				Next
+			Else
+				$found = False
+			EndIf
+		WEnd
 		$oNewControl.Name = $name
 	EndIf
 
@@ -133,6 +139,10 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 			EndIf
 		Next
 	EndIf
+
+;~ 	ConsoleWrite($oNewControl.Type & @CRLF)
+;~ 	ConsoleWrite("Init: " & TimerDiff($lasttime) & @CRLF)
+	$lasttime = TimerInit()
 
 	Switch $oNewControl.Type
 		Case "Button"
@@ -411,6 +421,9 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 	EndSwitch
 
+;~ 	ConsoleWrite("Create: " & TimerDiff($lasttime) & @CRLF)
+	$lasttime = TimerInit()
+
 	$oMain.hasChanged = True
 
 	If $tabChild Then
@@ -434,6 +447,10 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 	GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
 
 	GuiCtrlSetOnTop($oNewControl.Hwnd)
+
+;~ 	ConsoleWrite("Finish: " & TimerDiff($lasttime) & @CRLF)
+	$lasttime = TimerInit()
+;~ 	ConsoleWrite("Total: " & TimerDiff($timerCreate) & @CRLF & @CRLF)
 
 	Return $oNewControl
 EndFunc   ;==>_create_ctrl

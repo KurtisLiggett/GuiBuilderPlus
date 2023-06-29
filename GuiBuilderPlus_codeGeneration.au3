@@ -61,6 +61,7 @@ Func _code_generation()
 				Next
 
 			Case Else
+;~ 				If (($oCtrl.Name <> "") And ($oCtrl.Global = $GUI_CHECKED)) Or (Not $bOnEventMode And $bGuiFunction And $oCtrl.CodeString <> "") Or ($oCtrl.Name <> "" And $bAddDpiScale) Then
 				If (($oCtrl.Name <> "") And ($oCtrl.Global = $GUI_CHECKED)) Or (Not $bOnEventMode And $bGuiFunction And $oCtrl.CodeString <> "") Then
 					If StringLen($globals[$globalsIndex]) > 100 Then
 						$globals[$globalsIndex] = StringTrimRight($globals[$globalsIndex], 2) & @CRLF
@@ -89,7 +90,6 @@ Func _code_generation()
 
 	Local $FuncMain = _getFuncMain($bOnEventMode, $bGuiFunction)
 	Local $FuncOnEventMode = _getFuncOnExit()
-	Local $FuncDpiScaling = _getFuncDpiScaling()
 
 	Local $gdtitle = _get_script_title()
 	If $oMain.Title <> "" Then
@@ -135,7 +135,7 @@ Func _code_generation()
 
 	Local $code = ""
 	If $bAddDpiScale Then
-		$code &= "#AutoIt3Wrapper_Res_HiDpi=y" & @CRLF & @CRLF
+		$code &= "#AutoIt3Wrapper_Res_HiDpi=P" & @CRLF & @CRLF
 	EndIf
 
 	If $bOnEventMode Then
@@ -145,6 +145,7 @@ Func _code_generation()
 	$code &= $includes & @CRLF & @CRLF
 	If $bAddDpiScale Then
 		$code &= "Global $fDpiFactor = _GDIPlus_GraphicsGetDPIRatio()" & @CRLF & @CRLF
+;~ 		$code &= 'If Not IsDeclared("WM_DPICHANGED") Then Global $WM_DPICHANGED = 0x02E0' & @CRLF & @CRLF
 	EndIf
 	$code &= $regionStart & @CRLF
 
@@ -214,7 +215,11 @@ Func _code_generation()
 	EndIf
 
 	If $bAddDpiScale Then
+		Local $FuncDpiScaling = _getFuncDpiScaling()
 		$code &= @CRLF & $FuncDpiScaling
+
+;~ 		Local $FuncDpiMessage = _getFuncDpiMessage()
+;~ 		$code &= @CRLF & $FuncDpiMessage
 	EndIf
 
 	If $bOnEventMode Then
@@ -292,10 +297,13 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 	Local $sEvents = ""
 
 	Local $scopeString = "Local"
-	If ($oCtrl.Global = $GUI_CHECKED) Or $useCodeString Then $scopeString = "Global"
+;~ 	If ($oCtrl.Global = $GUI_CHECKED) Or $useCodeString Or ($oCtrl.Name <> "" And $sDpiScale) Then
+	If ($oCtrl.Global = $GUI_CHECKED) Or $useCodeString Then
+		$scopeString = "Global"
+	EndIf
 
 	Switch $oCtrl.Type
-		Case "Tab", "Group"
+		Case "Tab", "Group", "Menu"
 			If $sControls <> "" And Not (StringRight($sControls, 4) = (@CRLF & @CRLF)) Then
 				$mControls &= @CRLF
 			EndIf
@@ -358,6 +366,8 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 				$mControls &= 'GUICtrlCreateMenuItem("' & $oMenuItem.Text & '", $' & $oCtrl.Name & ')' & @CRLF
 			Next
 
+			$mControls &= @CRLF
+
 		Case "IP"
 ;~ 			_GUICtrlIpAddress_Create($hGUI, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 			$mControls &= "_GUICtrlIpAddress_Create" & '($' & $oMain.Name & ', ' & $ltwh & $ctrlStyle & ')' & @CRLF
@@ -406,7 +416,7 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 			EndIf
 			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_PENSIZE, ' & $oCtrl.BorderSize & ')' & @CRLF
 			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_COLOR, ' & $border & $back & ')' & @CRLF
-			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_RECT, 0, 0, ' & $oCtrl.Width & ', ' & $oCtrl.Height & ')' & @CRLF
+			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_RECT, 0, 0, ' & $oCtrl.Width & $sDpiScale & ', ' & $oCtrl.Height & $sDpiScale & ')' & @CRLF
 
 		Case "Ellipse"
 			$mControls &= 'GUICtrlCreateGraphic(' & $ltwh & $ctrlStyle & ')' & @CRLF
@@ -423,7 +433,7 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 			EndIf
 			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_PENSIZE, ' & $oCtrl.BorderSize & ')' & @CRLF
 			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_COLOR, ' & $border & $back & ')' & @CRLF
-			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_ELLIPSE, 0, 0, ' & $oCtrl.Width & ', ' & $oCtrl.Height & ')' & @CRLF
+			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_ELLIPSE, 0, 0, ' & $oCtrl.Width & $sDpiScale & ', ' & $oCtrl.Height & $sDpiScale & ')' & @CRLF
 
 		Case "Line"
 			$mControls &= 'GUICtrlCreateGraphic(' & $ltwh & $ctrlStyle & ')' & @CRLF
@@ -435,8 +445,8 @@ Func _generate_controls(ByRef $sControls, Const $oCtrl, $sDpiScale, $isChild = F
 			EndIf
 			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_PENSIZE, ' & $oCtrl.BorderSize & ')' & @CRLF
 			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_COLOR, ' & $border & ')' & @CRLF
-			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_MOVE, ' & $oCtrl.Coord1[0] & ', ' & $oCtrl.Coord1[1] & ')' & @CRLF
-			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_LINE, ' & $oCtrl.Coord2[0] & ', ' & $oCtrl.Coord2[1] & ')' & @CRLF
+			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_MOVE, ' & $oCtrl.Coord1[0] & $sDpiScale & ', ' & $oCtrl.Coord1[1] & $sDpiScale & ')' & @CRLF
+			$mControls &= 'GUICtrlSetGraphic(-1, $GUI_GR_LINE, ' & $oCtrl.Coord2[0] & $sDpiScale & ', ' & $oCtrl.Coord2[1] & $sDpiScale & ')' & @CRLF
 
 		Case Else
 			$mControls &= "GUICtrlCreate" & $oCtrl.Type & '("' & $oCtrl.Text & '", ' & $ltwh & $ctrlStyle & ')' & @CRLF
@@ -790,6 +800,21 @@ Func _getFuncDpiScaling()
 
 	Return $code
 EndFunc   ;==>_getFuncDpiScaling
+
+
+Func _getFuncDpiMessage()
+	Local $code = '' & _
+			';------------------------------------------------------------------------------' & @CRLF & _
+			'; Name ..........: _WM_DPICHANGED' & @CRLF & _
+			'; Description ...: Event called when DPI changes. Rescale the GUI' & @CRLF & _
+			';------------------------------------------------------------------------------' & @CRLF & _
+			'Func _WM_DPICHANGED($hWnd, $Msg, $wParam, $lParam)' & @CRLF & _
+			@TAB & 'If $fNewDpiFactor <> $fDpiFactor Then' & @CRLF & _
+			@TAB & @TAB & 'ConsoleWrite("new DPI" & @CRLF)' & @CRLF & _
+			@TAB & '	EndIf' & @CRLF & _
+			'EndFunc   ;==>_GDIPlus_GraphicsGetDPIRatio' & @CRLF
+	Return $code
+EndFunc   ;==>_getFuncDpiMessage
 
 
 Func _objDocData()
