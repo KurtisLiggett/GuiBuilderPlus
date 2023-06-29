@@ -9,7 +9,7 @@
 ;------------------------------------------------------------------------------
 Func _formAbout()
 	$w = 350
-	$h = 265
+	$h = 305
 
 	Local $aGuiPos = WinGetPos($hToolbar)
 
@@ -24,6 +24,7 @@ Func _formAbout()
 
 	GUICtrlCreateLabel("", 0, $h - 32, $w, 1)
 	GUICtrlSetBkColor(-1, 0x000000)
+	GUICtrlSetState(-1, $GUI_DISABLE)
 
 	Local $pic = GUICtrlCreatePic("", 10, 10, 48, 48)
 	_memoryToPic($pic, GetIconData(0))
@@ -44,6 +45,7 @@ Func _formAbout()
 
 	GUICtrlCreateLabel("", 0, 75, $w, 1)
 	GUICtrlSetBkColor(-1, 0x000000)
+	GUICtrlSetState(-1, $GUI_DISABLE)
 
 	$desc = "GuiBuilderPlus is a small, easy to use GUI designer for AutoIt." & @CRLF & @CRLF & _
 			"Originally created as AutoBuilder by the user CyberSlug," & @CRLF & _
@@ -53,6 +55,15 @@ Func _formAbout()
 			"GuiBuilderPlus is a continuation of the great work started by others," & @CRLF & _
 			"with a focus on increased stability and usability followed by new features."
 	GUICtrlCreateLabel($desc, 10, 85, $w - 16, 135)
+	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
+
+	GUICtrlCreateLabel("", 0, 225, $w, 1)
+	GUICtrlSetBkColor(-1, 0x000000)
+	GUICtrlSetState(-1, $GUI_DISABLE)
+
+	$desc = "Control button icons created by Roland Hahn (Lazarus IDE)" & @CRLF & _
+			"- modified by kurtykurtyboy"
+	GUICtrlCreateLabel($desc, 10, 235, $w - 16)
 	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
 
 	; bottom section

@@ -15,17 +15,31 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  05/09/2023 ...:
-;					- FIXED:	Bug when resizing the Code Generation window
-;					- FIXED:	Bug control randomly disappears
-;					- FIXED:	More seamless positioning of resize handles when crossing zero
-;					- FIXED:	Code preview was not always updating
-;                   - ADDED:    New property "Image" for Icon and Pic controls with selection dialog
-;                   - UPDATED:  Smaller tab width in code preview
-;
-; Roadmap .......:	- Finish control properties tabs
-;					- Windows' theme support
-;					- Use single resize box for multiple selected controls
+;  06/28/2023 ...:
+;					- FIXED:	Code preview not highlighting #Region/#EndRegion
+;					- FIXED:	Bugs in AVI control code
+;					- FIXED:	Keyboard shortcut behavior in properties window
+;					- FIXED:	GUI properties not loading when opening GUI file
+;					- FIXED:	Wrong background color when opening GUI file
+;					- FIXED:	Wrong font properties when copy/paste
+;					- FIXED:	Controls smushed into top left when copy/paste
+;					- FIXED:	Inconsistencies in setting, saving, and loading colors
+;					- FIXED:	Incorrect tabs for event code
+;					- FIXED:	Delete menuitem not working
+;					- FIXED:	Create variables for menuitems
+;					- FIXED:	Various bugs when importing from AU3 file
+;					- ADDED:	Image select button for AVI
+;					- ADDED:	Edit menuitem name, text, and global properties
+;					- ADDED:	Button to Copy only the GUI Region to clipboard
+;					- ADDED:	Status messages for copying to clipboard
+;					- UPDATED:	New single Image control replaces Pic, Icon, and AVI controls
+;					- UPDATED:	BIG speed improvements when saving and loading definition files
+;					- UPDATED:	More reductions in flickering
+;					- UPDATED:	New button icons
+;					- UPDATED:	Better tray menu handling
+;					- UPDATED:	Save code preview window size
+;					- UPDATED:	Add space around menu/menuitems in generated code
+;					- UPDATED:	Updated help file and corrected some formatting issues
 ;
 ; ===============================================================================================================================
 
@@ -33,40 +47,41 @@
 #AutoIt3Wrapper_Res_HiDpi=N
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.1.0.exe
-#AutoIt3Wrapper_Res_Fileversion=1.1.0
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.2.0.exe
+#AutoIt3Wrapper_Res_Fileversion=1.2.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 1.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 2.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 3.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 4.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 5.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 6.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 7.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 8.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 9.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 10.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 11.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 12.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 13.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 14.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 15.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 16.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 17.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 18.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 19.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 20.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 21.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 22.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 23.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 24.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 25.ico
-#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 26.ico
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 1.ico,201
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 2.ico,202
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 3.ico,203
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 4.ico,204
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 5.ico,205
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 6.ico,206
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 7.ico,207
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 8.ico,208
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 9.ico,209
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 10.ico,210
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 11.ico,211
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 12.ico,212
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 13.ico,213
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 14.ico,214
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 15.ico,215
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 17.ico,217
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 19.ico,219
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 21.ico,221
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 22.ico,222
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 23.ico,223
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 24.ico,224
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 25.ico,225
+#AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 26.ico,226
 
 Opt("WinTitleMatchMode", 4) ; advanced
 Opt("MouseCoordMode", 2)
 Opt("GUIOnEventMode", 1)
 Opt("GuiEventOptions", 1)
+Opt("TrayAutoPause", 0)
+Opt("TrayOnEventMode", 1)
+Opt("TrayMenuMode", 3)
+TraySetClick(8) ; $TRAY_CLICK_SECONDARYDOWN
 #EndRegion project-settings
 
 Global $grippy_size = 5
@@ -75,7 +90,7 @@ Global $debug = True
 #Region ; globals
 ;GUI components
 Global $hGUI, $hToolbar, $hFormGenerateCode, $hFormObjectExplorer, $hStatusbar, $hAbout, $hEvent, $hSettings, $hFormHolder
-Global $iGuiFrameH, $iGuiFrameW, $defaultGuiBkColor = 0xF0F0F0
+Global $iGuiFrameH, $iGuiFrameW, $defaultGuiBkColor = "0xF0F0F0"
 Global $button_graphic
 Global $menu_wipe, $contextmenu_lock, $menu_helpchm
 ;File menu
@@ -134,7 +149,7 @@ Global $aStackUndo[0], $aStackRedo[0]
 Global $AgdOutFile, $lfld, $mygui
 
 Global $sampleavi = @ScriptDir & "\resources\sampleAVI.avi"
-Global $samplebmp = @ScriptDir & "\resources\SampleImage.bmp"
+Global $samplebmp = @ScriptDir & "\resources\SampleImage.jpg"
 Global $sampleicon = @ScriptDir & "\resources\icons\icon.ico"
 Global $sIniPath = @ScriptDir & "\storage\GUIBuilderPlus.ini"
 #EndRegion ; globals
@@ -174,7 +189,7 @@ _AutoItObject_StartUp()
 #include <GuiMenu.au3>
 #include <GuiEdit.au3>
 #include <GuiTreeView.au3>
-#include "UDFS\Json\json.au3"
+#include "UDFS\JSON.au3"
 #include "UDFS\GUIScrollbars_Ex.au3"
 #include "UDFs\StringSize.au3"
 #include "UDFs\RESH.au3"
@@ -224,7 +239,7 @@ Func _main()
 	$oClipboard = _objCtrls()
 	$oMain = _objMain()
 	$oMain.AppName = "GuiBuilderPlus"
-	$oMain.AppVersion = "1.1.0"
+	$oMain.AppVersion = "1.2.0"
 	$oMain.Title = StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1)
 	$oMain.Name = "hGUI"
 	$oMain.Width = 400
@@ -387,7 +402,7 @@ Func _initialize_settings()
 				Case "ShowGrid"
 					$oOptions.showGrid = ($aSettings[$i][1] = 1) ? True : False
 				Case "PastePos"
-					$oOptions.pasteAtMouse = ($aSettings[$i][1] = 1) ? True : False
+					$oOptions.pasteAtMouse = True
 				Case "GridSnap"
 					$oOptions.snapGrid = ($aSettings[$i][1] = 1) ? True : False
 				Case "ShowCode"

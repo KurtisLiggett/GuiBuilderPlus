@@ -135,7 +135,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	$oProperties_Ctrls.properties.Top.Hwnd = _formPropertyInspector_newitem("Top", $typeNumber, -1, -1, -1, -1, -1, 1)
 	$oProperties_Ctrls.properties.Width.Hwnd = _formPropertyInspector_newitem("Width", $typeNumber, -1, -1, -1, -1, -1, 1)
 
-	$properties_borderButton = GUICtrlCreateLabel("-", 3, 181, 15, 18, BitOR($SS_CENTER, $SS_CENTERIMAGE))
+	$properties_borderButton = GUICtrlCreateLabel("-", 3, 201, 15, 18, BitOR($SS_CENTER, $SS_CENTERIMAGE))
 	GUICtrlSetBkColor(-1, 0xFFFFFF)
 	GUICtrlSetFont(-1, 12)
 	GUICtrlSetOnEvent(-1, "_onBorderButton")
@@ -854,13 +854,13 @@ Func _check_Ctl_Types()
 			EndSwitch
 
 			Switch $oCtrl.Type
-				Case "Rect", "Ellipse", "Line", "List", "Combo", "ListView", "TreeView", "Slider", "Progress", "Pic", "Icon"
+				Case "Rect", "Ellipse", "Line", "List", "Combo", "ListView", "TreeView", "Slider", "Progress", "Pic", "Icon", "Avi"
 					$aTypeChecks[4] = False    ;does not have text
 
 			EndSwitch
 
 			Switch $oCtrl.Type
-				Case "Pic", "Icon"
+				Case "Pic", "Icon", "Avi"
 
 				Case Else
 					$aTypeChecks[5] = False    ;does not have img

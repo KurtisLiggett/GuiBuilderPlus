@@ -10,6 +10,12 @@
 ; Called by.......: Draw with mouse; Paste
 ;------------------------------------------------------------------------------
 Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hParent = -1, $bDuplicate = False)
+	Static $lasttime = TimerInit()
+	Local $timerCreate = TimerInit()
+
+;~ 	ConsoleWrite("Between: " & TimerDiff($lasttime) & @CRLF)
+	$lasttime = TimerInit()
+
 	;only allow 1 tab control
 	If $oCtrls.CurrentType = "Tab" Then
 		If $oCtrls.getTypeCount("Tab") > 0 Then
@@ -62,24 +68,24 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 	;use next available name
 	Local $found = True
 	Local $j = 0
-	While $found
-		$found = False
-		$j += 1
-		$name = $oNewControl.Type & "_" & $j
-
-		If $count >= 1 Then
-			For $oCtrl In $oCtrls.ctrls.Items()
-
-				If $oCtrl.Name = $name Then
-					$found = True
-					ExitLoop
-				EndIf
-			Next
-		Else
-			$found = False
-		EndIf
-	WEnd
 	If Not $bUseName Then
+		While $found
+			$found = False
+			$j += 1
+			$name = $oNewControl.Type & "_" & $j
+
+			If $count >= 1 Then
+				For $oCtrl In $oCtrls.ctrls.Items()
+
+					If $oCtrl.Name = $name Then
+						$found = True
+						ExitLoop
+					EndIf
+				Next
+			Else
+				$found = False
+			EndIf
+		WEnd
 		$oNewControl.Name = $name
 	EndIf
 
@@ -134,9 +140,16 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 		Next
 	EndIf
 
+;~ 	ConsoleWrite($oNewControl.Type & @CRLF)
+;~ 	ConsoleWrite("Init: " & TimerDiff($lasttime) & @CRLF)
+	$lasttime = TimerInit()
+
 	Switch $oNewControl.Type
 		Case "Button"
 			$oNewControl.Hwnd = GUICtrlCreateButton($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			If $isPaste Then
+				_setCtrlFont($oNewControl)
+			EndIf
 
 			$oCtrls.add($oNewControl, $hParent)
 
@@ -153,9 +166,10 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 			$oNewControl.Hwnd = GUICtrlCreateCheckbox($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 			If $isPaste Then
-				If $oNewControl.Background <> -1 Then
+				If $oNewControl.Background <> "" Then
 					GUICtrlSetBkColor($oNewControl.Hwnd, $oNewControl.Background)
 				EndIf
+				_setCtrlFont($oNewControl)
 			EndIf
 
 			$oCtrls.add($oNewControl, $hParent)
@@ -165,15 +179,19 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 			$oNewControl.Hwnd = GUICtrlCreateRadio($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 			If $isPaste Then
-				If $oNewControl.Background <> -1 Then
+				If $oNewControl.Background <> "" Then
 					GUICtrlSetBkColor($oNewControl.Hwnd, $oNewControl.Background)
 				EndIf
+				_setCtrlFont($oNewControl)
 			EndIf
 
 			$oCtrls.add($oNewControl, $hParent)
 
 		Case "Edit"
 			$oNewControl.Hwnd = GUICtrlCreateEdit('', $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			If $isPaste Then
+				_setCtrlFont($oNewControl)
+			EndIf
 
 ;~ 			GUICtrlSetState($oNewControl.Hwnd, $GUI_DISABLE)
 
@@ -185,6 +203,9 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 		Case "Input"
 			$oNewControl.Hwnd = GUICtrlCreateInput($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			If $isPaste Then
+				_setCtrlFont($oNewControl)
+			EndIf
 
 ;~ 			GUICtrlSetState($oNewControl.Hwnd, $GUI_DISABLE)
 
@@ -193,18 +214,22 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 		Case "Label"
 			$oNewControl.Hwnd = GUICtrlCreateLabel($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 			If $isPaste Then
-				If $oNewControl.Background <> -1 Then
+				If $oNewControl.Background <> "" Then
 					GUICtrlSetBkColor($oNewControl.Hwnd, $oNewControl.Background)
 				EndIf
-				If $oNewControl.Color <> -1 Then
+				If $oNewControl.Color <> "" Then
 					GUICtrlSetColor($oNewControl.Hwnd, $oNewControl.Color)
 				EndIf
+				_setCtrlFont($oNewControl)
 			EndIf
 
 			$oCtrls.add($oNewControl, $hParent)
 
 		Case "List"
 			$oNewControl.Hwnd = GUICtrlCreateList($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			If $isPaste Then
+				_setCtrlFont($oNewControl)
+			EndIf
 
 ;~ 			GUICtrlSetState($oNewControl.Hwnd, $GUI_DISABLE)
 
@@ -214,11 +239,17 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 			$oNewControl.Height = 20
 
 			$oNewControl.Hwnd = GUICtrlCreateCombo('', $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			If $isPaste Then
+				_setCtrlFont($oNewControl)
+			EndIf
 
 			$oCtrls.add($oNewControl, $hParent)
 
 		Case "Date"
 			$oNewControl.Hwnd = GUICtrlCreateDate('', $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			If $isPaste Then
+				_setCtrlFont($oNewControl)
+			EndIf
 
 			$oCtrls.add($oNewControl, $hParent)
 
@@ -228,6 +259,9 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 		Case "Slider"
 			$oNewControl.Hwnd = _GuiCtrlCreateSlider($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height, $oNewControl.Height)
+			If $isPaste Then
+				_setCtrlFont($oNewControl)
+			EndIf
 
 			$oCtrls.add($oNewControl, $hParent)
 
@@ -239,6 +273,9 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 			;create main tab control
 			$oNewControl.Hwnd = GUICtrlCreateTab($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 			GUICtrlSetOnEvent(-1, "_onCtrlTabSwitch")
+			If $isPaste Then
+				_setCtrlFont($oNewControl)
+			EndIf
 
 			$oCtrls.add($oNewControl, $hParent)
 
@@ -251,6 +288,9 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 		Case "TreeView"
 			$oNewControl.Hwnd = GUICtrlCreateTreeView($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			If $isPaste Then
+				_setCtrlFont($oNewControl)
+			EndIf
 
 			GUICtrlCreateTreeViewItem($oNewControl.Text, $oNewControl.Hwnd)
 
@@ -269,6 +309,9 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 		Case "Progress"
 			$oNewControl.Hwnd = GUICtrlCreateProgress($oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			If $isPaste Then
+				_setCtrlFont($oNewControl)
+			EndIf
 
 			GUICtrlSetData($oNewControl.Hwnd, 100)
 
@@ -279,11 +322,10 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 ;~ 			Return $oNewControl
 
 		Case "Pic"
-			$oNewControl.Hwnd = GUICtrlCreatePic($samplebmp, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 			If $oNewControl.Img = "" Then
 				$oNewControl.Img = $samplebmp
 			EndIf
-			GUICtrlSetImage($oNewControl.Hwnd, $oNewControl.Img)
+			$oNewControl.Hwnd = GUICtrlCreatePic($oNewControl.Img, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
 			$oCtrls.add($oNewControl, $hParent)
 
@@ -292,7 +334,10 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 ;~ 			Return $oNewControl
 
 		Case "Avi"
-			$oNewControl.Hwnd = GUICtrlCreateAvi($sampleavi, 0, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height, $ACS_AUTOPLAY)
+			If $oNewControl.Img = "" Then
+				$oNewControl.Img = $sampleavi
+			EndIf
+			$oNewControl.Hwnd = GUICtrlCreateAvi($oNewControl.Img, 0, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
 			$oCtrls.add($oNewControl, $hParent)
 
@@ -301,11 +346,10 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 ;~ 			Return $oNewControl
 
 		Case "Icon"
-			$oNewControl.Hwnd = GUICtrlCreateIcon($sampleicon, -1, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 			If $oNewControl.Img = "" Then
 				$oNewControl.Img = $sampleicon
 			EndIf
-			GUICtrlSetImage($oNewControl.Hwnd, $oNewControl.Img, -1)
+			$oNewControl.Hwnd = GUICtrlCreateIcon($oNewControl.Img, -1, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
 
 			$oCtrls.add($oNewControl, $hParent)
 
@@ -330,11 +374,18 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 		Case "IP"
 			$oNewControl.Text = ""
 			$oNewControl.Hwnd = _GUICtrlIpAddress_Create($hGUI, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			If $isPaste Then
+				_setCtrlFont($oNewControl)
+			EndIf
+
 			$oCtrls.add($oNewControl)
 			_GUICtrlIpAddress_Set($oNewControl.Hwnd, $oNewControl.Text)
 
 		Case "ListView"
 			$oNewControl.Hwnd = GUICtrlCreateListView($oNewControl.Text, $oNewControl.Left, $oNewControl.Top, $oNewControl.Width, $oNewControl.Height)
+			If $isPaste Then
+				_setCtrlFont($oNewControl)
+			EndIf
 
 ;~ 			GUICtrlSetState($oNewControl.Hwnd, $GUI_DISABLE)
 
@@ -370,6 +421,9 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 	EndSwitch
 
+;~ 	ConsoleWrite("Create: " & TimerDiff($lasttime) & @CRLF)
+	$lasttime = TimerInit()
+
 	$oMain.hasChanged = True
 
 	If $tabChild Then
@@ -394,8 +448,33 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 
 	GuiCtrlSetOnTop($oNewControl.Hwnd)
 
+;~ 	ConsoleWrite("Finish: " & TimerDiff($lasttime) & @CRLF)
+	$lasttime = TimerInit()
+;~ 	ConsoleWrite("Total: " & TimerDiff($timerCreate) & @CRLF & @CRLF)
+
 	Return $oNewControl
 EndFunc   ;==>_create_ctrl
+
+Func _setCtrlFont($oCtrl)
+	Switch $oCtrl.Type
+		Case "IP"
+			If $oCtrl.FontName = "" Then
+				If $oCtrl.FontSize <> -1 Or $oCtrl.FontSize <> 400 Then
+					_GUICtrlIpAddress_SetFont($oCtrl.Hwnd, "Arial", $oCtrl.FontSize, $oCtrl.FontWeight)
+				EndIf
+			Else
+				_GUICtrlIpAddress_SetFont($oCtrl.Hwnd, $oCtrl.FontName, $oCtrl.FontSize, $oCtrl.FontWeight)
+			EndIf
+		Case Else
+			If $oCtrl.FontName = "" Then
+				If $oCtrl.FontSize <> -1 Or $oCtrl.FontSize <> 400 Then
+					GUICtrlSetFont($oCtrl.Hwnd, $oCtrl.FontSize, $oCtrl.FontWeight, $GUI_FONTNORMAL)
+				EndIf
+			Else
+				GUICtrlSetFont($oCtrl.Hwnd, $oCtrl.FontSize, $oCtrl.FontWeight, $GUI_FONTNORMAL, $oCtrl.FontName)
+			EndIf
+	EndSwitch
+EndFunc
 
 
 Func _GuiCtrlCreateSlider(Const $left, Const $top, Const $width, Const $height, $style)
@@ -534,7 +613,7 @@ Func _new_menuItem()
 	_new_menuItemCreate()
 EndFunc   ;==>_new_menuItem
 
-Func _new_menuItemCreate($oParent = 0, $loadGUI = False)
+Func _new_menuItemCreate($oParent = 0, $loadGUI = False, $itemText = -1)
 	Local $oCtrl, $hSelected
 	If Not IsObj($oParent) Then
 		$hSelected = _getLvSelectedHwnd()
@@ -547,9 +626,14 @@ Func _new_menuItemCreate($oParent = 0, $loadGUI = False)
 
 	Local $newCount = $oCtrl.MenuItems.count + 1
 	Local $MenuItem = _objCtrl($oCtrl)
-	$MenuItem.Hwnd = GUICtrlCreateMenuItem("MenuItem" & $newCount, $hSelected)
-	$MenuItem.Text = "MenuItem" & $newCount
+	If $loadGUI Then
+		$MenuItem.Text = $itemText
+	Else
+		$MenuItem.Text = "MenuItem" & $newCount
+	EndIf
+	$MenuItem.Hwnd = GUICtrlCreateMenuItem($MenuItem.Text, $hSelected)
 	$MenuItem.Name = "MenuItem_" & $newCount
+	$MenuItem.Type = "MenuItem"
 	$oCtrl.MenuItems.add($MenuItem)
 
 	_GUICtrlTab_SetCurSel($oCtrl.Hwnd, $newCount - 1)
@@ -563,21 +647,7 @@ EndFunc   ;==>_new_menuItemCreate
 
 Func _delete_menuItem()
 	Local $hSelected = _getLvSelectedHwnd()
-	Local $oCtrl = $oCtrls.get($hSelected)
-	If Not IsObj($oCtrl) Then Return -1
-
-	Local $oParent
-	For $oCtrl In $oCtrls.ctrls.Items()
-		If $oCtrl.Type = "Menu" Then
-			For $oMenuItem In $oCtrl.MenuItems
-				If $oMenuItem.Hwnd = $hSelected Then
-					$oParent = $oCtrl
-					ExitLoop 2
-				EndIf
-			Next
-		EndIf
-	Next
-
+	Local $oParent = $oSelected.getFirst()
 	If Not IsObj($oParent) Then Return -1
 
 	Local $i = 0
@@ -1229,11 +1299,11 @@ Func _updateGraphic($oCtrl)
 	EndIf
 	Switch $oCtrl.Type
 		Case "Rect", "Ellipse"
-			If $oCtrl.BorderColor <> -1 And $oCtrl.background <> -1 Then
+			If $oCtrl.BorderColor <> "" And $oCtrl.background <> "" Then
 				GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_COLOR, $oCtrl.BorderColor, $oCtrl.background)
-			ElseIf $oCtrl.BorderColor = -1 And $oCtrl.background <> -1 Then
+			ElseIf $oCtrl.BorderColor = "" And $oCtrl.background <> "" Then
 				GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_COLOR, 0x000000, $oCtrl.background)
-			ElseIf $oCtrl.BorderColor <> -1 And $oCtrl.background = -1 Then
+			ElseIf $oCtrl.BorderColor <> "" And $oCtrl.background = "" Then
 				GUICtrlSetGraphic($oCtrl.Hwnd, $GUI_GR_COLOR, $oCtrl.BorderColor)
 			EndIf
 			Switch $oCtrl.Type
@@ -1525,12 +1595,12 @@ Func _undo()
 					Local $newColor = $aParams[0]
 					Switch $aActionCtrls[$i].Type
 						Case "Label", "Checkbox", "Radio", "Input", "Edit"
-							If $newColor <> -1 Then
+							If $newColor <> "" Then
 								GUICtrlSetBkColor($aActionCtrls[$i].Hwnd, $newColor)
 								$aActionCtrls[$i].Background = $newColor
 							Else
 								GUICtrlSetBkColor($aActionCtrls[$i].Hwnd, $defaultGuiBkColor)
-								$aActionCtrls[$i].Background = -1
+								$aActionCtrls[$i].Background = ""
 							EndIf
 						Case "Rect", "Ellipse"
 							$aActionCtrls[$i].Background = $newColor
@@ -1555,13 +1625,13 @@ Func _undo()
 
 					Switch $aActionCtrls[$i].Type
 						Case "Label", "Edit", "Input"
-							If $newColor <> -1 Then
+							If $newColor <> "" Then
 								GUICtrlSetColor($aActionCtrls[$i].Hwnd, $newColor)
 							Else
 								GUICtrlDelete($aActionCtrls[$i].Hwnd)
 								$aActionCtrls[$i].Hwnd = GUICtrlCreateLabel($aActionCtrls[$i].Text, $aActionCtrls[$i].Left, $aActionCtrls[$i].Top, $aActionCtrls[$i].Width, $aActionCtrls[$i].Height)
-								$aActionCtrls[$i].Color = -1
-								If $aActionCtrls[$i].Background <> -1 Then
+								$aActionCtrls[$i].Color = ""
+								If $aActionCtrls[$i].Background <> "" Then
 									GUICtrlSetBkColor($aActionCtrls[$i].Hwnd, $aActionCtrls[$i].Background)
 								EndIf
 							EndIf
@@ -1754,12 +1824,12 @@ Func _redo()
 					Local $newColor = $aParams[1]
 					Switch $aActionCtrls[$i].Type
 						Case "Label", "Checkbox", "Radio", "Input", "Edit"
-							If $newColor <> -1 Then
+							If $newColor <> "" Then
 								GUICtrlSetBkColor($aActionCtrls[$i].Hwnd, $newColor)
 								$aActionCtrls[$i].Background = $newColor
 							Else
 								GUICtrlSetBkColor($aActionCtrls[$i].Hwnd, $defaultGuiBkColor)
-								$aActionCtrls[$i].Background = -1
+								$aActionCtrls[$i].Background = ""
 							EndIf
 						Case "Rect", "Ellipse"
 							$aActionCtrls[$i].Background = $newColor
@@ -1784,13 +1854,13 @@ Func _redo()
 
 					Switch $aActionCtrls[$i].Type
 						Case "Label", "Edit", "Input"
-							If $newColor <> -1 Then
+							If $newColor <> "" Then
 								GUICtrlSetColor($aActionCtrls[$i].Hwnd, $newColor)
 							Else
 								GUICtrlDelete($aActionCtrls[$i].Hwnd)
 								$aActionCtrls[$i].Hwnd = GUICtrlCreateLabel($aActionCtrls[$i].Text, $aActionCtrls[$i].Left, $aActionCtrls[$i].Top, $aActionCtrls[$i].Width, $aActionCtrls[$i].Height)
-								$aActionCtrls[$i].Color = -1
-								If $aActionCtrls[$i].Background <> -1 Then
+								$aActionCtrls[$i].Color = ""
+								If $aActionCtrls[$i].Background <> "" Then
 									GUICtrlSetBkColor($aActionCtrls[$i].Hwnd, $aActionCtrls[$i].Background)
 								EndIf
 							EndIf
