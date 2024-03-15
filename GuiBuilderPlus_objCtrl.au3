@@ -576,6 +576,7 @@ Func _objCtrl($oParent)
 	_AutoItObject_AddProperty($oObject, "FontName", $ELSCOPE_PUBLIC, "")
 	_AutoItObject_AddProperty($oObject, "FontWeight", $ELSCOPE_PUBLIC, 400)
 	_AutoItObject_AddProperty($oObject, "Background", $ELSCOPE_PUBLIC, "")
+	_AutoItObject_AddProperty($oObject, "Autosize", $ELSCOPE_PUBLIC, $GUI_UNCHECKED)
 	_AutoItObject_AddProperty($oObject, "Global", $ELSCOPE_PUBLIC, True)
 	_AutoItObject_AddProperty($oObject, "TabCount", $ELSCOPE_PUBLIC, 0)
 	_AutoItObject_AddProperty($oObject, "Tabs", $ELSCOPE_PUBLIC, LinkedList())
@@ -880,8 +881,9 @@ Func _objGrippies_resizing($oSelf, $mode)
 			GUICtrlSendMsg($oCtrl.Hwnd, 27 + 0x0400, $oCtrl.Height - 20, 0) ; TBS_SETTHUMBLENGTH
 	EndSwitch
 
-
-	_change_ctrl_size_pos($oCtrl, $left, $top, $right, $bottom)
+	If $oCtrl.Autosize <> $GUI_CHECKED Then
+		_change_ctrl_size_pos($oCtrl, $left, $top, $right, $bottom)
+	EndIf
 ;~ 	$oCtrl.grippies.show()
 ;~ 	ToolTip($oCtrl.Name & ": X:" & $oCtrl.Left & ", Y:" & $oCtrl.Top & ", W:" & $oCtrl.Width & ", H:" & $oCtrl.Height)
 EndFunc   ;==>_objGrippies_resizing

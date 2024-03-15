@@ -192,6 +192,7 @@ _AutoItObject_StartUp()
 #include "UDFS\JSON.au3"
 #include "UDFS\GUIScrollbars_Ex.au3"
 #include "UDFs\StringSize.au3"
+#include "UDFs\GuiCtrlGetFont.au3"
 #include "UDFs\RESH.au3"
 #include "GuiBuilderPlus_objOptions.au3"
 #include "GuiBuilderPlus_objCtrl.au3"

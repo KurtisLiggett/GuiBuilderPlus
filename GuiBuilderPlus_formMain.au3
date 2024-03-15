@@ -1514,6 +1514,7 @@ Func _onMousePrimaryUp()
 
 			_showProperties()
 			_populate_control_properties_gui($oSelected.getLast())
+			_setLvSelected($oSelected.getLast())
 
 		Case $resize_nw, $resize_n, $resize_ne, $resize_e, $resize_se, $resize_s, $resize_sw, $resize_w
 			_log("** PrimaryUp: Resize **")
@@ -1525,6 +1526,7 @@ Func _onMousePrimaryUp()
 				$oCtrl.isResizeMaster = False
 			Next
 
+			_formObjectExplorer_updateList()
 			$oCtrlSelectedFirst = $oSelected.getFirst()
 			If $initDraw Then    ;if we just started drawing, check to see if drawing or just clicking away from control
 				_log("  init draw")
@@ -1691,6 +1693,7 @@ Func _onMousePrimaryUp()
 					Next
 					$oAction.parameters = $aParams
 					_updateActionStacks($oAction)
+
 				EndIf
 			Else
 				_log("** PrimaryUp: Resize Else **")
@@ -2104,6 +2107,7 @@ Func _onMouseMove()
 			Local Const $oRect = _rect_from_points($oMouse.X, $oMouse.Y, MouseGetPos(0), MouseGetPos(1))
 			_display_selection_rect($oRect)
 			_add_remove_selected_control($oRect)
+			_setLvSelected($oSelected.getLast())
 ;~ 			_setLvSelected($oSelected.getFirst())
 			Return
 
@@ -2407,6 +2411,11 @@ Func _populate_control_properties_gui(Const $oCtrl, $childHwnd = -1)
 	$oProperties_Ctrls.properties.Items.value = $oCtrl.Items
 
 
+	;Autosize
+	Local $bAutosize = $oCtrl.Autosize
+	$oProperties_Ctrls.properties.Autosize.value = $bAutosize
+
+
 	;Global
 	Local $bGlobal = $oCtrl.Global
 	Switch $oCtrl.Type
@@ -2631,40 +2640,47 @@ Func _ctrl_change_text()
 				For $oCtrl In $aItems
 					If $oCtrl.Locked Then ContinueLoop
 
-					If $oCtrl.Type = "Combo" Then
-						GUICtrlSetData($oCtrl.Hwnd, $new_text, $new_text)
-						$oCtrl.Text = $new_text
-					ElseIf $oCtrl.Type = "Tab" Then
-						If $childSelected Then
-							Local $iTabFocus = _GUICtrlTab_GetCurSel($oCtrl.Hwnd)
+					Switch $oCtrl.Type
+						Case "Combo"
+							GUICtrlSetData($oCtrl.Hwnd, $new_text, $new_text)
+							$oCtrl.Text = $new_text
+						Case "Tab"
+							If $childSelected Then
+								Local $iTabFocus = _GUICtrlTab_GetCurSel($oCtrl.Hwnd)
 
-							If $iTabFocus >= 0 Then
-								_GUICtrlTab_SetItemText($oCtrl.Hwnd, $iTabFocus, $new_text)
-								$tabID = $oCtrl.Tabs.at($iTabFocus)
-								$oCtrls.get($tabID).Text = $new_text
+								If $iTabFocus >= 0 Then
+									_GUICtrlTab_SetItemText($oCtrl.Hwnd, $iTabFocus, $new_text)
+									$tabID = $oCtrl.Tabs.at($iTabFocus)
+									$oCtrls.get($tabID).Text = $new_text
+								EndIf
+							Else
+								$oCtrl.Text = $new_text
 							EndIf
-						Else
+						Case "Menu"
+							If $childSelected Then
+								Local $hSelected = _getLvSelectedHwnd()
+								Local $oCtrl = $oCtrls.get($hSelected)
+								If Not IsObj($oCtrl) Then Return -1
+								GUICtrlSetData($oCtrl.Hwnd, $new_text)
+								$oCtrl.Text = $new_text
+							Else
+								GUICtrlSetData($oCtrl.Hwnd, $new_text)
+								$oCtrl.Text = $new_text
+							EndIf
+						Case "IP"
+							_GUICtrlIpAddress_Set($oCtrl.Hwnd, $new_text)
 							$oCtrl.Text = $new_text
-						EndIf
-					ElseIf $oCtrl.Type = "Menu" Then
-						If $childSelected Then
-							Local $hSelected = _getLvSelectedHwnd()
-							Local $oCtrl = $oCtrls.get($hSelected)
-							If Not IsObj($oCtrl) Then Return -1
+						Case Else
 							GUICtrlSetData($oCtrl.Hwnd, $new_text)
 							$oCtrl.Text = $new_text
-						Else
-							GUICtrlSetData($oCtrl.Hwnd, $new_text)
-							$oCtrl.Text = $new_text
-						EndIf
-					ElseIf $oCtrl.Type = "IP" Then
-						_GUICtrlIpAddress_Set($oCtrl.Hwnd, $new_text)
-						$oCtrl.Text = $new_text
-					Else
-						GUICtrlSetData($oCtrl.Hwnd, $new_text)
-						$oCtrl.Text = $new_text
-					EndIf
+							;check autosize and resize
+							_ResizeLabel($oCtrl)
+					EndSwitch
 				Next
+
+				If $oCtrl.Type = "Input" Then
+					_GUICtrlEdit_SetSel($oCtrl.Hwnd, 1, 1)
+				EndIf
 			Else
 				$oCtrl.Text = $new_text
 			EndIf
@@ -3195,6 +3211,40 @@ Func _ctrl_change_borderSize()
 	$oMain.hasChanged = True
 EndFunc   ;==>_ctrl_change_borderSize
 
+Func _ctrl_change_autosize()
+	Local $new_data = _onCheckboxChange(@GUI_CtrlId)
+
+	Local Const $sel_count = $oSelected.count
+
+	;get selected item in object viewer
+	Local $hSelected = _getLvSelectedHwnd()
+
+	;if exists. If not, then must be menu item
+	Local $isMenuItem
+	If Not $oSelected.ctrls.Exists($hSelected) And $hSelected <> -1 Then
+		$isMenuItem = True
+	EndIf
+
+	Local $oCtrl
+	Switch $sel_count >= 1
+		Case True
+			If Not $isMenuItem Then
+				Local $aItems = $oSelected.ctrls.Items()
+				For $oCtrl In $aItems
+					If $oCtrl.Locked Then ContinueLoop
+
+					;update the property
+					$oCtrl.Autosize = $new_data
+
+					;update the size
+					_ResizeLabel($oCtrl)
+				Next
+			EndIf
+	EndSwitch
+
+	_refreshGenerateCode()
+	$oMain.hasChanged = True
+EndFunc   ;==>_ctrl_change_autosize
 
 Func _ctrl_change_global()
 	Local $new_data = _onCheckboxChange(@GUI_CtrlId)
@@ -3294,6 +3344,9 @@ Func _ctrl_change_FontSize()
 				;update the selected property
 				$oCtrl.FontSize = $new_data
 
+				;update, on autosize
+				_ResizeLabel($oCtrl)
+
 			Next
 	EndSwitch
 
@@ -3345,6 +3398,9 @@ Func _ctrl_change_FontWeight()
 
 				;update the selected property
 				$oCtrl.FontWeight = $new_data
+
+				;update, on autosize
+				_ResizeLabel($oCtrl)
 
 			Next
 	EndSwitch
@@ -4042,7 +4098,7 @@ Func _Base64Decode2($input_string)
 
 	Return DllStructGetData($a, 1)
 
-EndFunc   ;==>_Base64Decode
+EndFunc   ;==>_Base64Decode2
 
 Func _memoryToPic($idPic, $name)
 	$hBmp = _GDIPlus_BitmapCreateFromMemory(Binary($name), 1)
@@ -4079,3 +4135,32 @@ Func _recall_overlay()
 	EndIf
 	GUISwitch($hGUI)
 EndFunc   ;==>_recall_overlay
+
+Func _StringSizeExt($ctrlID, $sString)
+	Local $aFont = _GUICtrlGetFont($ctrlID)
+	ConsoleWrite($aFont[0] & @CRLF)
+	Local $aStrSize = _StringSize($sString, $aFont[0], $aFont[1], $aFont[2], $aFont[3])
+	Return $aStrSize
+EndFunc   ;==>_StringSizeExt
+
+Func _ResizeLabel(ByRef $oCtrl)
+	If $oCtrl.Autosize = $GUI_CHECKED Then
+		Local $aStrSize = _StringSizeExt($oCtrl.Hwnd, $oCtrl.Text)
+		Local $aCtrlPos = ControlGetPos($hGUI, "", $oCtrl.Hwnd)
+		Local $aPad[2] = [0, 0]
+		Switch $oCtrl.Type
+			Case "Button"
+				$aPad[0] = 12
+				$aPad[1] = 10
+
+			Case "Input"
+				$aPad[0] = 10
+				$aPad[1] = 3
+
+		EndSwitch
+
+		If IsArray($aStrSize) Then
+			_change_ctrl_size_pos($oCtrl, $aCtrlPos[0], $aCtrlPos[1], $aStrSize[2] + $aPad[0], $aStrSize[3] + $aPad[1])
+		EndIf
+	EndIf
+EndFunc   ;==>_ResizeLabel

@@ -206,6 +206,7 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 			If $isPaste Then
 				_setCtrlFont($oNewControl)
 			EndIf
+			ConsoleWrite($oNewControl.Text & @CRLF)
 
 ;~ 			GUICtrlSetState($oNewControl.Hwnd, $GUI_DISABLE)
 
@@ -445,6 +446,7 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 	EndSwitch
 
 	GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
+	_add_to_selected($oNewControl, True, True)
 
 	GuiCtrlSetOnTop($oNewControl.Hwnd)
 
@@ -1515,6 +1517,9 @@ Func _undo()
 					$aParams = $aActionParams[$i]
 					GUICtrlSetData($aActionCtrls[$i].Hwnd, $aParams[0])
 					$aActionCtrls[$i].Text = $aParams[0]
+
+					;update, on autosize
+					_ResizeLabel($aActionCtrls[$i])
 				Next
 				_SendMessage($hGUI, $WM_SETREDRAW, True)
 				_WinAPI_RedrawWindow($hGUI)
@@ -1724,6 +1729,9 @@ Func _redo()
 					$aParams = $aActionParams[$i]
 					GUICtrlSetData($aActionCtrls[$i].Hwnd, $aParams[1])
 					$aActionCtrls[$i].Text = $aParams[1]
+
+					;update, on autosize
+					_ResizeLabel($aActionCtrls[$i])
 				Next
 				_SendMessage($hGUI, $WM_SETREDRAW, True)
 				_WinAPI_RedrawWindow($hGUI)

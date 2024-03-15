@@ -64,6 +64,7 @@ Func _StringSize($sText, $iSize = 8.5, $iWeight = 400, $iAttrib = 0, $sName = ""
 	If $iWeight = Default Then $iWeight = 400
 	If $iAttrib = Default Then $iAttrib = 0
 	If $sName = "" Or $sName = Default Then	$sName = _StringSize_DefaultFontName()
+	If $iMaxWidth = Default Then $iMaxWidth = 0
 
 	; Check parameters are correct type
 	If Not IsString($sText) Then Return SetError(1, 1, 0)
