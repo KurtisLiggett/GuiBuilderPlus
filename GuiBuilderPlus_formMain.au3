@@ -185,7 +185,7 @@ Func _formToolbar()
 	;create up the File menu
 	$menu_file = GUICtrlCreateMenu("File")
 	Local $menu_save_definition = GUICtrlCreateMenuItem("Save" & @TAB & "Ctrl+S", $menu_file)
-	Local $menu_saveas_definition = GUICtrlCreateMenuItem("Save As..." & @TAB & "Ctrl+S", $menu_file)
+	Local $menu_saveas_definition = GUICtrlCreateMenuItem("Save As..." & @TAB & "Ctrl+Shift+S", $menu_file)
 	Local $menu_load_definition = GUICtrlCreateMenuItem("Open" & @TAB & "Ctrl+O", $menu_file)
 	GUICtrlCreateMenuItem("", $menu_file)
 	Local $menu_import_au3 = GUICtrlCreateMenuItem("Import from au3", $menu_file)
@@ -477,6 +477,7 @@ Func _set_accelerators($styleOnly = False)
 	Local Const $accel_Ctrlleft = GUICtrlCreateDummy()
 	Local Const $accel_Ctrlright = GUICtrlCreateDummy()
 	Local Const $accel_s = GUICtrlCreateDummy()
+	Local Const $accel_shift_s = GUICtrlCreateDummy()
 	Local Const $accel_o = GUICtrlCreateDummy()
 	Local Const $accel_F3 = GUICtrlCreateDummy()
 	Local Const $accel_F5 = GUICtrlCreateDummy()
@@ -484,7 +485,7 @@ Func _set_accelerators($styleOnly = False)
 	Local Const $accel_y = GUICtrlCreateDummy()
 	Local Const $accel_F1 = GUICtrlCreateDummy()
 
-	Local Const $accelerators[22][2] = _
+	Local Const $accelerators[23][2] = _
 			[ _
 			["{Delete}", $accel_delete], _
 			["^x", $accel_x], _
@@ -504,6 +505,7 @@ Func _set_accelerators($styleOnly = False)
 			["{F7}", $menu_show_grid], _
 			["{F5}", $accel_F5], _
 			["^s", $accel_s], _
+			["^+s", $accel_shift_s], _
 			["^o", $accel_o], _
 			["^z", $accel_z], _
 			["^y", $accel_y], _
@@ -513,12 +515,13 @@ Func _set_accelerators($styleOnly = False)
 		GUISetAccelerators($accelerators, $hGUI)
 	EndIf
 
-	Local Const $acceleratorsToolbar[6][2] = _
+	Local Const $acceleratorsToolbar[7][2] = _
 			[ _
 			["{F3}", $accel_F3], _
 			["{F7}", $menu_show_grid], _
 			["{F5}", $accel_F5], _
 			["^s", $accel_s], _
+			["^+s", $accel_shift_s], _
 			["^o", $accel_o], _
 			["{F1}", $menu_helpchm] _
 			]
@@ -544,6 +547,7 @@ Func _set_accelerators($styleOnly = False)
 	GUICtrlSetOnEvent($accel_Ctrlleft, "_onKeyCtrlLeft")
 	GUICtrlSetOnEvent($accel_Ctrlright, "_onKeyCtrlRight")
 	GUICtrlSetOnEvent($accel_s, "_onSaveGui")
+	GUICtrlSetOnEvent($accel_shift_s, "_onSaveAsGui")
 	GUICtrlSetOnEvent($accel_o, "_onload_gui_definition")
 	GUICtrlSetOnEvent($accel_F5, "_onTestGUI")
 	GUICtrlSetOnEvent($accel_F3, "_onGridsnap")
