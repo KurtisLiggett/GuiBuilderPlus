@@ -15,31 +15,11 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  06/28/2023 ...:
-;					- FIXED:	Code preview not highlighting #Region/#EndRegion
-;					- FIXED:	Bugs in AVI control code
-;					- FIXED:	Keyboard shortcut behavior in properties window
-;					- FIXED:	GUI properties not loading when opening GUI file
-;					- FIXED:	Wrong background color when opening GUI file
-;					- FIXED:	Wrong font properties when copy/paste
-;					- FIXED:	Controls smushed into top left when copy/paste
-;					- FIXED:	Inconsistencies in setting, saving, and loading colors
-;					- FIXED:	Incorrect tabs for event code
-;					- FIXED:	Delete menuitem not working
-;					- FIXED:	Create variables for menuitems
-;					- FIXED:	Various bugs when importing from AU3 file
-;					- ADDED:	Image select button for AVI
-;					- ADDED:	Edit menuitem name, text, and global properties
-;					- ADDED:	Button to Copy only the GUI Region to clipboard
-;					- ADDED:	Status messages for copying to clipboard
-;					- UPDATED:	New single Image control replaces Pic, Icon, and AVI controls
-;					- UPDATED:	BIG speed improvements when saving and loading definition files
-;					- UPDATED:	More reductions in flickering
-;					- UPDATED:	New button icons
-;					- UPDATED:	Better tray menu handling
-;					- UPDATED:	Save code preview window size
-;					- UPDATED:	Add space around menu/menuitems in generated code
-;					- UPDATED:	Updated help file and corrected some formatting issues
+;  03/15/2023 ...:
+;					- FIXED:	Wrong line endings when copying from code preview window
+;					- FIXED:	Issue when selecting controls under certain conditions
+;					- FIXED:	SaveAs keyboard shortcut
+;					- ADDED:	Auto-size property for Labels, Buttons, and Inputs
 ;
 ; ===============================================================================================================================
 
