@@ -15,10 +15,12 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  03/15/2023 ...:
+;  03/21/2023 ...:
 ;					- FIXED:	Wrong line endings when copying from code preview window
-;					- FIXED:	Issue when selecting controls under certain conditions
+;					- FIXED:	Issue changing properties when Obect Explorer window is not open
+;					- FIXED:	Issue when selecting controls under certain other conditions
 ;					- FIXED:	SaveAs keyboard shortcut
+;					- FIXED:	Undo/Redo for Global property
 ;					- ADDED:	Auto-size property for Labels, Buttons, and Inputs
 ;
 ; ===============================================================================================================================
@@ -107,7 +109,7 @@ Global Enum $props_Main, $props_Ctrls
 ; Cursor Consts - added by: Jaberwacky
 Global Const $ARROW = 2, $CROSS = 3, $SIZE_ALL = 9, $SIZENESW = 10, $SIZENS = 11, $SIZENWSE = 12, $SIZEWS = 13
 Global Enum $action_nudgeCtrl, $action_moveCtrl, $action_resizeCtrl, $action_deleteCtrl, $action_createCtrl, $action_renameCtrl, $action_changeColor, $action_changeBkColor, $action_pasteCtrl, _
-		$action_changeText, $action_changeCode, $action_drawCtrl, $action_changeBorderColor, $action_changeBorderSize
+		$action_changeText, $action_changeCode, $action_drawCtrl, $action_changeBorderColor, $action_changeBorderSize, $action_ChangeAutosize, $action_ChangeGlobal
 
 ;other variables
 Global $bStatusNewMessage

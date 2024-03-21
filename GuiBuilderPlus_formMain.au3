@@ -2601,13 +2601,13 @@ Func _ctrl_change_text()
 
 	Local Const $sel_count = $oSelected.count
 
-	Local $hSelected = _getLvSelectedHwnd()
-
-	;if exists. If not, then must be menu item
+	;Check if menu item
+	Local $oFirstCtrl = $oSelected.getFirst()
 	Local $isMenuItem
-	If Not $oSelected.ctrls.Exists($hSelected) Then
-		$isMenuItem = True
-	EndIf
+	Switch $oFirstCtrl.Type
+		Case "Menu", "MenuItem"
+			$isMenuItem = True
+	EndSwitch
 
 	;update the undo action stack
 	Local $oCtrl
@@ -2627,7 +2627,7 @@ Func _ctrl_change_text()
 	Else
 		$oCtrl = $oSelected.getFirst()
 		For $oMenuItem In $oCtrl.MenuItems
-			If $oMenuItem.Hwnd = $hSelected Then
+			If $oMenuItem.Hwnd = $oFirstCtrl.Hwnd Then
 				$oCtrl = $oMenuItem
 				ExitLoop
 			EndIf
@@ -2702,15 +2702,13 @@ Func _ctrl_change_name()
 
 	Local Const $sel_count = $oSelected.count
 
-	;get selected item in object viewer
-	Local $hSelected = _getLvSelectedHwnd()
-
-	;if exists. If not, then must be menu item
+	;Check if menu item
+	Local $oFirstCtrl = $oSelected.getFirst()
 	Local $isMenuItem
-	If Not $oSelected.ctrls.Exists($hSelected) Then
-		$isMenuItem = True
-	EndIf
-
+	Switch $oFirstCtrl.Type
+		Case "Menu", "MenuItem"
+			$isMenuItem = True
+	EndSwitch
 
 	;update the undo action stack
 	Local $oCtrl
@@ -2725,7 +2723,7 @@ Func _ctrl_change_name()
 	Else
 		$oCtrl = $oSelected.getFirst()
 		For $oMenuItem In $oCtrl.MenuItems
-			If $oMenuItem.Hwnd = $hSelected Then
+			If $oMenuItem.Hwnd = $oFirstCtrl.Hwnd Then
 				$oCtrl = $oMenuItem
 				$name = $oMenuItem.Name
 				ExitLoop
@@ -2918,9 +2916,14 @@ Func _ctrl_change_width()
 	Local $oAction = _objAction()
 	$oAction.action = $action_resizeCtrl
 	$oAction.ctrls = $oSelected.ctrls.Items()
-	Local $aParams[$oSelected.ctrls.Count]
+	Local $CtrlCnt = $oSelected.ctrls.Count
+	Local $aParams[$CtrlCnt]
 	Local $aParam[8]
 	For $i = 0 To UBound($oAction.ctrls) - 1
+		if $oAction.ctrls[$i].Autosize = $GUI_CHECKED Then
+			$CtrlCnt -= 1
+			ContinueLoop
+		EndIf
 		$aParam[0] = $oAction.ctrls[$i].Width
 		$aParam[1] = $oAction.ctrls[$i].Height
 		$aParam[2] = $oProperties_Ctrls.properties.Width.value
@@ -2931,6 +2934,8 @@ Func _ctrl_change_width()
 		$aParam[7] = $oAction.ctrls[$i].Top
 		$aParams[$i] = $aParam
 	Next
+	If $CtrlCnt = 0 Then Return
+	ReDim $aParams[$CtrlCnt]
 	$oAction.parameters = $aParams
 	_updateActionStacks($oAction)
 
@@ -2939,6 +2944,7 @@ Func _ctrl_change_width()
 			Local $aItems = $oSelected.ctrls.Items()
 			For $oCtrl In $aItems
 				If $oCtrl.Locked Then ContinueLoop
+				if $oCtrl.Autosize = $GUI_CHECKED Then ContinueLoop
 
 				;move the selected control
 				_change_ctrl_size_pos($oCtrl, Default, Default, $new_data, Default)
@@ -2987,9 +2993,14 @@ Func _ctrl_change_height()
 	Local $oAction = _objAction()
 	$oAction.action = $action_resizeCtrl
 	$oAction.ctrls = $oSelected.ctrls.Items()
-	Local $aParams[$oSelected.ctrls.Count]
+	Local $CtrlCnt = $oSelected.ctrls.Count
+	Local $aParams[$CtrlCnt]
 	Local $aParam[8]
 	For $i = 0 To UBound($oAction.ctrls) - 1
+		if $oAction.ctrls[$i].Autosize = $GUI_CHECKED Then
+			$CtrlCnt -= 1
+			ContinueLoop
+		EndIf
 		$aParam[0] = $oAction.ctrls[$i].Width
 		$aParam[1] = $oAction.ctrls[$i].Height
 		$aParam[2] = $oAction.ctrls[$i].Width
@@ -3000,6 +3011,8 @@ Func _ctrl_change_height()
 		$aParam[7] = $oAction.ctrls[$i].Top
 		$aParams[$i] = $aParam
 	Next
+	If $CtrlCnt = 0 Then Return
+	ReDim $aParams[$CtrlCnt]
 	$oAction.parameters = $aParams
 	_updateActionStacks($oAction)
 
@@ -3008,6 +3021,7 @@ Func _ctrl_change_height()
 			Local $aItems = $oSelected.ctrls.Items()
 			For $oCtrl In $aItems
 				If $oCtrl.Locked Then ContinueLoop
+				if $oCtrl.Autosize = $GUI_CHECKED Then ContinueLoop
 
 				;move the selected control
 				_change_ctrl_size_pos($oCtrl, Default, Default, Default, $new_data)
@@ -3220,14 +3234,28 @@ Func _ctrl_change_autosize()
 
 	Local Const $sel_count = $oSelected.count
 
-	;get selected item in object viewer
-	Local $hSelected = _getLvSelectedHwnd()
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_ChangeAutosize
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $CtrlCnt = $oSelected.ctrls.Count
+	Local $aParams[$CtrlCnt]
+	Local $aParam[1]
+	For $i = 0 To UBound($oAction.ctrls) - 1
+		$aParam[0] = $new_data
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
 
-	;if exists. If not, then must be menu item
+
+	;Check if menu item
+	Local $oFirstCtrl = $oSelected.getFirst()
 	Local $isMenuItem
-	If Not $oSelected.ctrls.Exists($hSelected) And $hSelected <> -1 Then
-		$isMenuItem = True
-	EndIf
+	Switch $oFirstCtrl.Type
+		Case "Menu", "MenuItem"
+			$isMenuItem = True
+	EndSwitch
 
 	Local $oCtrl
 	Switch $sel_count >= 1
@@ -3257,14 +3285,27 @@ Func _ctrl_change_global()
 
 	Local Const $sel_count = $oSelected.count
 
-	;get selected item in object viewer
-	Local $hSelected = _getLvSelectedHwnd()
+	;update the undo action stack
+	Local $oAction = _objAction()
+	$oAction.action = $action_ChangeGlobal
+	$oAction.ctrls = $oSelected.ctrls.Items()
+	Local $CtrlCnt = $oSelected.ctrls.Count
+	Local $aParams[$CtrlCnt]
+	Local $aParam[1]
+	For $i = 0 To UBound($oAction.ctrls) - 1
+		$aParam[0] = $new_data
+		$aParams[$i] = $aParam
+	Next
+	$oAction.parameters = $aParams
+	_updateActionStacks($oAction)
 
-	;if exists. If not, then must be menu item
+	;Check if menu item
+	Local $oFirstCtrl = $oSelected.getFirst()
 	Local $isMenuItem
-	If Not $oSelected.ctrls.Exists($hSelected) And $hSelected <> -1 Then
-		$isMenuItem = True
-	EndIf
+	Switch $oFirstCtrl.Type
+		Case "Menu", "MenuItem"
+			$isMenuItem = True
+	EndSwitch
 
 	Local $oCtrl
 	If Not $isMenuItem Then
@@ -3272,7 +3313,7 @@ Func _ctrl_change_global()
 	Else
 		$oCtrl = $oSelected.getFirst()
 		For $oMenuItem In $oCtrl.MenuItems
-			If $oMenuItem.Hwnd = $hSelected Then
+			If $oMenuItem.Hwnd = $oFirstCtrl.Hwnd Then
 				$oCtrl = $oMenuItem
 				$name = $oMenuItem.Name
 				ExitLoop
@@ -4142,7 +4183,7 @@ EndFunc   ;==>_recall_overlay
 
 Func _StringSizeExt($ctrlID, $sString)
 	Local $aFont = _GUICtrlGetFont($ctrlID)
-	ConsoleWrite($aFont[0] & @CRLF)
+	;ConsoleWrite($aFont[0] & @CRLF)
 	Local $aStrSize = _StringSize($sString, $aFont[0], $aFont[1], $aFont[2], $aFont[3])
 	Return $aStrSize
 EndFunc   ;==>_StringSizeExt

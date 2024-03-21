@@ -1702,6 +1702,36 @@ Func _undo()
 				Next
 				_refreshGenerateCode()
 
+			Case $action_ChangeAutosize
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				Local $aParams
+				For $i = 0 To UBound($aActionCtrls) - 1
+					$aParams = $aActionParams[$i]
+					If $aParams[0] = $GUI_CHECKED Then
+						$aActionCtrls[$i].AutoSize = $GUI_UNCHECKED
+					Else
+						$aActionCtrls[$i].AutoSize = $GUI_CHECKED
+					EndIf
+				Next
+				_populate_control_properties_gui($oSelected.getFirst())
+
+			Case $action_ChangeGlobal
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				Local $aParams
+				For $i = 0 To UBound($aActionCtrls) - 1
+					$aParams = $aActionParams[$i]
+					If $aParams[0] = $GUI_CHECKED Then
+						$aActionCtrls[$i].Global = $GUI_UNCHECKED
+					Else
+						$aActionCtrls[$i].Global = $GUI_CHECKED
+					EndIf
+				Next
+				_populate_control_properties_gui($oSelected.getFirst())
+
 		EndSwitch
 
 		;move from undo stack to redo stack
@@ -1933,6 +1963,36 @@ Func _redo()
 					$aActionCtrls[$i].CodeString = $aParams[1]
 				Next
 				_refreshGenerateCode()
+
+			Case $action_ChangeAutosize
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				Local $aParams
+				For $i = 0 To UBound($aActionCtrls) - 1
+					$aParams = $aActionParams[$i]
+					If $aParams[0] = $GUI_CHECKED Then
+						$aActionCtrls[$i].AutoSize = $GUI_CHECKED
+					Else
+						$aActionCtrls[$i].AutoSize = $GUI_UNCHECKED
+					EndIf
+				Next
+				_populate_control_properties_gui($oSelected.getFirst())
+
+			Case $action_ChangeGlobal
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				Local $aParams
+				For $i = 0 To UBound($aActionCtrls) - 1
+					$aParams = $aActionParams[$i]
+					If $aParams[0] = $GUI_CHECKED Then
+						$aActionCtrls[$i].Global = $GUI_CHECKED
+					Else
+						$aActionCtrls[$i].Global = $GUI_UNCHECKED
+					EndIf
+				Next
+				_populate_control_properties_gui($oSelected.getFirst())
 
 		EndSwitch
 
