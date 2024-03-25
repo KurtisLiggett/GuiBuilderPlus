@@ -47,7 +47,7 @@ Func _formGenerateCode()
 		$y = 1
 	EndIf
 
-	$hFormGenerateCode = GUICreate("Code Preview", $w, $h, $x, $y, $WS_SIZEBOX, -1, $hToolbar)
+	$hFormGenerateCode = GUICreate("Code Viewer", $w, $h, $x, $y, $WS_SIZEBOX, -1, $hToolbar)
 	GUISetOnEvent($GUI_EVENT_CLOSE, "_onExitGenerateCode")
 
 	If Not @Compiled Then
@@ -127,7 +127,7 @@ EndFunc   ;==>_onCodeRefresh
 ; Events..........: Save button in code generation dialog
 ;------------------------------------------------------------------------------
 Func _onCodeSave()
-	_copy_code_to_output(_GUICtrlRichEdit_GetText($editCodeGeneration))
+	_copy_code_to_output(_GUICtrlRichEdit_GetText($editCodeGeneration, True))
 EndFunc   ;==>_onCodeSave
 
 
@@ -137,7 +137,7 @@ EndFunc   ;==>_onCodeSave
 ; Events..........: Copy button in code generation dialog
 ;------------------------------------------------------------------------------
 Func _onCodeCopy()
-	ClipPut(_GUICtrlRichEdit_GetText($editCodeGeneration))
+	ClipPut(_GUICtrlRichEdit_GetText($editCodeGeneration, True))
 	$bStatusNewMessage = True
 	_GUICtrlStatusBar_SetText($hStatusbar, "Code copied to the clipboard")
 EndFunc   ;==>_onCodeCopy

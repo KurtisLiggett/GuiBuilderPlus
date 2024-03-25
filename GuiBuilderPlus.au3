@@ -15,31 +15,13 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  06/28/2023 ...:
-;					- FIXED:	Code preview not highlighting #Region/#EndRegion
-;					- FIXED:	Bugs in AVI control code
-;					- FIXED:	Keyboard shortcut behavior in properties window
-;					- FIXED:	GUI properties not loading when opening GUI file
-;					- FIXED:	Wrong background color when opening GUI file
-;					- FIXED:	Wrong font properties when copy/paste
-;					- FIXED:	Controls smushed into top left when copy/paste
-;					- FIXED:	Inconsistencies in setting, saving, and loading colors
-;					- FIXED:	Incorrect tabs for event code
-;					- FIXED:	Delete menuitem not working
-;					- FIXED:	Create variables for menuitems
-;					- FIXED:	Various bugs when importing from AU3 file
-;					- ADDED:	Image select button for AVI
-;					- ADDED:	Edit menuitem name, text, and global properties
-;					- ADDED:	Button to Copy only the GUI Region to clipboard
-;					- ADDED:	Status messages for copying to clipboard
-;					- UPDATED:	New single Image control replaces Pic, Icon, and AVI controls
-;					- UPDATED:	BIG speed improvements when saving and loading definition files
-;					- UPDATED:	More reductions in flickering
-;					- UPDATED:	New button icons
-;					- UPDATED:	Better tray menu handling
-;					- UPDATED:	Save code preview window size
-;					- UPDATED:	Add space around menu/menuitems in generated code
-;					- UPDATED:	Updated help file and corrected some formatting issues
+;  03/21/2023 ...:
+;					- FIXED:	Wrong line endings when copying from code preview window
+;					- FIXED:	Issue changing properties when Obect Explorer window is not open
+;					- FIXED:	Issue when selecting controls under certain other conditions
+;					- FIXED:	SaveAs keyboard shortcut
+;					- FIXED:	Undo/Redo for Global property
+;					- ADDED:	Auto-size property for Labels, Buttons, and Inputs
 ;
 ; ===============================================================================================================================
 
@@ -47,8 +29,8 @@
 #AutoIt3Wrapper_Res_HiDpi=N
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.2.0.exe
-#AutoIt3Wrapper_Res_Fileversion=1.2.0
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.3.0.exe
+#AutoIt3Wrapper_Res_Fileversion=1.3.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 1.ico,201
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 2.ico,202
@@ -127,7 +109,7 @@ Global Enum $props_Main, $props_Ctrls
 ; Cursor Consts - added by: Jaberwacky
 Global Const $ARROW = 2, $CROSS = 3, $SIZE_ALL = 9, $SIZENESW = 10, $SIZENS = 11, $SIZENWSE = 12, $SIZEWS = 13
 Global Enum $action_nudgeCtrl, $action_moveCtrl, $action_resizeCtrl, $action_deleteCtrl, $action_createCtrl, $action_renameCtrl, $action_changeColor, $action_changeBkColor, $action_pasteCtrl, _
-		$action_changeText, $action_changeCode, $action_drawCtrl, $action_changeBorderColor, $action_changeBorderSize
+		$action_changeText, $action_changeCode, $action_drawCtrl, $action_changeBorderColor, $action_changeBorderSize, $action_ChangeAutosize, $action_ChangeGlobal
 
 ;other variables
 Global $bStatusNewMessage
@@ -192,6 +174,7 @@ _AutoItObject_StartUp()
 #include "UDFS\JSON.au3"
 #include "UDFS\GUIScrollbars_Ex.au3"
 #include "UDFs\StringSize.au3"
+#include "UDFs\GuiCtrlGetFont.au3"
 #include "UDFs\RESH.au3"
 #include "GuiBuilderPlus_objOptions.au3"
 #include "GuiBuilderPlus_objCtrl.au3"
@@ -239,7 +222,7 @@ Func _main()
 	$oClipboard = _objCtrls()
 	$oMain = _objMain()
 	$oMain.AppName = "GuiBuilderPlus"
-	$oMain.AppVersion = "1.2.0"
+	$oMain.AppVersion = "1.3.0"
 	$oMain.Title = StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1)
 	$oMain.Name = "hGUI"
 	$oMain.Width = 400

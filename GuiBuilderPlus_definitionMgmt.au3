@@ -163,6 +163,7 @@ Func _save_gui_definition($saveAs = False)
 		_json_add($sJsonString, "Top", $oCtrl.Top, 3)
 		_json_add($sJsonString, "Width", $oCtrl.Width, 3)
 		_json_add($sJsonString, "Height", $oCtrl.Height, 3)
+		_json_add($sJsonString, "Autosize", $oCtrl.Autosize, 3)
 		_json_add($sJsonString, "Global", $oCtrl.Global, 3)
 		_json_add($sJsonString, "Locked", $oCtrl.Locked, 3)
 		_json_add($sJsonString, "styleString", $oCtrl.styleString, 3)
@@ -213,6 +214,7 @@ Func _save_gui_definition($saveAs = False)
 							_json_add($sJsonString, "Top", $oTabCtrl.Top, 7)
 							_json_add($sJsonString, "Width", $oTabCtrl.Width, 7)
 							_json_add($sJsonString, "Height", $oTabCtrl.Height, 7)
+							_json_add($sJsonString, "Autosize", $oTabCtrl.Autosize, 7)
 							_json_add($sJsonString, "Global", $oTabCtrl.Global, 7)
 							_json_add($sJsonString, "Locked", $oTabCtrl.Locked, 7)
 							_json_add($sJsonString, "styleString", $oTabCtrl.styleString, 7)
@@ -261,6 +263,7 @@ Func _save_gui_definition($saveAs = False)
 						_json_add($sJsonString, "Top", $oThisCtrl.Top, 5)
 						_json_add($sJsonString, "Width", $oThisCtrl.Width, 5)
 						_json_add($sJsonString, "Height", $oThisCtrl.Height, 5)
+						_json_add($sJsonString, "Autosize", $oThisCtrl.Autosize, 5)
 						_json_add($sJsonString, "Global", $oThisCtrl.Global, 5)
 						_json_add($sJsonString, "Locked", $oThisCtrl.Locked, 5)
 						_json_add($sJsonString, "styleString", $oThisCtrl.styleString, 5)
@@ -485,6 +488,7 @@ Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 			$oCtrl.Top = _json_getValue($oThisCtrl, "Top", -1)
 			$oCtrl.Width = _json_getValue($oThisCtrl, "Width", 1)
 			$oCtrl.Height = _json_getValue($oThisCtrl, "Height", 1)
+			$oCtrl.Autosize = _json_getValue($oThisCtrl, "Autosize", $GUI_UNCHECKED)
 			$oCtrl.Global = _json_getValue($oThisCtrl, "Global", 1)
 			$oCtrl.Locked = _json_getValue($oThisCtrl, "Locked", False)
 			$oCtrl.styleString = _json_getValue($oThisCtrl, "styleString", "")
@@ -584,6 +588,7 @@ Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 								$oCtrl2.Top = _json_getValue($oTabCtrl, "Top", -1)
 								$oCtrl2.Width = _json_getValue($oTabCtrl, "Width", 1)
 								$oCtrl2.Height = _json_getValue($oTabCtrl, "Height", 1)
+								$oCtrl2.Autosize = _json_getValue($oTabCtrl, "Autosize", $GUI_UNCHECKED)
 								$oCtrl2.Global = _json_getValue($oTabCtrl, "Global", 1)
 								$oCtrl2.Locked = _json_getValue($oTabCtrl, "Locked", False)
 								$oCtrl2.styleString = _json_getValue($oTabCtrl, "styleString", "")
@@ -648,6 +653,7 @@ Func _load_gui_definition($AgdInfile = '', $oImportData = -1)
 						$oCtrl2.Top = _json_getValue($oGroupCtrl, "Top", -1)
 						$oCtrl2.Width = _json_getValue($oGroupCtrl, "Width", 1)
 						$oCtrl2.Height = _json_getValue($oGroupCtrl, "Height", 1)
+						$oCtrl2.Autosize = _json_getValue($oGroupCtrl, "Autosize", $GUI_UNCHECKED)
 						$oCtrl2.Global = _json_getValue($oGroupCtrl, "Global", 1)
 						$oCtrl2.Locked = _json_getValue($oGroupCtrl, "Locked", False)
 						$oCtrl2.styleString = _json_getValue($oGroupCtrl, "styleString", "")
@@ -889,6 +895,7 @@ Func _load_gui_definition_ini($AgdInfile = '')
 		$oCtrl.Top = IniRead($AgdInfile, $Key, "Top", -1)
 		$oCtrl.Width = IniRead($AgdInfile, $Key, "Width", -1)
 		$oCtrl.Height = IniRead($AgdInfile, $Key, "Height", -1)
+		$oCtrl.Autosize = IniRead($AgdInfile, $Key, "Autosize", $GUI_UNCHECKED)
 		$oCtrl.Global = IniRead($AgdInfile, $Key, "Global", $GUI_CHECKED)
 		$oCtrl.Locked = IniRead($AgdInfile, $Key, "Locked", $GUI_UNCHECKED)
 		$oCtrl.Color = IniRead($AgdInfile, $Key, "Color", "")
@@ -1018,6 +1025,7 @@ Func _importAu3File()
 			ContinueLoop
 		EndIf
 
+
 		;check line for GUICtrlSetFont
 		Local $ctrlIndex, $fontWeight, $fontName
 ;~ 		$aMatches = StringRegExp($sLine, '(?im)\s*(?:GUICtrlSetFont)\s*\((.+?),\s*(.+?)(?:,\s*(.+?))?(?:,\s*(?:.+?))?(?:,\s*"(.+?))?"\s*(?:,|\))', $STR_REGEXPARRAYGLOBALMATCH)
@@ -1046,30 +1054,55 @@ Func _importAu3File()
 			Else
 				$fontName = ""
 			EndIf
-			Json_Put($objOutput, ".Controls[" & $ctrlIndex & "].FontSize", $aMatches[1])
-			Json_Put($objOutput, ".Controls[" & $ctrlIndex & "].FontWeight", $fontWeight)
-			Json_Put($objOutput, ".Controls[" & $ctrlIndex & "].FontName", $fontName)
+
+			$sJsonString = ""
+			If $iTabParentIndex > -1 And $inTab Then
+				$sJsonString = ".Controls[" & $iTabParentIndex & "].Tabs[" & $iTabCounter & "].Controls[" & $iChildCounter & "]"
+			Else
+				$sJsonString = ".Controls[" & $ctrlIndex & "]"
+			EndIf
+
+			If $inGroup Then
+				$sJsonString = ".Controls[" & $iGroupParentIndex & "].Controls[" & $iChildCounter & "]"
+			EndIf
+			Json_Put($objOutput, $sJsonString & ".FontSize", $aMatches[1])
+			Json_Put($objOutput, $sJsonString & ".FontWeight", $fontWeight)
+			Json_Put($objOutput, $sJsonString & ".FontName", $fontName)
 
 			ContinueLoop
 		EndIf
 
 
 		;check line for GUICtrlSetBkColor
+		$ctrlIndex = -1
 		$aMatches = StringRegExp($sLine, '(?im)\s*(?:GUICtrlSetBkColor)\s*\((.+?),\s*(.+?)\s*(?:,|\))', $STR_REGEXPARRAYGLOBALMATCH)
 		If Not @error Then
 			If $aMatches[0] = "-1" Then
-				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Background", $aMatches[1])
+				$ctrlIndex = $iCtrlCounter
+;~ 				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Background", $aMatches[1])
 			Else
 				Local $sName = StringReplace($aMatches[0], "$", "")
 				If $oVariables.Exists($sName) Then
 					For $i = 0 To $iCtrlCounter
 						If Json_Get($objOutput, ".Controls[" & $i & "].Name") = $sName Then
-							Json_Put($objOutput, ".Controls[" & $i & "].Background", $aMatches[1])
+							$ctrlIndex = $i
 							ExitLoop
 						EndIf
 					Next
 				EndIf
 			EndIf
+
+			$sJsonString = ""
+			If $iTabParentIndex > -1 And $inTab Then
+				$sJsonString = ".Controls[" & $iTabParentIndex & "].Tabs[" & $iTabCounter & "].Controls[" & $iChildCounter & "]"
+			Else
+				$sJsonString = ".Controls[" & $ctrlIndex & "]"
+			EndIf
+
+			If $inGroup Then
+				$sJsonString = ".Controls[" & $iGroupParentIndex & "].Controls[" & $iChildCounter & "]"
+			EndIf
+			Json_Put($objOutput, $sJsonString & ".Background", $aMatches[1])
 			ContinueLoop
 		EndIf
 
@@ -1077,18 +1110,30 @@ Func _importAu3File()
 		$aMatches = StringRegExp($sLine, '(?im)\s*(?:GUICtrlSetColor)\s*\((.+?),\s*(.+?)\s*(?:,|\))', $STR_REGEXPARRAYGLOBALMATCH)
 		If Not @error Then
 			If $aMatches[0] = "-1" Then
-				Json_Put($objOutput, ".Controls[" & $iCtrlCounter & "].Color", $aMatches[1])
+				$ctrlIndex = $iCtrlCounter
 			Else
 				Local $sName = StringReplace($aMatches[0], "$", "")
 				If $oVariables.Exists($sName) Then
 					For $i = 0 To $iCtrlCounter
 						If Json_Get($objOutput, ".Controls[" & $i & "].Name") = $sName Then
-							Json_Put($objOutput, ".Controls[" & $i & "].Color", $aMatches[1])
+							$ctrlIndex = $i
 							ExitLoop
 						EndIf
 					Next
 				EndIf
 			EndIf
+
+			$sJsonString = ""
+			If $iTabParentIndex > -1 And $inTab Then
+				$sJsonString = ".Controls[" & $iTabParentIndex & "].Tabs[" & $iTabCounter & "].Controls[" & $iChildCounter & "]"
+			Else
+				$sJsonString = ".Controls[" & $ctrlIndex & "]"
+			EndIf
+
+			If $inGroup Then
+				$sJsonString = ".Controls[" & $iGroupParentIndex & "].Controls[" & $iChildCounter & "]"
+			EndIf
+			Json_Put($objOutput, $sJsonString & ".Color", $aMatches[1])
 			ContinueLoop
 		EndIf
 

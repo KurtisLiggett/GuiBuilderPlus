@@ -206,6 +206,7 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 			If $isPaste Then
 				_setCtrlFont($oNewControl)
 			EndIf
+			ConsoleWrite($oNewControl.Text & @CRLF)
 
 ;~ 			GUICtrlSetState($oNewControl.Hwnd, $GUI_DISABLE)
 
@@ -445,6 +446,7 @@ Func _create_ctrl($oCtrl = 0, $bUseName = False, $startX = -1, $startY = -1, $hP
 	EndSwitch
 
 	GUICtrlSetResizing($oNewControl.Hwnd, $GUI_DOCKALL)
+	_add_to_selected($oNewControl, True, True)
 
 	GuiCtrlSetOnTop($oNewControl.Hwnd)
 
@@ -1515,6 +1517,9 @@ Func _undo()
 					$aParams = $aActionParams[$i]
 					GUICtrlSetData($aActionCtrls[$i].Hwnd, $aParams[0])
 					$aActionCtrls[$i].Text = $aParams[0]
+
+					;update, on autosize
+					_ResizeLabel($aActionCtrls[$i])
 				Next
 				_SendMessage($hGUI, $WM_SETREDRAW, True)
 				_WinAPI_RedrawWindow($hGUI)
@@ -1697,6 +1702,36 @@ Func _undo()
 				Next
 				_refreshGenerateCode()
 
+			Case $action_ChangeAutosize
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				Local $aParams
+				For $i = 0 To UBound($aActionCtrls) - 1
+					$aParams = $aActionParams[$i]
+					If $aParams[0] = $GUI_CHECKED Then
+						$aActionCtrls[$i].AutoSize = $GUI_UNCHECKED
+					Else
+						$aActionCtrls[$i].AutoSize = $GUI_CHECKED
+					EndIf
+				Next
+				_populate_control_properties_gui($oSelected.getFirst())
+
+			Case $action_ChangeGlobal
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				Local $aParams
+				For $i = 0 To UBound($aActionCtrls) - 1
+					$aParams = $aActionParams[$i]
+					If $aParams[0] = $GUI_CHECKED Then
+						$aActionCtrls[$i].Global = $GUI_UNCHECKED
+					Else
+						$aActionCtrls[$i].Global = $GUI_CHECKED
+					EndIf
+				Next
+				_populate_control_properties_gui($oSelected.getFirst())
+
 		EndSwitch
 
 		;move from undo stack to redo stack
@@ -1724,6 +1759,9 @@ Func _redo()
 					$aParams = $aActionParams[$i]
 					GUICtrlSetData($aActionCtrls[$i].Hwnd, $aParams[1])
 					$aActionCtrls[$i].Text = $aParams[1]
+
+					;update, on autosize
+					_ResizeLabel($aActionCtrls[$i])
 				Next
 				_SendMessage($hGUI, $WM_SETREDRAW, True)
 				_WinAPI_RedrawWindow($hGUI)
@@ -1925,6 +1963,36 @@ Func _redo()
 					$aActionCtrls[$i].CodeString = $aParams[1]
 				Next
 				_refreshGenerateCode()
+
+			Case $action_ChangeAutosize
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				Local $aParams
+				For $i = 0 To UBound($aActionCtrls) - 1
+					$aParams = $aActionParams[$i]
+					If $aParams[0] = $GUI_CHECKED Then
+						$aActionCtrls[$i].AutoSize = $GUI_CHECKED
+					Else
+						$aActionCtrls[$i].AutoSize = $GUI_UNCHECKED
+					EndIf
+				Next
+				_populate_control_properties_gui($oSelected.getFirst())
+
+			Case $action_ChangeGlobal
+				Local $aActionCtrls = $oAction.ctrls
+				Local $aActionParams = $oAction.parameters
+
+				Local $aParams
+				For $i = 0 To UBound($aActionCtrls) - 1
+					$aParams = $aActionParams[$i]
+					If $aParams[0] = $GUI_CHECKED Then
+						$aActionCtrls[$i].Global = $GUI_CHECKED
+					Else
+						$aActionCtrls[$i].Global = $GUI_UNCHECKED
+					EndIf
+				Next
+				_populate_control_properties_gui($oSelected.getFirst())
 
 		EndSwitch
 

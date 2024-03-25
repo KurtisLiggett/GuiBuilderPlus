@@ -113,7 +113,8 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	GUICtrlSetBkColor(-1, 0xDDDDDD)
 
 	;items
-	$oProperties_Ctrls.properties.Background.Hwnd = _formPropertyInspector_newitem("Background", $typeColor, 20, 1, $w - $iScrollbarWidth - 1, 20, "_ctrl_pick_bkColor", 1)
+	$oProperties_Ctrls.properties.Autosize.Hwnd = _formPropertyInspector_newitem("Autosize", $typeCheck, 20, 1, $w - $iScrollbarWidth - 1, 20, -1, 1)
+	$oProperties_Ctrls.properties.Background.Hwnd = _formPropertyInspector_newitem("Background", $typeColor, 20, -1, -1, -1, "_ctrl_pick_bkColor", 1)
 	$oProperties_Ctrls.properties.FontName.Hwnd = _formPropertyInspector_newitem("Font", $typeComboFN, 20, -1, -1, -1, -1, 1)
 	$properties_fontIndex = $properties_data[0][0]
 	$oProperties_Ctrls.properties.FontSize.Hwnd = _formPropertyInspector_newitem("Size", $typeReal, 30, -1, -1, -1, -1, 1, 1, $properties_fontIndex)
@@ -135,7 +136,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	$oProperties_Ctrls.properties.Top.Hwnd = _formPropertyInspector_newitem("Top", $typeNumber, -1, -1, -1, -1, -1, 1)
 	$oProperties_Ctrls.properties.Width.Hwnd = _formPropertyInspector_newitem("Width", $typeNumber, -1, -1, -1, -1, -1, 1)
 
-	$properties_borderButton = GUICtrlCreateLabel("-", 3, 201, 15, 18, BitOR($SS_CENTER, $SS_CENTERIMAGE))
+	$properties_borderButton = GUICtrlCreateLabel("-", 3, 221, 15, 18, BitOR($SS_CENTER, $SS_CENTERIMAGE))
 	GUICtrlSetBkColor(-1, 0xFFFFFF)
 	GUICtrlSetFont(-1, 12)
 	GUICtrlSetOnEvent(-1, "_onBorderButton")
@@ -148,7 +149,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	Next
 	$properties_data[$properties_borderIndex][0] = $aTemp
 
-	$properties_fontButton = GUICtrlCreateLabel("-", 3, 21, 15, 18, BitOR($SS_CENTER, $SS_CENTERIMAGE))
+	$properties_fontButton = GUICtrlCreateLabel("-", 3, 41, 15, 18, BitOR($SS_CENTER, $SS_CENTERIMAGE))
 	GUICtrlSetBkColor(-1, 0xFFFFFF)
 	GUICtrlSetFont(-1, 12)
 	GUICtrlSetOnEvent(-1, "_onFontButton")
@@ -182,6 +183,7 @@ Func _formPropertyInspector($x, $y, $w, $h)
 	GUICtrlSetOnEvent($oProperties_Ctrls.properties.Background.Hwnd, _ctrl_change_bkColor)
 	GUICtrlSetOnEvent($oProperties_Ctrls.properties.BorderColor.Hwnd, _ctrl_change_borderColor)
 	GUICtrlSetOnEvent($oProperties_Ctrls.properties.BorderSize.Hwnd, _ctrl_change_borderSize)
+	GUICtrlSetOnEvent($oProperties_Ctrls.properties.Autosize.Hwnd, _ctrl_change_autosize)
 	GUICtrlSetOnEvent($oProperties_Ctrls.properties.Global.Hwnd, _ctrl_change_global)
 	GUICtrlSetOnEvent($oProperties_Ctrls.properties.Items.Hwnd, _ctrl_change_items)
 	GUICtrlSetOnEvent($oProperties_Ctrls.properties.Img.Hwnd, _ctrl_change_img)
@@ -617,11 +619,18 @@ Func _showProperties($props = $props_Main)
 					Local $bHasItems = $aCtrlTypes[3]
 					Local $bHasText = $aCtrlTypes[4]
 					Local $bHasImg = $aCtrlTypes[5]
+					Local $bHasAutosize = $aCtrlTypes[6]
 
 					If $bIsAllLabels Then
 						GUICtrlSetState($oProperties_Ctrls.properties.Color.Hwnd, $GUI_ENABLE)
 					Else
 						GUICtrlSetState($oProperties_Ctrls.properties.Color.Hwnd, $GUI_DISABLE)
+					EndIf
+
+					If $bHasAutosize Then
+						GUICtrlSetState($oProperties_Ctrls.properties.Autosize.Hwnd, $GUI_ENABLE)
+					Else
+						GUICtrlSetState($oProperties_Ctrls.properties.Autosize.Hwnd, $GUI_DISABLE)
 					EndIf
 
 					If $bHasBG Then
@@ -821,6 +830,7 @@ Func _check_Ctl_Types()
 	; 3 = has items
 	; 4 = has text
 	; 5 = has img
+	; 6 = controls that use AutoSize
 
 	If $oSelected.count > 0 Then
 		For $oCtrl In $oSelected.ctrls.Items()
@@ -864,6 +874,14 @@ Func _check_Ctl_Types()
 
 				Case Else
 					$aTypeChecks[5] = False    ;does not have img
+
+			EndSwitch
+
+			Switch $oCtrl.Type
+				Case "Label", "Button", "Input"
+
+				Case Else
+					$aTypeChecks[6] = False
 
 			EndSwitch
 		Next
