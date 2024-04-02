@@ -56,19 +56,19 @@ Func _formGenerateCode()
 
 	Local $titleBarHeight = _WinAPI_GetSystemMetrics($SM_CYCAPTION) + 3
 
-	GUICtrlCreateLabel("", 0, 0, $w, $h - $titleBarHeight - 57)
+	GUICtrlCreateLabel("", 0, 0, $w, 1)
 	GUICtrlSetState(-1, $GUI_DISABLE)
-	GUICtrlSetBkColor(-1, 0xFFFFFF)
-	GUICtrlSetResizing(-1, $GUI_DOCKBORDERS)
+	GUICtrlSetBkColor(-1, 0xCCCCCC)
+	GUICtrlSetResizing(-1, $GUI_DOCKTOP + $GUI_DOCKLEFT + $GUI_DOCKRIGHT + $GUI_DOCKHEIGHT)
 
-	;create invisible lable for resizing
-	$labelCodeGeneration = GUICtrlCreateLabel("", 10, 10, $w - 20, $h - $titleBarHeight - 78)
-	GUICtrlSetResizing(-1, $GUI_DOCKBORDERS)
-	GUICtrlSetBkColor(-1, $GUI_BKCOLOR_TRANSPARENT)
+	$editCodeGeneration = Sci_CreateEditor($hFormGenerateCode, 0, 2, $w, $h - $titleBarHeight - 62)
+	_sci_SetData($editCodeGeneration, _code_generation())
+
+	GUICtrlCreateLabel("", 0, $h - $titleBarHeight - 59, $w, 1)
 	GUICtrlSetState(-1, $GUI_DISABLE)
+	GUICtrlSetBkColor(-1, 0xCCCCCC)
+	GUICtrlSetResizing(-1, $GUI_DOCKBOTTOM + $GUI_DOCKLEFT + $GUI_DOCKRIGHT + $GUI_DOCKHEIGHT)
 
-	$editCodeGeneration = _GUICtrlRichEdit_Create($hFormGenerateCode, "", 10, 10, $w - 20, $h - $titleBarHeight - 78, BitOR($ES_MULTILINE, $WS_VSCROLL, $WS_HSCROLL, $ES_AUTOVSCROLL))
-	_RESH_SyntaxHighlight($editCodeGeneration, 0, _code_generation())
 
 	GUICtrlCreateButton("Copy GUI Region", $w - 15 - 75 * 2 - 5, $h - 50 - $titleBarHeight, 100, 22)
 	GUICtrlSetOnEvent(-1, "_onCodeCopyGuiRegion")
@@ -115,9 +115,7 @@ EndFunc   ;==>_formGenerateCode
 ; Events..........: Refresh button in code generation dialog
 ;------------------------------------------------------------------------------
 Func _onCodeRefresh()
-;~ 	GUICtrlSetData($editCodeGeneration, _code_generation())
-	_RESH_SyntaxHighlight($editCodeGeneration, 0, _code_generation())
-;~ 	_GUICtrlEdit_SetSel($editCodeGeneration, 0, 0)
+	_sci_SetData($editCodeGeneration, _code_generation())
 EndFunc   ;==>_onCodeRefresh
 
 
@@ -127,7 +125,7 @@ EndFunc   ;==>_onCodeRefresh
 ; Events..........: Save button in code generation dialog
 ;------------------------------------------------------------------------------
 Func _onCodeSave()
-	_copy_code_to_output(_GUICtrlRichEdit_GetText($editCodeGeneration, True))
+	_copy_code_to_output(Sci_GetLines($editCodeGeneration))
 EndFunc   ;==>_onCodeSave
 
 
@@ -137,7 +135,7 @@ EndFunc   ;==>_onCodeSave
 ; Events..........: Copy button in code generation dialog
 ;------------------------------------------------------------------------------
 Func _onCodeCopy()
-	ClipPut(_GUICtrlRichEdit_GetText($editCodeGeneration, True))
+	ClipPut(Sci_GetLines($editCodeGeneration))
 	$bStatusNewMessage = True
 	_GUICtrlStatusBar_SetText($hStatusbar, "Code copied to the clipboard")
 EndFunc   ;==>_onCodeCopy
@@ -148,8 +146,8 @@ EndFunc   ;==>_onCodeCopy
 ; Events..........: Copy button in code generation dialog
 ;------------------------------------------------------------------------------
 Func _onCodeCopyGuiRegion()
-	Local $code = _GUICtrlRichEdit_GetText($editCodeGeneration)
-	Local $aCodeLines = StringSplit($code, @CRLF)
+	Local $code = Sci_GetLines($editCodeGeneration)
+	Local $aCodeLines = StringSplit($code, @CRLF, $STR_ENTIRESPLIT)
 
 	Local $startFlag, $sNewCode
 	For $i=1 to $aCodeLines[0]
@@ -177,9 +175,6 @@ Func _onCodeCopyGuiRegion()
 EndFunc   ;==>_onCodeCopyGuiRegion
 
 
-Func _onSelectAll()
-	_GUICtrlEdit_SetSel($editCodeGeneration, 0, -1)
-EndFunc   ;==>_onSelectAll
 
 ;------------------------------------------------------------------------------
 ; Title...........: _onExitGenerateCode
@@ -196,6 +191,9 @@ Func _onExitGenerateCode()
 
 	; save state to settings file
 	IniWrite($sIniPath, "Settings", "ShowCode", 0)
+
+	; close the DLL
+	MemoryDllClose($hSciLexerDll)
 EndFunc   ;==>_onExitGenerateCode
 #EndRegion events
 
@@ -207,7 +205,12 @@ EndFunc   ;==>_onExitGenerateCode
 ;------------------------------------------------------------------------------
 Func _refreshGenerateCode()
 	If IsHWnd($hFormGenerateCode) Then
-;~ 		GUICtrlSetData($editCodeGeneration, _code_generation())
-		_RESH_SyntaxHighlight($editCodeGeneration, 0, _code_generation())
+		_sci_SetData($editCodeGeneration, _code_generation())
 	EndIf
 EndFunc   ;==>_refreshGenerateCode
+
+Func _sci_SetData($iCtrl, $sData)
+	Sci_DelLines($iCtrl)
+	Sci_AddLines($iCtrl, $sData, 0)
+	Sci_ClearSelections($editCodeGeneration)
+EndFunc   ;==>LoadFile

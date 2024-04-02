@@ -15,13 +15,11 @@
 ;					- CyberSlug, Roy, TheSaint, and many others: created/enhanced the original AutoBuilder/GUIBuilder
 ;
 ; Latest Revisions
-;  03/21/2023 ...:
-;					- FIXED:	Wrong line endings when copying from code preview window
-;					- FIXED:	Issue changing properties when Obect Explorer window is not open
-;					- FIXED:	Issue when selecting controls under certain other conditions
-;					- FIXED:	SaveAs keyboard shortcut
-;					- FIXED:	Undo/Redo for Global property
-;					- ADDED:	Auto-size property for Labels, Buttons, and Inputs
+;  04/02/2023 ...:
+;					- CHANGED:	Changed code viewer to SciLexer control for better code formatting
+;					- FIXED:	Code viewer resizing issues
+;					- FIXED:	Align position decimal places
+;					- FIXED:	Fix UTF8 handling
 ;
 ; ===============================================================================================================================
 
@@ -29,8 +27,8 @@
 #AutoIt3Wrapper_Res_HiDpi=N
 #AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Icon=resources\icons\icon.ico
-#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.3.0.exe
-#AutoIt3Wrapper_Res_Fileversion=1.3.0
+#AutoIt3Wrapper_OutFile=GUIBuilderPlus v1.4.0.exe
+#AutoIt3Wrapper_Res_Fileversion=1.4.0
 #AutoIt3Wrapper_Res_Description=GUI Builder Plus
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 1.ico,201
 #AutoIt3Wrapper_Res_Icon_Add=resources\icons\icon 2.ico,202
@@ -175,7 +173,7 @@ _AutoItObject_StartUp()
 #include "UDFS\GUIScrollbars_Ex.au3"
 #include "UDFs\StringSize.au3"
 #include "UDFs\GuiCtrlGetFont.au3"
-#include "UDFs\RESH.au3"
+#include "UDFs\_SciLexer.au3"
 #include "GuiBuilderPlus_objOptions.au3"
 #include "GuiBuilderPlus_objCtrl.au3"
 #include "GuiBuilderPlus_objProperties.au3"
@@ -222,7 +220,7 @@ Func _main()
 	$oClipboard = _objCtrls()
 	$oMain = _objMain()
 	$oMain.AppName = "GuiBuilderPlus"
-	$oMain.AppVersion = "1.3.0"
+	$oMain.AppVersion = "1.4.0"
 	$oMain.Title = StringTrimRight(StringTrimLeft(_get_script_title(), 1), 1)
 	$oMain.Name = "hGUI"
 	$oMain.Width = 400

@@ -752,8 +752,9 @@ Func _WM_SIZE($hWnd, $Msg, $wParam, $lParam)
 			$bResizedFlag = 1
 
 		Case $hFormGenerateCode
-			Local $aPos = ControlGetPos($hFormGenerateCode, "", $labelCodeGeneration)
-			WinMove($editCodeGeneration, "", $aPos[0], $aPos[1], $aPos[2], $aPos[3])
+			Local $w = BitAND($lParam, 0xFFFF)
+			Local $h = BitShift($lParam, 16)
+			WinMove($editCodeGeneration, "", 0, 2, $w, $h - 62)
 
 		Case Else
 			Return $GUI_RUNDEFMSG
@@ -1063,7 +1064,7 @@ Func _onAlignMenu_Center()
 	Local $value = $oCtrlValue.Left + $oCtrlValue.Width / 2
 	Local $aItems = $oSelected.ctrls.Items()
 	For $oCtrl In $aItems
-		_change_ctrl_size_pos($oCtrl, $value - $oCtrl.Width / 2, Default, Default, Default)
+		_change_ctrl_size_pos($oCtrl, Round($value - $oCtrl.Width / 2), Default, Default, Default)
 	Next
 EndFunc   ;==>_onAlignMenu_Center
 
@@ -1092,7 +1093,7 @@ Func _onAlignMenu_Middle()
 	Local $value = $oCtrlValue.Top + $oCtrlValue.Height / 2
 	Local $aItems = $oSelected.ctrls.Items()
 	For $oCtrl In $aItems
-		_change_ctrl_size_pos($oCtrl, Default, $value - $oCtrl.Height / 2, Default, Default)
+		_change_ctrl_size_pos($oCtrl, Default, Round($value - $oCtrl.Height / 2), Default, Default)
 	Next
 EndFunc   ;==>_onAlignMenu_Middle
 
@@ -1113,7 +1114,7 @@ Func _onAlignMenu_CenterPoints()
 	Local $valueMiddle = $oCtrlValue.Top + $oCtrlValue.Height / 2
 	Local $aItems = $oSelected.ctrls.Items()
 	For $oCtrl In $aItems
-		_change_ctrl_size_pos($oCtrl, $valueCenter - $oCtrl.Width / 2, $valueMiddle - $oCtrl.Height / 2, Default, Default)
+		_change_ctrl_size_pos($oCtrl, Round($valueCenter - $oCtrl.Width / 2), Round($valueMiddle - $oCtrl.Height / 2), Default, Default)
 	Next
 EndFunc   ;==>_onAlignMenu_CenterPoints
 
@@ -1147,7 +1148,7 @@ Func _onAlignMenu_SpaceVertical()
 	;set the new positions
 	Local $pos = $aCtrls[0].Top + $aCtrls[0].Height / 2
 	For $oCtrl In $aCtrls
-		_change_ctrl_size_pos($oCtrl, Default, $pos - $oCtrl.Height / 2, Default, Default)
+		_change_ctrl_size_pos($oCtrl, Default, Round($pos - $oCtrl.Height / 2), Default, Default)
 		$pos += $spacing
 	Next
 
@@ -1183,7 +1184,7 @@ Func _onAlignMenu_SpaceHorizontal()
 	;set the new positions
 	Local $pos = $aCtrls[0].Left + $aCtrls[0].Width / 2
 	For $oCtrl In $aCtrls
-		_change_ctrl_size_pos($oCtrl, $pos - $oCtrl.Width / 2, Default, Default, Default)
+		_change_ctrl_size_pos($oCtrl, Round($pos - $oCtrl.Width / 2), Default, Default, Default)
 		$pos += $spacing
 	Next
 EndFunc   ;==>_onAlignMenu_SpaceHorizontal
@@ -2160,6 +2161,7 @@ Func _onGenerateCode()
 		GUICtrlSetState($menu_generateCode, $GUI_CHECKED)
 		_formGenerateCode()
 		GUISetState(@SW_SHOWNOACTIVATE, $hFormGenerateCode)
+		Sci_ClearSelections($editCodeGeneration)
 		GUISwitch($hGUI)
 	Else
 		_onExitGenerateCode()
